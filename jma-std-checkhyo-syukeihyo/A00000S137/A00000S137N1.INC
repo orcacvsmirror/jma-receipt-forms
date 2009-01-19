@@ -16,19 +16,22 @@
       * 113-8621, Japan.
       ********************************************************************
        01  S137N1.
-              03  S137N1-PAGE              PIC  X(03).
-              03  S137N1-SYSYMD            PIC  X(22).
-              03  S137N1-SRYYM             PIC  X(16).
-              03  S137N1-NYUGAI            PIC  X(04).
-              03  S137N1-SRYKANAME         PIC  X(20).
-              03  S137N1-HKN-TBL OCCURS 46.
-                  05  S137N1-KENSU         PIC  X(04).
-                  05  S137N1-NISSU         PIC  X(04).
-                  05  S137N1-TENSU         PIC  X(09).
-                  05  S137N1-MADOGK        PIC  X(09).
-                  05  S137N1-HKNGK         PIC  X(09).
-                  05  S137N1-KOHGK         PIC  X(09).
-                  05  S137N1-SYUEKI        PIC  X(09).
-                  05  S137N1-SNISSU        PIC  X(04).
-                  05  S137N1-SSEIKYU       PIC  X(09).
-                  05  S137N1-SFTNGK        PIC  X(09).
+           03  S137N1-PAGE              PIC  X(03).
+           03  S137N1-SYSYMD            PIC  X(22).
+           03  S137N1-SRYYM             PIC  X(16).
+           03  S137N1-NYUGAI            PIC  X(04).
+           03  S137N1-SRYKANAME         PIC  X(20).
+           03  S137N1-HKN-TBL OCCURS 46.
+               05  S137N1-KENSU         PIC  X(04).
+               05  S137N1-NISSU         PIC  X(04).
+               05  S137N1-TENSU         PIC  X(09).
+               05  S137N1-MADOGK        PIC  X(09).
+      *--- 2008/12/18 ADD START ----------------------------------------
+               05  S137N1-JIHIGK        PIC  X(09).
+      *--- 2008/12/18 ADD END ------------------------------------------
+               05  S137N1-HKNGK         PIC  X(09).
+               05  S137N1-KOHGK         PIC  X(09).
+               05  S137N1-SYUEKI        PIC  X(09).
+               05  S137N1-SNISSU        PIC  X(04).
+               05  S137N1-SSEIKYU       PIC  X(09).
+               05  S137N1-SFTNGK        PIC  X(09).

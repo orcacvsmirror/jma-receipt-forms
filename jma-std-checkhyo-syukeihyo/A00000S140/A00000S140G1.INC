@@ -27,6 +27,9 @@
                       07  S140G1-NISSU      PIC  X(04).
                       07  S140G1-TENSU      PIC  X(09).
                       07  S140G1-MADOGK     PIC  X(09).
+      *--- (2008/12/12) line add start monma ----------------------------
+                      07  S140G1-JIHIGK     PIC  X(09).
+      *--- (2008/12/12) line add end   monma ----------------------------
                       07  S140G1-HKNGK      PIC  X(09).
                       07  S140G1-KOHGK      PIC  X(09).
                       07  S140G1-SYUEKI     PIC  X(09).
@@ -45,10 +48,10 @@
                       07  FILLER8          PIC  X(09).
               03  S140G1-KUMIAI-AREA.
                   05  S140G1-KOHI2-TBL OCCURS 20.
-                      07  S140G1-K-KOHNAME     PIC  X(24).
-                      07  S140G1-K-KKENSU      PIC  X(04).
-                      07  S140G1-K-KNISSU      PIC  X(04).
-                      07  S140G1-K-KTENSU      PIC  X(09).
+                      07  S140G1-K-KOHNAME    PIC  X(24).
+                      07  S140G1-K-KKENSU     PIC  X(04).
+                      07  S140G1-K-KNISSU     PIC  X(04).
+                      07  S140G1-K-KTENSU     PIC  X(09).
                       07  FILLER11            PIC  X(09).
                       07  FILLER12            PIC  X(09).
                       07  FILLER13            PIC  X(09).
@@ -61,8 +64,11 @@
                       07  S140G1-GNISSU      PIC  X(04).
                       07  S140G1-GTENSU      PIC  X(09).
                       07  S140G1-GMADOGK     PIC  X(09).
+      *--- (2008/12/12) line add start monma ----------------------------
+                      07  S140G1-GJIHIGK     PIC  X(09).
+      *--- (2008/12/12) line add end   monma ----------------------------
                       07  S140G1-GHKNGK      PIC  X(09).
                       07  S140G1-GKOHGK      PIC  X(09).
                       07  S140G1-GSYUEKI     PIC  X(09).
-                      07  FILLER17          PIC  X(09).
-                      07  FILLER18          PIC  X(09).
+                      07  FILLER17           PIC  X(09).
+                      07  FILLER18           PIC  X(09).

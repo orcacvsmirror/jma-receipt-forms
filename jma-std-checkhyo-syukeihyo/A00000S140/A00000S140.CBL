@@ -29,6 +29,10 @@
       *                            »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²Ã
       *  08/10/23    @@@@-ÅÄÃæ     ÊÝ¸±ÊÌ½¸·×¥Á¥§¥Ã¥¯É½¤¬°õºþ¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
       *  08/10/30    @@@@-ÅÄÃæ     Áë¸ýÀÁµá³Û¤ÎÉÔ¶ñ¹ç¤ò½¤Àµ
+      *  08/12/12    @@@@-Ìç´Ö     ¼«Èñ(095XXXXX¡¢096XXXXX¤ÇÆþÎÏ)¤Î½¸·×Íó¤òÄÉ²Ã
+      *                            ¿©»öÎÅÍÜ¤Î¼ý±×¤ò°åÎÅ¼ý±×¤Ë²Ã»»
+      *  09/01/08    @@@@-ÅÄÃæ     °åÎÅ¼ý±×¤Î·×»»¼°¤òÊÑ¹¹
+      *  09/01/08    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤òÊÑ¹¹
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -130,77 +134,83 @@
       *
       *    Åº»úÎÎ°è
        01  IDX-AREA.
-           03  IDX                PIC 9(01).
-           03  IDX1               PIC 9(04).
-           03  IDX2               PIC 9(04).
-           03  IDX3               PIC 9(04).
-           03  IDX4               PIC 9(04).
-           03  IDX5               PIC 9(04).
-           03  IDX6               PIC 9(03).
+           03  IDX                 PIC 9(01).
+           03  IDX1                PIC 9(04).
+           03  IDX2                PIC 9(04).
+           03  IDX3                PIC 9(04).
+           03  IDX4                PIC 9(04).
+           03  IDX5                PIC 9(04).
+           03  IDX6                PIC 9(03).
            03  IDA-G.
-               05  IDA            PIC 9(02).
+               05  IDA             PIC 9(02).
            03  IDB-G.
-               05  IDB            PIC 9(02).
+               05  IDB             PIC 9(02).
            03  IDC-G.
-               05  IDC              PIC 9(04).
+               05  IDC             PIC 9(04).
            03  IDD-G.
-               05  IDD            PIC 9(04).
-           03  IDY                PIC 9(04).
-           03  IDZ                PIC 9(04).
-           03  IDM                PIC 9(04).
-           03  IDX-MAX            PIC 9(04).
+               05  IDD             PIC 9(04).
+           03  IDY                 PIC 9(04).
+           03  IDZ                 PIC 9(04).
+           03  IDM                 PIC 9(04).
+           03  IDX-MAX             PIC 9(04).
            
       *
       *    ¥Ñ¥é¥á¥¿ÎÎ°è
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
-           03  WRK-PARA-JOBID        PIC 9(07).
-           03  WRK-PARA-SHELLID      PIC X(08).
-           03  WRK-PARA-HOSPNUM    PIC 9(02).
+           03  WRK-PARA-JOBID            PIC 9(07).
+           03  WRK-PARA-SHELLID          PIC X(08).
+           03  WRK-PARA-HOSPNUM          PIC 9(02).
       *    ÂÐ¾Ý¿ÇÎÅÇ¯·î
-           03  WRK-PARA-SRYYM        PIC X(06).
+           03  WRK-PARA-SRYYM            PIC X(06).
       *    ÂÐ¾ÝÇ¯·îºÇ½ªÆü¡¦½éÆü
-           03  WRK-PARA-PRTLYMD      PIC X(08).
-           03  WRK-PARA-PRTSYMD      PIC X(08).
+           03  WRK-PARA-PRTLYMD          PIC X(08).
+           03  WRK-PARA-PRTSYMD          PIC X(08).
       *
       *    °ì»þÎÎ°è
        01  WRK-AREA.
            03  WRK-SYSYMD.
-               05  WRK-SYSYY         PIC 9(04).
-               05  WRK-SYSMM         PIC 9(02).
-               05  WRK-SYSDD         PIC 9(02).
+               05  WRK-SYSYY             PIC 9(04).
+               05  WRK-SYSMM             PIC 9(02).
+               05  WRK-SYSDD             PIC 9(02).
            03  WRK-SYMD.
-               05  WRK-SYY           PIC 9(04).
-               05  WRK-SMM           PIC 9(02).
-               05  WRK-SDD           PIC 9(02).
+               05  WRK-SYY               PIC 9(04).
+               05  WRK-SMM               PIC 9(02).
+               05  WRK-SDD               PIC 9(02).
            03  WRK-SRYYMD.
-               05  WRK-SRYYY         PIC 9(04).
-               05  WRK-SRYMM         PIC 9(02).
-               05  WRK-SRYDD         PIC 9(02).
-           03  WRK-HENYMDG           PIC X(22).
-           03  WRK-SRYYM             PIC X(22).
-           03  WRK-SEIYMD            PIC X(22).
-           03  WRK-RECEERR           PIC X(200).
-           03  WRK-SRYKA             PIC X(02).
-           03  WRK-NYUGAIKBN         PIC X(01).
-           03  WRK-PARA-NYUGAIKBN    PIC X(01).
-           03  WRK-CITYNAME          PIC X(12).
-           03  WRK-PTID              PIC 9(10).
-           03  WRK-HKNNUM            PIC X(03).
-           03  WRK-KOHNUM            PIC X(03).
-           03  WRK-TENTNK            PIC 9(04).
-           03  WRK-JIBAITNK          PIC 99.9.
-           03  WRK-HKNJANUM          PIC X(08).
+               05  WRK-SRYYY             PIC 9(04).
+               05  WRK-SRYMM             PIC 9(02).
+               05  WRK-SRYDD             PIC 9(02).
+           03  WRK-HENYMDG               PIC X(22).
+           03  WRK-SRYYM                 PIC X(22).
+           03  WRK-SEIYMD                PIC X(22).
+           03  WRK-RECEERR               PIC X(200).
+           03  WRK-SRYKA                 PIC X(02).
+           03  WRK-NYUGAIKBN             PIC X(01).
+           03  WRK-PARA-NYUGAIKBN        PIC X(01).
+           03  WRK-CITYNAME              PIC X(12).
+           03  WRK-PTID                  PIC 9(10).
+           03  WRK-HKNNUM                PIC X(03).
+           03  WRK-KOHNUM                PIC X(03).
+           03  WRK-TENTNK                PIC 9(04).
+           03  WRK-JIBAITNK              PIC 99.9.
+           03  WRK-HKNJANUM              PIC X(08).
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃSTART
       *     03  WRK-HKNJANAME         PIC X(40).
-           03  WRK-HKNJANAME         PIC X(50).
+           03  WRK-HKNJANAME             PIC X(50).
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃEND
-           03  WRK-KYURATE           PIC 9(02).
+           03  WRK-KYURATE               PIC 9(02).
            03  WRK-KASAN-TBL.
                05  WRK-KENSU             PIC 9(04).
                05  WRK-NISSU             PIC 9(04).
                05  WRK-TENSU             PIC 9(09).
-               05  WRK-MADOGK            PIC 9(09).
+      *--- 2009/01/08 CHANGE START -------------------------------------
+      *         05  WRK-MADOGK            PIC 9(09).
+               05  WRK-MADOGK            PIC S9(09).
+      *--- 2009/01/08 CHANGE END ---------------------------------------
+      *--- (2008/12/12) line add start monma ---------------------------
+               05  WRK-JIHIGK            PIC 9(09).
+      *--- (2008/12/12) line add end   monma ---------------------------
                05  WRK-HKNGK             PIC 9(09).
                05  WRK-KOHGK             PIC 9(09).
                05  WRK-SYUEKI            PIC 9(09).
@@ -214,19 +224,25 @@
                05  WRK-GKKENSU           PIC 9(04).
                05  WRK-GKNISSU           PIC 9(04).
                05  WRK-GKTENSU           PIC 9(09).
-           03  WRK-MADOSEIKYUGK-G        PIC 9(09).
+      *--- 2009/01/08 CHANGE START -------------------------------------
+      *     03  WRK-MADOSEIKYUGK-G        PIC 9(09).
+           03  WRK-MADOSEIKYUGK-G        PIC S9(09).
+      *--- 2009/01/08 CHANGE END ---------------------------------------
+      *--- (2008/12/12) line add start monma ---------------------------
+           03  WRK-JIHIGK-G              PIC 9(09).
+      *--- (2008/12/12) line add end   monma ---------------------------
            03  WRK-KOHSEIKYUGK           PIC 9(09).
            03  WRK-KOHSEIKYUGK-G         PIC 9(09).
            03  WRK-ZENCOMPFTN            PIC 9(09).
            03  WRK-KOHSKJSEIKYUGK        PIC 9(09).
            03  WRK-PATH                  PIC X(64).
            03  WRK-KOHTMP-KEY.
-               05  WRK-KOHTMP-RJNKBN       PIC  X(03).
-               05  WRK-KOHTMP-KOHNUM       PIC  X(03).
+               05  WRK-KOHTMP-RJNKBN     PIC  X(03).
+               05  WRK-KOHTMP-KOHNUM     PIC  X(03).
            03  WRK-CHK-TBL.
-               05  WRK-CHK-PTID2            PIC 9(10).
+               05  WRK-CHK-PTID2         PIC 9(10).
                05  WRK-CHK-SRYKA-TBL OCCURS 20.
-                   07  WRK-CHK-PTID         PIC 9(10).
+                   07  WRK-CHK-PTID      PIC 9(10).
                    07  WRK-CHK-DAY-TBL.
                        09  WRK-CHK-DAY   PIC 9(01) OCCURS 31.
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃSTART
@@ -234,54 +250,62 @@
       *     03  WRK-CNT2                 PIC 9(02).
       *     03  WRK-CNT3                 PIC 9(02).
       *     03  WRK-CNT4                 PIC 9(02).
-           03  WRK-CNT1                 PIC 9(03).
-           03  WRK-CNT2                 PIC 9(03).
-           03  WRK-CNT3                 PIC 9(03).
-           03  WRK-CNT4                 PIC 9(03).
+           03  WRK-CNT1                  PIC 9(03).
+           03  WRK-CNT2                  PIC 9(03).
+           03  WRK-CNT3                  PIC 9(03).
+           03  WRK-CNT4                  PIC 9(03).
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²Ãend
-           03  WRK-KOHNAME-G            PIC X(24).
-           03  WRK-KOHNAME-G2           PIC X(24).
+           03  WRK-KOHNAME-G             PIC X(24).
+           03  WRK-KOHNAME-G2            PIC X(24).
       *
-           03  WRK-MAE-INPUT         PIC X(200).
-           03  WRK-OUT-INPUT         PIC X(200).
+           03  WRK-MAE-INPUT             PIC X(200).
+           03  WRK-OUT-INPUT             PIC X(200).
       *
-           03  WRK-PAGE              PIC ZZ9.
-           03  WRK-Z3                PIC ZZ9.
-           03  WRK-Z4                PIC ZZZZ.
-           03  WRK-Z5                PIC Z,ZZZ.
-           03  WRK-Z6                PIC ZZ,ZZ9.
-           03  WRK-Z7                PIC ZZZ,ZZZ.
-           03  WRK-Z9                PIC Z,ZZZ,ZZZ.
-           03  WRK-Z92               PIC ZZZZZZZZZ.
-           03  WRK-Z10               PIC ZZ,ZZZ,ZZ9.
-           03  WRK-Z11               PIC ZZZ,ZZZ,ZZZ.
-           03  WRK-Z13               PIC Z,ZZZ,ZZZ,ZZZ.
-           03  WRK-Z14               PIC ZZ,ZZZ,ZZZ,ZZZ.
+           03  WRK-PAGE                  PIC ZZ9.
+           03  WRK-Z3                    PIC ZZ9.
+           03  WRK-Z4                    PIC ZZZZ.
+           03  WRK-Z5                    PIC Z,ZZZ.
+           03  WRK-Z6                    PIC ZZ,ZZ9.
+           03  WRK-Z7                    PIC ZZZ,ZZZ.
+           03  WRK-Z9                    PIC Z,ZZZ,ZZZ.
+           03  WRK-Z92                   PIC ZZZZZZZZZ.
+           03  WRK-Z10                   PIC ZZ,ZZZ,ZZ9.
+           03  WRK-Z11                   PIC ZZZ,ZZZ,ZZZ.
+           03  WRK-Z13                   PIC Z,ZZZ,ZZZ,ZZZ.
+           03  WRK-Z14                   PIC ZZ,ZZZ,ZZZ,ZZZ.
+      *--- 2009/01/08 CHANGE START -------------------------------------
+           03  WRK-Z93                   PIC --------Z.
+      *--- 2009/01/08 CHANGE END ---------------------------------------
       *
-           03  WRK-SYS-BEDSU     PIC 9(04).
-           03  WRK-SYS-BEDSUIPN  PIC 9(04).
+           03  WRK-SYS-BEDSU             PIC 9(04).
+           03  WRK-SYS-BEDSUIPN          PIC 9(04).
+      *--- 2009/01/08 ADD START ----------------------------------------
+           03  WRK-FTNFLG               PIC 9(01).
+           03  WRK-HKNFTN               PIC 9(09).
+           03  WRK-KOHFTN               PIC 9(09).
+      *--- 2009/01/08 ADD END ------------------------------------------
       *
       *    ¿ÇÎÅ²ÊÌ¾ÂàÈò¥¨¥ê¥¢
        01  SUM-AREA.
-           03  SUM-SRYKAMAX                         PIC 9(03).
+           03  SUM-SRYKAMAX              PIC 9(03).
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃSTART
       *     03  SUM-SRYDR-TBL       OCCURS 100.
            03  SUM-SRYDR-TBL       OCCURS 300.
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃEND
-               05  SUM-SRYKA                        PIC X(02).
-               05  SUM-SRYKANAME                    PIC X(24).
+               05  SUM-SRYKA             PIC X(02).
+               05  SUM-SRYKANAME         PIC X(24).
       *    Æþ±¡ÍúÎò¾ðÊóÂàÈò¥¨¥ê¥¢
        01  WRK-NYUIN-AREA.
            03  WRK-NYUIN-TBL.
-               05  WRK-NYUIN-DAY    PIC  9(01) OCCURS 31.
+               05  WRK-NYUIN-DAY         PIC 9(01) OCCURS 31.
       *
       *
       *    ¼¼ÎÁº¹³ÛÂàÈò¥¨¥ê¥¢
        01  WRK-ROOM-SAGAKU-TBL.
-           03  WRK-ROOM-MAX           PIC 9(02).
+           03  WRK-ROOM-MAX              PIC 9(02).
            03  WRK-ROOM-DATA     OCCURS 50.
-               05  WRK-ROOM-CD         PIC 9(03).
-               05  WRK-ROOM-SGK        PIC 9(05).
+               05  WRK-ROOM-CD           PIC 9(03).
+               05  WRK-ROOM-SGK          PIC 9(05).
       *
       *
            COPY    "CPSHELLTBL.INC".
@@ -297,7 +321,6 @@
       *    °åÎÅµ¡´Ø¾ðÊó
            COPY    "CPSK1001.INC".
       *
-      *
       *    ¿ÇÎÅ²ÊÌÜ¾ðÊó¾ðÊó
            COPY    "CPSK1005.INC".
       *
@@ -310,7 +333,6 @@
       *    ½ÐÎÏÀè¥×¥ê¥ó¥¿Ì¾³ä¤êÅö¤Æ¾ðÊó
            COPY  "CPSK1031.INC".
       *
-      *
       *    ¿ÇÎÅ²ñ·×¥Þ¥¹¥¿
        01  SRYACCT-REC.
            COPY    "CPSRYACCT.INC".
@@ -318,7 +340,6 @@
       *    ¿ÇÎÅ¹Ô°Ù¥Þ¥¹¥¿
        01  SRYACT-REC.
            COPY    "CPSRYACT.INC".
-      *
       *
       *    ¼õ¿ÇÍúÎò¾ðÊó
        01  JYURRK-REC.
@@ -335,11 +356,9 @@
       *    ¼¼ÎÁº¹³Û¾ðÊó
            COPY    "CPSK5113.INC".
       *
-      *
       *    ´µ¼Ô¥Þ¥¹¥¿
        01  PTINF-REC.
            COPY    "CPPTINF.INC".
-      *
       *
       *    ÀÁµá´ÉÍý¥Þ¥¹¥¿
            COPY    "CPRCF010.INC".
@@ -347,7 +366,6 @@
       *    ´µ¼ÔÊÝ¸±¥Þ¥¹¥¿
        01  PTHKNINF-REC.
            COPY    "CPPTHKNINF.INC".
-
       *
       *    ÊÝ¸±ÁÈ¹ç¤»
        01  HKNCOMBI-REC.
@@ -361,7 +379,6 @@
        01  HKNJAINF-REC.
            COPY    "CPHKNJAINF.INC".
       *
-      *
       *    ¥¸¥ç¥Ö´ÉÍý¥Þ¥¹¥¿
        01  JOBKANRI-REC.
            COPY    "CPJOBKANRI.INC".
@@ -370,9 +387,7 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
-      *
-      *
+           COPY    "CPPRTDATA.INC".
       *
       *****************************************************************
       *    ¥µ¥Ö¥×¥íÍÑ¡¡ÎÎ°è
@@ -382,7 +397,7 @@
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    °õºþ£Ä£Â¹¹¿·¥µ¥Ö
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
       *   ÆüÉÕÊÑ´¹¥µ¥Ö
            COPY    "CPORCSDAY.INC".
@@ -420,11 +435,11 @@
       *****************************************************************
        000-PROC-SEC                SECTION.
       *
-           PERFORM 100-INIT-SEC
+           PERFORM   100-INIT-SEC
       *
-           PERFORM 200-MAIN-SEC
+           PERFORM   200-MAIN-SEC
       *
-           PERFORM 300-END-SEC
+           PERFORM   300-END-SEC
       *
            .
        000-PROC-EXT.
@@ -448,21 +463,21 @@
            INITIALIZE                  WRK-NYUIN-AREA
            INITIALIZE                  SPA-AREA
       *
-           MOVE    S100LNK-HOSPNUM    TO  WRK-PARA-HOSPNUM
-           MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
+           MOVE    S100LNK-HOSPNUM    TO   WRK-PARA-HOSPNUM
+           MOVE    WRK-PARA-HOSPNUM   TO   SPA-HOSPNUM
       *    ¥¹¥Æ¥Ã¥×´ÉÍý³«»Ï½èÍý
-           MOVE    "STS"             TO  SJOBKANRI-MODE
-           INITIALIZE                     JOBKANRI-REC
-           MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-           MOVE    S100LNK-JOBID     TO  JOB-JOBID
-           MOVE    S100LNK-SHELLID   TO  JOB-SHELLID
-           MOVE    "A00000S100"      TO  JOB-PGID
+           MOVE    "STS"              TO   SJOBKANRI-MODE
+           INITIALIZE                 JOBKANRI-REC
+           MOVE    SPA-HOSPNUM        TO   JOB-HOSPNUM
+           MOVE    S100LNK-JOBID      TO   JOB-JOBID
+           MOVE    S100LNK-SHELLID    TO   JOB-SHELLID
+           MOVE    "A00000S100"       TO   JOB-PGID
            MOVE    "ÊÝ¸±ÊÌÀÁµá¥Á¥§¥Ã¥¯É½(¸å´ü¹âÎð¼Ô)"
-                                   TO  JOB-SHELLMSG
-           CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
-                                   JOBKANRI-REC
-                                   SPA-AREA
+                                      TO   JOB-SHELLMSG
+           CALL    "ORCSJOB"          USING
+                                      ORCSJOBKANRIAREA
+                                      JOBKANRI-REC
+                                      SPA-AREA
       *    ¥Ñ¥é¥á¥¿ÊÔ½¸½èÍý
            PERFORM 110-PARA-HENSYU-SEC
       *
@@ -476,102 +491,102 @@
         110-PARA-HENSYU-SEC                   SECTION.
       *
       *    ¥·¥¹¥Æ¥àÆüÉÕ
-           MOVE  S100LNK-PRTKANRI-SKYYMD   TO  WRK-SYMD
-           PERFORM 31012-SEIWA-HEN-SEC
-           MOVE  WRK-HENYMDG               TO  WRK-SEIYMD
+           MOVE   S100LNK-PRTKANRI-SKYYMD   TO   WRK-SYMD
+           PERFORM  31012-SEIWA-HEN-SEC
+           MOVE   WRK-HENYMDG               TO   WRK-SEIYMD
       *
-           MOVE   S100LNK-NYUGAIKBN        TO  WRK-PARA-NYUGAIKBN
-           MOVE  S100LNK-PRTKANRI-SKYYMD   TO  SPA-SYSYMD
+           MOVE   S100LNK-NYUGAIKBN         TO   WRK-PARA-NYUGAIKBN
+           MOVE   S100LNK-PRTKANRI-SKYYMD   TO   SPA-SYSYMD
       *
       *
       *    ÂÐ¾ÝÆüÉÕ½èÍý
-           MOVE    S100LNK-YM          TO  WRK-SRYYMD (1:6)
-           MOVE    "01"                TO  WRK-SRYYMD (7:2)
-           MOVE    S100LNK-YM          TO  WRK-SYMD (1:6)
-           MOVE    "01"                TO  WRK-SYMD (7:2)
+           MOVE    S100LNK-YM               TO   WRK-SRYYMD (1:6)
+           MOVE    "01"                     TO   WRK-SRYYMD (7:2)
+           MOVE    S100LNK-YM               TO   WRK-SYMD (1:6)
+           MOVE    "01"                     TO   WRK-SYMD (7:2)
            PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG(1:16)   TO  WRK-SRYYM 
-           MOVE    S100LNK-YM          TO  WRK-PARA-SRYYM
+           MOVE    WRK-HENYMDG(1:16)        TO   WRK-SRYYM 
+           MOVE    S100LNK-YM               TO   WRK-PARA-SRYYM
       *
       *    ÂÐ¾ÝÇ¯·îºÇ½ªÆü¼èÆÀ
            INITIALIZE  WRK-SYMD
-           MOVE    S100LNK-YM          TO    WRK-SYMD(1:6)
-           PERFORM 31012-LASTDAY-GET-SEC
-           MOVE    WRK-SYMD            TO    WRK-PARA-PRTLYMD
+           MOVE    S100LNK-YM               TO   WRK-SYMD(1:6)
+           PERFORM   31012-LASTDAY-GET-SEC
+           MOVE    WRK-SYMD                 TO   WRK-PARA-PRTLYMD
       *
       *    ÂÐ¾ÝÇ¯·î½éÆü¼èÆÀ
            INITIALIZE  WRK-SYMD
-           MOVE    S100LNK-YM          TO    WRK-PARA-PRTSYMD(1:6)
-           MOVE    "01"                TO    WRK-PARA-PRTSYMD(7:2)
+           MOVE    S100LNK-YM               TO   WRK-PARA-PRTSYMD(1:6)
+           MOVE    "01"                     TO   WRK-PARA-PRTSYMD(7:2)
       *
       *    °åÎÅµ¡´Ø£É£ÄÊÔ½¸^M
-           MOVE    SPACE               TO  SYS-1001-REC
-           INITIALIZE                      SYS-1001-REC
-           MOVE    "1001"              TO  SYS-1001-KANRICD
-           MOVE    "*"                 TO  SYS-1001-KBNCD
-           MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
-           MOVE    SPA-SYSYMD          TO  SYS-1001-STYUKYMD
-                                           SYS-1001-EDYUKYMD
-           MOVE    SYS-1001-REC        TO  MCPDATA-REC
-           PERFORM 800-SYSKANRI-READ-SEC
+           MOVE    SPACE                    TO   SYS-1001-REC
+           INITIALIZE                            SYS-1001-REC
+           MOVE    "1001"                   TO   SYS-1001-KANRICD
+           MOVE    "*"                      TO   SYS-1001-KBNCD
+           MOVE    SPA-HOSPNUM              TO   SYS-1001-HOSPNUM
+           MOVE    SPA-SYSYMD               TO   SYS-1001-STYUKYMD
+                                                 SYS-1001-EDYUKYMD
+           MOVE    SYS-1001-REC             TO   MCPDATA-REC
+           PERFORM   800-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI        =   ZERO
-                MOVE    MCPDATA-REC         TO  SYS-1001-REC
-                MOVE    SYS-1001-HOSPNUM    TO  WRK-PARA-HOSPNUM
-                MOVE    SYS-1001-BEDSU      TO  WRK-SYS-BEDSU
-                MOVE    SYS-1001-BEDSUIPN   TO  WRK-SYS-BEDSUIPN
-           ELSE    
-                MOVE    "°åÎÅµ¡´Ø£É£Ä¤¬¼èÆÀ¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿¡£"
-                                            TO  WRK-RECEERR
-                PERFORM 500-ERR-HENSYU-SEC
+             MOVE    MCPDATA-REC            TO   SYS-1001-REC
+             MOVE    SYS-1001-HOSPNUM       TO   WRK-PARA-HOSPNUM
+             MOVE    SYS-1001-BEDSU         TO   WRK-SYS-BEDSU
+             MOVE    SYS-1001-BEDSUIPN      TO   WRK-SYS-BEDSUIPN
+           ELSE
+             MOVE    "°åÎÅµ¡´Ø£É£Ä¤¬¼èÆÀ¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿¡£"
+                                         TO   WRK-RECEERR
+             PERFORM 500-ERR-HENSYU-SEC
            END-IF
       **
       *    ¼«ÇåÀÕÅÀ¿ôÃ±²Á¼èÆÀ
-           MOVE     SPACE         TO        SYS-4001-REC
+           MOVE   SPACE                     TO   SYS-4001-REC
            INITIALIZE                       SYS-4001-REC
-           MOVE     "4001"        TO        SYS-4001-KANRICD
-           MOVE     "*"           TO        SYS-4001-KBNCD
-           MOVE     SPA-HOSPNUM    TO        SYS-4001-HOSPNUM
-           MOVE     SPA-SYSYMD    TO        SYS-4001-STYUKYMD
-                                            SYS-4001-EDYUKYMD
-           MOVE     SYS-4001-REC  TO        MCPDATA-REC
+           MOVE   "4001"                    TO   SYS-4001-KANRICD
+           MOVE   "*"                       TO   SYS-4001-KBNCD
+           MOVE   SPA-HOSPNUM               TO   SYS-4001-HOSPNUM
+           MOVE   SPA-SYSYMD                TO   SYS-4001-STYUKYMD
+                                                 SYS-4001-EDYUKYMD
+           MOVE   SYS-4001-REC              TO   MCPDATA-REC
            PERFORM  900-SYSKANRI-INV-SEC
-           IF       FLG-SYSKANRI        =   ZERO
-                    MOVE    MCPDATA-REC TO  SYS-4001-REC
+           IF   FLG-SYSKANRI   =   ZERO
+             MOVE    MCPDATA-REC     TO   SYS-4001-REC
            ELSE
-                    INITIALIZE              SYS-4001-REC
+             INITIALIZE                   SYS-4001-REC
            END-IF
-           IF    SYS-4001-TENKBN    =    "1"
-             MOVE    11.5                   TO  WRK-JIBAITNK
+           IF    SYS-4001-TENKBN   =   "1"
+             MOVE    11.5                   TO   WRK-JIBAITNK
            ELSE
-             MOVE    12                     TO  WRK-JIBAITNK
+             MOVE    12                     TO   WRK-JIBAITNK
            END-IF
       *
       *    ¿ÇÎÅ²Ê¾ðÊó¼èÆÀ
-             MOVE    SPACE                  TO  SYS-1005-REC
-             INITIALIZE                         SYS-1005-REC
-             MOVE    "1005"                 TO  SYS-1005-KANRICD
-             MOVE    SPA-SYSYMD             TO  SYS-1005-STYUKYMD
-                                                SYS-1005-EDYUKYMD
-             MOVE    SPA-HOSPNUM            TO  SYS-1005-HOSPNUM
-             MOVE    WRK-PARA-PRTLYMD       TO  WRK-SYMD
-             PERFORM 820-SYSKANRI-DBSELECT-SEC
-             MOVE     1                     TO  IDX1 
-             PERFORM  UNTIL  FLG-SYSKANRI3 = 1
-               IF  FLG-SYSKANRI3 = ZERO
-                   MOVE SYS-1005-KBNCD      TO SUM-SRYKA(IDX1)
-                   MOVE SYS-1005-SRYKANAME1 TO SUM-SRYKANAME(IDX1)
-                   ADD  1        TO     IDX1 
-               END-IF  
-               PERFORM 820-SYSKANRI-DBFETCH-SEC
-             END-PERFORM
-             SUBTRACT  1        FROM IDX1  
-             MOVE  IDX1         TO   SUM-SRYKAMAX
-             PERFORM 820-SYSKANRI-DBCLOSE-SEC
+           MOVE    SPACE                    TO   SYS-1005-REC
+           INITIALIZE                            SYS-1005-REC
+           MOVE    "1005"                   TO   SYS-1005-KANRICD
+           MOVE    SPA-SYSYMD               TO   SYS-1005-STYUKYMD
+                                                 SYS-1005-EDYUKYMD
+           MOVE    SPA-HOSPNUM              TO   SYS-1005-HOSPNUM
+           MOVE    WRK-PARA-PRTLYMD         TO   WRK-SYMD
+           PERFORM  820-SYSKANRI-DBSELECT-SEC
+           MOVE     1                       TO   IDX1 
+           PERFORM  UNTIL  FLG-SYSKANRI3  =  1
+             IF  FLG-SYSKANRI3 = ZERO
+               MOVE  SYS-1005-KBNCD         TO   SUM-SRYKA(IDX1)
+               MOVE  SYS-1005-SRYKANAME1    TO   SUM-SRYKANAME(IDX1)
+               ADD     1                    TO   IDX1
+             END-IF
+             PERFORM 820-SYSKANRI-DBFETCH-SEC
+           END-PERFORM
+           SUBTRACT    1        FROM  IDX1
+           MOVE  IDX1           TO   SUM-SRYKAMAX
+           PERFORM 820-SYSKANRI-DBCLOSE-SEC
       *
       *
-           MOVE    "S140TP"            TO  S140TP-FILE-ID
-           MOVE    S100LNK-PRTKANRI-TERMID TO  S140TP-TERMID
-           MOVE    WRK-PARA-HOSPNUM        TO  S140TP-HOSPNUM
+           MOVE    "S140TP"                TO   S140TP-FILE-ID
+           MOVE    S100LNK-PRTKANRI-TERMID TO   S140TP-TERMID
+           MOVE    WRK-PARA-HOSPNUM        TO   S140TP-HOSPNUM
       *
            .
         110-PARA-HENSYU-EXT.
@@ -621,23 +636,22 @@
       *
            PERFORM  UNTIL  FLG-END   =   1
       *
-               IF  (RECE10-HKNNUM = "039"
-                 OR  RECE10-HKNNUM = "040")
-                 AND ((( RECE10-SRYYM    =   WRK-PARA-SRYYM)
-                 AND (  RECE10-SKYKBN    NOT =  "0"      )
-                 AND (( RECE10-SKYYM     =   "000000" )
-                 OR  (  RECE10-SKYYM     =   WRK-PARA-SRYYM )))
-                 OR  (( RECE10-SKYYM     =   WRK-PARA-SRYYM   )
-                 AND (  RECE10-SKYKBN    NOT =  "0"      )))
+             IF  (RECE10-HKNNUM  =  "039"
+                 OR  RECE10-HKNNUM  =  "040")
+                 AND ((( RECE10-SRYYM   =   WRK-PARA-SRYYM)
+                 AND (  RECE10-SKYKBN  NOT =  "0")
+                 AND (( RECE10-SKYYM   =   "000000" )
+                 OR  (  RECE10-SKYYM   =   WRK-PARA-SRYYM)))
+                 OR  (( RECE10-SKYYM   =   WRK-PARA-SRYYM)
+                 AND (  RECE10-SKYKBN   NOT =  "0")))
       *    ½¸·×¾ì½êÀßÄê
-                   PERFORM 2001-IDX-SET2-SEC
+               PERFORM  2001-IDX-SET2-SEC
       *
       *    ¸å´ü¹âÎð¥Ç¡¼¥¿½¸·×
-                   PERFORM 2001-DATA-SET2-SEC
-               END-IF
+               PERFORM  2001-DATA-SET2-SEC
+             END-IF
       *
-               PERFORM 900-SEIKYU-READ-SEC
-
+             PERFORM  900-SEIKYU-READ-SEC
            END-PERFORM
       *
            PERFORM  900-SEIKYU-CLOSE-SEC
@@ -705,6 +719,13 @@
                                              S140TMP-MADOGK(IDX2)
                                              S140TMP-GMADOGK
       *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×
+           ADD    WRK-JIHIGK           TO    S140TMP-JIHIGK(IDX1)
+                                             S140TMP-JIHIGK(IDX2)
+                                             S140TMP-GJIHIGK
+      *--- (2008/12/12) line add end   monma ---------------------------
+      *
       *    ÊÝ¸±ÀÁµá³Û²Ã»»
            ADD    WRK-HKNGK            TO    S140TMP-HKNGK(IDX1)
                                              S140TMP-HKNGK(IDX2)
@@ -736,7 +757,7 @@
       *
       *
       *    ¸øÈñ½¸·×½èÍý 
-           IF    RECE10-KOHNUM(1)  NOT = SPACE
+           IF    RECE10-KOHNUM(1)  NOT =  SPACE
              PERFORM  2001-DATA-SET21-SEC
            END-IF
       *
@@ -754,7 +775,7 @@
       *
       *    ½ñ¤­½Ð¤·
            IF  FLG-S140TMP   =  1
-             ADD      1                  TO    CNT-DATA
+             ADD      1              TO    CNT-DATA
              WRITE    S140TMP-REC
            ELSE
              REWRITE  S140TMP-REC
@@ -769,9 +790,9 @@
       *****************************************************************
        2001-DATA-SET21-SEC                SECTION.
       *
-           PERFORM VARYING IDX5     FROM    1   BY  1
-                   UNTIL   IDX5     >       4
-                   OR  RECE10-KOHNUM (IDX5) =   SPACE
+           PERFORM VARYING IDX5   FROM 1  BY  1
+                   UNTIL   IDX5  >   4
+                   OR  RECE10-KOHNUM(IDX5)   =   SPACE
       *    ¸øÈñÈ½ÊÌ
              PERFORM  VARYING  IDX4  FROM  1  BY  1
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃSTART
@@ -779,12 +800,12 @@
                       UNTIL    IDX4  >     300
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃEND
                       OR       S140TMP-KOH1-KEY (IDX4) = SPACE
-               IF  RECE10-KOHNUM (IDX5)  =  S140TMP-KOHNUM (IDX4) AND
-                   RECE10-RJNHKNNUM      =  S140TMP-RJNKBN(IDX4)
-                   MOVE  IDX4  TO  CNT-KOH
+               IF  RECE10-KOHNUM (IDX5)  =  S140TMP-KOHNUM (IDX4)
+                   AND  RECE10-RJNHKNNUM  =  S140TMP-RJNKBN(IDX4)
+                 MOVE    IDX4      TO   CNT-KOH
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃSTART
       *             MOVE  100    TO  IDX4
-                   MOVE  300    TO  IDX4
+                 MOVE    300       TO   IDX4
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃEND
                END-IF
              END-PERFORM
@@ -798,21 +819,19 @@
              END-IF
       *
       *    Ï·¿ÍÊ»ÍÑ¶èÊ¬ÀßÄê
-             MOVE  RECE10-RJNHKNNUM     TO  S140TMP-RJNKBN(CNT-KOH)
+             MOVE  RECE10-RJNHKNNUM         TO   S140TMP-RJNKBN(CNT-KOH)
       *    ¸øÈñÌ¾
-             MOVE  RECE10-KOHNUM(IDX5)  TO  S140TMP-KOHNUM(CNT-KOH)
+             MOVE  RECE10-KOHNUM(IDX5)      TO   S140TMP-KOHNUM(CNT-KOH)
       *    ÎÅÍÜ¤ÎµëÉÕ¡§·ï¿ô
              ADD   1  TO  S140TMP-KKENSU(CNT-KOH)
       *    ÎÅÍÜ¤ÎµëÉÕ:¿ÇÎÅ¼ÂÆü¿ô
-             ADD  RECE10-JNISSU(IDX5 + 1)  TO
-                               S140TMP-KNISSU(CNT-KOH)
+             ADD  RECE10-JNISSU(IDX5 + 1)   TO   S140TMP-KNISSU(CNT-KOH)
       *    ÎÅÍÜ¤ÎµëÉÕ¡§ÅÀ¿ô
-             ADD  RECE10-TOTALTEN(IDX5 + 1)  TO
-                               S140TMP-KTENSU(CNT-KOH)
+             ADD  RECE10-TOTALTEN(IDX5 + 1) TO   S140TMP-KTENSU(CNT-KOH)
       *
-             ADD     1                          TO  WRK-KKENSU
-             ADD     RECE10-JNISSU(IDX5 + 1)    TO  WRK-KNISSU
-             ADD     RECE10-TOTALTEN(IDX5 + 1)  TO  WRK-KTENSU
+             ADD     1                      TO   WRK-KKENSU
+             ADD  RECE10-JNISSU(IDX5 + 1)   TO   WRK-KNISSU
+             ADD  RECE10-TOTALTEN(IDX5 + 1) TO   WRK-KTENSU
       *
            END-PERFORM
            .
@@ -824,17 +843,17 @@
       *****************************************************************
        2001-DATA-SET22-SEC                SECTION.
       *
-           MOVE    1             TO    IDC
+           MOVE    1                  TO   IDC
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃSTART
       *     MOVE    100            TO    IDX-MAX
-           MOVE    300            TO    IDX-MAX
+           MOVE    300                TO   IDX-MAX
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃEND
            PERFORM    UNTIL   IDC   >    IDX-MAX
              IF   S140TMP-HKNJANUM(IDC)   =  SPACE  OR WRK-HKNJANUM
-               MOVE    WRK-HKNJANUM  TO   S140TMP-HKNJANUM(IDC)
-               MOVE    ZERO      TO    IDX-MAX
+               MOVE    WRK-HKNJANUM   TO   S140TMP-HKNJANUM(IDC)
+               MOVE    ZERO           TO   IDX-MAX
              ELSE
-               ADD     1         TO    IDC
+               ADD     1              TO   IDC
              END-IF     
            END-PERFORM
       *
@@ -855,6 +874,11 @@
       *    Áë¸ýÀÁµá³Û²Ã»»
              ADD    WRK-MADOGK           TO    S140TMP-HMADOGK(IDC)
       *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×²Ã»»
+             ADD    WRK-JIHIGK           TO    S140TMP-HJIHIGK(IDC)
+      *--- (2008/12/12) line add end   monma ---------------------------
+      *
       *    ÊÝ¸±ÀÁµá³Û²Ã»»
              ADD    WRK-HKNGK            TO    S140TMP-HHKNGK(IDC)
       *
@@ -866,13 +890,13 @@
       *
       *
       *    Æü¿ô²Ã»»
-             ADD    WRK-SNISSU         TO    S140TMP-HSNISSU(IDC)
+             ADD    WRK-SNISSU           TO    S140TMP-HSNISSU(IDC)
       *
       *    ÀÁµá³Û²Ã»»
-             ADD    WRK-SSEIKYU        TO    S140TMP-HSSEIKYU(IDC)
+             ADD    WRK-SSEIKYU          TO    S140TMP-HSSEIKYU(IDC)
       *
       *    É¸½àÉéÃ´³Û²Ã»»
-             ADD    WRK-SFTNGK         TO    S140TMP-HSFTNGK(IDC)
+             ADD    WRK-SFTNGK           TO    S140TMP-HSFTNGK(IDC)
       *
       *
            END-IF
@@ -890,47 +914,65 @@
       *
            INITIALIZE    WRK-KASAN-TBL
       *
-           MOVE    RECE10-JNISSU(1)    TO    WRK-NISSU
-           MOVE    RECE10-TOTALTEN(1)  TO    WRK-TENSU
+           MOVE    RECE10-JNISSU(1)       TO    WRK-NISSU
+           MOVE    RECE10-TOTALTEN(1)     TO    WRK-TENSU
       *
       *    ¸ÂÅÙ³Û¤¬Í­¤ë¾ì¹ç¤Ï(ÅÀ¿ô¡ß£±£°) ¡Ý ´µ¼ÔÉéÃ´ ¤Ç»»½Ð¤¹¤ë
            IF    RECE10-FTNMONEY(1)  =  ZERO
-                   AND  RECE10-KYURATE  NOT = ZERO
-               COMPUTE  WRK-HKNGK  =  RECE10-TOTALTEN(1)
-                                  * RECE10-KYURATE
+               AND  RECE10-KYURATE  NOT = ZERO
+             COMPUTE  WRK-HKNGK  =  RECE10-TOTALTEN(1)
+                                 *  RECE10-KYURATE
            ELSE
-               COMPUTE  WRK-HKNGK  =  (RECE10-TOTALTEN(1) * 10)
+             COMPUTE  WRK-HKNGK  =  (RECE10-TOTALTEN(1) * 10)
                                  -  RECE10-FTNMONEY(1)
            END-IF
       *
       *    ¼ýÇ¼¾ðÊó¤«¤éÁë¸ýÀÁµá³Û¡¢¸øÈñÀÁµá³Û¤ò½¸·×
            MOVE    ZERO                     TO    WRK-MADOSEIKYUGK-G
-                                                 WRK-KOHSEIKYUGK-G
+                                                  WRK-KOHSEIKYUGK-G
+      *--- (2008/12/12) line add start monma ---------------------------
+                                                  WRK-JIHIGK-G
+      *--- (2008/12/12) line add end   monma ---------------------------
+      *
            PERFORM  920-SYUNOU-SET-SEC
-           MOVE    WRK-MADOSEIKYUGK-G       TO    WRK-MADOGK
+      *--- (2008/12/12) line add&del start monma -----------------------
+      *    ¤½¤ÎÂ¾¼«Èñ¤òÊÌ½¸·×
+           MOVE    WRK-JIHIGK-G             TO    WRK-JIHIGK
+           COMPUTE WRK-MADOGK  =  WRK-MADOSEIKYUGK-G  -  WRK-JIHIGK-G
+      *     MOVE    WRK-MADOSEIKYUGK-G       TO    WRK-MADOGK
+      *--- (2008/12/12) line add&del end   monma -----------------------
+      *
            MOVE    WRK-KOHSEIKYUGK-G        TO    WRK-KOHGK
       *
       *    ¸øÈñÃ±ÆÈ¤Î¾ì¹ç¤ÎÊÔ½¸
            IF    RECE10-HKNNUM  =  SPACE
-               MOVE    RECE10-JNISSU(2)     TO    WRK-NISSU
-               MOVE    RECE10-TOTALTEN(2)   TO    WRK-TENSU
-               COMPUTE  WRK-HKNGK  = (RECE10-TOTALTEN(2) * 10)
-                                 + RECE10-SHOKUJIRYOYOHI(2)
-               ADD     WRK-HKNGK            TO    WRK-KOHGK
-               MOVE    ZERO                 TO    WRK-HKNGK
+               MOVE    RECE10-JNISSU(2)     TO   WRK-NISSU
+               MOVE    RECE10-TOTALTEN(2)   TO   WRK-TENSU
+               COMPUTE  WRK-HKNGK  =  (RECE10-TOTALTEN(2) * 10)
+                                   +  RECE10-SHOKUJIRYOYOHI(2)
+               ADD     WRK-HKNGK            TO   WRK-KOHGK
+               MOVE    ZERO                 TO   WRK-HKNGK
            END-IF
       *
+      *--- (2008/12/12) line del start monma ---------------------------
       *    °åÎÅ¼ý±×
-           COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-                                +  WRK-KOHGK
+      *     COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+      *                          +  WRK-KOHGK
+      *--- (2008/12/12) line del end   monma ---------------------------
       *
       *    Æü¿ô 
-               MOVE  RECE10-SHOKUJINISSU(1)     TO    WRK-SNISSU
+               MOVE  RECE10-SHOKUJINISSU(1)     TO   WRK-SNISSU
       *    ÀÁµá³Û
-               MOVE  RECE10-SHOKUJIRYOYOHI(1)   TO    WRK-SSEIKYU
+               MOVE  RECE10-SHOKUJIRYOYOHI(1)   TO   WRK-SSEIKYU
       *    É¸½àÉéÃ´³Û
-               MOVE  RECE10-SHOKUJIFTN(1)       TO    WRK-SFTNGK
+               MOVE  RECE10-SHOKUJIFTN(1)       TO   WRK-SFTNGK
       *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    °åÎÅ¼ý±× ¿©»ö¼ý±×²Ã»»
+           COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+                                +  WRK-KOHGK  +  WRK-JIHIGK
+                                +  (WRK-SSEIKYU - WRK-SFTNGK)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
            .
        2001-KASAN-EXT.
@@ -943,7 +985,7 @@
       *
       *    ¸å´ü¹âÎð¥Ç¡¼¥¿°õºþ½èÍý
       
-           PERFORM 2002-PRINT-TYPE2-SEC
+           PERFORM  2002-PRINT-TYPE2-SEC
       *
            .
        2002-PRINT-EXT.
@@ -955,17 +997,17 @@
        2002-PRINT-TYPE2-SEC                SECTION.
       *
            OPEN     INPUT        S140TMP-FILE
-           MOVE     ZERO    TO   FLG-PRINT
-           INITIALIZE            S140TMP-REC
+           MOVE     ZERO        TO   FLG-PRINT
+           INITIALIZE                S140TMP-REC
       *
-           MOVE    2        TO   FLG-TYPE
+           MOVE    2            TO   FLG-TYPE
            PERFORM  900-TMP-READ-SEC
       *
            PERFORM  UNTIL  FLG-PRINT   =    1
       *
       *
-             IF    WRK-PARA-NYUGAIKBN     =  "1"  OR  SPACE
-               IF    S140TMP-NYUGAIKBN      =    "1"
+             IF    WRK-PARA-NYUGAIKBN   =  "1"  OR  SPACE
+               IF    S140TMP-NYUGAIKBN   =   "1"
       *          Æþ±¡¥Õ¥©¡¼¥à
       *          ¸«½Ð¤·ÊÔ½¸
                  MOVE     1       TO   WRK-CNT1
@@ -984,7 +1026,7 @@
       *
       *            °õºþ½èÍý
                    PERFORM  350-PRINT-OUT-SEC
-                   MOVE     1     TO     FLG-PASS
+                   MOVE     1     TO   FLG-PASS
                  END-PERFORM
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃSTART
       *          £²ËçÌÜ¡Ê¸å´ü¹âÎð¼ÔÊ¬¡Ë
@@ -1011,8 +1053,8 @@
                END-IF
              END-IF
       *
-             IF    WRK-PARA-NYUGAIKBN     =  "2"  OR  SPACE
-               IF    S140TMP-NYUGAIKBN      =    "2"
+             IF    WRK-PARA-NYUGAIKBN   =  "2"  OR  SPACE
+               IF    S140TMP-NYUGAIKBN   =   "2"
       *          ³°Íè¥Õ¥©¡¼¥à
       *          ¸«½Ð¤·ÊÔ½¸
                  MOVE     1       TO   WRK-CNT1
@@ -1075,35 +1117,35 @@
            INITIALIZE                      S140G1
       *
       *    ¥Ú¡¼¥¸¿ô
-           ADD     1                TO    CNT-PAGE
-           MOVE    CNT-PAGE         TO    WRK-PAGE
-           MOVE    WRK-PAGE         TO    S140G1-PAGE
+           ADD     1                  TO   CNT-PAGE
+           MOVE    CNT-PAGE           TO   WRK-PAGE
+           MOVE    WRK-PAGE           TO   S140G1-PAGE
       *    ¿ÇÎÅ²ÊÌ¾(µìÁí¹çÉÂ±¡»þ¤Î¤ß)
-      * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART 
+      * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART
       *     IF    SYS-1001-HOSPSBT1  =  1
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëEND
-             MOVE     1               TO    IDX4
-             MOVE     SUM-SRYKAMAX    TO    IDX-MAX
-             PERFORM  UNTIL    IDX4   >     IDX-MAX
-               IF  S140TMP-SRYKA       =     SUM-SRYKA(IDX4)
-                 MOVE    ZERO                   TO    IDX-MAX
-                 MOVE    SUM-SRYKANAME(IDX4)    TO    S140G1-SRYKANAME
+             MOVE     1               TO   IDX4
+             MOVE     SUM-SRYKAMAX    TO   IDX-MAX
+             PERFORM  UNTIL   IDX4   >   IDX-MAX
+               IF  S140TMP-SRYKA   =   SUM-SRYKA(IDX4)
+                 MOVE    ZERO         TO   IDX-MAX
+                 MOVE    SUM-SRYKANAME(IDX4)    TO   S140G1-SRYKANAME
                ELSE
-                 ADD     1                      TO    IDX4
+                 ADD     1            TO   IDX4
                END-IF
              END-PERFORM
-      * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART 
+      * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART
       *     END-IF
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëEND
       *
-           IF    S140TMP-NYUGAIKBN      =    "1"
-             MOVE     "Æþ±¡"        TO   S140G1-NYUGAI
+           IF    S140TMP-NYUGAIKBN   =   "1"
+             MOVE     "Æþ±¡"          TO   S140G1-NYUGAI
            ELSE
-             MOVE     "³°Íè"        TO   S140G1-NYUGAI
+             MOVE     "³°Íè"          TO   S140G1-NYUGAI
            END-IF
       *
-           MOVE    WRK-SRYYM        TO   S140G1-SRYYM
-           MOVE    WRK-SEIYMD       TO   S140G1-SYSYMD
+           MOVE    WRK-SRYYM          TO   S140G1-SRYYM
+           MOVE    WRK-SEIYMD         TO   S140G1-SYSYMD
       *
            .
        3102-HEAD-HEN-EXT.
@@ -1115,12 +1157,12 @@
       *****************************************************************
        3103-HEAD-HEN-SEC                 SECTION.
       **
-           INITIALIZE                      S140G2
+           INITIALIZE                       S140G2
       *
       *    ¥Ú¡¼¥¸¿ô
-           ADD     1                TO    CNT-PAGE
-           MOVE    CNT-PAGE         TO    WRK-PAGE
-           MOVE    WRK-PAGE         TO    S140G2-PAGE
+           ADD     1                  TO    CNT-PAGE
+           MOVE    CNT-PAGE           TO    WRK-PAGE
+           MOVE    WRK-PAGE           TO    S140G2-PAGE
       *    ¿ÇÎÅ²ÊÌ¾(µìÁí¹çÉÂ±¡»þ¤Î¤ß)
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART 
       *     IF    SYS-1001-HOSPSBT1  =  1
@@ -1128,25 +1170,25 @@
              MOVE     1               TO    IDX4
              MOVE     SUM-SRYKAMAX    TO    IDX-MAX
              PERFORM  UNTIL    IDX4   >     IDX-MAX
-               IF  S140TMP-SRYKA       =     SUM-SRYKA(IDX4)
-                 MOVE    ZERO                   TO    IDX-MAX
-                 MOVE    SUM-SRYKANAME(IDX4)    TO    S140G2-SRYKANAME
+               IF   S140TMP-SRYKA   =   SUM-SRYKA(IDX4)
+                 MOVE    ZERO         TO    IDX-MAX
+                 MOVE    SUM-SRYKANAME(IDX4)    TO   S140G2-SRYKANAME
                ELSE
-                 ADD     1                      TO    IDX4
+                 ADD     1            TO    IDX4
                END-IF
              END-PERFORM
-      * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART 
+      * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART
       *     END-IF
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëEND
       *
-           IF    S140TMP-NYUGAIKBN      =    "1"
-             MOVE     "Æþ±¡"        TO   S140G2-NYUGAI
+           IF    S140TMP-NYUGAIKBN    =   "1"
+             MOVE     "Æþ±¡"          TO    S140G2-NYUGAI
            ELSE
-             MOVE     "³°Íè"        TO   S140G2-NYUGAI
+             MOVE     "³°Íè"          TO    S140G2-NYUGAI
            END-IF
       *
-           MOVE    WRK-SRYYM        TO   S140G2-SRYYM
-           MOVE    WRK-SEIYMD       TO   S140G2-SYSYMD
+           MOVE    WRK-SRYYM          TO    S140G2-SRYYM
+           MOVE    WRK-SEIYMD         TO    S140G2-SYSYMD
       *
            .
        3103-HEAD-HEN-EXT.
@@ -1158,38 +1200,38 @@
       *****************************************************************
        3104-HEAD-HEN-SEC                 SECTION.
       **
-           INITIALIZE                      S140N1
+           INITIALIZE                 S140N1
       *
       *    ¥Ú¡¼¥¸¿ô
-           ADD     1                TO    CNT-PAGE
-           MOVE    CNT-PAGE         TO    WRK-PAGE
-           MOVE    WRK-PAGE         TO    S140N1-PAGE
+           ADD     1                  TO   CNT-PAGE
+           MOVE    CNT-PAGE           TO   WRK-PAGE
+           MOVE    WRK-PAGE           TO   S140N1-PAGE
       *    ¿ÇÎÅ²ÊÌ¾(µìÁí¹çÉÂ±¡»þ¤Î¤ß)
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART 
       *     IF    SYS-1001-HOSPSBT1  =  1
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëEND
-             MOVE     1               TO    IDX4
-             MOVE     SUM-SRYKAMAX    TO    IDX-MAX
-             PERFORM  UNTIL    IDX4   >     IDX-MAX
-               IF  S140TMP-SRYKA       =     SUM-SRYKA(IDX4)
-                 MOVE    ZERO                   TO    IDX-MAX
-                 MOVE    SUM-SRYKANAME(IDX4)    TO    S140N1-SRYKANAME
+             MOVE     1               TO   IDX4
+             MOVE     SUM-SRYKAMAX    TO   IDX-MAX
+             PERFORM  UNTIL    IDX4   >   IDX-MAX
+               IF  S140TMP-SRYKA   =   SUM-SRYKA(IDX4)
+                 MOVE    ZERO         TO   IDX-MAX
+                 MOVE    SUM-SRYKANAME(IDX4)  TO   S140N1-SRYKANAME
                ELSE
-                 ADD     1                      TO    IDX4
+                 ADD     1            TO   IDX4
                END-IF
              END-PERFORM
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART 
       *     END-IF
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëEND
       *
-           IF    S140TMP-NYUGAIKBN      =    "1"
-             MOVE     "Æþ±¡"        TO   S140N1-NYUGAI
+           IF    S140TMP-NYUGAIKBN   =    "1"
+             MOVE     "Æþ±¡"          TO   S140N1-NYUGAI
            ELSE
-             MOVE     "³°Íè"        TO   S140N1-NYUGAI
+             MOVE     "³°Íè"          TO   S140N1-NYUGAI
            END-IF
       *
-           MOVE    WRK-SRYYM        TO   S140N1-SRYYM
-           MOVE    WRK-SEIYMD       TO   S140N1-SYSYMD
+           MOVE    WRK-SRYYM          TO   S140N1-SRYYM
+           MOVE    WRK-SEIYMD         TO   S140N1-SYSYMD
       *
            .
        3104-HEAD-HEN-EXT.
@@ -1200,41 +1242,41 @@
       *****************************************************************
        3105-HEAD-HEN-SEC                 SECTION.
       **
-           INITIALIZE                      S140N2
+           INITIALIZE                 S140N2
       *
       *    ¥Ú¡¼¥¸¿ô
       * 20040322 ÊÔ½¸ Y.Takahashi
-           ADD     1                TO    CNT-PAGE
-           MOVE    CNT-PAGE         TO    WRK-PAGE
-           MOVE    WRK-PAGE         TO    S140N2-PAGE
+           ADD     1                  TO   CNT-PAGE
+           MOVE    CNT-PAGE           TO   WRK-PAGE
+           MOVE    WRK-PAGE           TO   S140N2-PAGE
       *      *    ¿ÇÎÅ²ÊÌ¾(µìÁí¹çÉÂ±¡»þ¤Î¤ß)
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART 
       *     IF    SYS-1001-HOSPSBT1  =  1
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëEND
-             MOVE     1               TO    IDX4
-             MOVE     SUM-SRYKAMAX    TO    IDX-MAX
-             PERFORM  UNTIL    IDX4   >     IDX-MAX
-               IF  S140TMP-SRYKA       =     SUM-SRYKA(IDX4)
-                 MOVE    ZERO                   TO    IDX-MAX
-                 MOVE    SUM-SRYKANAME(IDX4)    TO    S140N2-SRYKANAME
+             MOVE     1               TO   IDX4
+             MOVE     SUM-SRYKAMAX    TO   IDX-MAX
+             PERFORM  UNTIL  IDX4  >  IDX-MAX
+               IF  S140TMP-SRYKA   =   SUM-SRYKA(IDX4)
+                 MOVE    ZERO         TO   IDX-MAX
+                 MOVE    SUM-SRYKANAME(IDX4)    TO   S140N2-SRYKANAME
                ELSE
-                 ADD     1                      TO    IDX4
+                 ADD     1            TO   IDX4
                END-IF
              END-PERFORM
-      * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART 
+      * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART
       *     END-IF
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëEND
       *
            IF    S140TMP-NYUGAIKBN      =    "1"
-             MOVE     "Æþ±¡"        TO   S140N2-NYUGAI
+             MOVE     "Æþ±¡"          TO   S140N2-NYUGAI
            ELSE
-             MOVE     "³°Íè"        TO   S140N2-NYUGAI
+             MOVE     "³°Íè"          TO   S140N2-NYUGAI
            END-IF
       *
-           MOVE    WRK-SRYYM        TO   S140N2-SRYYM
-           MOVE    WRK-SEIYMD       TO   S140N2-SYSYMD
+           MOVE    WRK-SRYYM          TO   S140N2-SRYYM
+           MOVE    WRK-SEIYMD         TO   S140N2-SYSYMD
       *
-           MOVE    WRK-CITYNAME     TO   S140N2-CITYKBN
+           MOVE    WRK-CITYNAME       TO   S140N2-CITYKBN
       *
            .
        3105-HEAD-HEN-EXT.
@@ -1248,35 +1290,45 @@
       *
       *
            PERFORM    VARYING  IDX1  FROM  1  BY  1
-                      UNTIL    IDX1  >     3
-                      OR       FLG-PASS  = 1
+                      UNTIL    IDX1  >  3
+                      OR    FLG-PASS  = 1
       *    ¸å´ü¹âÎðÊ¬
       *    ·ï¿ô
-             MOVE     S140TMP-KENSU(IDX1)    TO    WRK-Z4
+             MOVE     S140TMP-KENSU(IDX1)   TO    WRK-Z4
              MOVE     WRK-Z4                TO    S140G1-KENSU(IDX1)
       *
       *    Æü¿ô
-             MOVE     S140TMP-NISSU(IDX1)    TO    WRK-Z4
+             MOVE     S140TMP-NISSU(IDX1)   TO    WRK-Z4
              MOVE     WRK-Z4                TO    S140G1-NISSU(IDX1)
       *
       *    ÅÀ¿ô
-             MOVE     S140TMP-TENSU(IDX1)    TO    WRK-Z92
+             MOVE     S140TMP-TENSU(IDX1)   TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140G1-TENSU(IDX1)
       *
       *    Áë¸ýÀÁµá³Û
-             MOVE     S140TMP-MADOGK(IDX1)   TO    WRK-Z92
-             MOVE     WRK-Z92               TO    S140G1-MADOGK(IDX1)
+      *+
+      *       MOVE     S140TMP-MADOGK(IDX1)   TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO    S140G1-MADOGK(IDX1)
+             MOVE     S140TMP-MADOGK(IDX1)  TO    WRK-Z93
+             MOVE     WRK-Z93               TO    S140G1-MADOGK(IDX1)
+      *+
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×
+             MOVE     S140TMP-JIHIGK(IDX1)  TO    WRK-Z92
+             MOVE     WRK-Z92               TO    S140G1-JIHIGK(IDX1)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
-             MOVE     S140TMP-HKNGK(IDX1)    TO    WRK-Z92
+             MOVE     S140TMP-HKNGK(IDX1)   TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140G1-HKNGK(IDX1)
       *
       *    ¸øÈñÀÁµá³Û
-             MOVE     S140TMP-KOHGK(IDX1)    TO    WRK-Z92
+             MOVE     S140TMP-KOHGK(IDX1)   TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140G1-KOHGK(IDX1)
       *
       *    °åÎÅ¼ý±×
-             MOVE     S140TMP-SYUEKI(IDX1)   TO    WRK-Z92
+             MOVE     S140TMP-SYUEKI(IDX1)  TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140G1-SYUEKI(IDX1)
       *
            END-PERFORM
@@ -1285,61 +1337,71 @@
            IF    FLG-PASS  =  ZERO
       *
       *    ·ï¿ô
-             MOVE     S140TMP-GKENSU          TO    WRK-Z4
+             MOVE     S140TMP-GKENSU         TO    WRK-Z4
              MOVE     WRK-Z4                 TO    S140G1-GKENSU
       *
       *    Æü¿ô
-             MOVE     S140TMP-GNISSU          TO    WRK-Z4
+             MOVE     S140TMP-GNISSU         TO    WRK-Z4
              MOVE     WRK-Z4                 TO    S140G1-GNISSU
       *
       *    ÅÀ¿ô
-             MOVE     S140TMP-GTENSU          TO    WRK-Z92
+             MOVE     S140TMP-GTENSU         TO    WRK-Z92
              MOVE     WRK-Z92                TO    S140G1-GTENSU
       *
       *    Áë¸ýÀÁµá³Û
-             MOVE     S140TMP-GMADOGK         TO    WRK-Z92
-             MOVE     WRK-Z92                TO    S140G1-GMADOGK
+      *+
+      *       MOVE     S140TMP-GMADOGK         TO    WRK-Z92
+      *       MOVE     WRK-Z92                TO    S140G1-GMADOGK
+             MOVE     S140TMP-GMADOGK        TO    WRK-Z93
+             MOVE     WRK-Z93                TO    S140G1-GMADOGK
+      *+
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×
+             MOVE     S140TMP-GJIHIGK        TO    WRK-Z92
+             MOVE     WRK-Z92                TO    S140G1-GJIHIGK
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
-             MOVE     S140TMP-GHKNGK          TO    WRK-Z92
+             MOVE     S140TMP-GHKNGK         TO    WRK-Z92
              MOVE     WRK-Z92                TO    S140G1-GHKNGK
       *
       *    ¸øÈñÀÁµá³Û
-             MOVE     S140TMP-GKOHGK          TO    WRK-Z92
+             MOVE     S140TMP-GKOHGK         TO    WRK-Z92
              MOVE     WRK-Z92                TO    S140G1-GKOHGK
       *
       *    °åÎÅ¼ý±×
-             MOVE     S140TMP-GSYUEKI         TO    WRK-Z92
+             MOVE     S140TMP-GSYUEKI        TO    WRK-Z92
              MOVE     WRK-Z92                TO    S140G1-GSYUEKI
            END-IF
       *
       *    ¸å´ü¹âÎð¡¦¸øÈñÊ¬
            PERFORM  VARYING  IDX3  FROM  1  BY  1
-                    UNTIL    IDX3  >     20
-                    OR       S140TMP-KOH1-KEY(WRK-CNT1)  =  SPACE
+                    UNTIL    IDX3   >  20
+                    OR    S140TMP-KOH1-KEY(WRK-CNT1)  =  SPACE
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃSTART
       *              OR       WRK-CNT1  >  100
-                    OR       WRK-CNT1  >  300
+                    OR    WRK-CNT1  >  300
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃEND
       *    ¸øÈñÌ¾
              INITIALIZE                            WRK-KOHTMP-KEY
-             MOVE     S140TMP-KOH1-KEY(WRK-CNT1)  TO WRK-KOHTMP-KEY
+             MOVE     S140TMP-KOH1-KEY(WRK-CNT1)   TO    WRK-KOHTMP-KEY
              PERFORM  333-KOHNAME-HEN-SEC
-             MOVE     WRK-KOHNAME-G  TO
-                                                   S140G1-KOHNAME(IDX3)
+             MOVE     WRK-KOHNAME-G          TO    S140G1-KOHNAME(IDX3)
+      *
       *    ·ï¿ô
-             MOVE     S140TMP-KKENSU(WRK-CNT1)   TO    WRK-Z4
+             MOVE     S140TMP-KKENSU(WRK-CNT1)     TO    WRK-Z4
              MOVE     WRK-Z4                 TO    S140G1-KKENSU(IDX3)
       *
       *    Æü¿ô
-             MOVE     S140TMP-KNISSU(WRK-CNT1)      TO    WRK-Z4
+             MOVE     S140TMP-KNISSU(WRK-CNT1)     TO    WRK-Z4
              MOVE     WRK-Z4                 TO    S140G1-KNISSU(IDX3)
       *
       *    ÅÀ¿ô
-             MOVE     S140TMP-KTENSU(WRK-CNT1)      TO    WRK-Z92
+             MOVE     S140TMP-KTENSU(WRK-CNT1)     TO    WRK-Z92
              MOVE     WRK-Z92                TO    S140G1-KTENSU(IDX3)
              ADD      1                      TO    WRK-CNT1
-           END-PERFORM     
+           END-PERFORM
       *
            .
        3202-BODY-HEN-EXT.
@@ -1352,8 +1414,8 @@
       *
       *
            PERFORM    VARYING  IDX1  FROM  1  BY  1
-                      UNTIL    IDX1  >     3
-                      OR       FLG-PASS  = 1
+                      UNTIL    IDX1  >   3
+                      OR    FLG-PASS  =  1
       *    ¸å´ü¹âÎðÊ¬
       *    ·ï¿ô
              MOVE     S140TMP-KENSU(IDX1)    TO    WRK-Z4
@@ -1368,8 +1430,18 @@
              MOVE     WRK-Z92                TO    S140N1-TENSU(IDX1)
       *
       *    Áë¸ýÀÁµá³Û
-             MOVE     S140TMP-MADOGK(IDX1)   TO    WRK-Z92
-             MOVE     WRK-Z92                TO    S140N1-MADOGK(IDX1)
+      *+
+      *+       MOVE     S140TMP-MADOGK(IDX1)   TO    WRK-Z92
+      *+       MOVE     WRK-Z92                TO    S140N1-MADOGK(IDX1)
+             MOVE     S140TMP-MADOGK(IDX1)   TO    WRK-Z93
+             MOVE     WRK-Z93                TO    S140N1-MADOGK(IDX1)
+      *+
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×
+             MOVE     S140TMP-JIHIGK(IDX1)   TO    WRK-Z92
+             MOVE     WRK-Z92                TO    S140N1-JIHIGK(IDX1)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S140TMP-HKNGK(IDX1)    TO    WRK-Z92
@@ -1399,32 +1471,31 @@
       *
       *    ¸å´ü¹âÎð¡¦¸øÈñÊ¬
            PERFORM  VARYING  IDX3  FROM  1  BY  1
-                    UNTIL    IDX3  >     20
-                    OR       S140TMP-KOH1-KEY(WRK-CNT1)  =  SPACE
+                    UNTIL    IDX3  >  20
+                    OR    S140TMP-KOH1-KEY(WRK-CNT1)  =  SPACE
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃSTART
       *              OR       WRK-CNT1  >  100
-                    OR       WRK-CNT1  >  300
+                    OR    WRK-CNT1  >  300
       * 20081014 »ÔÄ®Â¼¤´¤È¤Î½¸·×¤òÄÉ²ÃEND
       *
       *    ¸øÈñÌ¾
              INITIALIZE                            WRK-KOHTMP-KEY
-             MOVE     S140TMP-KOH1-KEY(WRK-CNT1)  TO WRK-KOHTMP-KEY
+             MOVE     S140TMP-KOH1-KEY(WRK-CNT1)    TO    WRK-KOHTMP-KEY
              PERFORM  333-KOHNAME-HEN-SEC
-             MOVE     WRK-KOHNAME-G          TO
-                                                   S140N1-KOHNAME(IDX3)
+             MOVE     WRK-KOHNAME-G      TO    S140N1-KOHNAME(IDX3)
       *    ·ï¿ô
-             MOVE     S140TMP-KKENSU(WRK-CNT1)   TO    WRK-Z4
-             MOVE     WRK-Z4                 TO    S140N1-KKENSU(IDX3)
+             MOVE     S140TMP-KKENSU(WRK-CNT1)      TO    WRK-Z4
+             MOVE     WRK-Z4             TO    S140N1-KKENSU(IDX3)
       *
       *    Æü¿ô
              MOVE     S140TMP-KNISSU(WRK-CNT1)      TO    WRK-Z4
-             MOVE     WRK-Z4                 TO    S140N1-KNISSU(IDX3)
+             MOVE     WRK-Z4             TO    S140N1-KNISSU(IDX3)
       *     
       *    ÅÀ¿ô
              MOVE     S140TMP-KTENSU(WRK-CNT1)      TO    WRK-Z92
-             MOVE     WRK-Z92                TO    S140N1-KTENSU(IDX3)
-             ADD      1                      TO    WRK-CNT1
-           END-PERFORM     
+             MOVE     WRK-Z92            TO    S140N1-KTENSU(IDX3)
+             ADD      1                  TO    WRK-CNT1
+           END-PERFORM
       *
       *    ¹ç·×
            IF    FLG-PASS  =  ZERO
@@ -1442,8 +1513,18 @@
              MOVE     WRK-Z92               TO    S140N1-GTENSU
       *
       *    Áë¸ýÀÁµá³Û
-             MOVE     S140TMP-GMADOGK       TO    WRK-Z92
-             MOVE     WRK-Z92               TO    S140N1-GMADOGK
+      *+
+      *       MOVE     S140TMP-GMADOGK       TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO    S140N1-GMADOGK
+             MOVE     S140TMP-GMADOGK       TO    WRK-Z93
+             MOVE     WRK-Z93               TO    S140N1-GMADOGK
+      *+
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×
+             MOVE     S140TMP-GJIHIGK       TO    WRK-Z92
+             MOVE     WRK-Z92               TO    S140N1-GJIHIGK
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S140TMP-GHKNGK        TO    WRK-Z92
@@ -1480,12 +1561,11 @@
       *****************************************************************
        3203-BODY-HEN-SEC               SECTION.
       *
-      *
       *    ¸å´ü¹âÎð¡¦ÊÝ¸±¼ÔÊ¬
            PERFORM  VARYING  IDX3  FROM  1  BY  1
                     UNTIL    IDX3  >     55
-                    OR       S140TMP-HKNJANUM(WRK-CNT3)  =  SPACE
-                    OR       WRK-CNT3  >  300
+                    OR   S140TMP-HKNJANUM(WRK-CNT3)  =  SPACE
+                    OR   WRK-CNT3   >   300
       *
       *    ÊÝ¸±¼ÔÌ¾
              INITIALIZE                             WRK-HKNJANUM
@@ -1505,23 +1585,32 @@
              MOVE     WRK-Z92               TO    S140G2-TENSU(IDX3)
       *
       *    Áë¸ýÀÁµá³Û
-             MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
-             MOVE     WRK-Z92               TO    S140G2-MADOGK(IDX3)
+      *+
+      *       MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO    S140G2-MADOGK(IDX3)
+             MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z93
+             MOVE     WRK-Z93               TO    S140G2-MADOGK(IDX3)
+      *+
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×
+             MOVE     S140TMP-HJIHIGK(WRK-CNT3)   TO    WRK-Z92
+             MOVE     WRK-Z92               TO    S140G2-JIHIGK(IDX3)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S140TMP-HHKNGK(WRK-CNT3)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140G2-HKNGK(IDX3)
       *
       *    ¸øÈñÀÁµá³Û
-             MOVE     S140TMP-HKOHGK(WRK-CNT3)   TO    WRK-Z92
+             MOVE     S140TMP-HKOHGK(WRK-CNT3)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140G2-KOHGK(IDX3)
       *
       *    °åÎÅ¼ý±×
              MOVE     S140TMP-HSYUEKI(WRK-CNT3)   TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140G2-SYUEKI(IDX3)
              ADD      1                     TO    WRK-CNT3
-           END-PERFORM     
-      *
+           END-PERFORM
            .
        3203-BODY-HEN-EXT.
            EXIT.
@@ -1535,15 +1624,15 @@
       *
       *    ¸å´ü¹âÎð¡¦ÊÝ¸±¼ÔÊ¬
            PERFORM  VARYING  IDX3  FROM  1  BY  1
-                    UNTIL    IDX3  >     55
-                    OR       S140TMP-HKNJANUM(WRK-CNT3)  =  SPACE
-                    OR       WRK-CNT3  >  300
+                    UNTIL    IDX3  >  55
+                    OR   S140TMP-HKNJANUM(WRK-CNT3)  =  SPACE
+                    OR   WRK-CNT3  >  300
       *
       *    ÊÝ¸±¼ÔÌ¾
-             INITIALIZE                             WRK-HKNJANUM
-             MOVE     S140TMP-HKNJANUM(WRK-CNT3)  TO WRK-HKNJANUM
+             INITIALIZE           WRK-HKNJANUM
+             MOVE     S140TMP-HKNJANUM(WRK-CNT3)  TO    WRK-HKNJANUM
              PERFORM  920-HKNJAINF-SET-SEC
-             MOVE     WRK-HKNJANAME  TO    S140N2-HKNJANAME(IDX3)
+             MOVE     WRK-HKNJANAME         TO    S140N2-HKNJANAME(IDX3)
       *    ·ï¿ô
              MOVE     S140TMP-HKENSU(WRK-CNT3)    TO    WRK-Z4
              MOVE     WRK-Z4                TO    S140N2-KENSU(IDX3)
@@ -1557,15 +1646,25 @@
              MOVE     WRK-Z92               TO    S140N2-TENSU(IDX3)
       *
       *    Áë¸ýÀÁµá³Û
-             MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
-             MOVE     WRK-Z92               TO    S140N2-MADOGK(IDX3)
+      *+
+      *       MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO    S140N2-MADOGK(IDX3)
+             MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z93
+             MOVE     WRK-Z93               TO    S140N2-MADOGK(IDX3)
+      *+
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×
+             MOVE     S140TMP-HJIHIGK(WRK-CNT3)   TO    WRK-Z92
+             MOVE     WRK-Z92               TO    S140N2-JIHIGK(IDX3)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S140TMP-HHKNGK(WRK-CNT3)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140N2-HKNGK(IDX3)
       *
       *    ¸øÈñÀÁµá³Û
-             MOVE     S140TMP-HKOHGK(WRK-CNT3)   TO    WRK-Z92
+             MOVE     S140TMP-HKOHGK(WRK-CNT3)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140N2-KOHGK(IDX3)
       *
       *    °åÎÅ¼ý±×
@@ -1573,18 +1672,18 @@
              MOVE     WRK-Z92               TO    S140N2-SYUEKI(IDX3)
       ***  ¿©»öÎÅÍÜ
       *    Æü¿ô
-             MOVE     S140TMP-HSNISSU(WRK-CNT3)    TO    WRK-Z4
+             MOVE     S140TMP-HSNISSU(WRK-CNT3)   TO    WRK-Z4
              MOVE     WRK-Z4                TO    S140N2-SNISSU(IDX3)
       *
       *    ÀÁµá³Û
-             MOVE     S140TMP-HSSEIKYU(WRK-CNT3)   TO    WRK-Z92
+             MOVE     S140TMP-HSSEIKYU(WRK-CNT3)  TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140N2-SSEIKYU(IDX3)
       *
       *    É¸½àÉéÃ´³Û
-             MOVE     S140TMP-HSFTNGK(WRK-CNT3)    TO    WRK-Z92
+             MOVE     S140TMP-HSFTNGK(WRK-CNT3)   TO    WRK-Z92
              MOVE     WRK-Z92               TO    S140N2-SFTNGK(IDX3)
-             ADD      1                      TO    WRK-CNT3
-           END-PERFORM     
+             ADD      1                     TO    WRK-CNT3
+           END-PERFORM
       *
       *
            .
@@ -1596,39 +1695,34 @@
       *****************************************************************
        330-PRINT-OUT-SEC         SECTION.
       *
-      * 
-           INITIALIZE                          ORCSPRTAREA
-           MOVE    "INS"                     TO  SPRT-MODE
-           MOVE    S100LNK-PRTKANRI-RENNUM   TO  SPRT-RENNUM
-           MOVE    S100LNK-PRTKANRI-TBL-KEY
-                                             TO  SPRT-TBL-KEY
-           MOVE    S100LNK-PRTKANRI-TBL-GROUP
-                                             TO  SPRT-TBL-GROUP
-           MOVE    S100LNK-PRTKANRI-SRYYM    TO  SPRT-SRYYM
-           MOVE    S100LNK-PRTKANRI-SKYYMD   TO  SPRT-SKYYMD
-           MOVE    S100LNK-PRTKANRI-SHELLID 
-                                             TO  SPRT-SHELLID
+           INITIALIZE                        ORCSPRTAREA
+           MOVE    "INS"                       TO   SPRT-MODE
+           MOVE    S100LNK-PRTKANRI-RENNUM     TO   SPRT-RENNUM
+           MOVE    S100LNK-PRTKANRI-TBL-KEY    TO   SPRT-TBL-KEY
+           MOVE    S100LNK-PRTKANRI-TBL-GROUP  TO   SPRT-TBL-GROUP
+           MOVE    S100LNK-PRTKANRI-SRYYM      TO   SPRT-SRYYM
+           MOVE    S100LNK-PRTKANRI-SKYYMD     TO   SPRT-SKYYMD
+           MOVE    S100LNK-PRTKANRI-SHELLID    TO   SPRT-SHELLID
            MOVE    S100LNK-PRTKANRI-SHORI-RENNUM
-                                             TO  SPRT-SHORI-RENNUM
-           MOVE    S100LNK-PRTKANRI-PRIORITY
-                                             TO  SPRT-PRIORITY
+                                               TO   SPRT-SHORI-RENNUM
+           MOVE    S100LNK-PRTKANRI-PRIORITY   TO   SPRT-PRIORITY
       *--- 2008/10/23  CHANGE  START -----------------------------------
       *     MOVE    "A00000S140G.red"         TO  SPRT-PRTID
-           MOVE    "A00000S140G1.red"         TO  SPRT-PRTID
+           MOVE    "A00000S140G1.red"          TO   SPRT-PRTID
       *--- 2008/10/23  CHANGE  END -----------------------------------
-           MOVE    S100LNK-SPRT-TITLE        TO  SPRT-TITLE
-           MOVE    S140G1                    TO  SPRT-PRTDATA
-           MOVE    S100LNK-PRTKANRI-TERMID   TO  SPRT-TERMID
-           MOVE    S100LNK-PRTKANRI-OPID     TO  SPRT-OPID
-           MOVE    S100LNK-PRTKANRI-PRTNM    TO  SPRT-PRTNM
-           CALL    "ORCSPRT"                 USING
-                                             ORCSPRTAREA
-                                             SPA-AREA
-           IF  SPRT-RETURN         =   ZERO
-               CONTINUE               ELSE
-               MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
-                                             TO  WRK-RECEERR
-	           PERFORM 500-ERR-HENSYU-SEC                           
+           MOVE    S100LNK-SPRT-TITLE          TO   SPRT-TITLE
+           MOVE    S140G1                      TO   SPRT-PRTDATA
+           MOVE    S100LNK-PRTKANRI-TERMID     TO   SPRT-TERMID
+           MOVE    S100LNK-PRTKANRI-OPID       TO   SPRT-OPID
+           MOVE    S100LNK-PRTKANRI-PRTNM      TO   SPRT-PRTNM
+           CALL    "ORCSPRT"                   USING
+                                               ORCSPRTAREA
+                                               SPA-AREA
+           IF   SPRT-RETURN   =   ZERO
+             CONTINUE            
+           ELSE
+             MOVE   "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"   TO   WRK-RECEERR
+             PERFORM 500-ERR-HENSYU-SEC
 	       END-IF
            .
        330-PRINT-OUT-EXT.
@@ -1642,34 +1736,29 @@
       *
       * 
            INITIALIZE                  ORCSPRTAREA
-           MOVE    "INS"               TO  SPRT-MODE
-           MOVE    S100LNK-PRTKANRI-RENNUM TO  SPRT-RENNUM
-           MOVE    S100LNK-PRTKANRI-TBL-KEY
-                                       TO  SPRT-TBL-KEY
-           MOVE    S100LNK-PRTKANRI-TBL-GROUP
-                                       TO  SPRT-TBL-GROUP
-           MOVE    S100LNK-PRTKANRI-SRYYM  TO  SPRT-SRYYM
-           MOVE    S100LNK-PRTKANRI-SKYYMD TO  SPRT-SKYYMD
-           MOVE    S100LNK-PRTKANRI-SHELLID 
-                                       TO  SPRT-SHELLID
-           MOVE    S100LNK-PRTKANRI-SHORI-RENNUM
-                                       TO  SPRT-SHORI-RENNUM
-           MOVE    S100LNK-PRTKANRI-PRIORITY
-                                       TO  SPRT-PRIORITY
-           MOVE   "A00000S140G2.red"         TO  SPRT-PRTID
-           MOVE    S100LNK-SPRT-TITLE  TO  SPRT-TITLE
-           MOVE    S140G2                TO  SPRT-PRTDATA
-           MOVE    S100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-           MOVE    S100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-           MOVE    S100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
+           MOVE    "INS"                      TO   SPRT-MODE
+           MOVE    S100LNK-PRTKANRI-RENNUM    TO   SPRT-RENNUM
+           MOVE    S100LNK-PRTKANRI-TBL-KEY   TO   SPRT-TBL-KEY
+           MOVE    S100LNK-PRTKANRI-TBL-GROUP TO   SPRT-TBL-GROUP
+           MOVE    S100LNK-PRTKANRI-SRYYM     TO   SPRT-SRYYM
+           MOVE    S100LNK-PRTKANRI-SKYYMD    TO   SPRT-SKYYMD
+           MOVE    S100LNK-PRTKANRI-SHELLID   TO   SPRT-SHELLID
+           MOVE    S100LNK-PRTKANRI-SHORI-RENNUM  TO   SPRT-SHORI-RENNUM
+           MOVE    S100LNK-PRTKANRI-PRIORITY  TO   SPRT-PRIORITY
+           MOVE    "A00000S140G2.red"         TO   SPRT-PRTID
+           MOVE    S100LNK-SPRT-TITLE         TO   SPRT-TITLE
+           MOVE    S140G2                     TO   SPRT-PRTDATA
+           MOVE    S100LNK-PRTKANRI-TERMID    TO   SPRT-TERMID
+           MOVE    S100LNK-PRTKANRI-OPID      TO   SPRT-OPID
+           MOVE    S100LNK-PRTKANRI-PRTNM     TO   SPRT-PRTNM
            CALL    "ORCSPRT"           USING
                                        ORCSPRTAREA
                                        SPA-AREA
-           IF  SPRT-RETURN         =   ZERO
-               CONTINUE               ELSE
-               MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
-                                     TO  WRK-RECEERR
-	           PERFORM 500-ERR-HENSYU-SEC                           
+           IF  SPRT-RETURN   =   ZERO
+             CONTINUE               ELSE
+             MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
+                                   TO  WRK-RECEERR
+	         PERFORM   500-ERR-HENSYU-SEC
 	       END-IF
            .
        340-PRINT-OUT-EXT.
@@ -1682,34 +1771,29 @@
       *
       * 
            INITIALIZE                  ORCSPRTAREA
-           MOVE    "INS"               TO  SPRT-MODE
-           MOVE    S100LNK-PRTKANRI-RENNUM TO  SPRT-RENNUM
-           MOVE    S100LNK-PRTKANRI-TBL-KEY
-                                       TO  SPRT-TBL-KEY
-           MOVE    S100LNK-PRTKANRI-TBL-GROUP
-                                       TO  SPRT-TBL-GROUP
-           MOVE    S100LNK-PRTKANRI-SRYYM  TO  SPRT-SRYYM
-           MOVE    S100LNK-PRTKANRI-SKYYMD TO  SPRT-SKYYMD
-           MOVE    S100LNK-PRTKANRI-SHELLID 
-                                       TO  SPRT-SHELLID
-           MOVE    S100LNK-PRTKANRI-SHORI-RENNUM
-                                       TO  SPRT-SHORI-RENNUM
-           MOVE    S100LNK-PRTKANRI-PRIORITY
-                                       TO  SPRT-PRIORITY
-           MOVE   "A00000S140N2.red"         TO  SPRT-PRTID
-           MOVE    S100LNK-SPRT-TITLE  TO  SPRT-TITLE
-           MOVE    S140N2                TO  SPRT-PRTDATA
-           MOVE    S100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-           MOVE    S100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-           MOVE    S100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
+           MOVE    "INS"                       TO   SPRT-MODE
+           MOVE    S100LNK-PRTKANRI-RENNUM     TO   SPRT-RENNUM
+           MOVE    S100LNK-PRTKANRI-TBL-KEY    TO   SPRT-TBL-KEY
+           MOVE    S100LNK-PRTKANRI-TBL-GROUP  TO   SPRT-TBL-GROUP
+           MOVE    S100LNK-PRTKANRI-SRYYM      TO   SPRT-SRYYM
+           MOVE    S100LNK-PRTKANRI-SKYYMD     TO   SPRT-SKYYMD
+           MOVE    S100LNK-PRTKANRI-SHELLID    TO   SPRT-SHELLID
+           MOVE    S100LNK-PRTKANRI-SHORI-RENNUM  TO   SPRT-SHORI-RENNUM
+           MOVE    S100LNK-PRTKANRI-PRIORITY   TO   SPRT-PRIORITY
+           MOVE   "A00000S140N2.red"           TO   SPRT-PRTID
+           MOVE    S100LNK-SPRT-TITLE          TO   SPRT-TITLE
+           MOVE    S140N2                      TO   SPRT-PRTDATA
+           MOVE    S100LNK-PRTKANRI-TERMID     TO   SPRT-TERMID
+           MOVE    S100LNK-PRTKANRI-OPID       TO   SPRT-OPID
+           MOVE    S100LNK-PRTKANRI-PRTNM      TO   SPRT-PRTNM
            CALL    "ORCSPRT"           USING
                                        ORCSPRTAREA
                                        SPA-AREA
-           IF  SPRT-RETURN         =   ZERO
-               CONTINUE               ELSE
-               MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
-                                     TO  WRK-RECEERR
-	           PERFORM 500-ERR-HENSYU-SEC                           
+           IF  SPRT-RETURN   =   ZERO
+             CONTINUE               ELSE
+             MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
+                                   TO  WRK-RECEERR
+	         PERFORM   500-ERR-HENSYU-SEC
 	       END-IF
            .
        360-PRINT-OUT-EXT.
@@ -1723,29 +1807,27 @@
       *
       * 
            INITIALIZE                  ORCSPRTAREA
-           MOVE    "INS"                     TO  SPRT-MODE
-           MOVE    S100LNK-PRTKANRI-RENNUM   TO  SPRT-RENNUM
+           MOVE    "INS"                     TO   SPRT-MODE
+           MOVE    S100LNK-PRTKANRI-RENNUM   TO   SPRT-RENNUM
            MOVE    S100LNK-PRTKANRI-TBL-KEY
-                                             TO  SPRT-TBL-KEY
+                                             TO   SPRT-TBL-KEY
            MOVE    S100LNK-PRTKANRI-TBL-GROUP
-                                             TO  SPRT-TBL-GROUP
-           MOVE    S100LNK-PRTKANRI-SRYYM    TO  SPRT-SRYYM
-           MOVE    S100LNK-PRTKANRI-SKYYMD   TO  SPRT-SKYYMD
+                                             TO   SPRT-TBL-GROUP
+           MOVE    S100LNK-PRTKANRI-SRYYM    TO   SPRT-SRYYM
+           MOVE    S100LNK-PRTKANRI-SKYYMD   TO   SPRT-SKYYMD
            MOVE    S100LNK-PRTKANRI-SHELLID 
-                                             TO  SPRT-SHELLID
-           MOVE    S100LNK-PRTKANRI-SHORI-RENNUM
-                                             TO  SPRT-SHORI-RENNUM
-           MOVE    S100LNK-PRTKANRI-PRIORITY
-                                             TO  SPRT-PRIORITY
+                                             TO   SPRT-SHELLID
+           MOVE    S100LNK-PRTKANRI-SHORI-RENNUM  TO   SPRT-SHORI-RENNUM
+           MOVE    S100LNK-PRTKANRI-PRIORITY TO   SPRT-PRIORITY
       *--- 2008/10/23  CHANGE  START -----------------------------------
       *     MOVE   "A00000S140N.red"          TO  SPRT-PRTID
-           MOVE   "A00000S140N1.red"          TO  SPRT-PRTID
+           MOVE   "A00000S140N1.red"         TO   SPRT-PRTID
       *--- 2008/10/23  CHANGE  END -----------------------------------
-           MOVE    S100LNK-SPRT-TITLE        TO  SPRT-TITLE
-           MOVE    S140N1                    TO  SPRT-PRTDATA
-           MOVE    S100LNK-PRTKANRI-TERMID   TO  SPRT-TERMID
-           MOVE    S100LNK-PRTKANRI-OPID     TO  SPRT-OPID
-           MOVE    S100LNK-PRTKANRI-PRTNM    TO  SPRT-PRTNM
+           MOVE    S100LNK-SPRT-TITLE        TO   SPRT-TITLE
+           MOVE    S140N1                    TO   SPRT-PRTDATA
+           MOVE    S100LNK-PRTKANRI-TERMID   TO   SPRT-TERMID
+           MOVE    S100LNK-PRTKANRI-OPID     TO   SPRT-OPID
+           MOVE    S100LNK-PRTKANRI-PRTNM    TO   SPRT-PRTNM
            CALL    "ORCSPRT"                 USING
                                              ORCSPRTAREA
                                              SPA-AREA
@@ -1753,7 +1835,7 @@
                CONTINUE                ELSE
                MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
                                      TO  WRK-RECEERR
-	           PERFORM 500-ERR-HENSYU-SEC                           
+	           PERFORM 500-ERR-HENSYU-SEC
 	       END-IF
            .
        350-PRINT-OUT-EXT.
@@ -1766,7 +1848,7 @@
       *
            MOVE    SPACE                 TO    WRK-KOHNAME-G
                                                WRK-KOHNAME-G2
-           MOVE    WRK-KOHTMP-KOHNUM     TO  WRK-KOHNUM
+           MOVE    WRK-KOHTMP-KOHNUM     TO    WRK-KOHNUM
            PERFORM  950-HKNNUM-SET-SEC
            IF    WRK-KOHNUM    =    "051"
                MOVE    "ÆÃÄê¼À´µ"    TO    HKN-TANSEIDONAME
@@ -1795,37 +1877,37 @@
       *****************************************************************
        900-SYSKANRI-INV-SEC         SECTION.
       *
-           MOVE    "DBSELECT"              TO  MCP-FUNC
-           MOVE    "tbl_syskanri"          TO  MCP-TABLE
-           MOVE    "key"                   TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"             USING
-                                           MCPAREA
-                                           MCPDATA-REC
-                                           SPA-AREA
+           MOVE    "DBSELECT"            TO   MCP-FUNC
+           MOVE    "tbl_syskanri"        TO   MCP-TABLE
+           MOVE    "key"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
            IF   MCP-RC     =   ZERO
-               MOVE    "DBFETCH"           TO  MCP-FUNC
-               MOVE    "tbl_syskanri"      TO  MCP-TABLE
-               MOVE    "key"               TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"         USING
-                                           MCPAREA
-                                           MCPDATA-REC
-                                           SPA-AREA
-               IF      MCP-RC              =   ZERO
-                   MOVE    ZERO            TO  FLG-SYSKANRI
-               ELSE
-                   MOVE    1               TO  FLG-SYSKANRI
-               END-IF
+             MOVE    "DBFETCH"           TO   MCP-FUNC
+             MOVE    "tbl_syskanri"      TO   MCP-TABLE
+             MOVE    "key"               TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+             IF      MCP-RC              =   ZERO
+               MOVE    ZERO              TO   FLG-SYSKANRI
+             ELSE
+               MOVE    1                 TO   FLG-SYSKANRI
+             END-IF
            ELSE
-               MOVE    1                   TO  FLG-SYSKANRI
+             MOVE    1                   TO   FLG-SYSKANRI
            END-IF
       *
-           MOVE    "DBCLOSECURSOR"         TO  MCP-FUNC
-           MOVE    "tbl_syskanri"          TO  MCP-TABLE
-           MOVE    "key"                   TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"             USING
-                                           MCPAREA
-                                           MCPDATA-REC
-                                           SPA-AREA
+           MOVE    "DBCLOSECURSOR"       TO   MCP-FUNC
+           MOVE    "tbl_syskanri"        TO   MCP-TABLE
+           MOVE    "key"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
       *
            .
        900-SYSKANRI-INV-EXT.
@@ -1836,19 +1918,19 @@
       *****************************************************************
        820-SYSKANRI-DBSELECT-SEC                 SECTION.
       *
-           MOVE    SYS-1005-REC        TO  MCPDATA-REC
-           MOVE    "DBSELECT"          TO  MCP-FUNC
-           MOVE    "tbl_syskanri"      TO  MCP-TABLE
-           MOVE    "key2"              TO  MCP-PATHNAME
+           MOVE    SYS-1005-REC        TO   MCPDATA-REC
+           MOVE    "DBSELECT"          TO   MCP-FUNC
+           MOVE    "tbl_syskanri"      TO   MCP-TABLE
+           MOVE    "key2"              TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-           IF      MCP-RC     =   ZERO
-               PERFORM 820-SYSKANRI-DBFETCH-SEC
+           IF  MCP-RC   =   ZERO
+             PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
-               MOVE    1               TO    FLG-SYSKANRI3
-           END-IF        
+             MOVE    1                 TO   FLG-SYSKANRI3
+           END-IF
            .
        820-SYSKANRI-DBSELECT-EXT.
            EXIT.
@@ -1858,18 +1940,18 @@
       *****************************************************************
        820-SYSKANRI-DBFETCH-SEC                SECTION.
       *
-           MOVE    "DBFETCH"           TO  MCP-FUNC
-           MOVE    "tbl_syskanri"      TO  MCP-TABLE
-           MOVE    "key2"              TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-           IF      MCP-RC          =   ZERO
-               MOVE    ZERO            TO  FLG-SYSKANRI3
-               MOVE    MCPDATA-REC     TO  SYS-1005-REC
+           MOVE    "DBFETCH"         TO   MCP-FUNC
+           MOVE    "tbl_syskanri"    TO   MCP-TABLE
+           MOVE    "key2"            TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF    MCP-RC   =   ZERO
+             MOVE    ZERO            TO   FLG-SYSKANRI3
+             MOVE    MCPDATA-REC     TO   SYS-1005-REC
            ELSE
-               MOVE    1               TO  FLG-SYSKANRI3
+             MOVE    1               TO   FLG-SYSKANRI3
            END-IF  
            .
        820-SYSKANRI-DBFETCH-EXT.
@@ -1880,9 +1962,9 @@
       *****************************************************************
        820-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
-           MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key2"               TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE    "tbl_syskanri"       TO   MCP-TABLE
+           MOVE    "key2"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -1896,13 +1978,14 @@
       *****************************************************************
        31012-SEIWA-HEN-SEC        SECTION.
       *
-           INITIALIZE                      STS-AREA-DAY
-           INITIALIZE                      LNK-DAY2-AREA
-           MOVE    "21"                TO  LNK-DAY2-IRAI
-           MOVE    WRK-SYMD            TO  LNK-DAY2-YMD
-           CALL    "ORCSDAY"           USING   STS-AREA-DAY
-                                               LNK-DAY2-AREA
-           MOVE    LNK-DAY2-EDTYMD3    TO  WRK-HENYMDG
+           INITIALIZE                  STS-AREA-DAY
+           INITIALIZE                  LNK-DAY2-AREA
+           MOVE    "21"                TO   LNK-DAY2-IRAI
+           MOVE    WRK-SYMD            TO   LNK-DAY2-YMD
+           CALL    "ORCSDAY"           USING
+                                       STS-AREA-DAY
+                                       LNK-DAY2-AREA
+           MOVE    LNK-DAY2-EDTYMD3    TO   WRK-HENYMDG
            INSPECT WRK-HENYMDG    REPLACING  ALL "  "  BY  "  "
            .
        31012-SEIWA-HEN-EXT.
@@ -1913,13 +1996,14 @@
       *****************************************************************
        31012-LASTDAY-GET-SEC        SECTION.
       *
-           INITIALIZE            STS-AREA-DAY
-           INITIALIZE            LNK-DAY7-AREA
-           MOVE    "71"          TO  LNK-DAY7-IRAI
-           MOVE    WRK-SYMD      TO  LNK-DAY7-YM
-           CALL    "ORCSDAY"     USING   STS-AREA-DAY
-                                        LNK-DAY7-AREA
-           MOVE LNK-DAY7-KOYOMI  TO  WRK-SYMD
+           INITIALIZE                STS-AREA-DAY
+           INITIALIZE                LNK-DAY7-AREA
+           MOVE    "71"              TO   LNK-DAY7-IRAI
+           MOVE    WRK-SYMD          TO   LNK-DAY7-YM
+           CALL    "ORCSDAY"         USING
+                                     STS-AREA-DAY
+                                     LNK-DAY7-AREA
+           MOVE    LNK-DAY7-KOYOMI   TO   WRK-SYMD
            .
        31012-LASTDAY-GET-EXT.
            EXIT.
@@ -1929,18 +2013,17 @@
       *****************************************************************
        2009-HENKAN-SEC                 SECTION.
       *
-           INITIALIZE                  WRK-OUT-INPUT
+           INITIALIZE                    WRK-OUT-INPUT
       *
-           INITIALIZE                  ORCSKANACHKAREA
-           MOVE    "2"                 TO  KANACHK-SYORI
-           MOVE    WRK-MAE-INPUT       TO  KANACHK-MAE-INPUT
-           CALL    "ORCSKANACHK"       USING
-                                       ORCSKANACHKAREA
-           IF      KANACHK-RC          =   ZERO
-               MOVE    KANACHK-OUT-INPUT
-                                       TO  WRK-OUT-INPUT
+           INITIALIZE                    ORCSKANACHKAREA
+           MOVE    "2"                   TO   KANACHK-SYORI
+           MOVE    WRK-MAE-INPUT         TO   KANACHK-MAE-INPUT
+           CALL    "ORCSKANACHK"         USING
+                                         ORCSKANACHKAREA
+           IF   KANACHK-RC   =   ZERO
+             MOVE    KANACHK-OUT-INPUT   TO   WRK-OUT-INPUT
            ELSE
-               MOVE    WRK-MAE-INPUT   TO  WRK-OUT-INPUT
+             MOVE    WRK-MAE-INPUT       TO   WRK-OUT-INPUT
            END-IF
       *
            .
@@ -1953,30 +2036,30 @@
        500-ERR-HENSYU-SEC                SECTION.
       *
            OPEN    INPUT   RECEERR-FILE
-           IF      STS-RECEERR         =   ZERO
-               CLOSE   RECEERR-FILE
+           IF   STS-RECEERR   =   ZERO
+             CLOSE   RECEERR-FILE
            ELSE
-               OPEN    OUTPUT            RECEERR-FILE
+             OPEN    OUTPUT            RECEERR-FILE
       *
-               MOVE    WRK-RECEERR       TO  RECEERR-REC
-               WRITE   RECEERR-REC
-               CLOSE   RECEERR-FILE
+             MOVE    WRK-RECEERR       TO   RECEERR-REC
+             WRITE   RECEERR-REC
+             CLOSE   RECEERR-FILE
       *
-      *        ¥¸¥ç¥Ö½ªÎ»½èÍý
-               MOVE    "JBE"             TO  SJOBKANRI-MODE
-               INITIALIZE                  JOBKANRI-REC
-               MOVE    SPA-HOSPNUM       TO  JOB-HOSPNUM
-               MOVE    S100LNK-JOBID     TO  JOB-JOBID
-               MOVE    S100LNK-SHELLID   TO  JOB-SHELLID
-               MOVE    WRK-RECEERR       TO  JOB-YOBI
-               MOVE    "9999"            TO  JOB-ERRCD
-               CALL    "ORCSJOB"         USING
-                                         ORCSJOBKANRIAREA  
-                                         JOBKANRI-REC
-                                         SPA-AREA
+      *      ¥¸¥ç¥Ö½ªÎ»½èÍý
+             MOVE    "JBE"             TO   SJOBKANRI-MODE
+             INITIALIZE                  JOBKANRI-REC
+             MOVE    SPA-HOSPNUM       TO   JOB-HOSPNUM
+             MOVE    S100LNK-JOBID     TO   JOB-JOBID
+             MOVE    S100LNK-SHELLID   TO   JOB-SHELLID
+             MOVE    WRK-RECEERR       TO   JOB-YOBI
+             MOVE    "9999"            TO   JOB-ERRCD
+             CALL    "ORCSJOB"         USING
+                                       ORCSJOBKANRIAREA
+                                       JOBKANRI-REC
+                                       SPA-AREA
            END-IF
       *
-           MOVE    1                     TO  FLG-END
+           MOVE    1        TO   FLG-END
       *
            .
        500-ERR-HENSYU-EXT.
@@ -1987,12 +2070,12 @@
       *****************************************************************
        800-SKTTMP-READ-SEC             SECTION.
       *
-             READ    S140TMP-FILE
-                 INVALID    KEY
-                     MOVE    1           TO  FLG-S140TMP
-                 NOT INVALID  KEY
-                     MOVE    ZERO        TO  FLG-S140TMP
-             END-READ
+           READ    S140TMP-FILE
+             INVALID    KEY
+               MOVE    1           TO   FLG-S140TMP
+             NOT INVALID  KEY
+               MOVE    ZERO        TO   FLG-S140TMP
+           END-READ
            .
        800-SKTTMP-READ-EXT.
            EXIT.
@@ -2002,33 +2085,33 @@
       *****************************************************************^M
        800-SYSKANRI-READ-SEC           SECTION.
       *
-           MOVE    "DBSELECT"            TO  MCP-FUNC
-           MOVE    "tbl_syskanri"        TO  MCP-TABLE
-           MOVE    "key10"               TO  MCP-PATHNAME
+           MOVE    "DBSELECT"            TO   MCP-FUNC
+           MOVE    "tbl_syskanri"        TO   MCP-TABLE
+           MOVE    "key10"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
                                          MCPAREA
                                          MCPDATA-REC
                                          SPA-AREA
-           IF      MCP-RC         =   ZERO
-               MOVE    "DBFETCH"         TO  MCP-FUNC
-               MOVE    "tbl_syskanri"    TO  MCP-TABLE
-               MOVE    "key10"           TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"       USING
+           IF   MCP-RC   =   ZERO
+             MOVE    "DBFETCH"           TO   MCP-FUNC
+             MOVE    "tbl_syskanri"      TO   MCP-TABLE
+             MOVE    "key10"             TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
                                          MCPAREA
                                          MCPDATA-REC
                                          SPA-AREA
-               IF      MCP-RC      =   ZERO
-                   MOVE    ZERO          TO  FLG-SYSKANRI
-               ELSE
-                   MOVE    1             TO  FLG-SYSKANRI
-               END-IF
+             IF      MCP-RC      =   ZERO
+               MOVE    ZERO              TO   FLG-SYSKANRI
+             ELSE
+               MOVE    1                 TO   FLG-SYSKANRI
+             END-IF
            ELSE
-               MOVE    1                 TO  FLG-SYSKANRI
+             MOVE    1                   TO   FLG-SYSKANRI
            END-IF
       *
-           MOVE    "DBCLOSECURSOR"       TO  MCP-FUNC
-           MOVE    "tbl_syskanri"        TO  MCP-TABLE
-           MOVE    "key10"               TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"       TO   MCP-FUNC
+           MOVE    "tbl_syskanri"        TO   MCP-TABLE
+           MOVE    "key10"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
                                          MCPAREA
                                          MCPDATA-REC
@@ -2043,12 +2126,12 @@
       *****************************************************************
        900-TMP-READ-SEC                SECTION.
       *
-             READ  S140TMP-FILE   NEXT
-                 AT  END
-                     MOVE  1   TO    FLG-PRINT
-                 NOT AT END
-                     ADD   1   TO    CNT-READ
-             END-READ
+           READ  S140TMP-FILE   NEXT
+             AT  END
+               MOVE     1       TO   FLG-PRINT
+             NOT AT END
+               ADD      1       TO   CNT-READ
+           END-READ
            .
        900-TMP-READ-EXT.
            EXIT.
@@ -2059,29 +2142,29 @@
        900-SEIKYU-SELECT-SEC             SECTION.
       *
       *    ÀÁµá´ÉÍý£Ä£Â¸¡º÷
-           INITIALIZE                  RECE10-REC
+           INITIALIZE                   RECE10-REC
       *
-           MOVE   WRK-PARA-HOSPNUM      TO    RECE10-HOSPNUM.
-           MOVE   WRK-PARA-SRYYM        TO    RECE10-SKYYM.
+           MOVE   WRK-PARA-HOSPNUM      TO   RECE10-HOSPNUM.
+           MOVE   WRK-PARA-SRYYM        TO   RECE10-SKYYM.
       * 20080617 ½èÍýÂ®ÅÙ¤Î¸þ¾å¤Î½¤ÀµSTART tanaka
-           MOVE    "6"                  TO    RECE10-TEISYUTUSAKI
+           MOVE    "6"                  TO   RECE10-TEISYUTUSAKI
       * 20080617 ½èÍýÂ®ÅÙ¤Î¸þ¾å¤Î½¤ÀµEND
       * 
-           MOVE    RECE10-REC           TO  MCPDATA-REC
-           MOVE    "DBSELECT"           TO  MCP-FUNC
-           MOVE    "tbl_seikyu"         TO  MCP-TABLE
+           MOVE    RECE10-REC           TO   MCPDATA-REC
+           MOVE    "DBSELECT"           TO   MCP-FUNC
+           MOVE    "tbl_seikyu"         TO   MCP-TABLE
       * 20080617 ½èÍýÂ®ÅÙ¤Î¸þ¾å¤Î½¤ÀµSTART tanaka
       *     MOVE    "all"                TO  MCP-PATHNAME
-           MOVE    "key60"                TO  MCP-PATHNAME
+           MOVE    "key60"              TO   MCP-PATHNAME
       * 20080617 ½èÍýÂ®ÅÙ¤Î¸þ¾å¤Î½¤ÀµEND
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-           IF      MCP-RC              =   ZERO
-               PERFORM 900-SEIKYU-READ-SEC
+           IF   MCP-RC   =   ZERO
+             PERFORM 900-SEIKYU-READ-SEC
            ELSE
-               MOVE    1                   TO  FLG-END
+             MOVE    1                  TO   FLG-END
            END-IF
            .
        900-SEIKYU-SELECT-EXT.
@@ -2091,11 +2174,11 @@
       *****************************************************************
        900-SEIKYU-READ-SEC           SECTION.
       *
-           MOVE    "DBFETCH"                TO  MCP-FUNC
-           MOVE    "tbl_seikyu"             TO  MCP-TABLE
+           MOVE    "DBFETCH"              TO   MCP-FUNC
+           MOVE    "tbl_seikyu"           TO   MCP-TABLE
       * 20080617 ½èÍýÂ®ÅÙ¤Î¸þ¾å¤Î½¤ÀµSTART tanaka
       *     MOVE    "all"                TO  MCP-PATHNAME
-           MOVE    "key60"                TO  MCP-PATHNAME
+           MOVE    "key60"                TO   MCP-PATHNAME
       * 20080617 ½èÍýÂ®ÅÙ¤Î¸þ¾å¤Î½¤ÀµEND
            CALL    "ORCDBMAIN"              USING
                                             MCPAREA
@@ -2103,28 +2186,28 @@
                                             SPA-AREA
            IF      MCP-RC        =   ZERO
       *
-               MOVE    ZERO                 TO  FLG-END
-               MOVE    MCPDATA-REC          TO  RECE10-REC
+             MOVE    ZERO                 TO   FLG-END
+             MOVE    MCPDATA-REC          TO   RECE10-REC
       
-      *        ¥Æ¥¹¥È´µ¼Ô¤Î¤È¤­¤ÏÆÉ¤ßÈô¤Ð¤¹
-               MOVE    SPACE                TO  PTINF-REC
-               INITIALIZE                      PTINF-REC
-               MOVE    RECE10-HOSPNUM       TO  WRK-PARA-HOSPNUM
-               MOVE    RECE10-PTID          TO  WRK-PTID
-               PERFORM 900-PTINF-READ-SEC
-               IF      FLG-PTINF           =   ZERO
-               AND     PTINF-TSTPTNUMKBN   =   "1"
-                   GO  TO  900-SEIKYU-READ-SEC
-               END-IF     
-               PERFORM  VARYING  IDX5  FROM  1  BY  1
-                        UNTIL    IDX5  >     4  OR
-                        RECE10-KOHNUM(IDX5)  =  SPACE
-                 IF    RECE10-KOHNUM(IDX5)  =  "091"
-                   MOVE    "051"            TO    RECE10-KOHNUM(IDX5)
-                 END-IF
-               END-PERFORM
+      *    ¥Æ¥¹¥È´µ¼Ô¤Î¤È¤­¤ÏÆÉ¤ßÈô¤Ð¤¹
+             MOVE    SPACE                TO   PTINF-REC
+             INITIALIZE                        PTINF-REC
+             MOVE    RECE10-HOSPNUM       TO   WRK-PARA-HOSPNUM
+             MOVE    RECE10-PTID          TO   WRK-PTID
+             PERFORM   900-PTINF-READ-SEC
+             IF   FLG-PTINF           =   ZERO
+                 AND   PTINF-TSTPTNUMKBN   =   "1"
+               GO  TO  900-SEIKYU-READ-SEC
+             END-IF
+             PERFORM  VARYING  IDX5  FROM  1  BY  1
+                      UNTIL    IDX5  >     4  OR
+                      RECE10-KOHNUM(IDX5)  =  SPACE
+               IF    RECE10-KOHNUM(IDX5)  =  "091"
+                 MOVE    "051"            TO   RECE10-KOHNUM(IDX5)
+               END-IF
+             END-PERFORM
            ELSE
-               MOVE    1                    TO  FLG-END
+             MOVE    1                    TO   FLG-END
            END-IF
       *
            .
@@ -2135,16 +2218,16 @@
       *****************************************************************
        900-SEIKYU-CLOSE-SEC                 SECTION.
       *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_seikyu"       TO  MCP-TABLE
+           MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
+           MOVE    "tbl_seikyu"        TO   MCP-TABLE
       * 20080617 ½èÍýÂ®ÅÙ¤Î¸þ¾å¤Î½¤ÀµSTART tanaka
       *     MOVE    "all"                TO  MCP-PATHNAME
-           MOVE    "key60"                TO  MCP-PATHNAME
+           MOVE    "key60"             TO   MCP-PATHNAME
       * 20080617 ½èÍýÂ®ÅÙ¤Î¸þ¾å¤Î½¤ÀµEND
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
            .
        900-SEIKYU-CLOSE-EXT.
            EXIT.
@@ -2154,40 +2237,40 @@
       *****************************************************************
        900-PTINF-READ-SEC         SECTION.
       *
-           INITIALIZE                      PTINF-REC
-           MOVE    WRK-PARA-HOSPNUM     TO  PTINF-HOSPNUM
-           MOVE    WRK-PTID             TO  PTINF-PTID
-           MOVE    PTINF-REC            TO  MCPDATA-REC
-           MOVE    "DBSELECT"           TO  MCP-FUNC
-           MOVE    "tbl_ptinf"          TO  MCP-TABLE
-           MOVE    "key"                TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    "DBFETCH"            TO  MCP-FUNC
-               MOVE    "tbl_ptinf"          TO  MCP-TABLE
-               MOVE    "key"                TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"          USING
-                                            MCPAREA
-                                            MCPDATA-REC
-                                            SPA-AREA
-               IF      MCP-RC          =   ZERO
-                   MOVE    MCPDATA-REC         TO  PTINF-REC
-                   MOVE    ZERO                TO  FLG-PTINF
-               ELSE
-                   MOVE    1                   TO  FLG-PTINF
-                   INITIALIZE                  PTINF-REC
-               END-IF
-           ELSE
-               MOVE    1               TO  FLG-PTINF
+           INITIALIZE                   PTINF-REC
+           MOVE    WRK-PARA-HOSPNUM    TO   PTINF-HOSPNUM
+           MOVE    WRK-PTID            TO   PTINF-PTID
+           MOVE    PTINF-REC           TO   MCPDATA-REC
+           MOVE    "DBSELECT"          TO   MCP-FUNC
+           MOVE    "tbl_ptinf"         TO   MCP-TABLE
+           MOVE    "key"               TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF   MCP-RC    =   ZERO
+             MOVE    "DBFETCH"         TO   MCP-FUNC
+             MOVE    "tbl_ptinf"       TO   MCP-TABLE
+             MOVE    "key"             TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF   MCP-RC   =   ZERO
+               MOVE    MCPDATA-REC     TO   PTINF-REC
+               MOVE    ZERO            TO   FLG-PTINF
+             ELSE
+               MOVE    1               TO   FLG-PTINF
                INITIALIZE              PTINF-REC
+             END-IF
+           ELSE
+             MOVE    1                 TO   FLG-PTINF
+             INITIALIZE                PTINF-REC
            END-IF
       *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_ptinf"         TO  MCP-TABLE
-           MOVE    "key"               TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
+           MOVE    "tbl_ptinf"         TO   MCP-TABLE
+           MOVE    "key"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
@@ -2203,25 +2286,25 @@
        920-HKNJAINF-SET-SEC  SECTION.
       *
            INITIALIZE  HKNJAINF-REC
-           MOVE  WRK-PARA-HOSPNUM     TO  HKNJA-HOSPNUM
-           MOVE  WRK-HKNJANUM         TO  HKNJA-HKNJANUM
-           MOVE  HKNJAINF-REC         TO  MCPDATA-REC
-           MOVE  "DBSELECT"           TO  MCP-FUNC
-           MOVE    "tbl_hknjainf"     TO  MCP-TABLE
-           MOVE    "key"              TO  MCP-PATHNAME
+           MOVE    WRK-PARA-HOSPNUM   TO   HKNJA-HOSPNUM
+           MOVE    WRK-HKNJANUM       TO   HKNJA-HKNJANUM
+           MOVE    HKNJAINF-REC       TO   MCPDATA-REC
+           MOVE    "DBSELECT"         TO   MCP-FUNC
+           MOVE    "tbl_hknjainf"     TO   MCP-TABLE
+           MOVE    "key"              TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
                                       MCPAREA
                                       MCPDATA-REC
                                       SPA-AREA
            IF  MCP-RC  =  ZERO
-               MOVE  "HKNJAINF-KEY"   TO  ORC-DBPATH
+               MOVE  "HKNJAINF-KEY"   TO   ORC-DBPATH
                PERFORM  925-HKNJAINF-READ-SEC
            END-IF
       *
            INITIALIZE  MCPAREA
-           MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-           MOVE  "tbl_hknjainf"       TO  MCP-TABLE
-           MOVE  "key"                TO  MCP-PATHNAME
+           MOVE  "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE  "tbl_hknjainf"       TO   MCP-TABLE
+           MOVE  "key"                TO   MCP-PATHNAME
            CALL  "ORCDBMAIN"          USING
                                       MCPAREA
                                       MCPDATA-REC
@@ -2236,21 +2319,21 @@
       *****************************************************************
        925-HKNJAINF-READ-SEC  SECTION.
       *
-           MOVE  "DBFETCH"  TO          MCP-FUNC
-           MOVE  "tbl_hknjainf"         TO  MCP-TABLE
-           MOVE  "key"                  TO  MCP-PATHNAME
-           CALL  "ORCDBMAIN"            USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
+           MOVE  "DBFETCH"               TO   MCP-FUNC
+           MOVE  "tbl_hknjainf"          TO   MCP-TABLE
+           MOVE  "key"                   TO   MCP-PATHNAME
+           CALL  "ORCDBMAIN"             USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
            IF  MCP-RC  =  ZERO
-               MOVE  MCPDATA-REC        TO  HKNJAINF-REC
-               MOVE  ZERO               TO  FLG-HKNJAINF
-               MOVE  HKNJA-HKNJANAME    TO  WRK-HKNJANAME
+             MOVE  MCPDATA-REC           TO   HKNJAINF-REC
+             MOVE  ZERO                  TO   FLG-HKNJAINF
+             MOVE  HKNJA-HKNJANAME       TO   WRK-HKNJANAME
            ELSE
-               INITIALIZE  HKNJAINF-REC
-               MOVE  1                  TO  FLG-HKNJAINF
-               MOVE  WRK-HKNJANUM       TO  WRK-HKNJANAME
+             INITIALIZE  HKNJAINF-REC
+             MOVE  1                     TO   FLG-HKNJAINF
+             MOVE  WRK-HKNJANUM          TO   WRK-HKNJANAME
            END-IF
       *
            .
@@ -2265,6 +2348,9 @@
            MOVE    ZERO    TO    WRK-KOHSEIKYUGK
                                  WRK-KOHSKJSEIKYUGK
                                  WRK-ZENCOMPFTN
+      *--- 2009/01/08 ADD START ----------------------------------------
+                                 WRK-FTNFLG
+      *--- 2009/01/08 ADD END ------------------------------------------
       *
            IF  RECE10-RJNHKNNUM NOT = SPACE
              MOVE   SYU-KOH-COMPFTN(1) TO  WRK-ZENCOMPFTN
@@ -2291,10 +2377,37 @@
       *
                  IF  SYU-KOH-COMPFTN(IDX) < WRK-ZENCOMPFTN
       *
-                   COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
-                                             -  SYU-KOH-COMPFTN(IDX)
-                   COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-                                                -  SYU-SKJ-FTN(IDX)
+      *--- 2009/01/08 ADD+DELETE START ---------------------------------
+      *             COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
+      *                                       -  SYU-KOH-COMPFTN(IDX)
+      *             COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+      *                                          -  SYU-SKJ-FTN(IDX)
+                   IF    RECE10-FTNMONEY(1)  =  ZERO
+                       AND  RECE10-KYURATE  NOT = ZERO
+           DISPLAY "¸ÂÅÙ¤Ê¤·" RECE10-PTNUM
+                     MOVE  SYU-KOH-HKNNUM(IDX)   TO  WRK-KOHNUM
+                     PERFORM   950-HKNNUM-SET-SEC
+                     IF   HKN-RECEFTNDSPKBN  =  1
+           DISPLAY "»Í¼Î¸ÞÆþ¤¹¤ë" 
+                       COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
+                                                 -  SYU-KOH-COMPFTN(IDX)
+                       COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+                                                    -  SYU-SKJ-FTN(IDX)
+                     ELSE
+           DISPLAY "»Í¼Î¸ÞÆþ¤·¤Ê¤¤" 
+                       COMPUTE  WRK-KOHSEIKYUGK = SYU-SYUCOMPFTN-ENTANI
+                                          -  SYU-KOH-COMPFTN-ENTANI(IDX)
+                       COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+                                                    -  SYU-SKJ-FTN(IDX)
+                     END-IF
+                   ELSE
+           DISPLAY "¸ÂÅÙ¤¢¤ê" RECE10-PTNUM
+                     ADD    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
+                     MOVE   1   TO    WRK-FTNFLG
+                     COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+                                                 -  SYU-SKJ-FTN(IDX)
+                   END-IF
+      *--- 2009/01/08 ADD+DELETE END -----------------------------------
                    MOVE   SYU-KOH-COMPFTN(IDX)  TO  WRK-ZENCOMPFTN
                  END-IF
                END-IF
@@ -2302,9 +2415,28 @@
              END-IF
            END-PERFORM
       *
-           ADD    WRK-KOHSEIKYUGK    TO    WRK-KOHSEIKYUGK-G
-           ADD    WRK-KOHSKJSEIKYUGK TO  WRK-KOHSEIKYUGK-G
-           ADD    SYU-SKYMONEY       TO    WRK-MADOSEIKYUGK-G
+      *--- 2009/01/08 ADD START ----------------------------------------
+           IF  WRK-FTNFLG  =  1
+             COMPUTE  WRK-HKNFTN       =   WRK-HKNFTN
+                                       -   WRK-KOHFTN
+       DISPLAY "  WRK-HKNFTN  =  "WRK-HKNFTN
+       DISPLAY "  WRK-KOHFTN  =  "WRK-KOHFTN
+             INITIALIZE    WRK-KOHFTN
+           ELSE
+             ADD    WRK-KOHSEIKYUGK     TO   WRK-KOHSEIKYUGK-G
+           END-IF
+      *--- 2009/01/08 ADD END ------------------------------------------
+      *--- (2008/12/12) line add start monma ---------------------------
+           COMPUTE  WRK-JIHIGK-G  =  WRK-JIHIGK-G
+                                  +  SYU-JIHI-TOTAL
+                                  +  SYU-JIHI-TOTAL-TAX
+      *--- (2008/12/12) line add end   monma ---------------------------
+      *
+      *--- 2009/01/08 DELETE START -------------------------------------
+      *     ADD    WRK-KOHSEIKYUGK       TO   WRK-KOHSEIKYUGK-G
+      *--- 2009/01/08 DELETE END ---------------------------------------
+           ADD    WRK-KOHSKJSEIKYUGK    TO   WRK-KOHSEIKYUGK-G
+           ADD    SYU-SKYMONEY          TO   WRK-MADOSEIKYUGK-G
       *
            .
        800-SEIKYU-SEC-EXT.
@@ -2315,55 +2447,65 @@
       *****************************************************************
        920-SYUNOU-SET-SEC  SECTION.
       *
-           INITIALIZE  SYUNOU-REC
-           MOVE  RECE10-HOSPNUM     TO  SYU-HOSPNUM
-           MOVE  RECE10-NYUGAIKBN   TO  SYU-NYUGAIKBN
-           MOVE  RECE10-PTID        TO  SYU-PTID
-           MOVE  SYUNOU-REC         TO  MCPDATA-REC
-           MOVE  "DBSELECT"         TO  MCP-FUNC
-           MOVE    "tbl_syunou"     TO  MCP-TABLE
-           MOVE    "key2"           TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"      USING
-                                    MCPAREA
-                                    MCPDATA-REC
-                                    SPA-AREA
+           INITIALIZE     SYUNOU-REC
+      *--- 2009/01/08 ADD START ----------------------------------------
+                          WRK-HKNFTN
+           MOVE   RECE10-FTNMONEY(1)    TO   WRK-HKNFTN
+      *--- 2009/01/08 ADD END ------------------------------------------
+           MOVE    RECE10-HOSPNUM       TO   SYU-HOSPNUM
+           MOVE    RECE10-NYUGAIKBN     TO   SYU-NYUGAIKBN
+           MOVE    RECE10-PTID          TO   SYU-PTID
+           MOVE    SYUNOU-REC           TO   MCPDATA-REC
+           MOVE    "DBSELECT"           TO   MCP-FUNC
+           MOVE    "tbl_syunou"         TO   MCP-TABLE
+           MOVE    "key2"               TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
            IF  MCP-RC  =  ZERO
-               MOVE  "SYUNOU-KEY2"  TO  ORC-DBPATH
-               PERFORM  925-SYUNOU-READ-SEC
+             MOVE    "SYUNOU-KEY2"      TO   ORC-DBPATH
+             PERFORM  925-SYUNOU-READ-SEC
       *
-               PERFORM  UNTIL  FLG-SYUNOU  =  1
-                   IF  RECE10-SRYYM  =  SYU-SRYYMD(1:6)
-                       AND  SYU-DENPJTIKBN   NOT = "3"
-                       AND  RECE10-TEKSTYMD  <=  SYU-SRYYMD
+             PERFORM  UNTIL  FLG-SYUNOU  =  1
+               IF  RECE10-SRYYM  =  SYU-SRYYMD(1:6)
+                   AND  SYU-DENPJTIKBN   NOT = "3"
+                   AND  RECE10-TEKSTYMD  <=  SYU-SRYYMD
       *
-                       AND  SYU-SYUHKNNUM  =  RECE10-HKNNUM
+                   AND  SYU-SYUHKNNUM  =  RECE10-HKNNUM
       *
       *    µìÁí¹çÉÂ±¡¤Î»þ¤Ï³ºÅö¤¹¤ë¿ÇÎÅ²Ê¤Î¤ßÂÐ¾Ý¤Ë¤¹¤ë
-      *--- 2008/10/30  CHANGE  START ----------------------------------
+      *--- 2008/10/30  CHANGE START ------------------------------------
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëSTART 
-                       IF    SYS-1001-HOSPSBT1 NOT =  1  OR
-                             RECE10-NYUGAIKBN      = "1" OR
-      *                  IF    RECE10-NYUGAIKBN      = "1" OR
+                 IF   SYS-1001-HOSPSBT1  NOT =  1
+                     OR   RECE10-NYUGAIKBN   =   "1"
+      *            IF    RECE10-NYUGAIKBN   =   "1" OR
       * 20081014 ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ëEND
-      *--- 2008/10/30  CHANGE  END ----------------------------------
-                             RECE10-RECEKA         = SYU-SRYKA
-                           PERFORM  800-SEIKYU-SEC
-                       END-IF
-                   END-IF
+      *--- 2008/10/30  CHANGE END --------------------------------------
+                     OR   RECE10-RECEKA  =  SYU-SRYKA
+                   PERFORM  800-SEIKYU-SEC
+                 END-IF
+               END-IF
       *
-                   MOVE  "SYUNOU-KEY2"  TO  ORC-DBPATH
-                   PERFORM   925-SYUNOU-READ-SEC
-               END-PERFORM
+               MOVE  "SYUNOU-KEY2"       TO   ORC-DBPATH
+               PERFORM   925-SYUNOU-READ-SEC
+             END-PERFORM
            END-IF
       *
            INITIALIZE  MCPAREA
-           MOVE  "DBCLOSECURSOR"  TO  MCP-FUNC
-           MOVE  "tbl_syunou"     TO  MCP-TABLE
-           MOVE  "key2"           TO  MCP-PATHNAME
-           CALL  "ORCDBMAIN"      USING
-                                  MCPAREA
-                                  MCPDATA-REC
-                                  SPA-AREA
+           MOVE  "DBCLOSECURSOR"         TO   MCP-FUNC
+           MOVE  "tbl_syunou"            TO   MCP-TABLE
+           MOVE  "key2"                  TO   MCP-PATHNAME
+           CALL  "ORCDBMAIN"             USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
+      *--- 2009/01/08 ADD START ----------------------------------------
+           IF  WRK-FTNFLG  =  1
+             ADD    WRK-HKNFTN     TO   WRK-KOHSEIKYUGK-G
+           END-IF
+      *--- 2009/01/08 ADD END ------------------------------------------
            .
        920-SYUNOU-SET-EXT.
            EXIT.
@@ -2373,19 +2515,19 @@
       *****************************************************************
        925-SYUNOU-READ-SEC  SECTION.
       *
-           MOVE  "DBFETCH"         TO  MCP-FUNC
-           MOVE  "tbl_syunou"      TO  MCP-TABLE
-           MOVE  "key2"            TO  MCP-PATHNAME
+           MOVE  "DBFETCH"         TO   MCP-FUNC
+           MOVE  "tbl_syunou"      TO   MCP-TABLE
+           MOVE  "key2"            TO   MCP-PATHNAME
            CALL  "ORCDBMAIN"       USING
                                    MCPAREA
                                    MCPDATA-REC
                                    SPA-AREA
            IF  MCP-RC  =  ZERO
-               MOVE  MCPDATA-REC   TO  SYUNOU-REC
-               MOVE  ZERO          TO  FLG-SYUNOU
+             MOVE  MCPDATA-REC     TO   SYUNOU-REC
+             MOVE  ZERO            TO   FLG-SYUNOU
            ELSE
-               INITIALIZE  SYUNOU-REC
-               MOVE  1             TO  FLG-SYUNOU
+             INITIALIZE  SYUNOU-REC
+             MOVE  1               TO   FLG-SYUNOU
            END-IF
       *
            .
@@ -2397,43 +2539,42 @@
       *****************************************************************
        940-SYUNOU-READ-SEC         SECTION.
       *
-           INITIALIZE                  SYUNOU-REC
-           MOVE  JYURRK-HOSPNUM       TO  SYU-HOSPNUM
-           MOVE  JYURRK-NYUGAIKBN     TO  SYU-NYUGAIKBN
-           MOVE  JYURRK-PTID          TO  SYU-PTID
-           MOVE  JYURRK-DENPNUM       TO  SYU-DENPNUM
-           MOVE  SYUNOU-REC           TO  MCPDATA-REC
-           MOVE  "DBSELECT"           TO  MCP-FUNC
-           MOVE  "tbl_syunou"         TO  MCP-TABLE
-           MOVE  "key"                TO  MCP-PATHNAME
+           INITIALIZE                 SYUNOU-REC
+           MOVE  JYURRK-HOSPNUM       TO   SYU-HOSPNUM
+           MOVE  JYURRK-NYUGAIKBN     TO   SYU-NYUGAIKBN
+           MOVE  JYURRK-PTID          TO   SYU-PTID
+           MOVE  JYURRK-DENPNUM       TO   SYU-DENPNUM
+           MOVE  SYUNOU-REC           TO   MCPDATA-REC
+           MOVE  "DBSELECT"           TO   MCP-FUNC
+           MOVE  "tbl_syunou"         TO   MCP-TABLE
+           MOVE  "key"                TO   MCP-PATHNAME
            CALL  "ORCDBMAIN"          USING
                                       MCPAREA
                                       MCPDATA-REC
                                       SPA-AREA
            IF  MCP-RC  =  ZERO
-               MOVE  "DBFETCH"        TO  MCP-FUNC
-               MOVE  "tbl_syunou"     TO  MCP-TABLE
-               MOVE  "key"            TO  MCP-PATHNAME
-               CALL  "ORCDBMAIN"      USING
+             MOVE  "DBFETCH"          TO   MCP-FUNC
+             MOVE  "tbl_syunou"       TO   MCP-TABLE
+             MOVE  "key"              TO   MCP-PATHNAME
+             CALL  "ORCDBMAIN"        USING
                                       MCPAREA
                                       MCPDATA-REC
                                       SPA-AREA
-               IF  MCP-RC  =  ZERO
-                   MOVE  MCPDATA-REC  TO  SYUNOU-REC
-                   MOVE  ZERO         TO  FLG-SYUNOU
-               ELSE
-                   INITIALIZE  SYUNOU-REC
-                   MOVE  1            TO  FLG-SYUNOU
-               END-IF
-
+             IF  MCP-RC  =  ZERO
+                 MOVE  MCPDATA-REC    TO   SYUNOU-REC
+                 MOVE  ZERO           TO   FLG-SYUNOU
+             ELSE
+                 INITIALIZE  SYUNOU-REC
+                 MOVE  1              TO   FLG-SYUNOU
+             END-IF
            ELSE
-               MOVE    1              TO  FLG-SYUNOU
+             MOVE    1                TO   FLG-SYUNOU
            END-IF
       *
            INITIALIZE  MCPAREA
-           MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-           MOVE  "tbl_syunou"         TO  MCP-TABLE
-           MOVE  "key"                TO  MCP-PATHNAME
+           MOVE  "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE  "tbl_syunou"         TO   MCP-TABLE
+           MOVE  "key"                TO   MCP-PATHNAME
            CALL  "ORCDBMAIN"          USING
                                       MCPAREA
                                       MCPDATA-REC
@@ -2446,24 +2587,24 @@
       *****************************************************************
        940-SYUNOU-SELECT-SEC         SECTION.
       *
-           INITIALIZE                  SYUNOU-REC
-           MOVE    JYURRK-HOSPNUM       TO  SYU-HOSPNUM
-           MOVE    JYURRK-PTID          TO  SYU-PTID
-           MOVE    JYURRK-NYUGAIKBN     TO  SYU-NYUGAIKBN
-           MOVE    WRK-PARA-PRTSYMD     TO  SYU-SKYSTYMD
-           MOVE    WRK-PARA-PRTLYMD     TO  SYU-SKYEDYMD
-           MOVE    SYUNOU-REC           TO  MCPDATA-REC
-           MOVE    "DBSELECT"           TO  MCP-FUNC
-           MOVE    "tbl_syunou"         TO  MCP-TABLE
-           MOVE    "key5"               TO  MCP-PATHNAME
+           INITIALIZE                   SYUNOU-REC
+           MOVE    JYURRK-HOSPNUM       TO   SYU-HOSPNUM
+           MOVE    JYURRK-PTID          TO   SYU-PTID
+           MOVE    JYURRK-NYUGAIKBN     TO   SYU-NYUGAIKBN
+           MOVE    WRK-PARA-PRTSYMD     TO   SYU-SKYSTYMD
+           MOVE    WRK-PARA-PRTLYMD     TO   SYU-SKYEDYMD
+           MOVE    SYUNOU-REC           TO   MCPDATA-REC
+           MOVE    "DBSELECT"           TO   MCP-FUNC
+           MOVE    "tbl_syunou"         TO   MCP-TABLE
+           MOVE    "key5"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-           IF      MCP-RC           =   ZERO
-                   PERFORM 940-SYUNOU-FETCH-SEC
+           IF   MCP-RC   =   ZERO
+             PERFORM 940-SYUNOU-FETCH-SEC
            ELSE
-                   MOVE   1               TO  FLG-SYUNOU
+             MOVE    1                  TO  FLG-SYUNOU
            END-IF
            .
        940-SYUNOU-SELECT-EXT.
@@ -2473,26 +2614,26 @@
       *****************************************************************
        940-SYUNOU-FETCH-SEC         SECTION.
       *
-           MOVE    "DBFETCH"            TO  MCP-FUNC
-           MOVE    "tbl_syunou"         TO  MCP-TABLE
-           MOVE    "key5"               TO  MCP-PATHNAME
+           MOVE    "DBFETCH"            TO   MCP-FUNC
+           MOVE    "tbl_syunou"         TO   MCP-TABLE
+           MOVE    "key5"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-           IF    MCP-RC              =   ZERO
-               MOVE    MCPDATA-REC      TO  SYUNOU-REC
-               MOVE    ZERO             TO  FLG-SYUNOU
-               IF    SYU-DENPJTIKBN    =   "3"
-                   GO    TO    940-SYUNOU-FETCH-SEC
-               END-IF
+           IF   MCP-RC   =   ZERO
+             MOVE    MCPDATA-REC        TO   SYUNOU-REC
+             MOVE    ZERO               TO   FLG-SYUNOU
+             IF    SYU-DENPJTIKBN   =   "3"
+               GO    TO    940-SYUNOU-FETCH-SEC
+             END-IF
       *
-               IF    SYU-SYUHKNNUM(1:2) NOT  =  "97" AND "98"
-                   GO    TO    940-SYUNOU-FETCH-SEC
-               END-IF
+             IF   SYU-SYUHKNNUM(1:2)  NOT =   "97" AND "98"
+               GO    TO    940-SYUNOU-FETCH-SEC
+             END-IF
       *
            ELSE
-                MOVE    1               TO  FLG-SYUNOU
+              MOVE    1                 TO   FLG-SYUNOU
            END-IF
            .
        940-SYUNOU-FETCH-EXT.
@@ -2502,9 +2643,9 @@
       *****************************************************************
        940-SYUNOU-CLOSE-SEC         SECTION.
       *
-           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
-           MOVE    "tbl_syunou"         TO  MCP-TABLE
-           MOVE    "key5"               TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE    "tbl_syunou"         TO   MCP-TABLE
+           MOVE    "key5"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -2518,44 +2659,44 @@
        930-HKNCOMBI-SET-SEC  SECTION.
       *
            INITIALIZE  HKNCOMBI-REC
-           MOVE  JYURRK-HOSPNUM       TO  COMB-HOSPNUM
-           MOVE  JYURRK-PTID          TO  COMB-PTID
-           MOVE  JYURRK-HKNCOMBINUM   TO  COMB-HKNCOMBINUM
-           MOVE  HKNCOMBI-REC         TO  MCPDATA-REC
-           MOVE  "DBSELECT"           TO  MCP-FUNC
-           MOVE    "tbl_hkncombi"     TO  MCP-TABLE
-           MOVE    "key"              TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"        USING
-                                      MCPAREA
-                                      MCPDATA-REC
-                                      SPA-AREA
+           MOVE    JYURRK-HOSPNUM       TO   COMB-HOSPNUM
+           MOVE    JYURRK-PTID          TO   COMB-PTID
+           MOVE    JYURRK-HKNCOMBINUM   TO   COMB-HKNCOMBINUM
+           MOVE    HKNCOMBI-REC         TO   MCPDATA-REC
+           MOVE    "DBSELECT"           TO   MCP-FUNC
+           MOVE    "tbl_hkncombi"       TO   MCP-TABLE
+           MOVE    "key"                TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
            IF  MCP-RC  =  ZERO
-               MOVE  "DBFETCH"        TO  MCP-FUNC
-               MOVE  "tbl_hkncombi"   TO  MCP-TABLE
-               MOVE  "key"            TO  MCP-PATHNAME
-               CALL  "ORCDBMAIN"      USING
-                                      MCPAREA
-                                      MCPDATA-REC
-                                      SPA-AREA
-               IF  MCP-RC  =  ZERO
-                   MOVE  MCPDATA-REC    TO  HKNCOMBI-REC
-                   MOVE  ZERO           TO  FLG-HKNCOMBI
-               ELSE
-                   INITIALIZE  HKNCOMBI-REC
-                   MOVE  1              TO  FLG-HKNCOMBI
-               END-IF
+             MOVE  "DBFETCH"            TO   MCP-FUNC
+             MOVE  "tbl_hkncombi"       TO   MCP-TABLE
+             MOVE  "key"                TO   MCP-PATHNAME
+             CALL  "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE  MCPDATA-REC        TO   HKNCOMBI-REC
+               MOVE  ZERO               TO   FLG-HKNCOMBI
+             ELSE
+               INITIALIZE  HKNCOMBI-REC
+               MOVE  1                  TO   FLG-HKNCOMBI
+             END-IF
            ELSE
-               MOVE    1              TO  FLG-HKNCOMBI
+             MOVE    1                  TO   FLG-HKNCOMBI
            END-IF
       *
            INITIALIZE  MCPAREA
-           MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-           MOVE  "tbl_hkncombi"       TO  MCP-TABLE
-           MOVE  "key"                TO  MCP-PATHNAME
-           CALL  "ORCDBMAIN"          USING
-                                      MCPAREA
-                                      MCPDATA-REC
-                                      SPA-AREA
+           MOVE  "DBCLOSECURSOR"        TO   MCP-FUNC
+           MOVE  "tbl_hkncombi"         TO   MCP-TABLE
+           MOVE  "key"                  TO   MCP-PATHNAME
+           CALL  "ORCDBMAIN"            USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
       *
            .
        930-HKNCOMBI-SET-EXT.
@@ -2567,47 +2708,47 @@
        950-HKNNUM-SET-SEC  SECTION.
       *
            INITIALIZE  HKNNUM-REC
-           MOVE  WRK-PARA-HOSPNUM     TO  HKN-HOSPNUM
-           MOVE  WRK-KOHNUM           TO  HKN-HKNNUM
-           MOVE  HKNNUM-REC           TO  MCPDATA-REC
-           MOVE  "DBSELECT"           TO  MCP-FUNC
-           MOVE  "tbl_hknnum"         TO  MCP-TABLE
-           MOVE  "key2"               TO  MCP-PATHNAME
-           CALL  "ORCDBMAIN"          USING
-                                      MCPAREA
-                                      MCPDATA-REC
-                                      SPA-AREA
-           IF  MCP-RC  =  ZERO
-               MOVE  "HKNNUM-KEY2"      TO  ORC-DBPATH
-               PERFORM  955-HKNNUM-READ-SEC
+           MOVE   WRK-PARA-HOSPNUM      TO   HKN-HOSPNUM
+           MOVE   WRK-KOHNUM            TO   HKN-HKNNUM
+           MOVE   HKNNUM-REC            TO   MCPDATA-REC
+           MOVE   "DBSELECT"            TO   MCP-FUNC
+           MOVE   "tbl_hknnum"          TO   MCP-TABLE
+           MOVE   "key2"                TO   MCP-PATHNAME
+           CALL   "ORCDBMAIN"           USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE  "HKNNUM-KEY2"        TO   ORC-DBPATH
+             PERFORM  955-HKNNUM-READ-SEC
       * 20080526 ¸Å¤¤¸øÈñÌ¾¤ò°õ»ú¤·¤Æ¤·¤Þ¤¦ÉÔ¶ñ¹ç¤ò½¤ÀµSTART tanaka
            ELSE
-               MOVE     1        TO  FLG-HKNNUM
+             MOVE     1                 TO   FLG-HKNNUM
       * 20080526 ¸Å¤¤¸øÈñÌ¾¤ò°õ»ú¤·¤Æ¤·¤Þ¤¦ÉÔ¶ñ¹ç¤ò½¤ÀµEND
            END-IF
       *
       * 20080526 ¸Å¤¤¸øÈñÌ¾¤ò°õ»ú¤·¤Æ¤·¤Þ¤¦ÉÔ¶ñ¹ç¤ò½¤ÀµSTART tanaka
-           PERFORM UNTIL       FLG-HKNNUM      =   1
-               IF      HKN-TEKSTYMD            <=  WRK-SRYYMD
-                 AND     HKN-TEKEDYMD            >=  WRK-SRYYMD
-                   MOVE  1                  TO  FLG-HKNNUM   
-               END-IF
+           PERFORM   UNTIL    FLG-HKNNUM  =   1
+             IF   HKN-TEKSTYMD   <=   WRK-SRYYMD
+                 AND   HKN-TEKEDYMD  >=  WRK-SRYYMD
+               MOVE     1               TO   FLG-HKNNUM 
+             END-IF
       *
-               IF      FLG-HKNNUM           =   ZERO
-                   MOVE  "tbl_hknnum"       TO  MCP-TABLE
-                   MOVE  "key2"             TO  MCP-PATHNAME
-                   PERFORM  955-HKNNUM-READ-SEC
-               END-IF
+             IF   FLG-HKNNUM   =   ZERO
+               MOVE    "tbl_hknnum"     TO   MCP-TABLE
+               MOVE    "key2"           TO   MCP-PATHNAME
+               PERFORM  955-HKNNUM-READ-SEC
+             END-IF
            END-PERFORM      
       * 20080526 ¸Å¤¤¸øÈñÌ¾¤ò°õ»ú¤·¤Æ¤·¤Þ¤¦ÉÔ¶ñ¹ç¤ò½¤ÀµEND
            INITIALIZE  MCPAREA
-           MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-           MOVE  "tbl_hknnum"         TO  MCP-TABLE
-           MOVE  "key2"               TO  MCP-PATHNAME
-           CALL  "ORCDBMAIN"          USING
-                                      MCPAREA
-                                      MCPDATA-REC
-                                      SPA-AREA
+           MOVE   "DBCLOSECURSOR"       TO   MCP-FUNC
+           MOVE   "tbl_hknnum"          TO   MCP-TABLE
+           MOVE   "key2"                TO   MCP-PATHNAME
+           CALL   "ORCDBMAIN"           USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
       *
            .
        950-HKNNUM-SET-EXT.
@@ -2618,19 +2759,19 @@
       *****************************************************************
        955-HKNNUM-READ-SEC  SECTION.
       *
-           MOVE  "DBFETCH"      TO  MCP-FUNC
-           MOVE  "tbl_hknnum"   TO  MCP-TABLE
-           MOVE  "key2"         TO  MCP-PATHNAME
-           CALL  "ORCDBMAIN"    USING
-                                MCPAREA
-                                MCPDATA-REC
-                                SPA-AREA
-           IF  MCP-RC  =  ZERO
-               MOVE  MCPDATA-REC  TO  HKNNUM-REC
-               MOVE  ZERO         TO  FLG-HKNNUM
+           MOVE   "DBFETCH"      TO   MCP-FUNC
+           MOVE   "tbl_hknnum"   TO   MCP-TABLE
+           MOVE   "key2"         TO   MCP-PATHNAME
+           CALL   "ORCDBMAIN"    USING
+                                 MCPAREA
+                                 MCPDATA-REC
+                                 SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE   MCPDATA-REC  TO   HKNNUM-REC
+             MOVE   ZERO         TO   FLG-HKNNUM
            ELSE
-               INITIALIZE  HKNNUM-REC
-               MOVE   1           TO  FLG-HKNNUM
+             INITIALIZE  HKNNUM-REC
+             MOVE   1            TO   FLG-HKNNUM
            END-IF
       *
            .
@@ -2643,14 +2784,14 @@
        300-END-SEC                 SECTION.
       *
       *    ¥¹¥Æ¥Ã¥×´ÉÍý½ªÎ»½èÍý
-           MOVE    "STE"             TO  SJOBKANRI-MODE
-           INITIALIZE                  JOBKANRI-REC
-           MOVE    SPA-HOSPNUM       TO  JOB-HOSPNUM
-           MOVE    S100LNK-JOBID     TO  JOB-JOBID
-           MOVE    S100LNK-SHELLID   TO  JOB-SHELLID
-           MOVE    CNT-PAGE          TO  JOB-UPDCNT                        
+           MOVE    "STE"             TO   SJOBKANRI-MODE
+           INITIALIZE                JOBKANRI-REC
+           MOVE    SPA-HOSPNUM       TO   JOB-HOSPNUM
+           MOVE    S100LNK-JOBID     TO   JOB-JOBID
+           MOVE    S100LNK-SHELLID   TO   JOB-SHELLID
+           MOVE    CNT-PAGE          TO   JOB-UPDCNT
            CALL    "ORCSJOB"         USING
-                                     ORCSJOBKANRIAREA  
+                                     ORCSJOBKANRIAREA
                                      JOBKANRI-REC
                                      SPA-AREA
       *
@@ -2663,18 +2804,18 @@
       *****************************************************************
        100-DBOPEN-SEC                SECTION.
       *
-           MOVE    "DBOPEN"            TO  MCP-FUNC.
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBOPEN"             TO   MCP-FUNC.
+           MOVE    LOW-VALUE            TO   MCP-TABLE
+                                             MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
       *
-           MOVE    "DBSTART"           TO  MCP-FUNC.
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBSTART"            TO   MCP-FUNC.
+           MOVE    LOW-VALUE            TO   MCP-TABLE
+                                             MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -2689,18 +2830,18 @@
       *****************************************************************
        900-DBDISCONNECT-SEC            SECTION.
       *
-           MOVE    "DBCOMMIT"          TO  MCP-FUNC.
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBCOMMIT"           TO   MCP-FUNC.
+           MOVE    LOW-VALUE            TO   MCP-TABLE
+                                             MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
       *
-           MOVE    "DBDISCONNECT"      TO  MCP-FUNC.
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBDISCONNECT"       TO   MCP-FUNC.
+           MOVE    LOW-VALUE            TO   MCP-TABLE
+                                             MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC

@@ -27,6 +27,9 @@
                       07  S138G1-NISSU      PIC  X(04).
                       07  S138G1-TENSU      PIC  X(09).
                       07  S138G1-MADOGK     PIC  X(09).
+      *--- (2008/12/11) line add start monma ---------------------------
+                      07  S138G1-JIHIGK     PIC  X(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                       07  S138G1-HKNGK      PIC  X(09).
                       07  S138G1-KOHGK      PIC  X(09).
                       07  S138G1-SYUEKI     PIC  X(09).
@@ -49,6 +52,9 @@
                       07  S138G1-K-NISSU      PIC  X(04).
                       07  S138G1-K-TENSU      PIC  X(09).
                       07  S138G1-K-MADOGK     PIC  X(09).
+      *--- (2008/12/11) line add start monma ---------------------------
+                      07  S138G1-K-JIHIGK     PIC  X(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                       07  S138G1-K-HKNGK      PIC  X(09).
                       07  S138G1-K-KOHGK     PIC  X(09).
                       07  S138G1-K-SYUEKI     PIC  X(09).
@@ -71,6 +77,9 @@
                       07  S138G1-GNISSU      PIC  X(04).
                       07  S138G1-GTENSU      PIC  X(09).
                       07  S138G1-GMADOGK     PIC  X(09).
+      *--- (2008/12/11) line add start monma ---------------------------
+                      07  S138G1-GJIHIGK     PIC  X(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                       07  S138G1-GHKNGK      PIC  X(09).
                       07  S138G1-GKOHGK      PIC  X(09).
                       07  S138G1-GSYUEKI     PIC  X(09).

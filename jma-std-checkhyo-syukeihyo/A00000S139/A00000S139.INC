@@ -30,6 +30,9 @@
                           09  S139-NISSU      PIC  X(04).
                           09  S139-TENSU      PIC  X(09).
                           09  S139-MADOGK     PIC  X(09).
+      *--- (2008/12/18) line add start monma ----------------------------
+                          09  S139-JIHIGK     PIC  X(09).
+      *--- (2008/12/18) line add end   monma ----------------------------
                           09  S139-HKNGK      PIC  X(09).
                           09  S139-KOHGK      PIC  X(09).
                           09  S139-SYUEKI     PIC  X(09).
@@ -42,6 +45,9 @@
                           09  S139-S-NISSU      PIC  X(04).
                           09  S139-S-TENSU      PIC  X(09).
                           09  S139-S-MADOGK     PIC  X(09).
+      *--- (2008/12/18) line add start monma ----------------------------
+                          09  S139-S-JIHIGK     PIC  X(09).
+      *--- (2008/12/18) line add end   monma ----------------------------
                           09  S139-S-HKNGK      PIC  X(09).
                           09  S139-S-KOHGK      PIC  X(09).
                           09  S139-S-SYUEKI     PIC  X(09).
@@ -54,6 +60,9 @@
                           09  S139-ETC-NISSU      PIC  X(04).
                           09  S139-ETC-TENSU      PIC  X(09).
                           09  S139-ETC-MADOGK     PIC  X(09).
+      *--- (2008/12/18) line add start monma ----------------------------
+                          09  S139-ETC-JIHIGK     PIC  X(09).
+      *--- (2008/12/18) line add end   monma ----------------------------
                           09  S139-ETC-HKNGK      PIC  X(09).
                           09  S139-ETC-KOHGK      PIC  X(09).
                           09  S139-ETC-SYUEKI     PIC  X(09).
@@ -66,6 +75,9 @@
                       07  S139-GNISSU      PIC  X(04).
                       07  S139-GTENSU      PIC  X(09).
                       07  S139-GMADOGK     PIC  X(09).
+      *--- (2008/12/18) line add start monma ----------------------------
+                      07  S139-GJIHIGK     PIC  X(09).
+      *--- (2008/12/18) line add end   monma ----------------------------
                       07  S139-GHKNGK      PIC  X(09).
                       07  S139-GKOHGK      PIC  X(09).
                       07  S139-GSYUEKI     PIC  X(09).

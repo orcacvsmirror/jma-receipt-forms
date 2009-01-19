@@ -29,6 +29,9 @@
                       07  S138N2-NISSU     PIC  X(04).
                       07  S138N2-TENSU     PIC  X(09).
                       07  S138N2-MADOGK    PIC  X(09).
+      *--- (2008/12/11) line add start monma ---------------------------
+                      07  S138N2-JIHIGK     PIC  X(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                       07  S138N2-HKNGK     PIC  X(09).
                       07  S138N2-KOHGK     PIC  X(09).
                       07  S138N2-SYUEKI    PIC  X(09).

@@ -30,7 +30,13 @@
                           09  S139TMP-KENSU      PIC  9(04).
                           09  S139TMP-NISSU      PIC  9(04).
                           09  S139TMP-TENSU      PIC  9(09).
-                          09  S139TMP-MADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma -------------------------
+      *                    09  S139TMP-MADOGK     PIC  9(09).
+                          09  S139TMP-MADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma -------------------------
+      *--- (2008/12/18) line add start monma ----------------------------
+                          09  S139TMP-JIHIGK     PIC  9(09).
+      *--- (2008/12/18) line add end   monma ----------------------------
                           09  S139TMP-HKNGK      PIC  9(09).
                           09  S139TMP-KOHGK      PIC  9(09).
                           09  S139TMP-SYUEKI     PIC  9(09).
@@ -45,7 +51,13 @@
                           09  S139TMP-S-KENSU      PIC  9(04).
                           09  S139TMP-S-NISSU      PIC  9(04).
                           09  S139TMP-S-TENSU      PIC  9(09).
-                          09  S139TMP-S-MADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma -------------------------
+      *                    09  S139TMP-S-MADOGK     PIC  9(09).
+                          09  S139TMP-S-MADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma -------------------------
+      *--- (2008/12/18) line add start monma ----------------------------
+                          09  S139TMP-S-JIHIGK     PIC  9(09).
+      *--- (2008/12/18) line add end   monma ----------------------------
                           09  S139TMP-S-HKNGK      PIC  9(09).
                           09  S139TMP-S-KOHGK      PIC  9(09).
                           09  S139TMP-S-SYUEKI     PIC  9(09).
@@ -60,7 +72,13 @@
                           09  S139TMP-ETC-KENSU      PIC  9(04).
                           09  S139TMP-ETC-NISSU      PIC  9(04).
                           09  S139TMP-ETC-TENSU      PIC  9(09).
-                          09  S139TMP-ETC-MADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma -------------------------
+      *                    09  S139TMP-ETC-MADOGK     PIC  9(09).
+                          09  S139TMP-ETC-MADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma -------------------------
+      *--- (2008/12/18) line add start monma ----------------------------
+                          09  S139TMP-ETC-JIHIGK     PIC  9(09).
+      *--- (2008/12/18) line add end   monma ----------------------------
                           09  S139TMP-ETC-HKNGK      PIC  9(09).
                           09  S139TMP-ETC-SYUEKI     PIC  9(09).
                           09  S139TMP-ETC-SNISSU     PIC  9(05).
@@ -74,7 +92,13 @@
                       07  S139TMP-GKENSU      PIC  9(04).
                       07  S139TMP-GNISSU      PIC  9(04).
                       07  S139TMP-GTENSU      PIC  9(09).
-                      07  S139TMP-GMADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma -------------------------
+      *                07  S139TMP-GMADOGK     PIC  9(09).
+                      07  S139TMP-GMADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma -------------------------
+      *--- (2008/12/18) line add start monma ----------------------------
+                      07  S139TMP-GJIHIGK     PIC  9(09).
+      *--- (2008/12/18) line add end   monma ----------------------------
                       07  S139TMP-GHKNGK      PIC  9(09).
                       07  S139TMP-GKOHGK      PIC  9(09).
                       07  S139TMP-GSYUEKI     PIC  9(09).

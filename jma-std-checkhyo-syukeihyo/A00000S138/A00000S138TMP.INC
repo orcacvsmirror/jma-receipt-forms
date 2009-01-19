@@ -26,7 +26,13 @@
                   05  S138TMP-KENSU      PIC  9(04).
                   05  S138TMP-NISSU      PIC  9(04).
                   05  S138TMP-TENSU      PIC  9(09).
-                  05  S138TMP-MADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma ------------------------
+      *            05  S138TMP-MADOGK     PIC  9(09).
+                  05  S138TMP-MADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma ------------------------
+      *--- (2008/12/11) line add start monma ---------------------------
+                  05  S138TMP-JIHIGK     PIC  9(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-HKNGK      PIC  9(09).
                   05  S138TMP-KOHGK      PIC  9(09).
                   05  S138TMP-SYUEKI     PIC  9(09).
@@ -52,7 +58,13 @@
                   05  S138TMP-HKENSU      PIC  9(04).
                   05  S138TMP-HNISSU      PIC  9(04).
                   05  S138TMP-HTENSU      PIC  9(09).
-                  05  S138TMP-HMADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma ------------------------
+      *            05  S138TMP-HMADOGK     PIC  9(09).
+                  05  S138TMP-HMADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma ------------------------
+      *--- (2008/12/11) line add start monma ---------------------------
+                  05  S138TMP-HJIHIGK     PIC  9(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-HHKNGK      PIC  9(09).
                   05  S138TMP-HKOHGK      PIC  9(09).
                   05  S138TMP-HSYUEKI     PIC  9(09).
@@ -63,7 +75,13 @@
                   05  S138TMP-K-KENSU      PIC  9(04).
                   05  S138TMP-K-NISSU      PIC  9(04).
                   05  S138TMP-K-TENSU      PIC  9(09).
-                  05  S138TMP-K-MADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma ------------------------
+      *            05  S138TMP-K-MADOGK     PIC  9(09).
+                  05  S138TMP-K-MADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma ------------------------
+      *--- (2008/12/11) line add start monma ---------------------------
+                  05  S138TMP-K-JIHIGK     PIC  9(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-K-HKNGK      PIC  9(09).
                   05  S138TMP-K-KOHGK      PIC  9(09).
                   05  S138TMP-K-SYUEKI     PIC  9(09).
@@ -81,7 +99,13 @@
                   05  S138TMP-K-KKENSU      PIC  9(04).
                   05  S138TMP-K-KNISSU      PIC  9(04).
                   05  S138TMP-K-KTENSU      PIC  9(09).
-                  05  S138TMP-K-KMADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma ------------------------
+      *            05  S138TMP-K-KMADOGK     PIC  9(09).
+                  05  S138TMP-K-KMADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma ------------------------
+      *--- (2008/12/11) line add start monma ---------------------------
+                  05  S138TMP-K-KJIHIGK     PIC  9(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-K-KHKNGK      PIC  9(09).
                   05  S138TMP-K-KKOHGK      PIC  9(09).
                   05  S138TMP-K-KSYUEKI     PIC  9(09).
@@ -93,7 +117,13 @@
                   05  S138TMP-K-HKENSU      PIC  9(04).
                   05  S138TMP-K-HNISSU      PIC  9(04).
                   05  S138TMP-K-HTENSU      PIC  9(09).
-                  05  S138TMP-K-HMADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma ------------------------
+      *            05  S138TMP-K-HMADOGK     PIC  9(09).
+                  05  S138TMP-K-HMADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma ------------------------
+      *--- (2008/12/11) line add start monma ---------------------------
+                  05  S138TMP-K-HJIHIGK     PIC  9(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-K-HHKNGK      PIC  9(09).
                   05  S138TMP-K-HKOHGK      PIC  9(09).
                   05  S138TMP-K-HSYUEKI     PIC  9(09).
@@ -104,7 +134,13 @@
                   05  S138TMP-GKENSU      PIC  9(04).
                   05  S138TMP-GNISSU      PIC  9(04).
                   05  S138TMP-GTENSU      PIC  9(09).
-                  05  S138TMP-GMADOGK     PIC  9(09).
+      *--- (2008/12/26) line change start monma ------------------------
+      *            05  S138TMP-GMADOGK     PIC  9(09).
+                  05  S138TMP-GMADOGK     PIC  S9(09).
+      *--- (2008/12/26) line change end   monma ------------------------
+      *--- (2008/12/11) line add start monma ---------------------------
+                  05  S138TMP-GJIHIGK     PIC  9(09).
+      *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-GHKNGK      PIC  9(09).
                   05  S138TMP-GKOHGK      PIC  9(09).
                   05  S138TMP-GSYUEKI     PIC  9(09).

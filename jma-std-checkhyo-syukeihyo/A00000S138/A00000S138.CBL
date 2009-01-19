@@ -38,12 +38,16 @@
       *                            ¿©»öÎÅÍÜÍó¤ÎÆü¿ô¤ò²ó¿ô¤ËÊÑ¹¹
       *  07/09/20    @@@@-Ä¹²°     4.0ÂÐ±þ
       *  08/04/23    @@@@-ÅÄÃæ     H20Ç¯4·î²þÀµÂÐ±þ(¸å´ü¹âÎð¼Ô¡¢µÁÌ³¶µ°é½¢³ØÁ°)
-      *                            µìÁí¹çÉÂ±¡¤Î»þ¤Ë¿ÇÎÅ²Ê¤¬É½¼¨¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ      
+      *                            µìÁí¹çÉÂ±¡¤Î»þ¤Ë¿ÇÎÅ²Ê¤¬É½¼¨¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
       *  08/05/12    @@@@-ÅÄÃæ     ÊÖÌá¤¬Àµ¤·¤¯°õ»ú¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
       *  08/05/26    @@@@-ÅÄÃæ     ¸Å¤¤¸øÈñÌ¾¤ò°õ»ú¤·¤Æ¤·¤Þ¤¦ÉÔ¶ñ¹ç¤ò½¤Àµ
       *  08/06/25    @@@@-ÅÄÃæ     ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹
       *  08/10/14    @@@@-ÅÄÃæ     ¼ç²ÊÀßÄê»þ¤Ë¿ÇÎÅ²Ê¤ò°õ»ú¤¹¤ë
       *  08/10/30    @@@@-ÅÄÃæ     Áë¸ýÀÁµá³Û¤ÎÉÔ¶ñ¹ç¤ò½¤Àµ
+      *  08/12/12    @@@@-Ìç´Ö     ¼«Èñ(095XXXXX¡¢096XXXXX¤ÇÆþÎÏ)¤Î½¸·×Íó¤òÄÉ²Ã
+      *                            ¿©»öÎÅÍÜ¤Î¼ý±×¤ò°åÎÅ¼ý±×¤Ë²Ã»»
+      *  08/12/26    @@@@-Ìç´Ö     °åÎÅ¼ý±×¤Î·×»»¼°¤òÊÑ¹¹
+      *  09/01/08    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤òÊÑ¹¹
       ********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -101,126 +105,132 @@
       *    
       *    ¥¹¥ÑÎÎ°è
        01  STS-AREA.
-           03  STS-PARA            PIC X(02).
-           03  STS-RECE            PIC X(02).
-           03  STS-RECEERR         PIC X(02).
-           03  STS-RECEUPD         PIC X(02).
-           03  STS-S138TMP         PIC X(02).
+           03  STS-PARA                 PIC X(02).
+           03  STS-RECE                 PIC X(02).
+           03  STS-RECEERR              PIC X(02).
+           03  STS-RECEUPD              PIC X(02).
+           03  STS-S138TMP              PIC X(02).
       *
       *    ¥Õ¥é¥°ÎÎ°è
        01  FLG-AREA.
-           03  FLG-SYSKANRI             PIC 9(01).
-           03  FLG-SYSKANRI3            PIC 9(01).
-           03  FLG-JYURRK               PIC 9(01).
-           03  FLG-PASS                 PIC 9(01).
-           03  FLG-TOKUTEI              PIC 9(01).
-           03  FLG-TYPE                 PIC 9(01).
-           03  FLG-PTINF                PIC 9(01).
-           03  FLG-HKNJAINF             PIC 9(01).
-           03  FLG-SYUNOU               PIC 9(01).
-           03  FLG-TENSU                PIC 9(01).
-           03  FLG-S138TMP              PIC 9(01).
-           03  FLG-PRINT                PIC 9(01).
-           03  INP-STS                  PIC 9(04).
-           03  FLG-KUMIAI               PIC 9(01).
-           03  FLG-HKNNUM               PIC 9(01).
-           03  FLG-PTHKNINF             PIC 9(01).
-           03  FLG-HEIYOU               PIC 9(01).
-           03  FLG-RJNHKN               PIC 9(01).
-           03  FLG-END                  PIC 9(01).
-           03  FLG-HKNCOMBI             PIC 9(01).
+           03  FLG-SYSKANRI              PIC 9(01).
+           03  FLG-SYSKANRI3             PIC 9(01).
+           03  FLG-JYURRK                PIC 9(01).
+           03  FLG-PASS                  PIC 9(01).
+           03  FLG-TOKUTEI               PIC 9(01).
+           03  FLG-TYPE                  PIC 9(01).
+           03  FLG-PTINF                 PIC 9(01).
+           03  FLG-HKNJAINF              PIC 9(01).
+           03  FLG-SYUNOU                PIC 9(01).
+           03  FLG-TENSU                 PIC 9(01).
+           03  FLG-S138TMP               PIC 9(01).
+           03  FLG-PRINT                 PIC 9(01).
+           03  INP-STS                   PIC 9(04).
+           03  FLG-KUMIAI                PIC 9(01).
+           03  FLG-HKNNUM                PIC 9(01).
+           03  FLG-PTHKNINF              PIC 9(01).
+           03  FLG-HEIYOU                PIC 9(01).
+           03  FLG-RJNHKN                PIC 9(01).
+           03  FLG-END                   PIC 9(01).
+           03  FLG-HKNCOMBI              PIC 9(01).
       *
       *    ¥«¥¦¥ó¥ÈÎÎ°è
        01  CNT-AREA.
-           03  CNT-LINE            PIC 9(02).
-           03  CNT-PAGE            PIC 9(06).
-           03  CNT-KOHI            PIC 9(01).
-           03  CNT-NINZU           PIC 9(06).
-           03  CNT-JYURRK          PIC 9(06).
-           03  CNT-DATA            PIC 9(06).
-           03  CNT-READ            PIC 9(06).
-           03  CNT-KOH             PIC 9(04).
+           03  CNT-LINE                  PIC 9(02).
+           03  CNT-PAGE                  PIC 9(06).
+           03  CNT-KOHI                  PIC 9(01).
+           03  CNT-NINZU                 PIC 9(06).
+           03  CNT-JYURRK                PIC 9(06).
+           03  CNT-DATA                  PIC 9(06).
+           03  CNT-READ                  PIC 9(06).
+           03  CNT-KOH                   PIC 9(04).
       *
       *    ¥·¥¹¥Æ¥àÎÎ°è
        01  SYS-AREA.
            03  SYS-YMD.
-               05  SYS-YY          PIC 9(02).
-               05  SYS-MM          PIC 9(02).
-               05  SYS-DD          PIC 9(02).
+               05  SYS-YY                PIC 9(02).
+               05  SYS-MM                PIC 9(02).
+               05  SYS-DD                PIC 9(02).
       *
       *    Åº»úÎÎ°è
        01  IDX-AREA.
-           03  IDX                PIC 9(01).
-           03  IDX1               PIC 9(04).
-           03  IDX2               PIC 9(04).
-           03  IDX3               PIC 9(04).
-           03  IDX4               PIC 9(04).
-           03  IDX5               PIC 9(04).
-           03  IDX6               PIC 9(03).
+           03  IDX                       PIC 9(01).
+           03  IDX1                      PIC 9(04).
+           03  IDX2                      PIC 9(04).
+           03  IDX3                      PIC 9(04).
+           03  IDX4                      PIC 9(04).
+           03  IDX5                      PIC 9(04).
+           03  IDX6                      PIC 9(03).
            03  IDA-G.
-               05  IDA            PIC 9(02).
+               05  IDA                   PIC 9(02).
            03  IDB-G.
-               05  IDB            PIC 9(02).
+               05  IDB                   PIC 9(02).
            03  IDC-G.
-               05  IDC              PIC 9(04).
+               05  IDC                   PIC 9(04).
            03  IDD-G.
-               05  IDD            PIC 9(04).
-           03  IDY                PIC 9(04).
-           03  IDZ                PIC 9(04).
-           03  IDM                PIC 9(04).
-           03  IDX-MAX            PIC 9(04).
+               05  IDD                   PIC 9(04).
+           03  IDY                       PIC 9(04).
+           03  IDZ                       PIC 9(04).
+           03  IDM                       PIC 9(04).
+           03  IDX-MAX                   PIC 9(04).
            
       *
       *    ¥Ñ¥é¥á¥¿ÎÎ°è
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
-           03  WRK-PARA-JOBID        PIC 9(07).
-           03  WRK-PARA-SHELLID      PIC X(08).
+           03  WRK-PARA-JOBID            PIC 9(07).
+           03  WRK-PARA-SHELLID          PIC X(08).
       ***07/09/20 nagaya 4.0ÂÐ±þ start
       *     03  WRK-PARA-HOSPID       PIC X(24).
-           03  WRK-PARA-HOSPNUM    PIC 9(02).
+           03  WRK-PARA-HOSPNUM          PIC 9(02).
       ***07/09/20 nagaya 4.0ÂÐ±þ end
       *    ÂÐ¾Ý¿ÇÎÅÇ¯·î
-           03  WRK-PARA-SRYYM        PIC X(06).
+           03  WRK-PARA-SRYYM            PIC X(06).
       *    ÂÐ¾ÝÇ¯·îºÇ½ªÆü¡¦½éÆü
-           03  WRK-PARA-PRTLYMD      PIC X(08).
-           03  WRK-PARA-PRTSYMD      PIC X(08).
+           03  WRK-PARA-PRTLYMD          PIC X(08).
+           03  WRK-PARA-PRTSYMD          PIC X(08).
       *
       *    °ì»þÎÎ°è
        01  WRK-AREA.
            03  WRK-SYSYMD.
-               05  WRK-SYSYY         PIC 9(04).
-               05  WRK-SYSMM         PIC 9(02).
-               05  WRK-SYSDD         PIC 9(02).
+               05  WRK-SYSYY             PIC 9(04).
+               05  WRK-SYSMM             PIC 9(02).
+               05  WRK-SYSDD             PIC 9(02).
            03  WRK-SYMD.
-               05  WRK-SYY           PIC 9(04).
-               05  WRK-SMM           PIC 9(02).
-               05  WRK-SDD           PIC 9(02).
+               05  WRK-SYY               PIC 9(04).
+               05  WRK-SMM               PIC 9(02).
+               05  WRK-SDD               PIC 9(02).
            03  WRK-SRYYMD.
-               05  WRK-SRYYY         PIC 9(04).
-               05  WRK-SRYMM         PIC 9(02).
-               05  WRK-SRYDD         PIC 9(02).
-           03  WRK-HENYMDG           PIC X(22).
-           03  WRK-SRYYM             PIC X(22).
-           03  WRK-SEIYMD            PIC X(22).
-           03  WRK-RECEERR           PIC X(200).
-           03  WRK-SRYKA             PIC X(02).
-           03  WRK-NYUGAIKBN         PIC X(01).
-           03  WRK-PARA-NYUGAIKBN    PIC X(01).
-           03  WRK-CITYNAME          PIC X(12).
-           03  WRK-PTID              PIC 9(10).
-           03  WRK-HKNNUM            PIC X(03).
-           03  WRK-KOHNUM            PIC X(03).
-           03  WRK-TENTNK            PIC 9(04).
-           03  WRK-JIBAITNK          PIC 99.9.
-           03  WRK-HKNJANUM          PIC X(06).
-           03  WRK-HKNJANAME         PIC X(40).
-           03  WRK-KYURATE           PIC 9(02).
+               05  WRK-SRYYY             PIC 9(04).
+               05  WRK-SRYMM             PIC 9(02).
+               05  WRK-SRYDD             PIC 9(02).
+           03  WRK-HENYMDG               PIC X(22).
+           03  WRK-SRYYM                 PIC X(22).
+           03  WRK-SEIYMD                PIC X(22).
+           03  WRK-RECEERR               PIC X(200).
+           03  WRK-SRYKA                 PIC X(02).
+           03  WRK-NYUGAIKBN             PIC X(01).
+           03  WRK-PARA-NYUGAIKBN        PIC X(01).
+           03  WRK-CITYNAME              PIC X(12).
+           03  WRK-PTID                  PIC 9(10).
+           03  WRK-HKNNUM                PIC X(03).
+           03  WRK-KOHNUM                PIC X(03).
+           03  WRK-TENTNK                PIC 9(04).
+           03  WRK-JIBAITNK              PIC 99.9.
+           03  WRK-HKNJANUM              PIC X(06).
+           03  WRK-HKNJANAME             PIC X(40).
+           03  WRK-KYURATE               PIC 9(02).
            03  WRK-KASAN-TBL.
                05  WRK-KENSU             PIC 9(04).
                05  WRK-NISSU             PIC 9(04).
                05  WRK-TENSU             PIC 9(09).
-               05  WRK-MADOGK            PIC 9(09).
+      *--- (2008/12/26) line change start monma ------------------------
+      *         05  WRK-MADOGK            PIC 9(09).
+               05  WRK-MADOGK            PIC S9(09).
+      *--- (2008/12/26) line change end   monma ------------------------
+      *--- (2008/12/12) line add start monma ---------------------------
+               05  WRK-JIHIGK            PIC 9(09).
+      *--- (2008/12/12) line add end   monma ---------------------------
                05  WRK-HKNGK             PIC 9(09).
                05  WRK-KOHGK             PIC 9(09).
                05  WRK-SYUEKI            PIC 9(09).
@@ -234,19 +244,25 @@
                05  WRK-GKKENSU           PIC 9(04).
                05  WRK-GKNISSU           PIC 9(04).
                05  WRK-GKTENSU           PIC 9(09).
-           03  WRK-MADOSEIKYUGK-G        PIC 9(09).
+      *--- (2008/12/26) line change start monma ------------------------
+      *     03  WRK-MADOSEIKYUGK-G        PIC 9(09).
+           03  WRK-MADOSEIKYUGK-G        PIC S9(09).
+      *--- (2008/12/26) line change end   monma ------------------------
+      *--- (2008/12/12) line add start monma ---------------------------
+           03  WRK-JIHIGK-G              PIC 9(09).
+      *--- (2008/12/12) line add end   monma ---------------------------
            03  WRK-KOHSEIKYUGK           PIC 9(09).
            03  WRK-KOHSEIKYUGK-G         PIC 9(09).
            03  WRK-ZENCOMPFTN            PIC 9(09).
            03  WRK-KOHSKJSEIKYUGK        PIC 9(09).
            03  WRK-PATH                  PIC X(64).
            03  WRK-KOHTMP-KEY.
-               05  WRK-KOHTMP-RJNKBN       PIC  X(03).
-               05  WRK-KOHTMP-KOHNUM       PIC  X(03).
+               05  WRK-KOHTMP-RJNKBN     PIC  X(03).
+               05  WRK-KOHTMP-KOHNUM     PIC  X(03).
            03  WRK-CHK-TBL.
-               05  WRK-CHK-PTID2            PIC 9(10).
+               05  WRK-CHK-PTID2         PIC 9(10).
                05  WRK-CHK-SRYKA-TBL OCCURS 20.
-                   07  WRK-CHK-PTID         PIC 9(10).
+                   07  WRK-CHK-PTID      PIC 9(10).
                    07  WRK-CHK-DAY-TBL.
                        09  WRK-CHK-DAY   PIC 9(01) OCCURS 31.
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹START tanaka
@@ -254,56 +270,64 @@
       *     03  WRK-CNT2                 PIC 9(02).
       *     03  WRK-CNT3                 PIC 9(02).
       *     03  WRK-CNT4                 PIC 9(02).
-           03  WRK-CNT1                 PIC 9(03).
-           03  WRK-CNT2                 PIC 9(03).
-           03  WRK-CNT3                 PIC 9(03).
-           03  WRK-CNT4                 PIC 9(03).
+           03  WRK-CNT1                  PIC 9(03).
+           03  WRK-CNT2                  PIC 9(03).
+           03  WRK-CNT3                  PIC 9(03).
+           03  WRK-CNT4                  PIC 9(03).
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹END
-           03  WRK-KOHNAME-G            PIC X(24).
-           03  WRK-KOHNAME-G2           PIC X(24).
+           03  WRK-KOHNAME-G             PIC X(24).
+           03  WRK-KOHNAME-G2            PIC X(24).
       *
-           03  WRK-MAE-INPUT         PIC X(200).
-           03  WRK-OUT-INPUT         PIC X(200).
+           03  WRK-MAE-INPUT             PIC X(200).
+           03  WRK-OUT-INPUT             PIC X(200).
       *
-           03  WRK-PAGE              PIC ZZ9.
-           03  WRK-Z3                PIC ZZ9.
-           03  WRK-Z4                PIC ZZZZ.
-           03  WRK-Z5                PIC Z,ZZZ.
-           03  WRK-Z6                PIC ZZ,ZZ9.
-           03  WRK-Z7                PIC ZZZ,ZZZ.
-           03  WRK-Z9                PIC Z,ZZZ,ZZZ.
-           03  WRK-Z92               PIC ZZZZZZZZZ.
-           03  WRK-Z10               PIC ZZ,ZZZ,ZZ9.
-           03  WRK-Z11               PIC ZZZ,ZZZ,ZZZ.
-           03  WRK-Z13               PIC Z,ZZZ,ZZZ,ZZZ.
-           03  WRK-Z14               PIC ZZ,ZZZ,ZZZ,ZZZ.
+           03  WRK-PAGE                  PIC ZZ9.
+           03  WRK-Z3                    PIC ZZ9.
+           03  WRK-Z4                    PIC ZZZZ.
+           03  WRK-Z5                    PIC Z,ZZZ.
+           03  WRK-Z6                    PIC ZZ,ZZ9.
+           03  WRK-Z7                    PIC ZZZ,ZZZ.
+           03  WRK-Z9                    PIC Z,ZZZ,ZZZ.
+           03  WRK-Z92                   PIC ZZZZZZZZZ.
+           03  WRK-Z10                   PIC ZZ,ZZZ,ZZ9.
+           03  WRK-Z11                   PIC ZZZ,ZZZ,ZZZ.
+           03  WRK-Z13                   PIC Z,ZZZ,ZZZ,ZZZ.
+           03  WRK-Z14                   PIC ZZ,ZZZ,ZZZ,ZZZ.
+      *--- (2008/12/26) line add start monma ---------------------------
+           03  WRK-Z93                   PIC --------Z.
+      *--- (2008/12/26) line add end   monma ---------------------------
       *
       * 2004/03/18  ÄÉ²Ã
-           03  WRK-SYS-BEDSU     PIC 9(04).
-           03  WRK-SYS-BEDSUIPN  PIC 9(04).
+           03  WRK-SYS-BEDSU             PIC 9(04).
+           03  WRK-SYS-BEDSUIPN          PIC 9(04).
       * 2004/03/18  ÄÉ²Ã
+      *--- 2009/01/08 ADD START ----------------------------------------
+           03  WRK-FTNFLG               PIC 9(01).
+           03  WRK-HKNFTN               PIC 9(09).
+           03  WRK-KOHFTN               PIC 9(09).
+      *--- 2009/01/08 ADD END ------------------------------------------
       *
       *    ¿ÇÎÅ²ÊÌ¾ÂàÈò¥¨¥ê¥¢
        01  SUM-AREA.
-           03  SUM-SRYKAMAX                         PIC 9(03).
+           03  SUM-SRYKAMAX              PIC 9(03).
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹START tanaka
       *     03  SUM-SRYDR-TBL       OCCURS 100.
            03  SUM-SRYDR-TBL       OCCURS 300.
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹END
-               05  SUM-SRYKA                        PIC X(02).
-               05  SUM-SRYKANAME                    PIC X(24).
+               05  SUM-SRYKA             PIC X(02).
+               05  SUM-SRYKANAME         PIC X(24).
       *    Æþ±¡ÍúÎò¾ðÊóÂàÈò¥¨¥ê¥¢
        01  WRK-NYUIN-AREA.
            03  WRK-NYUIN-TBL.
-               05  WRK-NYUIN-DAY    PIC  9(01) OCCURS 31.
+               05  WRK-NYUIN-DAY         PIC 9(01) OCCURS 31.
       *
       *
       *    ¼¼ÎÁº¹³ÛÂàÈò¥¨¥ê¥¢
        01  WRK-ROOM-SAGAKU-TBL.
-          03  WRK-ROOM-MAX           PIC 9(02).
-          03  WRK-ROOM-DATA     OCCURS 50.
-             05  WRK-ROOM-CD         PIC 9(03).
-             05  WRK-ROOM-SGK        PIC 9(05).
+           03  WRK-ROOM-MAX              PIC 9(02).
+           03  WRK-ROOM-DATA     OCCURS 50.
+               05  WRK-ROOM-CD           PIC 9(03).
+               05  WRK-ROOM-SGK          PIC 9(05).
       *
       *
       *
@@ -323,7 +347,6 @@
       *    °åÎÅµ¡´Ø¾ðÊó
            COPY    "CPSK1001.INC".
       *
-      *
       *    ¿ÇÎÅ²ÊÌÜ¾ðÊó¾ðÊó
            COPY    "CPSK1005.INC".
       *
@@ -336,7 +359,6 @@
       *    ½ÐÎÏÀè¥×¥ê¥ó¥¿Ì¾³ä¤êÅö¤Æ¾ðÊó
            COPY  "CPSK1031.INC".
       *
-      *
       *    ¿ÇÎÅ²ñ·×¥Þ¥¹¥¿
        01  SRYACCT-REC.
            COPY    "CPSRYACCT.INC".
@@ -344,7 +366,6 @@
       *    ¿ÇÎÅ¹Ô°Ù¥Þ¥¹¥¿
        01  SRYACT-REC.
            COPY    "CPSRYACT.INC".
-      *
       *
       *    ¼õ¿ÇÍúÎò¾ðÊó
        01  JYURRK-REC.
@@ -361,11 +382,9 @@
       *    ¼¼ÎÁº¹³Û¾ðÊó
            COPY  "CPSK5113.INC".
       *
-      *
       *    ´µ¼Ô¥Þ¥¹¥¿
        01  PTINF-REC.
            COPY    "CPPTINF.INC".
-      *
       *
       *    ÀÁµá´ÉÍý¥Þ¥¹¥¿
            COPY    "CPRCF010.INC".
@@ -373,7 +392,6 @@
       *    ´µ¼ÔÊÝ¸±¥Þ¥¹¥¿
        01  PTHKNINF-REC.
            COPY    "CPPTHKNINF.INC".
-
       *
       *    ÊÝ¸±ÁÈ¹ç¤»
        01  HKNCOMBI-REC.
@@ -387,7 +405,6 @@
        01  HKNJAINF-REC.
            COPY    "CPHKNJAINF.INC".
       *
-      *
       *    ¥¸¥ç¥Ö´ÉÍý¥Þ¥¹¥¿
        01  JOBKANRI-REC.
            COPY    "CPJOBKANRI.INC".
@@ -396,8 +413,7 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
-      *
+           COPY    "CPPRTDATA.INC".
       *
       *
       *****************************************************************
@@ -408,7 +424,7 @@
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    °õºþ£Ä£Â¹¹¿·¥µ¥Ö
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
       *   ÆüÉÕÊÑ´¹¥µ¥Ö
            COPY    "CPORCSDAY.INC".
@@ -425,12 +441,10 @@
       *    £Ä£Â¸¡º÷
            COPY    "MCPAREA".
       *
-      *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
-      *
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -480,25 +494,25 @@
       *     INITIALIZE                  S138
       *
       ***07/09/20 nagaya 4.0ÂÐ±þ start
-           MOVE    S100LNK-HOSPNUM    TO  WRK-PARA-HOSPNUM
-           MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
+           MOVE    S100LNK-HOSPNUM    TO   WRK-PARA-HOSPNUM
+           MOVE    WRK-PARA-HOSPNUM   TO   SPA-HOSPNUM
       ***07/09/20 nagaya 4.0ÂÐ±þ end
       *    ¥¹¥Æ¥Ã¥×´ÉÍý³«»Ï½èÍý
-           MOVE    "STS"             TO  SJOBKANRI-MODE
-           INITIALIZE                     JOBKANRI-REC
+           MOVE    "STS"              TO   SJOBKANRI-MODE
+           INITIALIZE                      JOBKANRI-REC
       ***07/09/20 nagaya 4.0ÂÐ±þ start
-           MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
+           MOVE    SPA-HOSPNUM        TO   JOB-HOSPNUM
       ***07/09/20 nagaya 4.0ÂÐ±þ end
-           MOVE    S100LNK-JOBID     TO  JOB-JOBID
-           MOVE    S100LNK-SHELLID   TO  JOB-SHELLID
-           MOVE    "A00000S100"      TO  JOB-PGID
+           MOVE    S100LNK-JOBID      TO   JOB-JOBID
+           MOVE    S100LNK-SHELLID    TO   JOB-SHELLID
+           MOVE    "A00000S100"       TO   JOB-PGID
            MOVE    "ÊÝ¸±ÊÌÀÁµá¥Á¥§¥Ã¥¯É½(¹ñÊÝ)"
-                                   TO  JOB-SHELLMSG
-           CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
-                                   JOBKANRI-REC
+                                      TO   JOB-SHELLMSG
+           CALL    "ORCSJOB"          USING
+                                      ORCSJOBKANRIAREA
+                                      JOBKANRI-REC
       ***07/09/20 nagaya 4.0ÂÐ±þ start
-                                   SPA-AREA
+                                      SPA-AREA
       *     MOVE    "RECEERR"       TO  RECEERR-FILE-ID
       *     MOVE    S100LNK-PRTKANRI-TERMID
       *                             TO  RECEERR-TERMID
@@ -518,62 +532,62 @@
         110-PARA-HENSYU-SEC                   SECTION.
       *
       *    ¥·¥¹¥Æ¥àÆüÉÕ
-           MOVE  S100LNK-PRTKANRI-SKYYMD   TO  WRK-SYMD
-           PERFORM 31012-SEIWA-HEN-SEC
-           MOVE  WRK-HENYMDG               TO  WRK-SEIYMD
+           MOVE  S100LNK-PRTKANRI-SKYYMD   TO   WRK-SYMD
+           PERFORM   31012-SEIWA-HEN-SEC
+           MOVE  WRK-HENYMDG               TO   WRK-SEIYMD
       * 20080423 µìÁí¹çÉÂ±¡¤Î»þ¤Ë¿ÇÎÅ²Ê¤¬É½¼¨¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµSTART tanaka
-           MOVE  S100LNK-PRTKANRI-SKYYMD   TO  SPA-SYSYMD
+           MOVE  S100LNK-PRTKANRI-SKYYMD   TO   SPA-SYSYMD
       * 20080423 µìÁí¹çÉÂ±¡¤Î»þ¤Ë¿ÇÎÅ²Ê¤¬É½¼¨¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµEND
       *
       ***  20040820  @@@@-MOTOHASI  ÄÉ²Ã
-           MOVE   S100LNK-NYUGAIKBN         TO  WRK-PARA-NYUGAIKBN
+           MOVE   S100LNK-NYUGAIKBN        TO   WRK-PARA-NYUGAIKBN
       ***  20040820
       *
       *
       *    ÂÐ¾ÝÆüÉÕ½èÍý
-           MOVE    S100LNK-YM          TO  WRK-SRYYMD (1:6)
-           MOVE    "01"                TO  WRK-SRYYMD (7:2)
-           MOVE    S100LNK-YM          TO  WRK-SYMD (1:6)
-           MOVE    "01"                TO  WRK-SYMD (7:2)
-           PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG(1:16)   TO  WRK-SRYYM 
-           MOVE    S100LNK-YM          TO  WRK-PARA-SRYYM
+           MOVE    S100LNK-YM              TO   WRK-SRYYMD (1:6)
+           MOVE    "01"                    TO   WRK-SRYYMD (7:2)
+           MOVE    S100LNK-YM              TO   WRK-SYMD (1:6)
+           MOVE    "01"                    TO   WRK-SYMD (7:2)
+           PERFORM   31012-SEIWA-HEN-SEC
+           MOVE    WRK-HENYMDG(1:16)       TO   WRK-SRYYM 
+           MOVE    S100LNK-YM              TO   WRK-PARA-SRYYM
       *
       *    ÂÐ¾ÝÇ¯·îºÇ½ªÆü¼èÆÀ
            INITIALIZE  WRK-SYMD
-           MOVE    S100LNK-YM          TO    WRK-SYMD(1:6)
-           PERFORM 31012-LASTDAY-GET-SEC
-           MOVE    WRK-SYMD            TO    WRK-PARA-PRTLYMD
+           MOVE    S100LNK-YM              TO   WRK-SYMD(1:6)
+           PERFORM   31012-LASTDAY-GET-SEC
+           MOVE    WRK-SYMD                TO   WRK-PARA-PRTLYMD
       *
       *    ÂÐ¾ÝÇ¯·î½éÆü¼èÆÀ
            INITIALIZE  WRK-SYMD
-           MOVE    S100LNK-YM          TO    WRK-PARA-PRTSYMD(1:6)
-           MOVE    "01"                TO    WRK-PARA-PRTSYMD(7:2)
+           MOVE    S100LNK-YM              TO   WRK-PARA-PRTSYMD(1:6)
+           MOVE    "01"                    TO   WRK-PARA-PRTSYMD(7:2)
       *
       *    °åÎÅµ¡´Ø£É£ÄÊÔ½¸^M
-           MOVE    SPACE               TO  SYS-1001-REC
-           INITIALIZE                      SYS-1001-REC
-           MOVE    "1001"              TO  SYS-1001-KANRICD
-           MOVE    "*"                 TO  SYS-1001-KBNCD
+           MOVE    SPACE                   TO   SYS-1001-REC
+           INITIALIZE                           SYS-1001-REC
+           MOVE    "1001"                  TO   SYS-1001-KANRICD
+           MOVE    "*"                     TO   SYS-1001-KBNCD
       ***07/09/20 nagaya 4.0ÂÐ±þ start
-           MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
-           MOVE    SPA-SYSYMD          TO  SYS-1001-STYUKYMD
-                                           SYS-1001-EDYUKYMD
+           MOVE    SPA-HOSPNUM             TO   SYS-1001-HOSPNUM
+           MOVE    SPA-SYSYMD              TO   SYS-1001-STYUKYMD
+                                                SYS-1001-EDYUKYMD
       ***07/09/20 nagaya 4.0ÂÐ±þ end
-           MOVE    SYS-1001-REC        TO  MCPDATA-REC
-           PERFORM 800-SYSKANRI-READ-SEC
-           IF      FLG-SYSKANRI        =   ZERO
-                MOVE    MCPDATA-REC         TO  SYS-1001-REC
+           MOVE    SYS-1001-REC            TO   MCPDATA-REC
+           PERFORM   800-SYSKANRI-READ-SEC
+           IF      FLG-SYSKANRI   =   ZERO
+                MOVE    MCPDATA-REC        TO   SYS-1001-REC
       ***07/09/20 nagaya 4.0ÂÐ±þ start
       *          MOVE    SYS-1001-HOSPID     TO  WRK-PARA-HOSPID
-                MOVE    SYS-1001-HOSPNUM    TO  WRK-PARA-HOSPNUM
+                MOVE    SYS-1001-HOSPNUM   TO   WRK-PARA-HOSPNUM
       ***07/09/20 nagaya 4.0ÂÐ±þ end
-                MOVE    SYS-1001-BEDSU      TO  WRK-SYS-BEDSU
-                MOVE    SYS-1001-BEDSUIPN   TO  WRK-SYS-BEDSUIPN
+                MOVE    SYS-1001-BEDSU     TO   WRK-SYS-BEDSU
+                MOVE    SYS-1001-BEDSUIPN  TO   WRK-SYS-BEDSUIPN
            ELSE    
                 MOVE    "°åÎÅµ¡´Ø£É£Ä¤¬¼èÆÀ¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿¡£"
-                                            TO  WRK-RECEERR
-                PERFORM 500-ERR-HENSYU-SEC
+                                           TO   WRK-RECEERR
+                PERFORM   500-ERR-HENSYU-SEC
            END-IF
       *
       **    °åÎÅµ¡´Ø£É£ÄÊÔ½¸
@@ -598,66 +612,65 @@
       *     END-IF
       **
       *    ¼«ÇåÀÕÅÀ¿ôÃ±²Á¼èÆÀ
-           MOVE     SPACE         TO        SYS-4001-REC
+           MOVE     SPACE              TO   SYS-4001-REC
            INITIALIZE                       SYS-4001-REC
-           MOVE     "4001"        TO        SYS-4001-KANRICD
-           MOVE     "*"           TO        SYS-4001-KBNCD
+           MOVE     "4001"             TO   SYS-4001-KANRICD
+           MOVE     "*"                TO   SYS-4001-KBNCD
       ***07/09/20 nagaya 4.0ÂÐ±þ start
-           MOVE    SPA-HOSPNUM    TO        SYS-4001-HOSPNUM
-           MOVE     SPA-SYSYMD    TO        SYS-4001-STYUKYMD
+           MOVE     SPA-HOSPNUM        TO   SYS-4001-HOSPNUM
+           MOVE     SPA-SYSYMD         TO   SYS-4001-STYUKYMD
                                             SYS-4001-EDYUKYMD
       ***07/09/20 nagaya 4.0ÂÐ±þ end
            MOVE     SYS-4001-REC  TO        MCPDATA-REC
            PERFORM  900-SYSKANRI-INV-SEC
-           IF       FLG-SYSKANRI        =   ZERO
-                    MOVE    MCPDATA-REC TO  SYS-4001-REC
+           IF   FLG-SYSKANRI        =   ZERO
+             MOVE    MCPDATA-REC TO  SYS-4001-REC
            ELSE
-                    INITIALIZE              SYS-4001-REC
+             INITIALIZE              SYS-4001-REC
            END-IF
-           DISPLAY "   SYS-4001-TENKBN  = " SYS-4001-TENKBN
-           IF    SYS-4001-TENKBN    =    "1"
-             MOVE    11.5                   TO  WRK-JIBAITNK
+           IF   SYS-4001-TENKBN  =  "1"
+             MOVE    11.5              TO   WRK-JIBAITNK
            ELSE
-             MOVE    12                     TO  WRK-JIBAITNK
+             MOVE    12                TO   WRK-JIBAITNK
            END-IF
       *
       *    ¿ÇÎÅ²Ê¾ðÊó¼èÆÀ
       ***07/09/20 nagaya 4.0ÂÐ±þ start
-             MOVE    SPACE                  TO  SYS-1005-REC
-             INITIALIZE                         SYS-1005-REC
+             MOVE    SPACE                  TO   SYS-1005-REC
+             INITIALIZE                          SYS-1005-REC
       ***07/09/20 nagaya 4.0ÂÐ±þ end
              MOVE    "1005"                 TO   SYS-1005-KANRICD
       ***07/09/20 nagaya 4.0ÂÐ±þ start
       * 20080423 µìÁí¹çÉÂ±¡¤Î»þ¤Ë¿ÇÎÅ²Ê¤¬É½¼¨¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµSTART tanaka
       *       MOVE    SPA-SRYYMD             TO  SYS-1005-STYUKYMD
       *                                          SYS-1005-EDYUKYMD
-             MOVE    SPA-SYSYMD             TO  SYS-1005-STYUKYMD
-                                                SYS-1005-EDYUKYMD
+             MOVE    SPA-SYSYMD             TO   SYS-1005-STYUKYMD
+                                                 SYS-1005-EDYUKYMD
       * 20080423 µìÁí¹çÉÂ±¡¤Î»þ¤Ë¿ÇÎÅ²Ê¤¬É½¼¨¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµEND
              MOVE    SPA-HOSPNUM            TO   SYS-1005-HOSPNUM
       ***07/09/20 nagaya 4.0ÂÐ±þ end
-             MOVE    WRK-PARA-PRTLYMD       TO    WRK-SYMD
-             PERFORM 820-SYSKANRI-DBSELECT-SEC
-             MOVE   1        TO     IDX1 
+             MOVE    WRK-PARA-PRTLYMD       TO   WRK-SYMD
+             PERFORM   820-SYSKANRI-DBSELECT-SEC
+             MOVE     1        TO     IDX1
              PERFORM  UNTIL  FLG-SYSKANRI3 = 1
-               IF  FLG-SYSKANRI3 = ZERO
-                   MOVE SYS-1005-KBNCD      TO SUM-SRYKA(IDX1)
-                   MOVE SYS-1005-SRYKANAME1 TO SUM-SRYKANAME(IDX1)
-                   ADD  1        TO     IDX1 
+               IF  FLG-SYSKANRI3  =  ZERO
+                 MOVE SYS-1005-KBNCD        TO   SUM-SRYKA(IDX1)
+                 MOVE SYS-1005-SRYKANAME1   TO   SUM-SRYKANAME(IDX1)
+                 ADD    1            TO   IDX1
                END-IF  
-               PERFORM 820-SYSKANRI-DBFETCH-SEC
+               PERFORM   820-SYSKANRI-DBFETCH-SEC
              END-PERFORM
-             SUBTRACT  1        FROM IDX1  
-             MOVE  IDX1         TO   SUM-SRYKAMAX
+             SUBTRACT    1      FROM   IDX1
+             MOVE    IDX1          TO   SUM-SRYKAMAX
       *=== sargeÂÐ±þ ADD By Takashima(2006/09/17) start
-             PERFORM 820-SYSKANRI-DBCLOSE-SEC
+             PERFORM   820-SYSKANRI-DBCLOSE-SEC
       *=== sargeÂÐ±þ ADD By Takashima(2006/09/17) end
       *
       *
-           MOVE    "S138TP"            TO  S138TP-FILE-ID
-           MOVE    S100LNK-PRTKANRI-TERMID TO  S138TP-TERMID
+           MOVE    "S138TP"                 TO   S138TP-FILE-ID
+           MOVE    S100LNK-PRTKANRI-TERMID  TO   S138TP-TERMID
       ***07/09/20 nagaya 4.0ÂÐ±þ start
-           MOVE    WRK-PARA-HOSPNUM        TO  S138TP-HOSPNUM
+           MOVE    WRK-PARA-HOSPNUM         TO   S138TP-HOSPNUM
       *
       *     MOVE    "RECEERR"           TO  RECEERR-FILE-ID
       *     MOVE    S100LNK-PRTKANRI-TERMID     TO  RECEERR-TERMID
@@ -716,19 +729,19 @@
            PERFORM  UNTIL  FLG-END   =   1
       *
       *    ½¸·×¾ì½êÀßÄê
-             PERFORM 2001-IDX-SET2-SEC
+             PERFORM   2001-IDX-SET2-SEC
       *
       *    ¹ñÊÝ¥Ç¡¼¥¿½¸·×
              IF    FLG-KUMIAI  =  ZERO
-               PERFORM 2001-DATA-SET2-SEC
+               PERFORM   2001-DATA-SET2-SEC
              ELSE
-               PERFORM 2001-DATA-SET2-K-SEC
+               PERFORM   2001-DATA-SET2-K-SEC
              END-IF
       *
-             PERFORM 900-SEIKYU-READ-SEC
+             PERFORM   900-SEIKYU-READ-SEC
            END-PERFORM
       *
-           PERFORM  900-SEIKYU-CLOSE-SEC
+           PERFORM   900-SEIKYU-CLOSE-SEC
       *
            .
        2001-KOKUHO-SYUKEI-EXT.
@@ -745,16 +758,16 @@
              IF    RECE10-HKNJANUM(3:1)  =  "3"
                MOVE    1    TO    FLG-KUMIAI
              END-IF
-             MOVE  RECE10-HKNJANUM(1:6)    TO    WRK-HKNJANUM
+             MOVE  RECE10-HKNJANUM(1:6)    TO   WRK-HKNJANUM
            ELSE
              IF    RECE10-HKNJANUM(5:1)  =  "3"
                MOVE    1    TO    FLG-KUMIAI
              END-IF
-             MOVE  RECE10-HKNJANUM(3:6)    TO    WRK-HKNJANUM
+             MOVE  RECE10-HKNJANUM(3:6)    TO   WRK-HKNJANUM
            END-IF
       *
       *    ÌÀºÙ½¸·×¾ì½êÀßÄê
-           IF    FLG-KUMIAI    =    ZERO
+           IF    FLG-KUMIAI   =   ZERO
       *    °ìÈÌ¹ñÊÝ
              IF    RECE10-RJNHKNNUM NOT = SPACE
                IF    RECE10-KYURATE  =  9
@@ -883,8 +896,6 @@
                MOVE            8       TO    IDX2
              END-IF
            END-IF
-      *    
-      *
       *
            .
        2001-IDX-SET2-EXT.
@@ -935,6 +946,13 @@
                                              S138TMP-MADOGK(IDX2)
                                              S138TMP-GMADOGK
       *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×²Ã»»
+           ADD    WRK-JIHIGK           TO    S138TMP-JIHIGK(IDX1)
+                                             S138TMP-JIHIGK(IDX2)
+                                             S138TMP-GJIHIGK
+      *--- (2008/12/12) line add end   monma ---------------------------
+      *
       *    ÊÝ¸±ÀÁµá³Û²Ã»»
            ADD    WRK-HKNGK            TO    S138TMP-HKNGK(IDX1)
                                              S138TMP-HKNGK(IDX2)
@@ -983,7 +1001,7 @@
       *
       *    ½ñ¤­½Ð¤·
            IF  FLG-S138TMP   =  1
-             ADD      1                  TO    CNT-DATA
+             ADD      1                    TO    CNT-DATA
              WRITE    S138TMP-REC
            ELSE
              REWRITE  S138TMP-REC
@@ -1002,7 +1020,7 @@
        2001-DATA-SET21-SEC                SECTION.
       *
            PERFORM VARYING IDX5     FROM    1   BY  1
-                   UNTIL   IDX5     >       4
+                   UNTIL   IDX5   >   4
                    OR  RECE10-KOHNUM (IDX5) =   SPACE
       *    ¸øÈñÈ½ÊÌ
              PERFORM  VARYING  IDX4  FROM  1  BY  1
@@ -1102,6 +1120,12 @@
       *    Áë¸ýÀÁµá³Û²Ã»»
              ADD    WRK-MADOGK           TO    S138TMP-HMADOGK(IDC)
       *
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×²Ã»»
+           ADD      WRK-JIHIGK           TO    S138TMP-HJIHIGK(IDC)
+      *--- (2008/12/12) line add end   monma ---------------------------
+      *
       *    ÊÝ¸±ÀÁµá³Û²Ã»»
              ADD    WRK-HKNGK            TO    S138TMP-HHKNGK(IDC)
       *
@@ -1122,10 +1146,9 @@
       *      É¸½àÉéÃ´³Û²Ã»»
              ADD    WRK-SFTNGK         TO    S138TMP-HSFTNGK(IDC)
       *
-      ***  20040820  @@@@-MOTOHASI  
+      ***  20040820  @@@@-MOTOHASI
       *
            END-IF
-      *
       *
            .
        2001-DATA-SET22-EXT.
@@ -1175,6 +1198,13 @@
            ADD    WRK-MADOGK           TO    S138TMP-K-MADOGK(IDX1)
                                              S138TMP-K-MADOGK(IDX2)
                                              S138TMP-GMADOGK
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×²Ã»»
+           ADD    WRK-JIHIGK           TO    S138TMP-K-JIHIGK(IDX1)
+                                             S138TMP-K-JIHIGK(IDX2)
+                                             S138TMP-GJIHIGK
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û²Ã»»
            ADD    WRK-HKNGK            TO    S138TMP-K-HKNGK(IDX1)
@@ -1255,14 +1285,14 @@
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹END
       ***  20040706  ¤³¤³¤Þ¤Ç
                       OR       S138TMP-KOH2-KEY (IDX4) = SPACE
-               IF  RECE10-KOHNUM (IDX5) = S138TMP-K-KOHNUM (IDX4) AND
-                   RECE10-RJNHKNNUM     = S138TMP-K-RJNKBN(IDX4)
-                   MOVE  IDX4  TO  CNT-KOH
+               IF  RECE10-KOHNUM(IDX5)  =  S138TMP-K-KOHNUM(IDX4)
+                   AND  RECE10-RJNHKNNUM  =  S138TMP-K-RJNKBN(IDX4)
+                 MOVE    IDX4      TO   CNT-KOH
       ***  20040706  @@@@-MOTOHASI  ÊÑ¹¹
       ***             MOVE  50    TO  IDX4
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹START tanaka
       *             MOVE  100    TO  IDX4
-                   MOVE  300    TO  IDX4
+                 MOVE    300       TO   IDX4
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹END
       ***  20040706  ¤³¤³¤Þ¤Ç
                END-IF
@@ -1343,6 +1373,11 @@
       *    Áë¸ýÀÁµá³Û²Ã»»
              ADD    WRK-MADOGK           TO    S138TMP-K-HMADOGK(IDC)
       *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×²Ã»»
+             ADD    WRK-JIHIGK           TO    S138TMP-K-HJIHIGK(IDC)
+      *--- (2008/12/12) line add end   monma ---------------------------
+      *
       *    ÊÝ¸±ÀÁµá³Û²Ã»»
              ADD    WRK-HKNGK            TO    S138TMP-K-HHKNGK(IDC)
       *
@@ -1363,7 +1398,7 @@
       *    É¸½àÉéÃ´³Û²Ã»»
              ADD    WRK-SFTNGK         TO    S138TMP-K-HSFTNGK(IDC)
       *
-      ***  20040820  @@@@-MOTOHASI  
+      ***  20040820  @@@@-MOTOHASI
       *
            END-IF
       *
@@ -1398,8 +1433,18 @@
       *    ¼ýÇ¼¾ðÊó¤«¤éÁë¸ýÀÁµá³Û¡¢¸øÈñÀÁµá³Û¤ò½¸·×
            MOVE    ZERO                    TO    WRK-MADOSEIKYUGK-G
                                                  WRK-KOHSEIKYUGK-G
+      *--- (2008/12/12) line add start monma ---------------------------
+                                                 WRK-JIHIGK-G
+      *--- (2008/12/12) line add end   monma ---------------------------
+      *
            PERFORM  920-SYUNOU-SET-SEC
-           MOVE    WRK-MADOSEIKYUGK-G       TO    WRK-MADOGK
+      *--- (2008/12/12) line add&del start monma -----------------------
+      *    ¤½¤ÎÂ¾¼«Èñ¤òÊÌ½¸·×
+           MOVE    WRK-JIHIGK-G             TO    WRK-JIHIGK
+           COMPUTE WRK-MADOGK  =  WRK-MADOSEIKYUGK-G  -  WRK-JIHIGK-G
+      *     MOVE    WRK-MADOSEIKYUGK-G       TO    WRK-MADOGK
+      *--- (2008/12/12) line add&del end   monma -----------------------
+      *
            MOVE    WRK-KOHSEIKYUGK-G        TO    WRK-KOHGK
       *
       *    ¸øÈñÃ±ÆÈ¤Î¾ì¹ç¤ÎÊÔ½¸
@@ -1412,9 +1457,11 @@
              MOVE    ZERO                TO    WRK-HKNGK
            END-IF
       *
+      *--- (2008/12/12) line del start monma ---------------------------
       *    °åÎÅ¼ý±×
-           COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-                                +  WRK-KOHGK
+      *     COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+      *                          +  WRK-KOHGK
+      *--- (2008/12/12) line del end   monma ---------------------------
       *
       ***  20040820  @@@@-MOTOHASI  ¿©»öÎÅÍÜÄÉ²Ã
       *    Æü¿ô
@@ -1425,6 +1472,12 @@
              MOVE  RECE10-SHOKUJIFTN(1)       TO    WRK-SFTNGK
       ***  20040820  @@@@-MOTOHASI  
       *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    °åÎÅ¼ý±× ¿©»ö¼ý±×²Ã»»
+           COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+                                +  WRK-KOHGK  +  WRK-JIHIGK
+                                +  (WRK-SSEIKYU - WRK-SFTNGK)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
            .
        2001-KASAN-EXT.
@@ -1458,9 +1511,9 @@
       *
       *
       ***  20040820  @@@@-MOTOHASI  ÄÉ²Ã
-             IF    WRK-PARA-NYUGAIKBN     =  "1"  OR  SPACE
-               IF    S138TMP-NYUGAIKBN      =    "1"
-      ***  20040820  @@@@-MOTOHASI  
+             IF    WRK-PARA-NYUGAIKBN   =  "1"  OR  SPACE
+               IF    S138TMP-NYUGAIKBN   =   "1"
+      ***  20040820  @@@@-MOTOHASI
       *          Æþ±¡¥Õ¥©¡¼¥à
       *          £±ËçÌÜ
       *          ¸«½Ð¤·ÊÔ½¸
@@ -1808,9 +1861,19 @@
              MOVE     S138TMP-TENSU(IDX1)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S138G1-TENSU(IDX1)
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-             MOVE     S138TMP-MADOGK(IDX1)   TO    WRK-Z92
-             MOVE     WRK-Z92               TO    S138G1-MADOGK(IDX1)
+      *       MOVE     S138TMP-MADOGK(IDX1)   TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO    S138G1-MADOGK(IDX1)
+             MOVE     S138TMP-MADOGK(IDX1)   TO    WRK-Z93
+             MOVE     WRK-Z93               TO    S138G1-MADOGK(IDX1)
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ
+             MOVE     S138TMP-JIHIGK(IDX1)   TO    WRK-Z92
+             MOVE     WRK-Z92               TO    S138G1-JIHIGK(IDX1)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S138TMP-HKNGK(IDX1)    TO    WRK-Z92
@@ -1838,9 +1901,19 @@
                MOVE     S138TMP-K-TENSU(IDX1)    TO    WRK-Z92
                MOVE     WRK-Z92               TO    S138G1-K-TENSU(IDX1)
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-               MOVE     S138TMP-K-MADOGK(IDX1)   TO    WRK-Z92
-               MOVE     WRK-Z92              TO    S138G1-K-MADOGK(IDX1)
+      *         MOVE     S138TMP-K-MADOGK(IDX1)   TO    WRK-Z92
+      *         MOVE     WRK-Z92              TO    S138G1-K-MADOGK(IDX1)
+               MOVE     S138TMP-K-MADOGK(IDX1)   TO    WRK-Z93
+               MOVE     WRK-Z93              TO    S138G1-K-MADOGK(IDX1)
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ
+               MOVE     S138TMP-K-JIHIGK(IDX1)   TO    WRK-Z92
+               MOVE     WRK-Z92              TO    S138G1-K-JIHIGK(IDX1)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
                MOVE     S138TMP-K-HKNGK(IDX1)    TO    WRK-Z92
@@ -1871,9 +1944,19 @@
              MOVE     S138TMP-GTENSU          TO    WRK-Z92
              MOVE     WRK-Z92                TO    S138G1-GTENSU
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-             MOVE     S138TMP-GMADOGK         TO    WRK-Z92
-             MOVE     WRK-Z92                TO    S138G1-GMADOGK
+      *       MOVE     S138TMP-GMADOGK         TO    WRK-Z92
+      *       MOVE     WRK-Z92                TO    S138G1-GMADOGK
+             MOVE     S138TMP-GMADOGK         TO    WRK-Z93
+             MOVE     WRK-Z93                TO    S138G1-GMADOGK
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ
+             MOVE     S138TMP-GJIHIGK         TO    WRK-Z92
+             MOVE     WRK-Z92                TO    S138G1-GJIHIGK
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S138TMP-GHKNGK          TO    WRK-Z92
@@ -1985,9 +2068,19 @@
              MOVE     S138TMP-HTENSU(WRK-CNT3)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S138G2-TENSU(IDX3)
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-             MOVE     S138TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
-             MOVE     WRK-Z92               TO    S138G2-MADOGK(IDX3)
+      *       MOVE     S138TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO    S138G2-MADOGK(IDX3)
+             MOVE     S138TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z93
+             MOVE     WRK-Z93               TO    S138G2-MADOGK(IDX3)
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ
+             MOVE     S138TMP-HJIHIGK(WRK-CNT3)   TO    WRK-Z92
+             MOVE     WRK-Z92               TO    S138G2-JIHIGK(IDX3)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S138TMP-HHKNGK(WRK-CNT3)    TO    WRK-Z92
@@ -2042,9 +2135,19 @@
              MOVE     S138TMP-K-HTENSU(WRK-CNT4)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S138G2-TENSU(IDX3)
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-             MOVE     S138TMP-K-HMADOGK(WRK-CNT4)   TO    WRK-Z92
-             MOVE     WRK-Z92               TO   S138G2-MADOGK(IDX3)
+      *       MOVE     S138TMP-K-HMADOGK(WRK-CNT4)   TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO   S138G2-MADOGK(IDX3)
+             MOVE     S138TMP-K-HMADOGK(WRK-CNT4)   TO    WRK-Z93
+             MOVE     WRK-Z93               TO   S138G2-MADOGK(IDX3)
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ
+             MOVE     S138TMP-K-HJIHIGK(WRK-CNT4)   TO    WRK-Z92
+             MOVE     WRK-Z92               TO   S138G2-JIHIGK(IDX3)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S138TMP-K-HHKNGK(WRK-CNT4)    TO    WRK-Z92
@@ -2087,9 +2190,19 @@
              MOVE     S138TMP-TENSU(IDX1)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S138N1-TENSU(IDX1)
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-             MOVE     S138TMP-MADOGK(IDX1)   TO    WRK-Z92
-             MOVE     WRK-Z92               TO    S138N1-MADOGK(IDX1)
+      *       MOVE     S138TMP-MADOGK(IDX1)   TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO    S138N1-MADOGK(IDX1)
+             MOVE     S138TMP-MADOGK(IDX1)   TO    WRK-Z93
+             MOVE     WRK-Z93               TO    S138N1-MADOGK(IDX1)
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ
+             MOVE     S138TMP-JIHIGK(IDX1)   TO    WRK-Z92
+             MOVE     WRK-Z92               TO    S138N1-JIHIGK(IDX1)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S138TMP-HKNGK(IDX1)    TO    WRK-Z92
@@ -2168,9 +2281,19 @@
                MOVE     S138TMP-K-TENSU(IDX1)    TO    WRK-Z92
                MOVE     WRK-Z92               TO    S138N1-K-TENSU(IDX1)
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-               MOVE     S138TMP-K-MADOGK(IDX1)   TO    WRK-Z92
-               MOVE     WRK-Z92               TO   S138N1-K-MADOGK(IDX1)
+      *         MOVE     S138TMP-K-MADOGK(IDX1)   TO    WRK-Z92
+      *         MOVE     WRK-Z92               TO   S138N1-K-MADOGK(IDX1)
+               MOVE     S138TMP-K-MADOGK(IDX1)   TO    WRK-Z93
+               MOVE     WRK-Z93               TO   S138N1-K-MADOGK(IDX1)
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ·×
+               MOVE     S138TMP-K-JIHIGK(IDX1)   TO    WRK-Z92
+               MOVE     WRK-Z92               TO   S138N1-K-JIHIGK(IDX1)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
                MOVE     S138TMP-K-HKNGK(IDX1)    TO    WRK-Z92
@@ -2242,9 +2365,19 @@
              MOVE     S138TMP-GTENSU          TO    WRK-Z92
              MOVE     WRK-Z92                TO    S138N1-GTENSU
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-             MOVE     S138TMP-GMADOGK         TO    WRK-Z92
-             MOVE     WRK-Z92                TO    S138N1-GMADOGK
+      *       MOVE     S138TMP-GMADOGK         TO    WRK-Z92
+      *       MOVE     WRK-Z92                TO    S138N1-GMADOGK
+             MOVE     S138TMP-GMADOGK         TO    WRK-Z93
+             MOVE     WRK-Z93                TO    S138N1-GMADOGK
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ
+             MOVE     S138TMP-GJIHIGK         TO    WRK-Z92
+             MOVE     WRK-Z92                TO    S138N1-GJIHIGK
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S138TMP-GHKNGK          TO    WRK-Z92
@@ -2310,9 +2443,19 @@
              MOVE     S138TMP-HTENSU(WRK-CNT3)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S138N2-TENSU(IDX3)
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-             MOVE     S138TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
-             MOVE     WRK-Z92               TO    S138N2-MADOGK(IDX3)
+      *       MOVE     S138TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO    S138N2-MADOGK(IDX3)
+             MOVE     S138TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z93
+             MOVE     WRK-Z93               TO    S138N2-MADOGK(IDX3)
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ
+             MOVE     S138TMP-HJIHIGK(WRK-CNT3)   TO    WRK-Z92
+             MOVE     WRK-Z92               TO    S138N2-JIHIGK(IDX3)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S138TMP-HHKNGK(WRK-CNT3)    TO    WRK-Z92
@@ -2379,9 +2522,19 @@
              MOVE     S138TMP-K-HTENSU(WRK-CNT4)    TO    WRK-Z92
              MOVE     WRK-Z92               TO    S138N2-TENSU(IDX3)
       *
+      *--- (2008/12/26) line change start monma ------------------------
       *    Áë¸ýÀÁµá³Û
-             MOVE     S138TMP-K-HMADOGK(WRK-CNT4)   TO    WRK-Z92
-             MOVE     WRK-Z92               TO   S138N2-MADOGK(IDX3)
+      *       MOVE     S138TMP-K-HMADOGK(WRK-CNT4)   TO    WRK-Z92
+      *       MOVE     WRK-Z92               TO   S138N2-MADOGK(IDX3)
+             MOVE     S138TMP-K-HMADOGK(WRK-CNT4)   TO    WRK-Z93
+             MOVE     WRK-Z93               TO   S138N2-MADOGK(IDX3)
+      *--- (2008/12/26) line change end   monma ------------------------
+      *
+      *--- (2008/12/12) line add start monma ---------------------------
+      *    ¼«Èñ
+             MOVE     S138TMP-K-HJIHIGK(WRK-CNT4)   TO    WRK-Z92
+             MOVE     WRK-Z92               TO   S138N2-JIHIGK(IDX3)
+      *--- (2008/12/12) line add end   monma ---------------------------
       *
       *    ÊÝ¸±ÀÁµá³Û
              MOVE     S138TMP-K-HHKNGK(WRK-CNT4)    TO    WRK-Z92
@@ -3364,6 +3517,9 @@
            MOVE    ZERO    TO    WRK-KOHSEIKYUGK
                                  WRK-KOHSKJSEIKYUGK
                                  WRK-ZENCOMPFTN
+      *--- 2009/01/08 ADD START ----------------------------------------
+                                 WRK-FTNFLG
+      *--- 2009/01/08 ADD END ------------------------------------------
       *
       ***  20050907 MOTOHASI ¸øÈñ½õÀ®³Û¤Î»»½Ð¤ò½¤Àµ
            IF  RECE10-RJNHKNNUM NOT = SPACE
@@ -3398,10 +3554,37 @@
                  IF  SYU-KOH-COMPFTN(IDX) < WRK-ZENCOMPFTN
       ***  20050907 MOTOHASI ¸øÈñ½õÀ®³Û¤Î»»½Ð¤ò½¤Àµ
       *
-                   COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
-                                             -  SYU-KOH-COMPFTN(IDX)
-                   COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-                                                -  SYU-SKJ-FTN(IDX)
+      *--- 2009/01/08 ADD+DELETE START ---------------------------------
+      *             COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
+      *                                       -  SYU-KOH-COMPFTN(IDX)
+      *             COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+      *                                          -  SYU-SKJ-FTN(IDX)
+                   IF    RECE10-FTNMONEY(1)  =  ZERO
+                       AND  RECE10-KYURATE  NOT = ZERO
+           DISPLAY "¸ÂÅÙ¤Ê¤·" RECE10-PTNUM
+                     MOVE  SYU-KOH-HKNNUM(IDX)   TO  WRK-KOHNUM
+                     PERFORM   950-HKNNUM-SET-SEC
+                     IF   HKN-RECEFTNDSPKBN  =  1
+           DISPLAY "»Í¼Î¸ÞÆþ¤¹¤ë" 
+                       COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
+                                                 -  SYU-KOH-COMPFTN(IDX)
+                       COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+                                                    -  SYU-SKJ-FTN(IDX)
+                     ELSE
+           DISPLAY "»Í¼Î¸ÞÆþ¤·¤Ê¤¤" 
+                       COMPUTE  WRK-KOHSEIKYUGK = SYU-SYUCOMPFTN-ENTANI
+                                          -  SYU-KOH-COMPFTN-ENTANI(IDX)
+                       COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+                                                    -  SYU-SKJ-FTN(IDX)
+                     END-IF
+                   ELSE
+           DISPLAY "¸ÂÅÙ¤¢¤ê" RECE10-PTNUM    
+                     ADD    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
+                     MOVE   1   TO    WRK-FTNFLG
+                     COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+                                                 -  SYU-SKJ-FTN(IDX)
+                   END-IF
+      *--- 2009/01/08 ADD+DELETE END -----------------------------------
       ***  20050907 MOTOHASI ¸øÈñ½õÀ®³Û¤Î»»½Ð¤ò½¤Àµ
                    MOVE   SYU-KOH-COMPFTN(IDX)  TO  WRK-ZENCOMPFTN
                  END-IF
@@ -3411,7 +3594,24 @@
              END-IF
            END-PERFORM
       *
-           ADD    WRK-KOHSEIKYUGK  TO    WRK-KOHSEIKYUGK-G
+      *--- 2009/01/08 ADD START ----------------------------------------
+           IF  WRK-FTNFLG  =  1
+             COMPUTE  WRK-HKNFTN       =   WRK-HKNFTN
+                                       -   WRK-KOHFTN
+             INITIALIZE    WRK-KOHFTN
+           ELSE
+             ADD    WRK-KOHSEIKYUGK     TO   WRK-KOHSEIKYUGK-G
+           END-IF
+      *--- 2009/01/08 ADD END ------------------------------------------
+      *--- (2008/12/12) line add start monma ---------------------------
+           COMPUTE  WRK-JIHIGK-G  =  WRK-JIHIGK-G
+                                  +  SYU-JIHI-TOTAL
+                                  +  SYU-JIHI-TOTAL-TAX
+      *--- (2008/12/12) line add end   monma ---------------------------
+      *
+      *--- 2009/01/08 DELETE START -------------------------------------
+      *     ADD    WRK-KOHSEIKYUGK  TO    WRK-KOHSEIKYUGK-G
+      *--- 2009/01/08 DELETE END ---------------------------------------
            ADD    WRK-KOHSKJSEIKYUGK TO  WRK-KOHSEIKYUGK-G
            ADD    SYU-SKYMONEY     TO    WRK-MADOSEIKYUGK-G
       *
@@ -3425,6 +3625,10 @@
        920-SYUNOU-SET-SEC  SECTION.
       *
              INITIALIZE  SYUNOU-REC
+      *--- 2009/01/08 ADD START ----------------------------------------
+                         WRK-HKNFTN
+             MOVE   RECE10-FTNMONEY(1)  TO   WRK-HKNFTN
+      *--- 2009/01/08 ADD END ------------------------------------------
       ***07/09/20 nagaya 4.0ÂÐ±þ start
       *       MOVE  RECE10-HOSPID      TO  SYU-HOSPID
              MOVE  RECE10-HOSPNUM     TO  SYU-HOSPNUM
@@ -3502,6 +3706,11 @@
                                 SPA-AREA
       ***07/09/20 nagaya 4.0ÂÐ±þ end
       *
+      *--- 2009/01/08 ADD START ----------------------------------------
+           IF  WRK-FTNFLG  =  1
+             ADD    WRK-HKNFTN     TO   WRK-KOHSEIKYUGK-G
+           END-IF
+      *--- 2009/01/08 ADD END ------------------------------------------
            .
        920-SYUNOU-SET-EXT.
            EXIT.
@@ -4026,6 +4235,3 @@
            .
        900-DBCLOSE-EXT.
            EXIT.
-
-
-
