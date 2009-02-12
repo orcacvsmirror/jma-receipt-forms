@@ -32,6 +32,8 @@
       *  07/09/21    @@@@-大竹     Ver4.0対応
       *  08/10/17    @@@@-田中     診療年月を表示を和暦に変更
       *  08/10/28    @@@@-田中     CSV出力処理を追加
+      *  09/02/02    @@@@-門間     ２つの単独公費を使用した場合、点数が合算されず,
+      *                            高い点数のみ印字されていた不具合の修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -120,6 +122,10 @@
            03  FLG-PRINT                PIC 9(01).
            03  FLG-PTINF                PIC 9(01).
            03  FLG-ERR                  PIC 9(01).
+      *--- (2009/02/02) line add start monma ---------------------------
+           03  FLG-SYUNOU              PIC 9(01).
+           03  FLG-NYUINRRK              PIC 9(01).
+      *--- (2009/02/02) line add end monma -----------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -151,7 +157,12 @@
            03  IDY                PIC 9(04).
            03  IDZ                PIC 9(04).
            03  IDM                PIC 9(04).
-           
+      *--- (2009/02/02) line add start monma ---------------------------
+           03  IDS               PIC 9(02).
+           03  IDS2               PIC 9(02).
+           03  IDS3               PIC 9(02).
+           03  IDS4               PIC 9(02).
+      *--- (2009/02/02) line add end monma -----------------------------
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -168,15 +179,15 @@
            03  WRK-PARA-SKYYM        PIC X(06).
       *---- 2008/10/27  ADD  START -------------------------------------
            03  WRK-PARA-STUKBN       PIC X(01).
-      *---- 2008/10/27  ADD  END -------------------------------------
+      *---- 2008/10/27  ADD  END ---------------------------------------
       *
       *    一時領域
        01  WRK-AREA.
       *  
-           03  WRK-SYSYMD.
-               05  WRK-SYSYY         PIC 9(04).
-               05  WRK-SYSMM         PIC 9(02).
-               05  WRK-SYSDD         PIC 9(02).
+      *     03  WRK-SYSYMD.
+      *         05  WRK-SYSYY         PIC 9(04).
+      *         05  WRK-SYSMM         PIC 9(02).
+      *         05  WRK-SYSDD         PIC 9(02).
            03  WRK-SYMD.
                05  WRK-SYY           PIC 9(04).
                05  WRK-SMM           PIC 9(02).
@@ -192,6 +203,17 @@
            03  WRK-KBN-OLD           PIC X(20).
            03  WRK-MAE-INPUT         PIC X(200).
            03  WRK-OUT-INPUT         PIC X(200).
+      *
+      *--- (2009/02/02) line add start monma ---------------------------
+           03  WRK-SYUNISSU-TBL.
+               05  WRK-SYUNISSU-LINE  OCCURS 31.
+                   07  WRK-SYUNISSU   PIC 9(01).
+           03  WRK-SYUYMD            PIC 9(08).
+           03  WRK-SYSYMD.
+               05  WRK-SYSYY           PIC 9(04).
+               05  WRK-SYSMM           PIC 9(02).
+               05  WRK-SYSDD           PIC 9(02).
+      *--- (2009/02/02) line add end monma -----------------------------
       *
            03  WRK-PAGE              PIC ZZ9.
            03  WRK-Z2                PIC ZZ.
@@ -217,6 +239,11 @@
            03  SUM-SNISSU               PIC  9(04).
            03  SUM-SKINGK               PIC  9(07).
            03  SUM-SFTNGK               PIC  9(07).
+      *
+      *--- (2009/02/02) line add start monma ---------------------------
+           03  SUM-SYUNISSU         PIC 9(03).
+      *--- (2009/02/02) line add end monma -----------------------------
+      *
       *---- 2008/10/28  ADD  START -------------------------------------
            03  WRK-SRYKANAME         PIC X(10).
            03  WRK-REC-LENGTH        PIC 9(04).
@@ -285,6 +312,10 @@
       *    収納情報
        01  SYUNOU-REC.
            COPY  "CPSYUNOU.INC".
+      *
+      *    収納情報
+       01  NYUINRRK-REC.
+           COPY  "CPPTNYUINRRK.INC".
       *
       *    ジョブ管理マスタ
        01  JOBKANRI-REC.
@@ -479,8 +510,7 @@
                   PERFORM 500-ERR-HENSYU-SEC
                   MOVE    1               TO    FLG-END
            END-IF
-      *
-      *
+      *                       
       *    出力先プリンタ名割り当て情報編集
            MOVE     SPACE         TO        SYS-1031-REC
            INITIALIZE                       SYS-1031-REC
@@ -629,37 +659,111 @@
       ****
       ****    薬剤一部負担金
       ***       MOVE    RECE10-YKZFTN(1)     TO    A05TMP-YKZFTN
+      *
+      *--- (2009/02/02) line add start monma ---------------------------
+             INITIALIZE  IDS
+                         SUM-SYUNISSU
+                         WRK-SYUNISSU-TBL
+      *--- (2009/02/02) line add end monma -----------------------------
              IF  ( RECE10-KOHNUM(1)  NOT =  SPACE )
                  AND  ( RECE10-HKNNUM  =  SPACE )
       *        他の公費を併用しているか判定
                IF  ( RECE10-KOHNUM(2)  NOT =  SPACE )
                  OR ( RECE10-KOHNUM(3) NOT =  SPACE )
                  OR ( RECE10-KOHNUM(4) NOT =  SPACE )
-                 PERFORM  VARYING  IDX4  FROM  2  BY  1
+                 PERFORM  VARYING  IDX4  FROM  1  BY  1
                           UNTIL    IDX4  >  4
-                  IF  RECE10-KOHNUM(IDX4)  NOT = SPACE
-                   IF  RECE10-TOTALTEN(IDX4) 
-                       < RECE10-TOTALTEN(IDX4 + 1)
-      *             日数設定
-                    MOVE    RECE10-JNISSU(IDX4 + 1)   TO  A05TMP-NISSU
+                   IF  RECE10-KOHNUM(IDX4)  NOT = SPACE
       *
       *             点数設定
-                    MOVE    RECE10-TOTALTEN(IDX4 + 1) TO  A05TMP-TENSU
+                     ADD    RECE10-TOTALTEN(IDX4 + 1) TO  A05TMP-TENSU
       *
       *             薬剤一部負担金
-                    MOVE    RECE10-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
-                   ELSE
-      *             日数設定
-                    MOVE    RECE10-JNISSU(IDX4)     TO    A05TMP-NISSU
-      *
-      *             点数設定
-                    MOVE    RECE10-TOTALTEN(IDX4)   TO    A05TMP-TENSU
-      *
-      *             薬剤一部負担金
-                    MOVE    RECE10-YKZFTN(IDX4)     TO    A05TMP-YKZFTN
+                     ADD    RECE10-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
                    END-IF
-                  END-IF
                  END-PERFORM
+      *--- (2009/02/02) line change start monma ------------------------
+      *             IF  RECE10-TOTALTEN(IDX4) 
+      *                 < RECE10-TOTALTEN(IDX4 + 1)
+      **             日数設定
+      *              MOVE    RECE10-JNISSU(IDX4 + 1)   TO  A05TMP-NISSU
+      **
+      **             点数設定
+      *              MOVE    RECE10-TOTALTEN(IDX4 + 1) TO  A05TMP-TENSU
+      **
+      **             薬剤一部負担金
+      *              MOVE    RECE10-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
+      *             ELSE
+      **             日数設定
+      *              MOVE    RECE10-JNISSU(IDX4)     TO    A05TMP-NISSU
+      **
+      **             点数設定
+      *              MOVE    RECE10-TOTALTEN(IDX4)   TO    A05TMP-TENSU
+      **
+      **             薬剤一部負担金
+      *              MOVE    RECE10-YKZFTN(IDX4)     TO    A05TMP-YKZFTN
+      *             END-IF
+      *             日数設定
+                 PERFORM  VARYING  IDS  FROM  1  BY  1
+                          UNTIL  IDS  >  31
+                   MOVE  RECE10-SRYYM  TO  WRK-SYUYMD(1:6)
+                   MOVE  IDS  TO  WRK-SYUYMD(7:2)
+                   PERFORM  920-SYUNOU-SET-SEC
+                   PERFORM  925-SYUNOU-READ-SEC
+                   IF  FLG-SYUNOU  =  ZERO
+                     IF  SYU-NYUGAIKBN = 2
+                       MOVE  1  TO  WRK-SYUNISSU(IDS)
+                     END-IF
+                   END-IF 
+                   PERFORM  940-SYUNOU-CLOSE-SEC
+                 END-PERFORM
+                 IF  RECE10-NYUGAIKBN = 2
+                   PERFORM  VARYING  IDS  FROM  1  BY  1
+                            UNTIL  IDS > 31
+                     IF  WRK-SYUNISSU(IDS)  =  1
+                       ADD    1        TO  SUM-SYUNISSU
+                     END-IF
+                   END-PERFORM
+                   MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
+                 ELSE
+      *
+      *    対象年月最終日取得
+                   INITIALIZE   WRK-SYSYMD
+                   MOVE    RECE10-SRYYM       TO     WRK-SYSYMD(1:6)
+                   PERFORM  31012-LASTDAY-GET-SEC
+                   PERFORM  900-NYUINRRK-SET-SEC
+                   PERFORM  900-NYUINRRK-READ-SEC
+                   PERFORM  UNTIL  FLG-NYUINRRK  =  1
+      *             開始日設定
+                     IF  RECE10-SRYYM  >  PTNYUINRRK-TENNYUYMD(1:6)
+                       MOVE     1                       TO   IDS2
+                     ELSE
+                       MOVE  PTNYUINRRK-TENNYUYMD(7:2)  TO   IDS2
+                     END-IF
+      *             終了日設定
+                     IF  PTNYUINRRK-TENSTUYMD(1:6)  >  RECE10-SRYYM
+                       MOVE  WRK-SYSYMD(7:2)            TO   IDS3
+                     ELSE
+                       MOVE  PTNYUINRRK-TENSTUYMD(7:2)  TO   IDS3
+                     END-IF
+                     PERFORM  VARYING IDS4  FROM IDS2  BY 1
+                              UNTIL  IDS4  >  IDS3
+                       MOVE   1     TO    WRK-SYUNISSU(IDS4)
+                     END-PERFORM
+                     PERFORM  900-NYUINRRK-READ-SEC
+                   END-PERFORM
+                   PERFORM  900-NYUINRRK-CLOSE-SEC
+      *
+                   PERFORM  VARYING  IDS  FROM  1  BY  1
+                            UNTIL  IDS > 31
+                     IF  WRK-SYUNISSU(IDS)  =  1
+                       ADD    1        TO  SUM-SYUNISSU
+                     END-IF
+                   END-PERFORM
+                   MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
+      *
+                 END-IF
+      *--- (2009/02/02) line add end monma -----------------------------
                ELSE
       *          日数設定
                  MOVE    RECE10-JNISSU(2)     TO    A05TMP-NISSU
@@ -829,9 +933,9 @@
        310-HEAD-HEN-EXT.
            EXIT.
       *
-      *****************************************************************
+      ******************************************************************
       *    帳票編集<明細行>処理
-      *****************************************************************
+      ******************************************************************
        320-BODY-HEN-SEC               SECTION.
       *
            MOVE    ZERO    TO    FLG-PRINT
@@ -883,7 +987,11 @@
                MOVE    "本"             TO      A05-HONKZKKBN(IDX1)
              WHEN "2"
                MOVE    "家"             TO      A05-HONKZKKBN(IDX1)
+      *--- (2009/02/02) line add start monma ---------------------------
+             WHEN OTHER
+               MOVE    "　"             TO      A05-HONKZKKBN(IDX1)
              END-EVALUATE
+      *--- (2009/02/02) line add end monma -----------------------------
       *
       *    保険番号・老人保険番号
       ***  20040914 MOTOHASI MONPEに変更
@@ -1325,7 +1433,159 @@
           .
        9001-CHK-EXT.
            EXIT.
+      *--- (2009/02/02) line add start monma ---------------------------
+      *****************************************************************
+      *  収納情報セット
+      *****************************************************************
+       920-SYUNOU-SET-SEC  SECTION.
       *
+             INITIALIZE  SYUNOU-REC
+             MOVE   RECE10-HOSPNUM     TO   SYU-HOSPNUM
+             MOVE   RECE10-NYUGAIKBN   TO   SYU-NYUGAIKBN
+             MOVE   RECE10-PTID        TO   SYU-PTID
+             MOVE   WRK-SYUYMD         TO   SYU-SRYYMD
+             MOVE   SYUNOU-REC         TO   MCPDATA-REC
+             MOVE   "DBSELECT"         TO   MCP-FUNC
+             MOVE   "tbl_syunou"       TO   MCP-TABLE
+             MOVE   "key14"            TO   MCP-PATHNAME
+             CALL   "ORCDBMAIN"        USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF  MCP-RC  =  ZERO
+             MOVE   ZERO            TO   FLG-SYUNOU
+           ELSE
+             MOVE    1              TO   FLG-SYUNOU
+           END-IF
+           .
+       920-SYUNOU-SET-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    収納読込
+      *****************************************************************
+       925-SYUNOU-READ-SEC  SECTION.
+      *
+           MOVE    "DBFETCH"        TO   MCP-FUNC
+           MOVE    "tbl_syunou"     TO   MCP-TABLE
+           MOVE    "key14"          TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+           IF  MCP-RC  =  ZERO
+             MOVE   MCPDATA-REC     TO   SYUNOU-REC
+             MOVE   ZERO            TO   FLG-SYUNOU
+           ELSE
+             INITIALIZE  SYUNOU-REC
+             MOVE    1              TO   FLG-SYUNOU
+           END-IF
+      *
+           .
+       925-SYUNOU-READ-EXT.
+           EXIT.
+      *
+      ******************************************************************
+      *    収納情報クローズ
+      *****************************************************************
+       940-SYUNOU-CLOSE-SEC         SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE    "tbl_syunou"         TO   MCP-TABLE
+           MOVE    "key14"              TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           .
+       940-SYUNOU-CLOSE-EXT.
+           EXIT.
+      *****************************************************************
+      *  収納情報セット
+      *****************************************************************
+       900-NYUINRRK-SET-SEC  SECTION.
+      *
+             INITIALIZE  NYUINRRK-REC
+             MOVE   RECE10-HOSPNUM     TO   PTNYUINRRK-HOSPNUM
+             MOVE   RECE10-PTID        TO   PTNYUINRRK-PTID
+             MOVE   RECE10-SRYYM       TO   PTNYUINRRK-TENNYUYMD(1:6)
+             MOVE   WRK-SYSYMD(7:2)    TO   PTNYUINRRK-TENNYUYMD(7:2)
+             MOVE   RECE10-SRYYM       TO   PTNYUINRRK-TENSTUYMD(1:6)
+             MOVE   "01"               TO   PTNYUINRRK-TENSTUYMD(7:2)
+             MOVE   NYUINRRK-REC       TO   MCPDATA-REC
+             MOVE   "DBSELECT"         TO   MCP-FUNC
+             MOVE   "tbl_ptnyuinrrk"   TO   MCP-TABLE
+             MOVE   "key19"            TO   MCP-PATHNAME
+             CALL   "ORCDBMAIN"        USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF  MCP-RC  =  ZERO
+             MOVE   ZERO            TO   FLG-NYUINRRK
+           ELSE
+             MOVE    1              TO   FLG-NYUINRRK
+           END-IF
+           .
+       900-NYUINRRK-SET-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    収納読込
+      *****************************************************************
+       900-NYUINRRK-READ-SEC  SECTION.
+      *
+           MOVE    "DBFETCH"        TO   MCP-FUNC
+           MOVE    "tbl_ptnyuinrrk"     TO   MCP-TABLE
+           MOVE    "key19"          TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+           IF  MCP-RC  =  ZERO
+             MOVE   MCPDATA-REC     TO  NYUINRRK-REC
+             MOVE   ZERO            TO   FLG-NYUINRRK
+           ELSE
+             INITIALIZE  NYUINRRK-REC
+             MOVE    1              TO   FLG-NYUINRRK
+           END-IF
+      *
+           .
+       900-NYUINRRK-READ-EXT.
+           EXIT.
+      *
+      ******************************************************************
+      *    収納情報クローズ
+      *****************************************************************
+       900-NYUINRRK-CLOSE-SEC         SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE    "tbl_ptnyuinrrk"         TO   MCP-TABLE
+           MOVE    "key19"              TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           .
+       900-NYUINRRK-CLOSE-EXT.
+           EXIT.
+      *****************************************************************
+      *    月末日算出処理
+      *****************************************************************
+       31012-LASTDAY-GET-SEC        SECTION.
+      *
+           INITIALIZE                     STS-AREA-DAY
+           INITIALIZE                     LNK-DAY7-AREA
+           MOVE    "71"                   TO   LNK-DAY7-IRAI
+           MOVE    WRK-SYSYMD            TO   LNK-DAY7-YM
+           CALL    "ORCSDAY"              USING
+                                          STS-AREA-DAY
+                                          LNK-DAY7-AREA
+           MOVE    LNK-DAY7-KOYOMI        TO   WRK-SYSYMD
+           .
+       31012-LASTDAY-GET-EXT.
+           EXIT.
+      *
+      *--- (2009/02/02) line add start monma ---------------------------
       *****************************************************************
       *    患者マスター読み込み
       *****************************************************************
@@ -1795,11 +2055,21 @@
            PERFORM 5004-MOJI-HENSYU-SEC
 
       *    本人・家族区分
-           IF    A05TMP-HONKZKKBN  =  1
-             MOVE    "本"             TO  WRK-DATA
-           ELSE 
-             MOVE    "家"             TO  WRK-DATA
-           END-IF
+      *--- (2009/02/02) line change start monma ------------------------
+      *     IF    A05TMP-HONKZKKBN  =  1
+      *       MOVE    "本"             TO  WRK-DATA
+      *     ELSE 
+      *       MOVE    "家"             TO  WRK-DATA
+      *     END-IF
+           EVALUATE A05TMP-HONKZKKBN
+             WHEN "1"
+               MOVE    "本"             TO  WRK-DATA
+             WHEN "1"
+               MOVE    "家"             TO  WRK-DATA
+             WHEN OTHER
+               MOVE    "　"             TO  WRK-DATA
+           END-EVALUATE
+      *--- (2009/02/02) line change end monma --------------------------
            MOVE    2                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
            MOVE    ","                TO  WRK-DATA
