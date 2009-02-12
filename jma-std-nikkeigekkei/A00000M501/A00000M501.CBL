@@ -66,6 +66,7 @@
       *              @@@@-田中    08/12/04  新患数の集計条件を変更
       *              @@@@-田中    08/12/16  自費分の減免金額を集計するように修正
       *              @@@@-田中    08/12/17  医療収益に減免金額を集計するように修正
+      *              @@@@-田中    09/02/06  減免金額の計算式を修正
       *****************************************************************
       *
       *
@@ -262,6 +263,9 @@
            03  WRK-SZ                PIC ---------Z.
            03  WRK-TMP-K             PIC X(08).
            03  WRK-COUNTS            PIC 9(04).
+      *--- 2009/02/06 ADD START ----------------------------------------
+           03  WRK-COMPFTN           PIC S9(10).
+      *--- 2009/02/06 ADD END ------------------------------------------
       *
       *** 01  SUM-AREA              VALUE   ZERO.
       ***     03  SUM-OCC               OCCURS  15.
@@ -1886,6 +1890,27 @@
       ***                      +  SYU-RSISDO-MONEY 
       ***                      +  SYU-RSIETC-MONEY 
       ***                      +  SYU-CHOSEI 
+      *--- 2009/02/06 ADD START ----------------------------------------
+           IF  SYU-KOH4COMPFTN  NOT =  ZERO
+             MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+           ELSE
+             IF  SYU-KOH3COMPFTN  NOT =  ZERO
+               MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+             ELSE
+               IF  SYU-KOH2COMPFTN  NOT =  ZERO
+                 MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+               ELSE
+                 IF  SYU-KOH1COMPFTN  NOT =  ZERO
+                   MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+                 ELSE
+                   IF  SYU-SYUCOMPFTN  NOT =  ZERO
+                     MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+                   END-IF
+                 END-IF
+               END-IF
+             END-IF
+           END-IF
+      *--- 2009/02/06 ADD END ------------------------------------------
            EVALUATE IDX 
       *=== 自費追加対応 By Takashima(2006/11/05) start
       *              WHEN 12 
@@ -1989,7 +2014,19 @@
       * 20040202 削除 自己負担額は食事療養費に含まれている為、削除する。
                               +  SYU-RMSAGAKU
       *--- 2008/12/16 ADD START ----------------------------------------
-               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  -  SYU-DISCOUNT-MONEY
+      *--- 2009/02/06 CHANGE START -------------------------------------
+      *         COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  -  SYU-DISCOUNT-MONEY
+               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
+                                    -  (WRK-COMPFTN
+                                    +  SYU-SKYMONEY-SKJ-KEI
+                                    +  SYU-SKYMONEY-SKJ-JIHI-KEI
+                                    +  SYU-SKYMONEY-LIFE-KEI
+                                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
+                                    +  SYU-RMSAGAKU
+                                    +  SYU-CHOSEI 
+                                    +  WRK-JIHI
+                                    -  SYU-SKYMONEY)
+      *--- 2009/02/06 CHANGE END ---------------------------------------
       *--- 2008/12/16 ADD END ------------------------------------------
       * 20030411 追加
            END-EVALUATE   
@@ -2124,10 +2161,43 @@
            END-IF
       *
       *    医療収益計
+      *--- 2009/02/06 ADD START ----------------------------------------
+           IF  SYU-KOH4COMPFTN  NOT =  ZERO
+             MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+           ELSE
+             IF  SYU-KOH3COMPFTN  NOT =  ZERO
+               MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+             ELSE
+               IF  SYU-KOH2COMPFTN  NOT =  ZERO
+                 MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+               ELSE
+                 IF  SYU-KOH1COMPFTN  NOT =  ZERO
+                   MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+                 ELSE
+                   IF  SYU-SYUCOMPFTN  NOT =  ZERO
+                     MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+                   END-IF
+                 END-IF
+               END-IF
+             END-IF
+           END-IF
+      *--- 2009/02/06 ADD END ------------------------------------------
            EVALUATE IDX 
              WHEN 17 
       ***  自費の場合
                MOVE  SYU-SKYMONEY    TO   WRK-SYUEKI
+      *--- 2009/02/06 ADD START ----------------------------------------
+               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
+                                    -  (WRK-COMPFTN
+                                    +  SYU-SKYMONEY-SKJ-KEI
+                                    +  SYU-SKYMONEY-SKJ-JIHI-KEI
+                                    +  SYU-SKYMONEY-LIFE-KEI
+                                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
+                                    +  SYU-RMSAGAKU
+                                    +  SYU-CHOSEI 
+                                    +  WRK-JIHI
+                                    -  SYU-SKYMONEY)
+      *--- 2009/02/06 ADD END ------------------------------------------
              WHEN 18 
       ***  労災の場合
                COMPUTE  WRK-SYUEKI ROUNDED = 
@@ -2177,7 +2247,19 @@
                             +  SYU-RYOYOHI-SKJ-JIHI
                             +  SYU-RMSAGAKU
       *--- 2008/12/16 ADD START ----------------------------------------
-               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  -  SYU-DISCOUNT-MONEY
+      *--- 2009/02/06 CHANGE START -------------------------------------
+      *         COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  -  SYU-DISCOUNT-MONEY
+               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
+                                    -  (WRK-COMPFTN
+                                    +  SYU-SKYMONEY-SKJ-KEI
+                                    +  SYU-SKYMONEY-SKJ-JIHI-KEI
+                                    +  SYU-SKYMONEY-LIFE-KEI
+                                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
+                                    +  SYU-RMSAGAKU
+                                    +  SYU-CHOSEI 
+                                    +  WRK-JIHI
+                                    -  SYU-SKYMONEY)
+      *--- 2009/02/06 CHANGE END ---------------------------------------
       *--- 2008/12/16 ADD END ------------------------------------------
            END-EVALUATE   
            ADD     WRK-SYUEKI   TO   SUM-SYUEKI

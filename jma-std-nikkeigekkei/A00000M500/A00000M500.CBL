@@ -55,6 +55,7 @@
       *    08/06/12    @@@@-田中     健保準拠時の自賠責の計算を修正
       *    08/08/13    @@@@-田中     自費名称が未登録の時も値を印字する修正
       *    08/12/17    @@@@-田中     医療収益に減免金額を集計するように修正
+      *    09/02/06    @@@@-田中     減免金額の計算式を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -242,6 +243,9 @@
            03  WRK-SYS-BEDSUIPN       PIC 9(04).
       ** 2005/02/15 追加 SUZUKI
            03  WRK-SYS-NYUGAIKBN      PIC 9(04).
+      *--- 2009/02/06 ADD START ----------------------------------------
+           03  WRK-COMPFTN           PIC S9(10).
+      *--- 2009/02/06 ADD END ------------------------------------------
       ** 2005/02/15 ここまで 
       * 2003/06/24  追加
       *
@@ -2073,6 +2077,27 @@
       ***             COMPUTE   YOSO (NG IDX3 10 28)  =
       ***                       YOSO (NG IDX3 10 26)  +  YOSO (NG IDX3 10 27)
       *
+      *--- 2009/02/06 ADD START ----------------------------------------
+           IF  SYU-KOH4COMPFTN  NOT =  ZERO
+             MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+           ELSE
+             IF  SYU-KOH3COMPFTN  NOT =  ZERO
+               MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+             ELSE
+               IF  SYU-KOH2COMPFTN  NOT =  ZERO
+                 MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+               ELSE
+                 IF  SYU-KOH1COMPFTN  NOT =  ZERO
+                   MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+                 ELSE
+                   IF  SYU-SYUCOMPFTN  NOT =  ZERO
+                     MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+                   END-IF
+                 END-IF
+               END-IF
+             END-IF
+           END-IF
+      *--- 2009/02/06 ADD END ------------------------------------------
            EVALUATE IDX 
              WHEN 7 
       *    自費の場合
@@ -2200,7 +2225,19 @@
       * 20040202 削除 食事自己負担額は食事療養費に含まれる為、削除
                         +  SYU-RMSAGAKU
       *--- 2008/12/17 ADD START ----------------------------------------
-               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  -  SYU-DISCOUNT-MONEY
+      *--- 2009/02/06 CHANGE START ----------------------------------------
+      *         COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  -  SYU-DISCOUNT-MONEY
+               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
+                                    -  (WRK-COMPFTN
+                                    +  SYU-SKYMONEY-SKJ-KEI
+                                    +  SYU-SKYMONEY-SKJ-JIHI-KEI
+                                    +  SYU-SKYMONEY-LIFE-KEI
+                                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
+                                    +  SYU-RMSAGAKU
+                                    +  SYU-CHOSEI 
+                                    +  WRK-JIHI
+                                    -  SYU-SKYMONEY)
+      *--- 2009/02/06 CHANGE END ---------------------------------------
       *--- 2008/12/17 ADD END ------------------------------------------
       *
       * 20030411 追加
