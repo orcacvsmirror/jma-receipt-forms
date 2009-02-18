@@ -48,6 +48,7 @@
       *                            自費の都度入力が印字しない不具合を修正
       *  08/08/25    @@@@-田中     診療行為画面から入院料を入力すると重複してしまう不具合を修正
       *  08/09/30    @@@@-田中     入院のみの患者が集計されない不具合を修正
+      *  09/02/10    @@@@-田中     入院料・室料差額・食事の件数を修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -384,6 +385,13 @@
        01  NYUINACCT-REC.
            COPY    "CPNYUINACCT.INC".
       * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
+      *
+      *--- 2009/02/10 ADD START ----------------------------------------
+      *    入院会計マスタ２
+       01  NYUINACCT2-REC.
+           COPY    "CPNYUINACCT.INC"   REPLACING  //NACCT-//
+                                       BY         //NACCT2-//.
+      *--- 2009/02/10 ADD END ------------------------------------------
       *
       *    診療行為マスタ
        01  SRYACT-REC.
@@ -1211,9 +1219,17 @@
            PERFORM  900-NYUINACCT-SELECT-SEC
            PERFORM  UNTIL    FLG-NSRYACCT   =   1
              IF  WRK-NYUGAIKBN  =   "1"
-               AND  NACCT-PTID NOT =  WRK-ZENPTID2
+      *--- 2009/02/10 CHANGE START -------------------------------------
+      *        AND  NACCT-PTID NOT =  WRK-ZENPTID2
+               IF   NACCT-PTID  NOT =  WRK-ZENPTID2
+      *--- 2009/02/10 CHANGE END ---------------------------------------
                  PERFORM  20011-NYUIN-SEC
                  MOVE   NACCT-PTID   TO    WRK-ZENPTID2
+      *--- 2009/02/10 ADD START ----------------------------------------
+               END-IF
+      *    入院件数カウント処理
+               PERFORM   20000-NYUINKENSU-SEC
+      *--- 2009/02/10 ADD END ------------------------------------------
              END-IF
              PERFORM  900-NYUINACCT-FETCH-SEC
            END-PERFORM
@@ -1620,26 +1636,28 @@
       *    TMPファイル読み込み
            PERFORM  800-SKTTMP-READ-SEC
       *
+      *--- 2009/02/10 DELETE START -------------------------------------
       * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正START
-           IF SYU-PTID  NOT =   WRK-ZENPTID
-             PERFORM  920-SRYACCT-SELECT-SEC
-      * 
-             PERFORM  UNTIL    FLG-SRYACCT2   =   1
-               IF ACCT2-SRYKBN  =  "90" OR  "92"
-                 COMPUTE  WRK-TENSU3  =  ACCT2-ZAITEN  *  ACCT2-ZAIKAISU
-                 COMPUTE  SYU-NYN-HKNTEN  =  SYU-NYN-HKNTEN - WRK-TENSU3
-                 MOVE     ACCT2-PTID  TO   WRK-ZENPTID
-               END-IF
-               PERFORM  920-SRYACCT-FETCH-SEC
-             END-PERFORM
-           PERFORM  920-SRYACCT-CLOSE-SEC
-           END-IF
+      *     IF SYU-PTID  NOT =   WRK-ZENPTID
+      *       PERFORM  920-SRYACCT-SELECT-SEC
+      ** 
+      *       PERFORM  UNTIL    FLG-SRYACCT2   =   1
+      *         IF ACCT2-SRYKBN  =  "90" OR  "92"
+      *           COMPUTE  WRK-TENSU3  =  ACCT2-ZAITEN  *  ACCT2-ZAIKAISU
+      *           COMPUTE  SYU-NYN-HKNTEN  =  SYU-NYN-HKNTEN - WRK-TENSU3
+      *           MOVE     ACCT2-PTID  TO   WRK-ZENPTID
+      *         END-IF
+      *         PERFORM  920-SRYACCT-FETCH-SEC
+      *       END-PERFORM
+      *     PERFORM  920-SRYACCT-CLOSE-SEC
+      *     END-IF
       * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
       *    日数の算出
-           MOVE    SYU-SKYSTYMD            TO    WRK-SKYSTYMD
-           MOVE    SYU-SKYEDYMD            TO    WRK-SKYEDYMD
-           COMPUTE WRK-N-NISSU             =
-                   WRK-SKYEDD              -     WRK-SKYSTD  +  1    
+      *     MOVE    SYU-SKYSTYMD            TO    WRK-SKYSTYMD
+      *     MOVE    SYU-SKYEDYMD            TO    WRK-SKYEDYMD
+      *     COMPUTE WRK-N-NISSU             =
+      *             WRK-SKYEDD              -     WRK-SKYSTD  +  1    
+      *--- 2009/02/10 DELETE END ---------------------------------------
       *
       *
       ***  20040707  @@@@-MOTOHASI  変更
@@ -1654,7 +1672,9 @@
       ***     END-IF
       *    入院料加算
            ADD    SYU-NYN-HKNTEN         TO    K141TMP-TENSU(42)
-           ADD    WRK-N-NISSU            TO    K141TMP-KAISU(42)
+      *--- 2009/02/10 DELETE START -------------------------------------
+      *     ADD    WRK-N-NISSU            TO    K141TMP-KAISU(42)
+      *--- 2009/02/10 DELETE END ---------------------------------------
       ***  20040707  ここまで
       *
       ***  20040707  @@@@-MOTOHASI  変更
@@ -1670,7 +1690,9 @@
       *    室料差額加算
            IF       SYU-RMSAGAKU           NOT = ZERO
                ADD    SYU-RMSAGAKU           TO    K141TMP-TENSU(41)
-               ADD    WRK-N-NISSU            TO    K141TMP-KAISU(41)
+      *--- 2009/02/10 DELETE START -------------------------------------
+      *         ADD    WRK-N-NISSU            TO    K141TMP-KAISU(41)
+      *--- 2009/02/10 DELETE END ---------------------------------------
            END-IF
       *
       *    食事加算
@@ -1679,6 +1701,9 @@
            ADD      SYU-RYOYOHI-LIFE       TO    K141TMP-TENSU(41)
       * 20080618 生活療養費を室料差額・食事欄への追加修正END
            ADD      WRK-N-NISSU            TO    K141TMP-KAISU(41)
+      *--- 2009/02/10 DELETE START -------------------------------------
+      *     ADD      WRK-N-NISSU            TO    K141TMP-KAISU(41)
+      *--- 2009/02/10 DELETE END ---------------------------------------
       ***  20040707  ここまで
       *
            IF  FLG-M01TMP   =  1
@@ -1690,6 +1715,114 @@
            .
        20013-NYUIN-SET-EXT.
            EXIT.
+      *--- 2009/02/10 ADD START ----------------------------------------
+      *****************************************************************
+      *    入院件数集計処理
+      *****************************************************************
+       20000-NYUINKENSU-SEC                SECTION.
+      *
+      *    キー設定一時ファイル
+           INITIALIZE                 K141TMP-REC
+      *
+           IF  SYU-DRCD  NOT  =  SPACE
+               MOVE    SYU-NYUGAIKBN           TO    K141TMP-NYUGAIKBN
+               MOVE    SYU-DRCD                TO    K141TMP-DRCD
+           ELSE
+               MOVE    SYU-NYUGAIKBN           TO    K141TMP-NYUGAIKBN
+               MOVE    "ZZZZ"                  TO    K141TMP-DRCD
+           END-IF
+      *    TMPファイル読み込み
+           PERFORM  800-SKTTMP-READ-SEC
+      *
+           PERFORM  VARYING  IDA  FROM 1  BY 1
+                    UNTIL  IDA  >  31
+             PERFORM   920-NYUINACCT-READ-SEC
+             IF  NACCT-DAY(IDA)  >  0
+      *
+               EVALUATE  NACCT-ZAISKBKBN
+                 WHEN  "1"
+      *    入院料件数加算
+                   ADD     1          TO   K141TMP-KAISU(42)
+                 WHEN  "3"
+                 WHEN  "4"
+      *    室料差額件数、食事件数加算
+                   IF  NACCT-SRYCDTOTAL  NOT =  "00000197000570"
+                     ADD    1         TO   K141TMP-KAISU(41)
+                   END-IF
+               END-EVALUATE
+             END-IF
+           END-PERFORM
+      *
+           IF  FLG-M01TMP   =  1
+               WRITE    K141TMP-REC
+           ELSE
+               REWRITE  K141TMP-REC
+           END-IF
+           .
+       20000-NYUINKENSU-EXT.
+           EXIT.
+      *****************************************************************
+      *    入院診療会計情報検索
+      *****************************************************************
+       920-NYUINACCT-READ-SEC           SECTION.
+      *
+           INITIALIZE                   NYUINACCT2-REC
+           MOVE    NACCT-HOSPNUM        TO   NACCT2-HOSPNUM
+           MOVE    NACCT-PTID           TO   NACCT2-PTID
+           MOVE    NACCT-SRYYM          TO   NACCT2-SRYYM
+           MOVE    "2"                  TO   NACCT2-ZAISKBKBN
+           MOVE    NYUINACCT2-REC       TO   MCPDATA-REC
+           MOVE    "DBSELECT"           TO   MCP-FUNC
+           MOVE    "tbl_nyuinacct"      TO   MCP-TABLE
+           MOVE    "key17"              TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF  MCP-RC   =   ZERO
+             PERFORM   920-NYUINACCT-FETCH-SEC
+             EVALUATE  NACCT2-DAY(IDA)
+               WHEN  1
+               WHEN  2
+               WHEN  3
+                 IF   NACCT-ZAISKBKBN  =  "4"  OR  "6"
+                   MOVE    0            TO   NACCT-DAY(IDA)
+                 END-IF
+             END-EVALUATE
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE    "tbl_nyuinacct"      TO   MCP-TABLE
+           MOVE    "key17"              TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       920-NYUINACCT-READ-EXT.
+           EXIT.
+      *****************************************************************
+      *    入院診療会計情報検索
+      *****************************************************************
+       920-NYUINACCT-FETCH-SEC           SECTION.
+      *
+           MOVE    "DBFETCH"          TO   MCP-FUNC
+           MOVE    "tbl_nyuinacct"    TO   MCP-TABLE
+           MOVE    "key17"            TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    MCPDATA-REC      TO   NYUINACCT2-REC
+           ELSE
+             INITIALIZE                    NYUINACCT2-REC
+           END-IF
+           .
+       920-NYUINACCT-FETCH-EXT.
+           EXIT.
+      *--- 2009/02/10 ADD END ------------------------------------------
       *****************************************************************
       *    診療行為情報取得設定
       *****************************************************************
@@ -2573,17 +2706,23 @@
                        MOVE      ACCT-DAY-31(IDX6)    TO
                                  WRK-KAISU
                END-EVALUATE
-               ADD   WRK-KAISU      TO  K141TMP-KAISU(IDX1)
+      *--- 2009/02/10 ADD START ----------------------------------------
+               IF  IDX1  NOT =  42 
+      *--- 2009/02/10 ADD END ------------------------------------------
+                 ADD   WRK-KAISU      TO  K141TMP-KAISU(IDX1)
       *
       *    点数加算
-               COMPUTE   WRK-TENSU  =  ACCT-ZAITEN   *   WRK-KAISU
-               ADD       WRK-TENSU      TO  K141TMP-TENSU(IDX1)
+                 COMPUTE   WRK-TENSU  =  ACCT-ZAITEN   *   WRK-KAISU
+                 ADD       WRK-TENSU      TO  K141TMP-TENSU(IDX1)
       *
       *    剤番号ブレイクキーセット 
-               MOVE   JYURRK-SRYYMD TO  WRK-CZ-SRYYMD
-               MOVE   ACCT-PTID     TO  WRK-CZ-PTID
-               MOVE   ACCT-SRYKBN   TO  WRK-CZ-SRYKBN
-               MOVE   ACCT-ZAINUM   TO  WRK-CZ-ZAINUM
+                 MOVE   JYURRK-SRYYMD TO  WRK-CZ-SRYYMD
+                 MOVE   ACCT-PTID     TO  WRK-CZ-PTID
+                 MOVE   ACCT-SRYKBN   TO  WRK-CZ-SRYKBN
+                 MOVE   ACCT-ZAINUM   TO  WRK-CZ-ZAINUM
+      *--- 2009/02/10 ADD START ----------------------------------------
+               END-IF
+      *--- 2009/02/10 ADD END ------------------------------------------
            END-IF
       *
            .

@@ -43,6 +43,7 @@
       *  01.00.05  @@@@-ÅÄÃæ  08/03/17  H20Ç¯4·î²þÀµÂÐ±þ
       *  01.00.06  @@@@-ÅÄÃæ  08/08/14  ¸¡ºº¤ÈºßÂð¤ÎÅÀ¿ô¤È²ó¿ô¤Î·×»»¼°¤ò½¤Àµ
       *  01.00.07  @@@@-ÅÄÃæ  08/08/25  ¿ÇÎÅ¹Ô°Ù²èÌÌ¤«¤éÆþ±¡ÎÁ¤òÆþÎÏ¤¹¤ë¤È½ÅÊ£¤·¤Æ¤·¤Þ¤¦ÉÔ¶ñ¹ç¤ò½¤Àµ
+      *  01.00.08  @@@@-ÅÄÃæ  09/02/12  Æþ±¡ÎÁ¡¦¼¼ÎÁº¹³Û¡¦¿©»ö¤Î·ï¿ô¡¦Æü¿ô¤ò½¤Àµ
       ********************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -222,6 +223,9 @@
            03  WRK-MONEY             PIC 9(08).
            03  WRK-JIHIKBN           PIC X(02).
            03  WRK-CHK-PTID          PIC 9(10).
+      *--- 2009/02/12 ADD START ----------------------------------------
+           03  WRK-CHK-PTID2         PIC 9(10).
+      *--- 2009/02/12 ADD END ------------------------------------------
            03  WRK-CHK-SRYKA         PIC X(02).
            03  WRK-CHK-DRCD          PIC X(05).
            03  WRK-CHK-KBN1          PIC X(01).
@@ -343,6 +347,13 @@
        01  NYUINACCT-REC.
            COPY    "CPNYUINACCT.INC".
       ****2006/03/09 @@@@-BRAND  END
+      *
+      *--- 2009/02/12 ADD START ----------------------------------------
+      *    Æþ±¡²ñ·×¥Þ¥¹¥¿£²
+       01  NYUINACCT2-REC.
+           COPY    "CPNYUINACCT.INC"   REPLACING  //NACCT-//
+                                       BY         //NACCT2-//.
+      *--- 2009/02/12 ADD END ------------------------------------------
       *
       *    ´µ¼ÔÆþ±¡ÍúÎò¾ðÊó
        01  PTNYUINRRK-REC.
@@ -778,7 +789,11 @@
                    IF  WRK-CHK-PTID  NOT = NACCT-PTID
                        MOVE  NACCT-PTID   TO  WRK-CHK-PTID
                        PERFORM 20011-NYUIN-SEC
-                    END-IF
+                   END-IF
+      *--- 2009/02/12 ADD START ----------------------------------------
+      *    Æü¿ô¡¦·ï¿ô²Ã»»
+                   PERFORM   20000-NYUINKENSU-SEC
+      *--- 2009/02/12 ADD END ------------------------------------------
                END-IF
                PERFORM  900-NYUINACCT-FETCH-SEC
            END-PERFORM
@@ -859,59 +874,61 @@
                COMPUTE IDC         =    IDB  -  IDA
                SUBTRACT  1         FROM IDB
            END-IF
+      *--- 2009/02/12 DELETE START -------------------------------------
       *    ÆÃÄêÆþ±¡ÎÁ¶èÊ¬¤Ç²Ã»»¾ì½ê¤òÈ½Äê
            IF  PTNYUINRRK-TOKUTEI-KBN    =   SPACE
-               ADD    IDC                  TO  M01TMP-KENSU(41)
+      *         ADD    IDC                  TO  M01TMP-KENSU(41)
                MOVE   ZERO                 TO  FLG-TOKUTEI
            ELSE
-               ADD    IDC                  TO  M01TMP-KENSU(42)
+      *         ADD    IDC                  TO  M01TMP-KENSU(42)
                MOVE   1                    TO  FLG-TOKUTEI
            END-IF
-               ADD    IDC                  TO  M01TMP-KENSU(40)
-               ADD    IDC                  TO  M01TMP-KENSU(45)
-      *    ¼¼ÎÁº¹³Û²Ã»»
-           IF  PTNYUINRRK-RM-SAGAKU  NOT =   SPACE  AND ZERO
-               ADD    IDC                  TO  M01TMP-KENSU(43)
-               ADD    IDC                  TO  M01TMP-KENSU(40)
-               ADD    IDC                  TO  M01TMP-KENSU(45)
-           END-IF
-      *    ¿©»öÎÅÍÜÈñ²Ã»»
-           ADD      IDC                    TO  M01TMP-KENSU(43)
-           ADD      IDC                    TO  M01TMP-KENSU(40)
-           ADD      IDC                    TO  M01TMP-KENSU(45)
+      *         ADD    IDC                  TO  M01TMP-KENSU(40)
+      *         ADD    IDC                  TO  M01TMP-KENSU(45)
+      **    ¼¼ÎÁº¹³Û²Ã»»
+      *     IF  PTNYUINRRK-RM-SAGAKU  NOT =   SPACE  AND ZERO
+      *         ADD    IDC                  TO  M01TMP-KENSU(43)
+      *         ADD    IDC                  TO  M01TMP-KENSU(40)
+      *         ADD    IDC                  TO  M01TMP-KENSU(45)
+      *     END-IF
+      **    ¿©»öÎÅÍÜÈñ²Ã»»
+      *     ADD      IDC                    TO  M01TMP-KENSU(43)
+      *     ADD      IDC                    TO  M01TMP-KENSU(40)
+      *     ADD      IDC                    TO  M01TMP-KENSU(45)
       *
       *    Æü¿ô²Ã»»
            PERFORM    UNTIL    IDA  >     IDB
-      *    Æþ±¡ÎÁÆü¿ô²Ã»»
-               IF    FLG-TOKUTEI      =     ZERO
-                   IF    M01TMP-DAY(41 IDA)  =  ZERO
-                       MOVE    1     TO       M01TMP-DAY(41 IDA)
-                       ADD     1     TO       M01TMP-NISSU(41)
-                   END-IF
-               ELSE
-                   IF    M01TMP-DAY(42 IDA)  =  ZERO
-                       MOVE    1     TO       M01TMP-DAY(42 IDA)
-                       ADD     1     TO       M01TMP-NISSU(42)
-                   END-IF
-               END-IF
-      *    ¼¼ÎÁº¹³Û¡¢¿©»öÆü¿ô²Ã»»
-               IF    M01TMP-DAY(43 IDA)     =  ZERO
-                   MOVE      1     TO         M01TMP-DAY(43 IDA)
-                   ADD       1     TO         M01TMP-NISSU(43)
-               END-IF
-      *    ¿ÇÎÅ¶èÊ¬¡¦¹ç·×²Ã»»
-               IF    M01TMP-DAY(40 IDA)     =  ZERO
-                   MOVE      1     TO         M01TMP-DAY(40 IDA)
-                   ADD       1     TO         M01TMP-NISSU(40)
-               END-IF
-               IF    M01TMP-DAY(45 IDA)     =  ZERO
-                   MOVE      1     TO         M01TMP-DAY(45 IDA)
-                   ADD       1     TO         M01TMP-NISSU(45)
-               END-IF
-      *    ÆÃÄê¶èÊ¬ÀßÄê
+      **    Æþ±¡ÎÁÆü¿ô²Ã»»
+      *         IF    FLG-TOKUTEI      =     ZERO
+      *             IF    M01TMP-DAY(41 IDA)  =  ZERO
+      *                 MOVE    1     TO       M01TMP-DAY(41 IDA)
+      *                 ADD     1     TO       M01TMP-NISSU(41)
+      *             END-IF
+      *         ELSE
+      *             IF    M01TMP-DAY(42 IDA)  =  ZERO
+      *                 MOVE    1     TO       M01TMP-DAY(42 IDA)
+      *                 ADD     1     TO       M01TMP-NISSU(42)
+      *             END-IF
+      *         END-IF
+      **    ¼¼ÎÁº¹³Û¡¢¿©»öÆü¿ô²Ã»»
+      *         IF    M01TMP-DAY(43 IDA)     =  ZERO
+      *             MOVE      1     TO         M01TMP-DAY(43 IDA)
+      *             ADD       1     TO         M01TMP-NISSU(43)
+      *         END-IF
+      **    ¿ÇÎÅ¶èÊ¬¡¦¹ç·×²Ã»»
+      *         IF    M01TMP-DAY(40 IDA)     =  ZERO
+      *             MOVE      1     TO         M01TMP-DAY(40 IDA)
+      *             ADD       1     TO         M01TMP-NISSU(40)
+      *         END-IF
+      *         IF    M01TMP-DAY(45 IDA)     =  ZERO
+      *             MOVE      1     TO         M01TMP-DAY(45 IDA)
+      *             ADD       1     TO         M01TMP-NISSU(45)
+      *         END-IF
+      **    ÆÃÄê¶èÊ¬ÀßÄê
                MOVE    FLG-TOKUTEI          TO    WRK-NYUIN-DAY(IDA)
                ADD     1                    TO    IDA
            END-PERFORM
+      *--- 2009/02/12 DELETE END ---------------------------------------
       *
            IF  FLG-M01TMP   =  1
                WRITE    M01TMP-REC
@@ -941,21 +958,23 @@
       *    TMP¥Õ¥¡¥¤¥ëÆÉ¤ß¹þ¤ß
            PERFORM  800-SKTTMP-READ-SEC
       *
+      *--- 2009/02/12 DELETE START -------------------------------------
       * 20080825 ¿ÇÎÅ¹Ô°Ù²èÌÌ¤«¤éÆþ±¡ÎÁ¤òÆþÎÏ¤¹¤ë¤È½ÅÊ£¤·¤Æ¤·¤Þ¤¦ÉÔ¶ñ¹ç¤ò½¤ÀµSTART
-           IF SYU-PTID  NOT =   WRK-ZENPTID
-             PERFORM  910-SRYACCT-SELECT-SEC
-      * 
-             PERFORM  UNTIL    FLG-SRYACCT   =   1
-               IF ACCT-SRYKBN  =  "90" OR  "92"
-                 COMPUTE  WRK-TENSU3  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
-                 COMPUTE  SYU-NYN-HKNTEN  =  SYU-NYN-HKNTEN - WRK-TENSU3
-                 MOVE     ACCT-PTID  TO   WRK-ZENPTID
-               END-IF
-               PERFORM  910-SRYACCT-FETCH-SEC
-             END-PERFORM
-           PERFORM  910-SRYACCT-CLOSE-SEC
-           END-IF
+      *     IF SYU-PTID  NOT =   WRK-ZENPTID
+      *       PERFORM  910-SRYACCT-SELECT-SEC
+      ** 
+      *       PERFORM  UNTIL    FLG-SRYACCT   =   1
+      *         IF ACCT-SRYKBN  =  "90" OR  "92"
+      *           COMPUTE  WRK-TENSU3  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+      *           COMPUTE  SYU-NYN-HKNTEN  =  SYU-NYN-HKNTEN - WRK-TENSU3
+      *           MOVE     ACCT-PTID  TO   WRK-ZENPTID
+      *         END-IF
+      *         PERFORM  910-SRYACCT-FETCH-SEC
+      *       END-PERFORM
+      *     PERFORM  910-SRYACCT-CLOSE-SEC
+      *     END-IF
       * 20080825 ¿ÇÎÅ¹Ô°Ù²èÌÌ¤«¤éÆþ±¡ÎÁ¤òÆþÎÏ¤¹¤ë¤È½ÅÊ£¤·¤Æ¤·¤Þ¤¦ÉÔ¶ñ¹ç¤ò½¤ÀµEND
+      *--- 2009/02/12 DELETE END ---------------------------------------
       *   Æþ±¡ÎÁ²Ã»»
            MOVE    ZERO                    TO    WRK-SYUEKI
       ***  20050606  MOTO
@@ -1008,6 +1027,152 @@
            .
        20013-NYUIN-SET2-EXT.
            EXIT.
+      *--- 2009/02/12 ADD START ----------------------------------------
+      *****************************************************************
+      *    Æþ±¡ÎÁ¡¦·ï¿ô½¸·×½èÍý
+      *****************************************************************
+       20000-NYUINKENSU-SEC                SECTION.
+      *
+      *    ¥­¡¼ÀßÄê
+           INITIALIZE                    M01TMP-REC
+      *
+           MOVE    "1"                   TO   M01TMP-NYUGAIKBN
+           MOVE    PTNYUINRRK-NYUINKA    TO   M01TMP-SRYKA
+      *    TMP¥Õ¥¡¥¤¥ëÆÉ¤ß¹þ¤ß
+           PERFORM  800-SKTTMP-READ-SEC
+           PERFORM  VARYING  IDA  FROM  1  BY 1
+                    UNTIL  IDA  >  31
+             PERFORM   920-NYUINACCT-READ-SEC
+             IF  NACCT-DAY(IDA)  >  0
+               IF  NACCT-ZAISKBKBN  =  "1"
+      *    Æþ±¡ÎÁ·ï¿ô¡¦Æü¿ô²Ã»»
+                 IF  WRK-NYUIN-DAY(IDA)  =   1
+                   ADD     1         TO   M01TMP-KENSU(42)
+                   ADD     1         TO   M01TMP-KENSU(40)
+                   ADD     1         TO   M01TMP-KENSU(45)
+                   IF    M01TMP-DAY(42 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(42 IDA)
+                     ADD     1       TO   M01TMP-NISSU(42)
+                   END-IF
+                   IF    M01TMP-DAY(40 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(40 IDA)
+                     ADD     1       TO   M01TMP-NISSU(40)
+                   END-IF
+                   IF    M01TMP-DAY(45 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(45 IDA)
+                     ADD     1       TO   M01TMP-NISSU(45)
+                   END-IF
+                 ELSE
+                   ADD     1         TO   M01TMP-KENSU(41)
+                   ADD     1         TO   M01TMP-KENSU(40)
+                   ADD     1         TO   M01TMP-KENSU(45)
+                   IF    M01TMP-DAY(41 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(41 IDA)
+                     ADD     1       TO   M01TMP-NISSU(41)
+                   END-IF
+                   IF    M01TMP-DAY(40 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(40 IDA)
+                     ADD     1       TO   M01TMP-NISSU(40)
+                   END-IF
+                   IF    M01TMP-DAY(45 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(45 IDA)
+                     ADD     1       TO   M01TMP-NISSU(45)
+                   END-IF
+                 END-IF
+               END-IF
+      *    ¼¼ÎÁº¹³Û¡¢¿©»ö·ï¿ôÆü¿ô²Ã»»
+               IF  NACCT-ZAISKBKBN  =  "3"  OR  "4"
+                 IF  NACCT-SRYCDTOTAL  NOT =  "00000197000570"
+                   ADD     1         TO   M01TMP-KENSU(43)
+                   ADD     1         TO   M01TMP-KENSU(40)
+                   ADD     1         TO   M01TMP-KENSU(45)
+                   IF    M01TMP-DAY(43 IDA)   =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(43 IDA)
+                     ADD     1       TO   M01TMP-NISSU(43)
+                   END-IF
+                   IF    M01TMP-DAY(45 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(45 IDA)
+                     ADD     1       TO   M01TMP-NISSU(45)
+                   END-IF
+                   IF    M01TMP-DAY(40 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(40 IDA)
+                     ADD     1       TO   M01TMP-NISSU(40)
+                  END-IF
+                 END-IF
+               END-IF
+             END-IF
+           END-PERFORM
+      *
+           IF  FLG-M01TMP  =  1
+             WRITE    M01TMP-REC
+           ELSE
+             REWRITE  M01TMP-REC
+           END-IF
+           .
+       20000-NYUINKENSU-EXT.
+           EXIT.
+      *****************************************************************
+      *    Æþ±¡¿ÇÎÅ²ñ·×¾ðÊó¸¡º÷
+      *****************************************************************
+       920-NYUINACCT-READ-SEC           SECTION.
+      *
+           INITIALIZE                   NYUINACCT2-REC
+           MOVE    NACCT-HOSPNUM        TO   NACCT2-HOSPNUM
+           MOVE    NACCT-PTID           TO   NACCT2-PTID
+           MOVE    NACCT-SRYYM          TO   NACCT2-SRYYM
+           MOVE    "2"                  TO   NACCT2-ZAISKBKBN
+           MOVE    NYUINACCT2-REC       TO   MCPDATA-REC
+           MOVE    "DBSELECT"           TO   MCP-FUNC
+           MOVE    "tbl_nyuinacct"      TO   MCP-TABLE
+           MOVE    "key17"              TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF  MCP-RC   =   ZERO
+             PERFORM   920-NYUINACCT-FETCH-SEC
+             EVALUATE  NACCT2-DAY(IDA)
+               WHEN  1
+               WHEN  2
+               WHEN  3
+                 IF   NACCT-ZAISKBKBN  =  "4"  OR  "6"
+                   MOVE    0            TO   NACCT-DAY(IDA)
+                 END-IF
+             END-EVALUATE
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE    "tbl_nyuinacct"      TO   MCP-TABLE
+           MOVE    "key17"              TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       920-NYUINACCT-READ-EXT.
+           EXIT.
+      *****************************************************************
+      *    Æþ±¡¿ÇÎÅ²ñ·×¾ðÊó¸¡º÷
+      *****************************************************************
+       920-NYUINACCT-FETCH-SEC           SECTION.
+      *
+           MOVE    "DBFETCH"          TO   MCP-FUNC
+           MOVE    "tbl_nyuinacct"    TO   MCP-TABLE
+           MOVE    "key17"            TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    MCPDATA-REC      TO   NYUINACCT2-REC
+           ELSE
+             INITIALIZE                    NYUINACCT2-REC
+           END-IF
+           .
+       920-NYUINACCT-FETCH-EXT.
+           EXIT.
+      *--- 2009/02/12 ADD END ------------------------------------------
       *****************************************************************
       *    ¿ÇÎÅ¹Ô°Ù¾ðÊó¼èÆÀÀßÄê
       *****************************************************************
@@ -1065,7 +1230,7 @@
       *
            PERFORM  900-SRYACT-SELECT-SEC
       *
-           PERFORM  UNTIL    FLG-SRYACT   =   1
+           PERFORM  UNTIL  FLG-SRYACT   =   1
       *
                PERFORM  VARYING  IDZ  FROM  1  BY  1
                         UNTIL    IDZ  >     5  OR
@@ -1078,7 +1243,7 @@
                END-PERFORM
       *
                PERFORM  900-SRYACT-FETCH-SEC
-           END-PERFORM  
+           END-PERFORM
       *    
       *=== sargeÂÐ±þ UP By Takashima(2006/09/17) start
       *     PERFORM  900-SRYACCT-CLOSE-SEC
@@ -1288,30 +1453,38 @@
       ***  20050606  MOTO
            END-IF
       *
+      *--- 2009/02/12 ADD START ----------------------------------------
+           IF  IDX1  =  41  OR  42
+             CONTINUE
+           ELSE
+      *--- 2009/02/12 ADD END ------------------------------------------
       *    ÅÀ¿ô²Ã»»
-           ADD    WRK-TENSU      TO     M01TMP-TENSU(IDX1)
+               ADD    WRK-TENSU      TO     M01TMP-TENSU(IDX1)
       *
       *    ¼ý±×²Ã»»
-           ADD    WRK-SYUEKI     TO     M01TMP-SYUEKI(IDX1)
+               ADD    WRK-SYUEKI     TO     M01TMP-SYUEKI(IDX1)
       *
       *    ·ï¿ô²Ã»»
-           ADD    ACCT-ZAIKAISU  TO     M01TMP-KENSU(IDX1)
+               ADD    ACCT-ZAIKAISU  TO     M01TMP-KENSU(IDX1)
       *
       *    Æü¿ô
-           MOVE     ZERO     TO    WRK-NISSU
-           PERFORM  VARYING  IDX3  FROM   1  BY  1
-                    UNTIL    IDX3  >    31
-               IF  M01TMP-DAY(IDX1 IDX3)  =  ZERO   AND
-                   ACCT-DAY(1 IDX3)       >  ZERO
-                   MOVE    1    TO    M01TMP-DAY(IDX1 IDX3)
-                   ADD     1    TO    WRK-NISSU
-               END-IF
-           END-PERFORM
-           ADD     WRK-NISSU       TO    M01TMP-NISSU(IDX1)
+               MOVE     ZERO     TO    WRK-NISSU
+               PERFORM  VARYING  IDX3  FROM   1  BY  1
+                        UNTIL    IDX3  >    31
+                   IF  M01TMP-DAY(IDX1 IDX3)  =  ZERO   AND
+                       ACCT-DAY(1 IDX3)       >  ZERO
+                       MOVE    1    TO    M01TMP-DAY(IDX1 IDX3)
+                       ADD     1    TO    WRK-NISSU
+                   END-IF
+               END-PERFORM
+               ADD     WRK-NISSU       TO    M01TMP-NISSU(IDX1)
       *
-      *
+      *--- 2009/02/12 ADD END ------------------------------------------
       *    ¹ç·×¡¦¿ÇÎÅ¶èÊ¬²Ã»»
-           PERFORM   20014-GOKEI-SET-SEC
+               PERFORM   20014-GOKEI-SET-SEC
+      *--- 2009/02/12 ADD START ----------------------------------------
+           END-IF
+      *--- 2009/02/12 ADD END ------------------------------------------
       *
            .
        200122-ETC-EXT.
