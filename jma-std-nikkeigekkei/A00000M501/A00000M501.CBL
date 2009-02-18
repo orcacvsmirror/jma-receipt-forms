@@ -67,6 +67,7 @@
       *              @@@@-ÅÄÃæ    08/12/16  ¼«ÈñÊ¬¤Î¸ºÌÈ¶â³Û¤ò½¸·×¤¹¤ë¤è¤¦¤Ë½¤Àµ
       *              @@@@-ÅÄÃæ    08/12/17  °åÎÅ¼ý±×¤Ë¸ºÌÈ¶â³Û¤ò½¸·×¤¹¤ë¤è¤¦¤Ë½¤Àµ
       *              @@@@-ÅÄÃæ    09/02/06  ¸ºÌÈ¶â³Û¤Î·×»»¼°¤ò½¤Àµ
+      *              @@@@-ÅÄÃæ    09/02/17  ¸ºÌÈ·×»»¼°¤Î¾ò·ï¼°¤ò½¤Àµ
       *****************************************************************
       *
       *
@@ -1891,25 +1892,27 @@
       ***                      +  SYU-RSIETC-MONEY 
       ***                      +  SYU-CHOSEI 
       *--- 2009/02/06 ADD START ----------------------------------------
-           IF  SYU-KOH4COMPFTN  NOT =  ZERO
+      *--- 2009/02/17 CHANGE START -------------------------------------
+           IF  SYU-KOH4HKNNUM  NOT =  SPACE
              MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
            ELSE
-             IF  SYU-KOH3COMPFTN  NOT =  ZERO
+             IF  SYU-KOH3HKNNUM  NOT =  SPACE
                MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
              ELSE
-               IF  SYU-KOH2COMPFTN  NOT =  ZERO
+               IF  SYU-KOH2HKNNUM  NOT =  SPACE
                  MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
                ELSE
-                 IF  SYU-KOH1COMPFTN  NOT =  ZERO
+                 IF  SYU-KOH1HKNNUM  NOT =  SPACE
                    MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
                  ELSE
-                   IF  SYU-SYUCOMPFTN  NOT =  ZERO
+                   IF  SYU-SYUHKNNUM  NOT =  SPACE
                      MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
                    END-IF
                  END-IF
                END-IF
              END-IF
            END-IF
+      *--- 2009/02/17 CHANGE END ---------------------------------------
       *--- 2009/02/06 ADD END ------------------------------------------
            EVALUATE IDX 
       *=== ¼«ÈñÄÉ²ÃÂÐ±þ By Takashima(2006/11/05) start
@@ -2162,25 +2165,27 @@
       *
       *    °åÎÅ¼ý±×·×
       *--- 2009/02/06 ADD START ----------------------------------------
-           IF  SYU-KOH4COMPFTN  NOT =  ZERO
+      *--- 2009/02/17 CHANGE START -------------------------------------
+           IF  SYU-KOH4HKNNUM  NOT =  SPACE
              MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
            ELSE
-             IF  SYU-KOH3COMPFTN  NOT =  ZERO
+             IF  SYU-KOH3HKNNUM  NOT =  SPACE
                MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
              ELSE
-               IF  SYU-KOH2COMPFTN  NOT =  ZERO
+               IF  SYU-KOH2HKNNUM  NOT =  SPACE
                  MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
                ELSE
-                 IF  SYU-KOH1COMPFTN  NOT =  ZERO
+                 IF  SYU-KOH1HKNNUM  NOT =  SPACE
                    MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
                  ELSE
-                   IF  SYU-SYUCOMPFTN  NOT =  ZERO
+                   IF  SYU-SYUHKNNUM  NOT =  SPACE
                      MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
                    END-IF
                  END-IF
                END-IF
              END-IF
            END-IF
+      *--- 2009/02/17 CHANGE END ---------------------------------------
       *--- 2009/02/06 ADD END ------------------------------------------
            EVALUATE IDX 
              WHEN 17 

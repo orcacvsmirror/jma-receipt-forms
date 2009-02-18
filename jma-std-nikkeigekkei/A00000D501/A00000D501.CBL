@@ -61,6 +61,7 @@
       *              @@@@-田中    08/12/16  自費分の減免金額を集計するように修正
       *              @@@@-田中    08/12/17  医療収益に減免金額を集計するように修正
       *              @@@@-田中    09/02/06  減免金額の計算式を修正
+      *              @@@@-田中    09/02/17  減免計算式の条件式を修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -1903,25 +1904,27 @@
       ***                      +  SYU-RSIETC-MONEY
       ***                      +  SYU-CHOSEI
       *--- 2009/02/06 ADD START ----------------------------------------
-           IF  SYU-KOH4COMPFTN  NOT =  ZERO
+      *--- 2009/02/17 CHANGE START -------------------------------------
+           IF  SYU-KOH4HKNNUM  NOT =  SPACE
              MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
            ELSE
-             IF  SYU-KOH3COMPFTN  NOT =  ZERO
+             IF  SYU-KOH3HKNNUM  NOT =  SPACE
                MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
              ELSE
-               IF  SYU-KOH2COMPFTN  NOT =  ZERO
+               IF  SYU-KOH2HKNNUM  NOT =  SPACE
                  MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
                ELSE
-                 IF  SYU-KOH1COMPFTN  NOT =  ZERO
+                 IF  SYU-KOH1HKNNUM  NOT =  SPACE
                    MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
                  ELSE
-                   IF  SYU-SYUCOMPFTN  NOT =  ZERO
+                   IF  SYU-SYUHKNNUM  NOT =  SPACE
                      MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
                    END-IF
                  END-IF
                END-IF
              END-IF
            END-IF
+      *--- 2009/02/17 CHANGE END ---------------------------------------
       *--- 2009/02/06 ADD END ------------------------------------------
            EVALUATE IDX 
       *=== 自費追加対応 ADD By Takashima(2006/10/24) start
@@ -2174,25 +2177,27 @@
              END-IF
            END-IF
       *--- 2009/02/06 ADD START ----------------------------------------
-           IF  SYU-KOH4COMPFTN  NOT =  ZERO
+      *--- 2009/02/17 HCANGE START -------------------------------------
+           IF  SYU-KOH4HKNNUM  NOT =  SPACE
              MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
            ELSE
-             IF  SYU-KOH3COMPFTN  NOT =  ZERO
+             IF  SYU-KOH3HKNNUM  NOT =  SPACE
                MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
              ELSE
-               IF  SYU-KOH2COMPFTN  NOT =  ZERO
+               IF  SYU-KOH2HKNNUM  NOT =  SPACE
                  MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
                ELSE
-                 IF  SYU-KOH1COMPFTN  NOT =  ZERO
+                 IF  SYU-KOH1HKNNUM  NOT =  SPACE
                    MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
                  ELSE
-                   IF  SYU-SYUCOMPFTN  NOT =  ZERO
+                   IF  SYU-SYUHKNNUM  NOT =  SPACE
                      MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
                    END-IF
                  END-IF
                END-IF
              END-IF
            END-IF
+      *--- 2009/02/17 CHANGE END ---------------------------------------
       *--- 2009/02/06 ADD END ------------------------------------------
            EVALUATE IDX 
              WHEN 17

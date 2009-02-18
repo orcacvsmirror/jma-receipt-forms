@@ -56,6 +56,7 @@
       *    08/08/13    @@@@-ÅÄÃæ     ¼«ÈñÌ¾¾Î¤¬Ì¤ÅÐÏ¿¤Î»þ¤âÃÍ¤ò°õ»ú¤¹¤ë½¤Àµ
       *    08/12/17    @@@@-ÅÄÃæ     °åÎÅ¼ý±×¤Ë¸ºÌÈ¶â³Û¤ò½¸·×¤¹¤ë¤è¤¦¤Ë½¤Àµ
       *    09/02/06    @@@@-ÅÄÃæ     ¸ºÌÈ¶â³Û¤Î·×»»¼°¤ò½¤Àµ
+      *    09/02/17    @@@@-ÅÄÃæ     ¸ºÌÈ·×»»¼°¤Î¾ò·ï¼°¤ò½¤Àµ
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2078,25 +2079,27 @@
       ***                       YOSO (NG IDX3 10 26)  +  YOSO (NG IDX3 10 27)
       *
       *--- 2009/02/06 ADD START ----------------------------------------
-           IF  SYU-KOH4COMPFTN  NOT =  ZERO
+      *--- 2009/02/17 CHANGE START -------------------------------------
+           IF  SYU-KOH4HKNNUM  NOT =  SPACE
              MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
            ELSE
-             IF  SYU-KOH3COMPFTN  NOT =  ZERO
+             IF  SYU-KOH3HKNNUM  NOT =  SPACE
                MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
              ELSE
-               IF  SYU-KOH2COMPFTN  NOT =  ZERO
+               IF  SYU-KOH2HKNNUM  NOT =  SPACE
                  MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
                ELSE
-                 IF  SYU-KOH1COMPFTN  NOT =  ZERO
+                 IF  SYU-KOH1HKNNUM  NOT =  SPACE
                    MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
                  ELSE
-                   IF  SYU-SYUCOMPFTN  NOT =  ZERO
+                   IF  SYU-SYUHKNNUM  NOT =  SPACE
                      MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
                    END-IF
                  END-IF
                END-IF
              END-IF
            END-IF
+      *--- 2009/02/17 CHANGE END ---------------------------------------
       *--- 2009/02/06 ADD END ------------------------------------------
            EVALUATE IDX 
              WHEN 7 
