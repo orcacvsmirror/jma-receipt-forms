@@ -56,6 +56,7 @@
       *                            食事療養の収益を医療収益に加算
       *  08/12/26    @@@@-門間     医療収益の計算式を変更
       *  09/01/08    @@@@-田中     公費請求額の計算式を変更
+      *  09/02/25    @@@@-田中     入院時診療科名の不具合を修正
       *********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -328,9 +329,11 @@
            03  SUM-SRYKAMAX             PIC 9(03).
            03  SUM-SRYDR-TBL       OCCURS 100.
                05  SUM-SRYKA            PIC X(02).
+      *--- 2009/02/25 DELETE START -------------------------------------
       *--- 2008/11/06  ADD  START --------------------------------------
-               05  SUM-SRYKA2           PIC X(02).
+      *         05  SUM-SRYKA2           PIC X(02).
       *--- 2008/11/06  ADD  END ----------------------------------------
+      *--- 2008/11/06 DELETE END ---------------------------------------
                05  SUM-SRYKANAME        PIC X(24).
       *    入院履歴情報退避エリア
        01  WRK-NYUIN-AREA.
@@ -686,9 +689,11 @@
            PERFORM  UNTIL  FLG-SYSKANRI3 = 1
              IF   FLG-SYSKANRI3  =  ZERO
                MOVE   SYS-1005-KBNCD      TO   SUM-SRYKA(IDX1)
+      *--- 2009/02/25 DELETE START -------------------------------------
       *--- 2008/11/06  ADD  START --------------------------------------
-               MOVE   SYS-1005-RECESRYKA  TO   SUM-SRYKA2(IDX1)
+      *         MOVE   SYS-1005-RECESRYKA  TO   SUM-SRYKA2(IDX1)
       *--- 2008/11/06  ADD  END ----------------------------------------
+      *--- 2009/02/25 DELETE END ---------------------------------------
                MOVE   SYS-1005-SRYKANAME1 TO   SUM-SRYKANAME(IDX1)
                ADD     1                  TO   IDX1
              END-IF
@@ -1229,8 +1234,10 @@
                  IF    SYS-1001-HOSPSBT1    =    1
       *--- 2008/11/06  ADD  START --------------------------------------
                      OR  SYS-2009-SYUKA-KBN = 1
-      *             MOVE    JYURRK-SRYKA   TO  IDB-G
-                   MOVE    1              TO  IDB
+      *--- 2009/02/25 CHANGE START -------------------------------------
+                   MOVE    JYURRK-SRYKA   TO  IDB-G
+      *             MOVE    1              TO  IDB
+      *--- 2009/02/25 CHANGE END ---------------------------------------
       *--- 2008/11/06  ADD  END ----------------------------------------
                  ELSE
                    MOVE    1              TO  IDB
@@ -1280,8 +1287,10 @@
       **--- 2008/11/06  ADD  START -------------------------------------
            IF    SYS-1001-HOSPSBT1  =  1 
                OR  SYS-2009-SYUKA-KBN = 1
-      *       MOVE    JYURRK-SRYKA      TO    S139TMP-SRYKA
-             MOVE    "00"              TO    S139TMP-SRYKA
+      *--- 2009/02/25 CHANGE START -------------------------------------
+             MOVE    JYURRK-SRYKA      TO    S139TMP-SRYKA
+      *       MOVE    "00"              TO    S139TMP-SRYKA
+      *--- 2009/02/25 CHANGE END ---------------------------------------
            ELSE
       **--- 2008/11/06  ADD  END ---------------------------------------
              MOVE    "00"              TO    S139TMP-SRYKA
@@ -1341,7 +1350,6 @@
            PERFORM  940-SYUNOU-READ-SEC
       *    自費・時賠・労災用加算データ編集
            PERFORM  2001-KASAN-ETC-SEC
-      *
       *
       * 20080423 H20年4月改正対応START tanaka
       *    データ設定
@@ -1488,12 +1496,15 @@
       * 20081014 主科設定時に診療科を印字するSTART
            IF    SYS-1001-HOSPSBT1  =  1 
       *--- 2008/11/06  ADD  START --------------------------------------
-                   OR  SYS-2009-SYUKA-KBN = 1
+               OR  SYS-2009-SYUKA-KBN = 1
       *--- 2008/11/06  ADD  END ----------------------------------------
-      *       MOVE    SYU-SRYKA         TO    S139TMP-SRYKA
-             MOVE    "00"        TO    S139TMP-SRYKA
+      *--- 2009/02/25 CHANGE START -------------------------------------
+             MOVE   SYU-SRYKA    TO    S139TMP-SRYKA
+                                       IDB
+      *       MOVE    "00"        TO    S139TMP-SRYKA
       *                                 IDB-G
-             MOVE    1           TO    IDB
+      *       MOVE    1           TO    IDB
+      *--- 2009/02/25 CHANGE END ---------------------------------------
            ELSE
              MOVE    "00"        TO    S139TMP-SRYKA
              MOVE    1           TO    IDB
@@ -1501,7 +1512,10 @@
       * 20081014 主科設定時に診療科を印字するEND
       * 20080512 返戻が正しく印字されない不具合を修正START tanaka
       *     MOVE    RECE10-SRYYM       TO    S139TMP-SRYYM
-           IF  RECE10-SRYYM < "200804"
+      * 2009/02/25 CHANGE START ----------------------------------------
+      *     IF  RECE10-SRYYM < "200804"
+           IF  SYU-SRYYMD < "20080401"
+      * 2009/02/25 CHANGE START ----------------------------------------
              MOVE    "0"         TO    S139TMP-SRYYMKBN
            ELSE
              MOVE    "9"         TO    S139TMP-SRYYMKBN
@@ -2031,14 +2045,17 @@
       *    診療科名(旧総合病院時のみ)
       * 20081014 主科設定時に診療科を印字するSTART
            IF    SYS-1001-HOSPSBT1  =  1
+              OR  SYS-2009-SYUKA-KBN  =  1
       * 20081014 主科設定時に診療科を印字するEND
              MOVE     1               TO    IDX4
              MOVE     SUM-SRYKAMAX    TO    IDX-MAX
              PERFORM  UNTIL    IDX4   >   IDX-MAX
-      *--- 2008/11/06  CHANGE  START --------------------------------------
-      *         IF  S139TMP-SRYKA       =     SUM-SRYKA(IDX4)
-               IF   S139TMP-SRYKA   =   SUM-SRYKA2(IDX4)
-      *--- 2008/11/06  CHANGE  END ----------------------------------------
+      *--- 2009/02/25 CHANGE START -------------------------------------
+      *--- 2008/11/06  CHANGE  START -----------------------------------
+               IF  S139TMP-SRYKA       =     SUM-SRYKA(IDX4)
+      *         IF   S139TMP-SRYKA   =   SUM-SRYKA2(IDX4)
+      *--- 2008/11/06  CHANGE  END -------------------------------------
+      *--- 2009/02/25 CHANGE END ---------------------------------------
                  MOVE    ZERO                   TO    IDX-MAX
                  MOVE    SUM-SRYKANAME(IDX4)    TO    S139-SRYKANAME
                ELSE
@@ -2046,20 +2063,22 @@
                END-IF
              END-PERFORM
            END-IF
+      *--- 2009/02/25 DELETE START -------------------------------------
       *--- 2008/11/06  ADD  START --------------------------------------
-           IF   SYS-2009-SYUKA-KBN = 1
-             MOVE     1               TO    IDX4
-             MOVE     SUM-SRYKAMAX    TO    IDX-MAX
-             PERFORM  UNTIL    IDX4   >     IDX-MAX
-               IF   S139TMP-SRYKA   =   SUM-SRYKA(IDX4)
-                 MOVE    ZERO                   TO    IDX-MAX
-                 MOVE    SUM-SRYKANAME(IDX4)    TO    S139-SRYKANAME
-               ELSE
-                 ADD     1                      TO    IDX4
-               END-IF
-             END-PERFORM
-           END-IF
+      *     IF   SYS-2009-SYUKA-KBN = 1
+      *       MOVE     1               TO    IDX4
+      *       MOVE     SUM-SRYKAMAX    TO    IDX-MAX
+      *       PERFORM  UNTIL    IDX4   >     IDX-MAX
+      *         IF   S139TMP-SRYKA   =   SUM-SRYKA(IDX4)
+      *           MOVE    ZERO                   TO    IDX-MAX
+      *           MOVE    SUM-SRYKANAME(IDX4)    TO    S139-SRYKANAME
+      *         ELSE
+      *           ADD     1                      TO    IDX4
+      *         END-IF
+      *       END-PERFORM
+      *     END-IF
       *--- 2008/11/06  ADD  END ----------------------------------------
+      *--- 2009/02/25 DELETE END ---------------------------------------
       *
            MOVE    WRK-SRYYM        TO   S139-SRYYM
            MOVE    WRK-SEIYMD       TO   S139-SYSYMD
@@ -2090,10 +2109,12 @@
              MOVE     1               TO    IDX4
              MOVE     SUM-SRYKAMAX    TO    IDX-MAX
              PERFORM  UNTIL   IDX4  >  IDX-MAX
-      *--- 2008/11/06  CHANGE  START --------------------------------------
-      *         IF  S139TMP-SRYKA       =     SUM-SRYKA(IDX4)
-               IF  S139TMP-SRYKA       =     SUM-SRYKA2(IDX4)
-      *--- 2008/11/06  CHANGE  END ----------------------------------------
+      *--- 2009/02/25 CHANGE START -------------------------------------
+      *--- 2008/11/06  CHANGE  START -----------------------------------
+               IF  S139TMP-SRYKA       =     SUM-SRYKA(IDX4)
+      *         IF  S139TMP-SRYKA       =     SUM-SRYKA2(IDX4)
+      *--- 2008/11/06  CHANGE  END -------------------------------------
+      *--- 2009/02/25 CHANGE END ---------------------------------------
                  MOVE    ZERO                   TO   IDX-MAX
                  MOVE    SUM-SRYKANAME(IDX4)    TO   S139N-SRYKANAME
                ELSE
@@ -2102,20 +2123,22 @@
              END-PERFORM
            END-IF
       *
+      *--- 2009/02/25 DELETE START -------------------------------------
       *--- 2008/11/06  ADD  START --------------------------------------
-           IF   SYS-2009-SYUKA-KBN = 1
-             MOVE    1               TO    IDX4
-             MOVE    SUM-SRYKAMAX    TO    IDX-MAX
-             PERFORM  UNTIL   IDX4   >   IDX-MAX
-               IF  S139TMP-SRYKA   =   SUM-SRYKA(IDX4)
-                 MOVE    ZERO                   TO    IDX-MAX
-                 MOVE    SUM-SRYKANAME(IDX4)    TO    S139-SRYKANAME
-               ELSE
-                 ADD     1                      TO    IDX4
-               END-IF
-             END-PERFORM
-           END-IF
+      *     IF   SYS-2009-SYUKA-KBN = 1
+      *       MOVE    1               TO    IDX4
+      *       MOVE    SUM-SRYKAMAX    TO    IDX-MAX
+      *       PERFORM  UNTIL   IDX4   >   IDX-MAX
+      *         IF  S139TMP-SRYKA   =   SUM-SRYKA(IDX4)
+      *           MOVE    ZERO                   TO    IDX-MAX
+      *           MOVE    SUM-SRYKANAME(IDX4)    TO    S139-SRYKANAME
+      *         ELSE
+      *           ADD     1                      TO    IDX4
+      *         END-IF
+      *       END-PERFORM
+      *     END-IF
       *--- 2008/11/06  ADD  END ----------------------------------------
+      *--- 2009/02/25 DELETE END -------------------------------------
       *
            MOVE    WRK-SRYYM        TO   S139N-SRYYM
            MOVE    WRK-SEIYMD       TO   S139N-SYSYMD
@@ -3521,24 +3544,24 @@
       *                                          -  SYU-SKJ-FTN(IDX)
                    IF    RECE10-FTNMONEY(1)  =  ZERO
                        AND  RECE10-KYURATE  NOT = ZERO
-           DISPLAY "限度なし" RECE10-PTNUM
+      *    限度なし
                      MOVE  SYU-KOH-HKNNUM(IDX)   TO  WRK-KOHNUM
                      PERFORM   950-HKNNUM-SET-SEC
                      IF   HKN-RECEFTNDSPKBN  =  1
-           DISPLAY "四捨五入する" 
+      *    四捨五入する 
                        COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
                                                  -  SYU-KOH-COMPFTN(IDX)
                        COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
                                                     -  SYU-SKJ-FTN(IDX)
                      ELSE
-           DISPLAY "四捨五入しない" 
+      *    四捨五入しない 
                        COMPUTE  WRK-KOHSEIKYUGK = SYU-SYUCOMPFTN-ENTANI
                                           -  SYU-KOH-COMPFTN-ENTANI(IDX)
                        COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
                                                     -  SYU-SKJ-FTN(IDX)
                      END-IF
                    ELSE
-           DISPLAY "限度あり" RECE10-PTNUM
+      *    限度あり
                      ADD    SYU-KOH-COMPFTN(IDX)  TO   WRK-KOHFTN
                      MOVE   1   TO    WRK-FTNFLG
                      COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
