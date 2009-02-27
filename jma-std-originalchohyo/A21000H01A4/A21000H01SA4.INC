@@ -20,6 +20,7 @@
       * Maj/Min/Rev  修正者       日付      内容
       *  01.00.01    有村     03.01.24  新規
       *  01.00.02    田中     08.03.14  H20年4月改正対応
+      *  01.00.03    門間     09.02.26  記号番号が15文字の場合「・」を印字
       ************************************************************
        01  H01SA4.
               03  H01SA4-PTNUM              PIC  X(20).
@@ -48,11 +49,16 @@
               03  H01SA4-TUZUKI             PIC  X(8).
               03  H01SA4-FTNRITU            PIC  X(4).
               03  H01SA4-HPTNUM             PIC  X(16).
-              03  H01SA4-KIGONUM            PIC  X(28).
-      * 20080314 H20年4月改正対応START tanaka
-              03  H01SA4-KIGO               PIC  X(28).
-              03  H01SA4-NUM                PIC  X(28).
-      * 20080314 H20年4月改正対応END
+      *--- 記号・番号が15文字の場合「・」を印字 By Monma (2009/02/26) start
+      *        03  H01SA4-KIGONUM            PIC  X(28).
+      ** 20080314 H20年4月改正対応START tanaka
+      *        03  H01SA4-KIGO               PIC  X(28).
+      *        03  H01SA4-NUM                PIC  X(28).
+      ** 20080314 H20年4月改正対応END
+              03  H01SA4-KIGONUM            PIC  X(32).
+              03  H01SA4-KIGO               PIC  X(32).
+              03  H01SA4-NUM                PIC  X(32).
+      *--- 記号・番号が15文字の場合「・」を印字 By Monma (2009/02/26) end
               03  H01SA4-YUKOY              PIC  X(2).
               03  H01SA4-YUKOM              PIC  X(2).
               03  H01SA4-YUKOD              PIC  X(2).

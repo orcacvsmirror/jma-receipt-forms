@@ -122,17 +122,17 @@
     </element>
     <element name="KIGONUM" occurs="1">
       <appinfo>
-        <embed object="string" length="28"/>
+        <embed object="string" length="32"/>
       </appinfo>
     </element>
     <element name="KIGO" occurs="1">
       <appinfo>
-        <embed object="string" length="28"/>
+        <embed object="string" length="32"/>
       </appinfo>
     </element>
     <element name="NUM" occurs="1">
       <appinfo>
-        <embed object="string" length="28"/>
+        <embed object="string" length="32"/>
       </appinfo>
     </element>
     <element name="YUKOY" occurs="1">
@@ -451,7 +451,7 @@
         <point val="14.2672,4.58483"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="14.2672,4.26631;19.9232,4.66631"/>
+        <rectangle val="14.2672,4.2902;19.499,4.6602"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KIGONUM#</string>
@@ -468,7 +468,7 @@
             <font name="Courier"/>
           </attribute>
           <attribute name="height">
-            <real val="0.4"/>
+            <real val="0.37"/>
           </attribute>
           <attribute name="pos">
             <point val="14.2672,4.58483"/>
@@ -480,10 +480,10 @@
             <enum val="0"/>
           </attribute>
           <attribute name="single">
-            <real val="0.2424"/>
+            <real val="0.22422"/>
           </attribute>
           <attribute name="multi">
-            <real val="0.202"/>
+            <real val="0.18685"/>
           </attribute>
         </composite>
       </attribute>

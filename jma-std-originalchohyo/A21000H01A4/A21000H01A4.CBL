@@ -44,6 +44,7 @@
       *  08/08/14    @@@@-門間     記号・番号の１５、１６文字目が印字されない不具合を修正
       *  08/09/30    @@@@-田中     ｼｽﾃﾑ管理ﾏｽﾀ1017の情報を取得できない不具合を修正
       *  08/10/28    @@@@-門間     ver4.3対応(外来カルテ一括発行)
+      *  09/02/26    @@@@-門間     記号番号が15文字の場合「・」を印字
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -1054,8 +1055,20 @@
                                          H01SA4-KIGONUM
            END-IF
       *
-      * 20080814 記号・番号が１５文字以上は別行へ START monma
-           IF      WRK-HEN-KIGONUM(29:)    NOT =   SPACE
+      *--- 記号・番号が15文字の場合「・」を印字 By Monma (2009/02/26) start
+      ** 20080814 記号・番号が１５文字以上は別行へ START monma
+      *     IF      WRK-HEN-KIGONUM(29:)    NOT =   SPACE
+      *             MOVE    SPACE         TO     H01KA4-KIGONUM
+      *                                          H01SA4-KIGONUM
+      *             MOVE    WRK-KIGONUM   TO     H01KA4-KIGO
+      *                                          H01SA4-KIGO
+      *             MOVE    WRK-NUM       TO     H01KA4-NUM
+      *                                          H01SA4-NUM
+      *     END-IF
+      ** 20080814 記号・番号が１５文字以上は別行へ END   monma
+      * 
+      *    記号・番号が１６文字以上は別行へ
+           IF      WRK-HEN-KIGONUM(33:)    NOT =   SPACE
                    MOVE    SPACE         TO     H01KA4-KIGONUM
                                                 H01SA4-KIGONUM
                    MOVE    WRK-KIGONUM   TO     H01KA4-KIGO
@@ -1063,17 +1076,7 @@
                    MOVE    WRK-NUM       TO     H01KA4-NUM
                                                 H01SA4-NUM
            END-IF
-      * 20080814 記号・番号が１５文字以上は別行へ END   monma
-      * 
-      *    記号・番号が１６文字以上は別行へ
-      *    IF      WRK-HEN-KIGONUM(33:)    NOT =   SPACE
-      *            MOVE    SPACE         TO     H01KA4-KIGONUM
-      *                                         H01SA4-KIGONUM
-      *            MOVE    WRK-KIGONUM   TO     H01KA4-KIGO
-      *                                         H01SA4-KIGO
-      *            MOVE    WRK-NUM       TO     H01KA4-NUM
-      *                                         H01SA4-NUM
-      *   END-IF
+      *--- 記号・番号が15文字の場合「・」を印字 By Monma (2009/02/26) end
       *
       * 20080314 H20年4月改正対応END
       *---- (01.00.11) LINE UPD START ----------------------------
