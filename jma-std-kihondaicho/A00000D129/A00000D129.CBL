@@ -48,6 +48,7 @@
       *  08/02/26    @@@@-田中     4.0対応漏れ修正
       *  08/04/01    @@@@-田中     H20年4月改正対応
       *  08/07/08    @@@@-田中     収納明細を更新した場合に、入金額が表示されない不具合の修正
+      *  09/02/25    @@@@-門間     預り金の重複を修正
       *****************************************************************
       *
       *
@@ -1515,6 +1516,9 @@
       *
       ***      受診履歴情報により初診、再診、その他件数を取得する。
                 PERFORM 900-JYURRK-READ-SEC
+      *--- 預り金の重複を修正 BY Monma (2009/02/25) start
+                MOVE    JYURRK-RENNUM     TO   IDX4
+      *--- 預り金の重複を修正 BY Monma (2009/02/25) end
                 PERFORM 320-JYURRK-CNT-SUB-SEC
       *        当日預り金
       ***      患者別に当日預り金を診療行為情報より取得する。
@@ -2495,7 +2499,10 @@
                      PERFORM VARYING IDX3  FROM  1 BY 1
       *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
       *                       UNTIL   IDX3  >  5
-                             UNTIL   IDX3  >  10
+      *--- 預り金の重複を修正 BY Monma (2009/02/25) start
+      *                       UNTIL   IDX3  >  10
+                             UNTIL   IDX3  >  5
+      *--- 預り金の重複を修正 BY Monma (2009/02/25) end
       *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
                         IF   SRY-SRYCD(IDX3)    = WRK-INI-AZUKARICD
                          AND SRY-JIHIMONEY(IDX3) > ZERO
@@ -2540,42 +2547,59 @@
       *****************************************************************
        320-AZUKARI-GET-SUB-SEC      SECTION.
       *
-        PERFORM VARYING  IDX4   FROM  WRK-ACCT-SDAY  BY 1
-                   UNTIL IDX4    >    WRK-ACCT-EDAY
-            IF  ACCT-DAY(1 IDX4) >    ZERO
-                PERFORM VARYING  IDX5  FROM  2  BY 4
-                   UNTIL  IDX5   >    4
-                     IF  ACCT-DAY(IDX5 IDX4) > 0
-                         INITIALIZE          JYURRK-REC
-      * 20070913 4.0対応START t.tanaka
-      *                   MOVE ACCT-HOSPID     TO JYURRK-HOSPID
-                         MOVE ACCT-HOSPNUM     TO JYURRK-HOSPNUM
-      * 20070913 4.0対応END
-                         MOVE ACCT-PTID       TO JYURRK-PTID
-                         MOVE ACCT-NYUGAIKBN  TO JYURRK-NYUGAIKBN
-                         MOVE ACCT-SRYKA      TO JYURRK-SRYKA
-                         MOVE ACCT-SRYYM      TO JYURRK-SRYYMD(1:6)
-                         MOVE IDX4(3:2)       TO JYURRK-SRYYMD(7:2)
-                         MOVE IDX5            TO IDX6
-                         ADD      -1          TO IDX6
-                         MOVE IDX6            TO JYURRK-RENNUM
-                         MOVE ACCT-HKNCOMBI   TO JYURRK-HKNCOMBINUM
-                         PERFORM 900-JYURRK-DRCD-READ-SEC
-                         IF  ( WRK-SEL-DRCD     = SPACE
-                          OR ( WRK-SEL-DRCD NOT = SPACE
-                           AND WRK-SEL-DRCD     = JYURRK-DRCD(2:4)))
-                          AND  FLG-JYURRK       = ZERO
-                               COMPUTE WRK-AZUKARI =
-                                 ACCT-DAY(IDX5 IDX4) * WRK-JIHIMONEY
-                               ADD  WRK-AZUKARI
-                                TO  SUM-YOSO(WRK-ACCT-IN 20)
-                               ADD  WRK-AZUKARI
-                                TO  SUM-YOSO(SUM-AGEMAX 20)
-                         END-IF
-                     END-IF
-                END-PERFORM
-            END-IF
-        END-PERFORM
+      *--- 預り金の重複を修正 BY Monma (2009/02/25) start
+      *  PERFORM VARYING  IDX4   FROM  WRK-ACCT-SDAY  BY 1
+      *             UNTIL IDX4    >    WRK-ACCT-EDAY
+      *      IF  ACCT-DAY(1 IDX4) >    ZERO
+      *          PERFORM VARYING  IDX5  FROM  2  BY 4
+      *             UNTIL  IDX5   >    4
+      *               IF  ACCT-DAY(IDX5 IDX4) > 0
+      *                   INITIALIZE          JYURRK-REC
+      ** 20070913 4.0対応START t.tanaka
+      **                   MOVE ACCT-HOSPID     TO JYURRK-HOSPID
+      *                   MOVE ACCT-HOSPNUM     TO JYURRK-HOSPNUM
+      ** 20070913 4.0対応END
+      *                   MOVE ACCT-PTID       TO JYURRK-PTID
+      *                   MOVE ACCT-NYUGAIKBN  TO JYURRK-NYUGAIKBN
+      *                   MOVE ACCT-SRYKA      TO JYURRK-SRYKA
+      *                   MOVE ACCT-SRYYM      TO JYURRK-SRYYMD(1:6)
+      *                   MOVE IDX4(3:2)       TO JYURRK-SRYYMD(7:2)
+      *                   MOVE IDX5            TO IDX6
+      *                   ADD      -1          TO IDX6
+      *                   MOVE IDX6            TO JYURRK-RENNUM
+      *                   MOVE ACCT-HKNCOMBI   TO JYURRK-HKNCOMBINUM
+      *                   PERFORM 900-JYURRK-DRCD-READ-SEC
+      *                   IF  ( WRK-SEL-DRCD     = SPACE
+      *                    OR ( WRK-SEL-DRCD NOT = SPACE
+      *                     AND WRK-SEL-DRCD     = JYURRK-DRCD(2:4)))
+      *                    AND  FLG-JYURRK       = ZERO
+      *                         COMPUTE WRK-AZUKARI =
+      *                           ACCT-DAY(IDX5 IDX4) * WRK-JIHIMONEY
+      *                         ADD  WRK-AZUKARI
+      *                          TO  SUM-YOSO(WRK-ACCT-IN 20)
+      *                         ADD  WRK-AZUKARI
+      *                          TO  SUM-YOSO(SUM-AGEMAX 20)
+      *                   END-IF
+      *               END-IF
+      *          END-PERFORM
+      *      END-IF
+      *  END-PERFORM
+           IF  ( D100LNK-DRCD  =  SPACE
+               OR ( D100LNK-DRCD NOT =  SPACE
+               AND  D100LNK-DRCD  =  JYURRK-DRCD))
+               AND  FLG-JYURRK  =  ZERO
+             PERFORM  VARYING  IDX6  FROM 1  BY 1
+                      UNTIL  IDX6  >  15
+               IF  JYURRK-ZAINUM(IDX6)   =   ACCT-ZAINUM
+                 COMPUTE  IDX5   =   IDX4   +   1
+                 COMPUTE  WRK-AZUKARI  =  ACCT-DAY(IDX5 WRK-ACCT-SDAY)
+                                       *  WRK-JIHIMONEY
+                 ADD   WRK-AZUKARI   TO   SUM-YOSO(WRK-ACCT-IN 20)
+                 ADD   WRK-AZUKARI   TO   SUM-YOSO(SUM-AGEMAX 20)
+               END-IF
+             END-PERFORM
+           END-IF
+      *--- 預り金の重複を修正 BY Monma (2009/02/25) end
       * 20040401 削除 Y.Takahashi
       *     PERFORM  UNTIL      FLG-SRYACT  = 1
       *

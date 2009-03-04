@@ -48,6 +48,7 @@
       *  08/04/01    @@@@-田中    H20年4月改正対応
       *  08/07/08    @@@@-田中    収納明細を更新した場合に、入金額が表示されない不具合の修正
       *  08/09/29    @@@@-田中    H20年10月改正対応(協会けんぽ)
+      *  09/02/25    @@@@-門間    預り金の重複を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -303,7 +304,13 @@
       ****2005/12/30  @@@@-BRAND END
       * 20071011追加 T.Tanaka
            03  WRK-GENMEN        PIC 9(09).
-      * 20071011追加 
+      * 20071011追加
+      *--- 預り金の重複を修正 By Monma (2009/02/25) start
+           03  WRK-ACCT-SDAY     PIC 9(02).
+           03  WRK-ACCT-IN       PIC 9(04).
+           03  WRK-JIHIMONEY     PIC 9(10).
+           03  WRK-AZUKARI       PIC 9(10).
+      *--- 預り金の重複を修正 By Monma (2009/02/25) end
       *
        01  SUM-AREA.
            03         SUM-DRMAX         PIC  9(03).
@@ -1458,11 +1465,18 @@
       *
       ***      受診履歴情報により初診、再診、その他件数を取得する。
                 PERFORM 900-JYURRK-READ-SEC
+      *--- 預り金の重複を修正 By Monma (2009/02/25) start
+                MOVE    JYURRK-RENNUM     TO   IDX4
+      *--- 預り金の重複を修正 By Monma (2009/02/25) end
                 PERFORM 320-JYURRK-CNT-SUB-SEC
       *        当日預り金
       ***      患者別に当日預り金を診療行為情報より取得する。
-                   PERFORM 911-SRY-SELECT-SEC
-                   PERFORM 320-AZUKARI-GET-SUB-SEC
+      *--- 預り金の重複を修正 By Monma (2009/02/25) start
+      *             PERFORM 911-SRY-SELECT-SEC
+      *             PERFORM 320-AZUKARI-GET-SUB-SEC
+           DISPLAY "1"
+                   PERFORM 320-AZUKARI-GET-SEC
+      *--- 預り金の重複を修正 By Monma (2009/02/25) end
       *=== 初診、再診、その他振分け修正 DEL By Yoshikawa(2007/06/27) start
       *      END-IF
       *=== 初診、再診、その他振分け修正 DEL By Yoshikawa(2007/06/27) end
@@ -2407,58 +2421,143 @@
            .           
        320-JYURRK-CNT-SUB-EXT.
            EXIT.
+      *--- 預り金の重複を修正 By Monma (2009/02/25) start
       *****************************************************************
       *    預り金対象者抽出者処理
       *****************************************************************
-       320-AZUKARI-GET-SUB-SEC      SECTION.
+       320-AZUKARI-GET-SEC      SECTION.
       *
+           DISPLAY "2"
+           INITIALIZE                      SRYACT-REC
+           MOVE   SYU-HOSPNUM          TO  SRY-HOSPNUM  
+           MOVE   SYU-NYUGAIKBN        TO  SRY-NYUGAIKBN 
+           MOVE   SYU-PTID             TO  SRY-PTID
+           MOVE   WRK-INI-AZUKARICD    TO  SRY-SRYCD(1)
+                                           SRY-SRYCD(2)
+                                           SRY-SRYCD(3)
+                                           SRY-SRYCD(4)
+                                           SRY-SRYCD(5)
+           MOVE   I3                   TO  WRK-ACCT-IN
+      *
+           MOVE   SYU-SRYYMD(1:6)      TO  SRY-SRYYM
+           MOVE   SYU-SRYYMD(7:2)      TO  WRK-ACCT-SDAY
+           DISPLAY "SYU-HOSPNUM        " SYU-HOSPNUM
+           DISPLAY "SYU-NYUGAIKBN      " SYU-NYUGAIKBN
+           DISPLAY "SYU-PTID           " SYU-PTID
+           DISPLAY "WRK-INI-AZUKARICD  " WRK-INI-AZUKARICD
+           DISPLAY "SYU-SRYYMD         " SYU-SRYYMD(7:2)
+      *
+           PERFORM  911-SRY-SELECT-SEC
            PERFORM  UNTIL      FLG-SRYACT  = 1
-      *
-      *   集計対象のデータであるかをチェックする。 
-      * 20040318  変更
-      ***      IF    FLG-SRYACT     =   ZERO
-      ***       AND  SRY-NYUGAIKBN  =   "2"
-      ***       AND  SRY-SRYKA      =   SUM-SRYKACD
-            IF    FLG-SRYACT     =   ZERO
-             AND  SRY-NYUGAIKBN  =   "2"
-             AND (SUM-SRYKACD    =   SRY-SRYKA
-              OR  SUM-SRYKACD    =   "99")
-      * 20040318  変更
-      * 20070913 4.0対応START t.tanaka
-      *         MOVE SRY-HOSPID       TO  ACCT-HOSPID  
-               MOVE SRY-HOSPNUM       TO  ACCT-HOSPNUM  
-      * 20070913 4.0対応END
-               MOVE SRY-NYUGAIKBN    TO  ACCT-NYUGAIKBN
-               MOVE SRY-PTID         TO  ACCT-PTID
-               MOVE SRY-SRYKA        TO  ACCT-SRYKA
-               MOVE SRY-SRYYM        TO  ACCT-SRYYM
-               MOVE SRY-SRYKBN       TO  ACCT-SRYKBN
-               MOVE SRY-ZAINUM       TO  ACCT-ZAINUM
-               PERFORM  900-SRYACCT-READ2-SEC
-               MOVE SYU-SRYYMD(7:2)  TO  IDX7G
-      *
-               IF   FLG-SRYACCT          =   ZERO
-                AND ACCT-DAY(1 IDX7)     >   ZERO
-                 PERFORM VARYING   IDX3        FROM 1  BY  1  
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      *                 UNTIL     IDX3        >    5
-                       UNTIL     IDX3        >    10
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-                  IF   SRY-SRYCD(IDX3)        =    WRK-INI-AZUKARICD
-                   AND SRY-JIHIMONEY(IDX3)    >    ZERO
-      *   当日預り金
-                      ADD  SRY-JIHIMONEY(IDX3)
-                           TO  SUM-YOSO(I3 20)
-                      ADD  SRY-JIHIMONEY(IDX3)
-                           TO  SUM-YOSO(SUM-DRMAX 20)
-                  END-IF
-                 END-PERFORM 
-               END-IF
-            END-IF
-            PERFORM 911-SRY-FETCH-SEC
-           END-PERFORM           
+           DISPLAY "3"
+             IF    FLG-SRYACT     =   ZERO
+              AND  SRY-NYUGAIKBN  =   "2"
+              AND (SUM-SRYKACD    =   SRY-SRYKA
+              OR   SUM-SRYKACD    =   "99")
+           DISPLAY "4"
+               PERFORM VARYING IDX3  FROM  1 BY 1
+                       UNTIL   IDX3  >  5
+           DISPLAY "5"
+                 IF   SRY-SRYCD(IDX3)    = WRK-INI-AZUKARICD
+                  AND SRY-JIHIMONEY(IDX3) > ZERO
+                   MOVE SRY-JIHIMONEY(IDX3)  TO  WRK-JIHIMONEY
+                   INITIALIZE             SRYACCT-REC
+                   MOVE SRY-HOSPNUM    TO  ACCT-HOSPNUM
+                   MOVE SRY-NYUGAIKBN TO  ACCT-NYUGAIKBN
+                   MOVE SRY-PTID      TO  ACCT-PTID
+                   MOVE SRY-SRYKA     TO  ACCT-SRYKA
+                   MOVE SRY-SRYYM     TO  ACCT-SRYYM
+                   MOVE SRY-SRYKBN    TO  ACCT-SRYKBN
+                   MOVE SRY-ZAINUM    TO  ACCT-ZAINUM
+                   PERFORM 900-SRYACCT-SELECT-SEC
+                   PERFORM 900-SRYACCT-FETCH-SEC
+                   PERFORM  UNTIL FLG-SRYACCT    =  1
+           DISPLAY "6"
+                       PERFORM 320-AZUKARI-GET-SUB-SEC
+                       PERFORM 900-SRYACCT-FETCH-SEC
+                   END-PERFORM
+                   PERFORM 900-SRYACCT-CLOSE-SEC
+                 END-IF
+               END-PERFORM
+             END-IF
+             PERFORM 911-SRY-FETCH-SEC
+           END-PERFORM
            PERFORM 911-SRY-CLOSE-SEC
       *
+           .
+       320-AZUKARI-GET-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    預り金加算処理
+      *****************************************************************
+       320-AZUKARI-GET-SUB-SEC      SECTION.
+      *
+           DISPLAY "7"
+           IF  ( D100LNK-DRCD  =  SPACE
+               OR ( D100LNK-DRCD NOT =  SPACE
+               AND  D100LNK-DRCD  =  JYURRK-DRCD))
+               AND  FLG-JYURRK  =  ZERO
+             PERFORM  VARYING  IDX6  FROM 1  BY 1
+                      UNTIL  IDX6  >  15
+               IF  JYURRK-ZAINUM(IDX6)   =   ACCT-ZAINUM
+                 COMPUTE  IDX5   =   IDX4   +   1
+                 COMPUTE  WRK-AZUKARI  =  ACCT-DAY(IDX5 WRK-ACCT-SDAY)
+                                       *  WRK-JIHIMONEY
+                 ADD   WRK-AZUKARI   TO   SUM-YOSO(WRK-ACCT-IN 20)
+                 ADD   WRK-AZUKARI   TO   SUM-YOSO(SUM-DRMAX 20)
+               END-IF
+             END-PERFORM
+           END-IF
+      *
+      *     PERFORM  UNTIL      FLG-SRYACT  = 1
+      **
+      **   集計対象のデータであるかをチェックする。 
+      ** 20040318  変更
+      ****      IF    FLG-SRYACT     =   ZERO
+      ****       AND  SRY-NYUGAIKBN  =   "2"
+      ****       AND  SRY-SRYKA      =   SUM-SRYKACD
+      *      IF    FLG-SRYACT     =   ZERO
+      *       AND  SRY-NYUGAIKBN  =   "2"
+      *       AND (SUM-SRYKACD    =   SRY-SRYKA
+      *        OR  SUM-SRYKACD    =   "99")
+      ** 20040318  変更
+      ** 20070913 4.0対応START t.tanaka
+      **         MOVE SRY-HOSPID       TO  ACCT-HOSPID  
+      *         MOVE SRY-HOSPNUM       TO  ACCT-HOSPNUM  
+      ** 20070913 4.0対応END
+      *         MOVE SRY-NYUGAIKBN    TO  ACCT-NYUGAIKBN
+      *         MOVE SRY-PTID         TO  ACCT-PTID
+      *         MOVE SRY-SRYKA        TO  ACCT-SRYKA
+      *         MOVE SRY-SRYYM        TO  ACCT-SRYYM
+      *         MOVE SRY-SRYKBN       TO  ACCT-SRYKBN
+      *         MOVE SRY-ZAINUM       TO  ACCT-ZAINUM
+      *         PERFORM  900-SRYACCT-READ2-SEC
+      *         MOVE SYU-SRYYMD(7:2)  TO  IDX7G
+      **
+      *         IF   FLG-SRYACCT          =   ZERO
+      *          AND ACCT-DAY(1 IDX7)     >   ZERO
+      *           PERFORM VARYING   IDX3        FROM 1  BY  1  
+      **=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
+      **                 UNTIL     IDX3        >    5
+      *                 UNTIL     IDX3        >    10
+      **=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+      *            IF   SRY-SRYCD(IDX3)        =    WRK-INI-AZUKARICD
+      *             AND SRY-JIHIMONEY(IDX3)    >    ZERO
+      **   当日預り金
+      *                ADD  SRY-JIHIMONEY(IDX3)
+      *                     TO  SUM-YOSO(I3 20)
+      *                ADD  SRY-JIHIMONEY(IDX3)
+      *                     TO  SUM-YOSO(SUM-DRMAX 20)
+      *            END-IF
+      *           END-PERFORM 
+      *         END-IF
+      *      END-IF
+      *      PERFORM 911-SRY-FETCH-SEC
+      *     END-PERFORM           
+      *     PERFORM 911-SRY-CLOSE-SEC
+      *
+      *--- 預り金の重複を修正 By Monma (2009/02/25) end
            .
        320-AZUKARI-GET-SUB-EXT.
            EXIT.
@@ -3904,6 +4003,72 @@
        900-JYURRK-FETCH-EXT.
            EXIT.
       *
+      *--- 預り金の重複を修正 By Monma (2009/02/25) start
+      *****************************************************************
+      *    診療会計情報  検索
+      *****************************************************************
+       900-SRYACCT-SELECT-SEC         SECTION.
+      *
+           MOVE    SRYACCT-REC          TO  MCPDATA-REC
+           MOVE    "DBSELECT"           TO  MCP-FUNC
+           MOVE    "tbl_sryacct"        TO  MCP-TABLE
+           MOVE    "key"                TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF      MCP-RC               =   ZERO
+               MOVE    ZERO             TO  FLG-SRYACCT
+           ELSE
+               MOVE    1                TO  FLG-SRYACCT
+               INITIALIZE                  SRYACCT-REC
+           END-IF
+           .
+       900-SRYACCT-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療会計情報FETCH
+      *****************************************************************
+       900-SRYACCT-FETCH-SEC          SECTION.
+      *
+           MOVE    SRYACCT-REC          TO  MCPDATA-REC
+           MOVE    "DBFETCH"            TO  MCP-FUNC
+           MOVE    "tbl_sryacct"        TO  MCP-TABLE
+           MOVE    "key"                TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF      MCP-RC               =   ZERO
+               MOVE    MCPDATA-REC      TO  SRYACCT-REC
+               MOVE    ZERO             TO  FLG-SRYACCT
+           ELSE
+               MOVE    1                TO  FLG-SRYACCT
+               INITIALIZE                   SRYACCT-REC
+           END-IF
+           .
+       900-SRYACCT-FETCH-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療会計情報CLOSE
+      *****************************************************************
+       900-SRYACCT-CLOSE-SEC         SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_sryacct"        TO  MCP-TABLE
+           MOVE    "key"                TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       900-SRYACCT-CLOSE-EXT.
+           EXIT.
+      *
+      *--- 預り金の重複を修正 By Monma (2009/02/25) end
       *****************************************************************
       *    ＤＢ　クローズ処理
       *****************************************************************
@@ -3934,19 +4099,21 @@
       *****************************************************************
        911-SRY-SELECT-SEC              SECTION.
       *
-           INITIALIZE                      SRYACT-REC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE   SYU-HOSPID           TO  SRY-HOSPID  
-           MOVE   SYU-HOSPNUM           TO  SRY-HOSPNUM
-      * 20070913 4.0対応END
-           MOVE   SYU-NYUGAIKBN        TO  SRY-NYUGAIKBN 
-           MOVE   SYU-PTID             TO  SRY-PTID
-           MOVE   SYU-SRYYMD(1:6)      TO  SRY-SRYYM
-           MOVE   WRK-INI-AZUKARICD    TO  SRY-SRYCD(1)
-                                           SRY-SRYCD(2)
-                                           SRY-SRYCD(3)
-                                           SRY-SRYCD(4)
-                                           SRY-SRYCD(5)
+      *--- 預り金の重複を修正 By Monma (2009/02/25) start
+      *     INITIALIZE                      SRYACT-REC
+      ** 20070913 4.0対応START t.tanaka
+      **     MOVE   SYU-HOSPID           TO  SRY-HOSPID  
+      *     MOVE   SYU-HOSPNUM           TO  SRY-HOSPNUM
+      ** 20070913 4.0対応END
+      *     MOVE   SYU-NYUGAIKBN        TO  SRY-NYUGAIKBN 
+      *     MOVE   SYU-PTID             TO  SRY-PTID
+      *     MOVE   SYU-SRYYMD(1:6)      TO  SRY-SRYYM
+      *     MOVE   WRK-INI-AZUKARICD    TO  SRY-SRYCD(1)
+      *                                     SRY-SRYCD(2)
+      *                                     SRY-SRYCD(3)
+      *                                     SRY-SRYCD(4)
+      *                                     SRY-SRYCD(5)
+      *--- 預り金の重複を修正 By Monma (2009/02/25) end
       *
            MOVE    SRYACT-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"      TO  MCP-FUNC
@@ -4382,6 +4549,51 @@
       * 20070913 4.0対応END
            .
        900-SRYACT-CLOSE-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    受診履歴情報読込処理
+      *****************************************************************
+       900-JYURRK-DRCD-READ-SEC         SECTION.
+      *
+           MOVE    JYURRK-REC           TO  MCPDATA-REC
+           MOVE    "DBSELECT"           TO  MCP-FUNC
+           MOVE    "tbl_jyurrk"         TO  MCP-TABLE
+           MOVE    "key19"              TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF  MCP-RC                   =   ZERO
+             MOVE    "DBFETCH"          TO  MCP-FUNC
+             MOVE    "tbl_jyurrk"       TO  MCP-TABLE
+             MOVE    "key19"            TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"        USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+             IF  MCP-RC                 =   ZERO
+               MOVE    MCPDATA-REC      TO  JYURRK-REC
+               MOVE    ZERO             TO  FLG-JYURRK
+             ELSE
+               MOVE    1                TO  FLG-JYURRK
+               INITIALIZE                   JYURRK-REC
+             END-IF
+           ELSE
+             MOVE    1                  TO  FLG-JYURRK
+             INITIALIZE                     JYURRK-REC
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_jyurrk"         TO  MCP-TABLE
+           MOVE    "key19"              TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       900-JYURRK-DRCD-READ-EXT.
            EXIT.
       *      
       *****************************************************************
