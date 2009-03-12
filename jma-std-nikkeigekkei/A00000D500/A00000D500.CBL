@@ -56,6 +56,9 @@
       *              @@@@-田中    08/12/17  医療収益に減免金額を集計するように修正
       *              @@@@-田中    09/02/06  減免金額の計算式を修正
       *              @@@@-田中    09/02/17  減免計算式の条件式を修正
+      *              @@@@-田中    09/02/20  印字順序の変更パラメータの追加
+      *              @@@@-田中    09/02/24  合計の頁を作成
+      *              @@@@-門間    09/03/02  自費保険使用時の不具合を修正
       *****************************************************************
       *
       *
@@ -91,6 +94,9 @@
       ***** 03/09/29
       *     COPY    "HC17V011S.INC".
            COPY    "A00000D500.INC".
+      *--- 2009/02/24 ADD START ----------------------------------------
+           COPY    "A00000D5002.INC".
+      *--- 2009/02/24 ADD END ------------------------------------------
       *=== 自費追加対応 ADD By Takashima(2006/10/21) start
       *     COPY    "A00000D5001.INC".
       *=== 自費追加対応 ADD By Takashima(2006/10/21) end
@@ -153,6 +159,10 @@
            03  WRK-PARA-HOSPNUM    PIC 9(02).
       *=== 4.0対応 By Takashima(2007/09/10) end
            03  WRK-PARA-DENPPRTYMD PIC X(08).
+      *--- 2009/02/20 ADD START ----------------------------------------
+           03  WRK-PARA-SORTKBN    PIC X(01).
+           03  WRK-PARA-GOKEIKBN   PIC X(01).
+      *--- 2009/02/20 ADD END ------------------------------------------
       *
       *    一時領域
        01  WRK-AREA.
@@ -239,6 +249,9 @@
       *--- 2009/02/06 ADD START ----------------------------------------
            03  WRK-COMPFTN           PIC S9(10).
       *--- 2009/02/06 ADD END ------------------------------------------
+      *--- 2009/02/24 ADD START ----------------------------------------
+           03  WRK-SZ10              PIC ---------Z.
+      *--- 2009/02/24 ADD END ------------------------------------------
       * 20030224点数及び金額の桁数を８桁から７桁に変更 --> これにより編集タイプの桁数も変更
       *
       *** 01  SUM-AREA                             VALUE   ZERO.
@@ -284,6 +297,15 @@
            03  SUM-G-SEIKYU      PIC S9(09).
            03  SUM-G-RYOSYU      PIC S9(09).
       *
+      *--- 2009/02/24 ADD START ----------------------------------------
+       01  SUM-GG-AREA            VALUE   ZERO.
+           03  SUM-GG-HKNTEN      PIC 9(09).
+           03  SUM-GG-SYUEKI      PIC S9(10).
+           03  SUM-GG-OCC         OCCURS  20.
+               05  SUM-GG-MONEY   PIC S9(08).
+           03  SUM-GG-SEIKYU      PIC S9(10).
+           03  SUM-GG-RYOSYU      PIC S9(10).
+      *--- 2009/02/24 ADD END ------------------------------------------
       *** 20030407 収納明細抽出レコード変更
       *** 01  WRK-SMEI-REC.
       ***     03  WRK-SMEI-TBL      OCCURS  15000.
@@ -309,6 +331,12 @@
                  07  WRK-SMEI-SRYKA         PIC X(02).
                  07  WRK-SMEI-DENPNUM       PIC 9(07).
                  07  WRK-SMEI-DENPEDANUM    PIC 9(02).
+      *--- 2009/02/20 ADD START ----------------------------------------
+               05  WRK-SMEI-SORT-KEY2. 
+                 07  WRK-SMEI-NYUGAIKBN     PIC X(01).
+                 07  WRK-SMEI-SRYKA         PIC X(02).
+                 07  WRK-SMEI-PTNUM         PIC X(20).
+      *--- 2009/02/20 ADD END ------------------------------------------
                05  WRK-SMEI-SKYMONEY        PIC S9(07).
                05  WRK-SMEI-NYUHEN-MONEY    PIC S9(07).
                05  WRK-SMEI-NYUHEN-YMD      PIC X(08).
@@ -464,6 +492,9 @@
       *=== 4.0対応 By Takashima(2007/09/10) start
            INITIALIZE                  SPA-AREA
       *=== 4.0対応 By Takashima(2007/09/10) end
+      *--- 2009/02/24 ADD START ----------------------------------------
+           INITIALIZE                  SUM-GG-AREA
+      *--- 2009/02/24 ADD END ----------------------------------------
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -488,6 +519,10 @@
       *=== 4.0対応 By Takashima(2007/09/10) end
                                                WRK-PARA-DENPPRTYMD
       *=== 4.0対応 By Takashima(2007/09/10) start
+      *--- 2009/02/20 ADD START ----------------------------------------
+                                               WRK-PARA-SORTKBN
+                                               WRK-PARA-GOKEIKBN
+      *--- 2009/02/20 ADD END ------------------------------------------
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO   SPA-HOSPNUM
       *=== 4.0対応 By Takashima(2007/09/10) end
@@ -1040,11 +1075,25 @@
       *        帳票編集<明細>処理
              PERFORM 320-BODY-HEN-SEC
       *    帳票印刷処理
-             IF   FLG-GET  =  1
-               PERFORM 390-PRINT-OUT-SEC
+      *--- 2009/02/24 ADD START ----------------------------------------
+             IF   WRK-PARA-GOKEIKBN  NOT =  "2"
+      *--- 2009/02/24 ADD END ------------------------------------------
+               IF   FLG-GET  =  1
+                 PERFORM 390-PRINT-OUT-SEC
+               END-IF
+      *--- 2009/02/24 ADD START ----------------------------------------
              END-IF
+      *--- 2009/02/24 ADD END ------------------------------------------
            END-PERFORM
       *
+      *--- 2009/02/24 ADD START ----------------------------------------
+      *    合計印字処理
+           IF   WRK-PARA-GOKEIKBN  =  "1"  OR  "2"
+             PERFORM  320-HEAD-HEN-SEC
+             PERFORM  3000-GOUKEI-SET-SEC
+             PERFORM  400-PRINT-OUT-SEC
+           END-IF
+      *--- 2009/02/24 ADD END ------------------------------------------
       *    帳票印刷処理
            IF  FLG-GET = ZERO
              PERFORM 310-HEAD-HEN-SEC
@@ -1076,14 +1125,17 @@
       *
            PERFORM   UNTIL   FLG-SYUMEI  =  1
       * 20030707 追加 
-             PERFORM 900-SYUNOU-READ-SEC
+             PERFORM   900-SYUNOU-READ-SEC
              INITIALIZE            PTINF-REC 
       *=== 4.0対応 By Takashima(2007/09/10) start
       *      MOVE SMEI-HOSPID TO PTINF-HOSPID
-             MOVE SMEI-HOSPNUM     TO   PTINF-HOSPNUM
+             MOVE   SMEI-HOSPNUM     TO   PTINF-HOSPNUM
       *=== 4.0対応 By Takashima(2007/09/10) end
-             MOVE SMEI-PTID        TO   PTINF-PTID
-             PERFORM 900-PTINF-READ-SEC
+             MOVE   SMEI-PTID        TO   PTINF-PTID
+             PERFORM   900-PTINF-READ-SEC
+      *--- 2009/02/20 ADD START ----------------------------------------
+             PERFORM   900-PTNUM-READ-SEC
+      *--- 2009/02/20 ADD END ------------------------------------------
       * 20030707 追加
       *    入力された日付と入返金日が一致しているかをチェック
       ***  20030707 収納明細情報抽出条件変更
@@ -1127,6 +1179,9 @@
                                       TO   WRK-SMEI-NYUHEN-MONEY(IDX-S)
                  MOVE   SMEI-NYUHEN-YMD
                                       TO   WRK-SMEI-NYUHEN-YMD(IDX-S)
+      *--- 2009/02/20 ADD START ----------------------------------------
+                 MOVE   PTNUM-PTNUM       TO   WRK-SMEI-PTNUM(IDX-S)
+      *--- 2009/02/20 ADD END ------------------------------------------
                END-IF
              END-IF
              PERFORM 910-DBFETCH-SEC
@@ -1150,14 +1205,17 @@
       *
            PERFORM  UNTIL   FLG-SYUMEI   =   1
       * 20030707 追加 
-             PERFORM 900-SYUNOU-READ-SEC
+             PERFORM   900-SYUNOU-READ-SEC
              INITIALIZE   PTINF-REC 
       *=== 4.0対応 By Takashima(2007/09/10) start
       *      MOVE SMEI-HOSPID TO PTINF-HOSPID
-             MOVE SMEI-HOSPNUM TO PTINF-HOSPNUM
+             MOVE   SMEI-HOSPNUM   TO   PTINF-HOSPNUM
       *=== 4.0対応 By Takashima(2007/09/10) end
-             MOVE SMEI-PTID   TO PTINF-PTID
-             PERFORM 900-PTINF-READ-SEC
+             MOVE   SMEI-PTID      TO   PTINF-PTID
+             PERFORM   900-PTINF-READ-SEC
+      *--- 2009/02/20 ADD START ----------------------------------------
+             PERFORM   900-PTNUM-READ-SEC
+      *--- 2009/02/20 ADD END ------------------------------------------
       * 20030707 追加
       *    入力された日付と入返金日が一致しているかをチェック
       ***  20030707 収納明細情報抽出条件変更
@@ -1199,6 +1257,9 @@
                  MOVE   SMEI-NYUHEN-MONEY
                                    TO    WRK-SMEI-NYUHEN-MONEY(IDX-S)
                  MOVE   SMEI-NYUHEN-YMD  TO   WRK-SMEI-NYUHEN-YMD(IDX-S)
+      *--- 2009/02/20 ADD START ----------------------------------------
+                 MOVE   PTNUM-PTNUM      TO   WRK-SMEI-PTNUM(IDX-S)
+      *--- 2009/02/20 ADD END ------------------------------------------
                END-IF
              END-IF
              PERFORM 920-DBFETCH-SEC
@@ -1223,12 +1284,25 @@
              MOVE    2        TO   IDX-N
              PERFORM  UNTIL IDX-S  NOT <  IDX-MAX
                PERFORM  UNTIL IDX-N  >  IDX-MAX
-                 IF  WRK-SMEI-SORT-KEY(IDX-S)  >
-                     WRK-SMEI-SORT-KEY(IDX-N) 
-                   MOVE WRK-SMEI-TBL(IDX-N)  TO   WRK-SV-SMEI-TBL
-                   MOVE WRK-SMEI-TBL(IDX-S)  TO   WRK-SMEI-TBL(IDX-N)
-                   MOVE WRK-SV-SMEI-TBL      TO   WRK-SMEI-TBL(IDX-S)
+      *--- 2009/02/24 ADD START ----------------------------------------
+                 IF  WRK-PARA-SORTKBN   =   "1"
+                   IF  WRK-SMEI-SORT-KEY2(IDX-S)  >
+                       WRK-SMEI-SORT-KEY2(IDX-N) 
+                     MOVE WRK-SMEI-TBL(IDX-N)  TO   WRK-SV-SMEI-TBL
+                     MOVE WRK-SMEI-TBL(IDX-S)  TO   WRK-SMEI-TBL(IDX-N)
+                     MOVE WRK-SV-SMEI-TBL      TO   WRK-SMEI-TBL(IDX-S)
+                   END-IF
+                 ELSE
+      *--- 2009/02/24 ADD END ------------------------------------------
+                   IF  WRK-SMEI-SORT-KEY(IDX-S)  >
+                       WRK-SMEI-SORT-KEY(IDX-N) 
+                     MOVE WRK-SMEI-TBL(IDX-N)  TO   WRK-SV-SMEI-TBL
+                     MOVE WRK-SMEI-TBL(IDX-S)  TO   WRK-SMEI-TBL(IDX-N)
+                     MOVE WRK-SV-SMEI-TBL      TO   WRK-SMEI-TBL(IDX-S)
+                   END-IF
+      *--- 2009/02/24 ADD START ----------------------------------------
                  END-IF
+      *--- 2009/02/24 ADD END ------------------------------------------
                  ADD   1      TO   IDX-N
                END-PERFORM
       *    N番目の値を決定する為にインデックスの再設定
@@ -1257,6 +1331,60 @@
        310-DATA-SELECT-EXT.
            EXIT.
       *
+      *--- 2009/02/24 ADD START ----------------------------------------
+      *****************************************************************
+      *    合計帳票編集<ヘッダー部>処理
+      *****************************************************************
+       320-HEAD-HEN-SEC          SECTION.
+      *
+           MOVE    ZERO                TO  CNT-LINE
+           ADD     1                   TO  CNT-PAGE
+      *
+           INITIALIZE                  D5002
+           MOVE    WRK-PARA-DENPPRTYMDWH   TO   D5002-SYSYMD
+           MOVE    CNT-PAGE                TO   WRK-PAGE
+           MOVE    WRK-PAGE                TO   D5002-PAGE
+      *
+      *    入外区分名称設定
+           EVALUATE WRK-NYUGAIKBN
+             WHEN  "1"
+               MOVE   "入院"         TO   D5002-NYUGAIKBN
+      *    入院自費名称設定
+               PERFORM  VARYING  IDX2   FROM 1  BY  1
+                        UNTIL  IDX2   >  10 
+                 MOVE   WRK-TJIHIN(IDX2)   TO   D5002-TJIHI(IDX2)
+               END-PERFORM
+             WHEN  "2"
+               MOVE   "外来"         TO   HC17-NYUGAIKBN
+      *    自費名称設定
+               PERFORM  VARYING  IDX2   FROM 1  BY  1
+                        UNTIL    IDX2   >  10 
+                 MOVE   WRK-TJIHI(IDX2)   TO   D5002-TJIHI(IDX2)
+               END-PERFORM
+           END-EVALUATE
+      *
+      *    診療科名称取得
+           INITIALIZE                        SYS-1005-REC
+           MOVE    "1005"               TO   SYS-1005-KANRICD
+           MOVE    WRK-SRYKA            TO   SYS-1005-KBNCD
+           MOVE    SPA-HOSPNUM          TO   SYS-1005-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1005-EDYUKYMD
+                                             SYS-1005-STYUKYMD
+           MOVE    SYS-1005-REC         TO   MCPDATA-REC
+           PERFORM 820-SYSKANRI-READ-SEC
+           IF   FLG-SYSKANRI2   =   ZERO
+             MOVE   MCPDATA-REC         TO   SYS-1005-REC
+             MOVE   SYS-1005-SRYKANAME  TO   D5002-SRYKA
+           ELSE
+             MOVE   SPACE               TO   D5002-SRYKA
+           END-IF
+      *
+           .
+       320-HEAD-HEN-EXT.
+           EXIT.
+      *
+      *--- 2009/02/24 ADD END ------------------------------------------
       *****************************************************************
       *    帳票編集<ヘッダー部>処理
       *****************************************************************
@@ -1392,7 +1520,12 @@
            MOVE    WRK-SMEI-NYUGAIKBN(IDX-S)   TO   WRK-NYUGAIKBN
            MOVE    WRK-SMEI-SRYKA(IDX-S)       TO   WRK-SRYKA
       *    帳票編集<見出し>処理
-           PERFORM 310-HEAD-HEN-SEC
+      *--- 2009/02/24 CHANGE START -------------------------------------
+      *    PERFORM 310-HEAD-HEN-SEC
+           IF  WRK-PARA-GOKEIKBN  NOT =  "2"
+             PERFORM  310-HEAD-HEN-SEC
+           END-IF
+      *--- 2009/02/24 CHANGE END ---------------------------------------
       * 20030407 追加
       *
            PERFORM   UNTIL   FLG-END   =   1
@@ -1408,22 +1541,53 @@
       * 入外区分ブレイクチェック処理
                IF   WRK-SMEI-NYUGAIKBN(IDX-S)  NOT =  WRK-NYUGAIKBN
       *
+      *--- 2009/02/24 CHANGE START -------------------------------------
       *** 20040907  MOTOHASI  小計印字
-                 PERFORM   3001-SYOUKEI-SET-SEC
+      *           PERFORM   3001-SYOUKEI-SET-SEC
       *** 20040907  MOTOHASI
       *
       *          帳票編集<見出し>処理
-                 PERFORM   390-PRINT-OUT-SEC
+      *           PERFORM   390-PRINT-OUT-SEC
       *
       *** 20040907  MOTOHASI
-                 INITIALIZE                    SUM-G-AREA
+      *           INITIALIZE                    SUM-G-AREA
+      *           MOVE   ZERO                       TO   CNT-LINE
+      *           MOVE   WRK-SMEI-NYUGAIKBN(IDX-S)  TO   WRK-NYUGAIKBN
+      *           MOVE   WRK-SMEI-SRYKA(IDX-S)      TO   WRK-SRYKA
+      **          帳票編集<見出し>処理
+      *           PERFORM  310-HEAD-HEN-SEC
       *** 20040907  MOTOHASI
-      *
-                 MOVE   ZERO                       TO   CNT-LINE
-                 MOVE   WRK-SMEI-NYUGAIKBN(IDX-S)  TO   WRK-NYUGAIKBN
-                 MOVE   WRK-SMEI-SRYKA(IDX-S)      TO   WRK-SRYKA
-      *          帳票編集<見出し>処理
-                 PERFORM 310-HEAD-HEN-SEC
+                 EVALUATE   WRK-PARA-GOKEIKBN
+                   WHEN  "1"
+      *    小計印字
+                     PERFORM   3001-SYOUKEI-SET-SEC
+                     PERFORM   390-PRINT-OUT-SEC
+                     INITIALIZE                    SUM-G-AREA
+      *    帳票編集<見出し>処理
+                     PERFORM   310-HEAD-HEN-SEC
+      *    合計印字
+                     PERFORM   320-HEAD-HEN-SEC
+                     PERFORM   3000-GOUKEI-SET-SEC
+                     PERFORM   400-PRINT-OUT-SEC
+                     INITIALIZE       SUM-GG-AREA
+                   WHEN  "2"
+      *    合計印字
+                     PERFORM   320-HEAD-HEN-SEC
+                     PERFORM   3000-GOUKEI-SET-SEC
+                     PERFORM   400-PRINT-OUT-SEC
+                     INITIALIZE      SUM-GG-AREA
+                   WHEN  OTHER
+      *    小計印字
+                     PERFORM   3001-SYOUKEI-SET-SEC
+                     PERFORM   390-PRINT-OUT-SEC
+                     INITIALIZE                    SUM-G-AREA
+      *    帳票編集<見出し>処理
+                     PERFORM  310-HEAD-HEN-SEC
+                 END-EVALUATE
+                 MOVE   ZERO                       TO  CNT-LINE
+                 MOVE   WRK-SMEI-NYUGAIKBN(IDX-S)  TO  WRK-NYUGAIKBN
+                 MOVE   WRK-SMEI-SRYKA(IDX-S)      TO  WRK-SRYKA
+      *--- 2009/02/24 CHANGE END ---------------------------------------
                END-IF      
       *
       * 診療科ブレイクチェック処理
@@ -1539,6 +1703,9 @@
       *
       *** 20040907  MOTOHASI  小計印字
                  ADD WRK-SMEI-SKYMONEY(IDX-S)    TO   SUM-G-SEIKYU
+      *--- 2009/02/24 ADD START ----------------------------------------
+                 ADD   WRK-SMEI-SKYMONEY(IDX-S)  TO   SUM-GG-SEIKYU
+      *--- 2009/02/24 ADD END ------------------------------------------
       *** 20040907  MOTOHASI  小計印字
       *
                END-IF
@@ -1558,6 +1725,9 @@
       *
       *** 20040907  MOTOHASI  小計印字
                  ADD WRK-SMEI-NYUHEN-MONEY(IDX-S)   TO   SUM-G-RYOSYU
+      *--- 2009/02/24 ADD START ----------------------------------------
+                 ADD WRK-SMEI-NYUHEN-MONEY(IDX-S)   TO   SUM-GG-RYOSYU
+      *--- 2009/02/24 ADD END ------------------------------------------
       *** 20040907  MOTOHASI  小計印字
       *
                END-IF
@@ -1619,6 +1789,9 @@
       *** 20040907  MOTOHASI  小計印字
                ADD   SYU-TOTAL-HKNTEN      TO   SUM-G-HKNTEN
       *** 20040907  MOTOHASI  小計印字
+      *--- 2009/02/24 ADD START ----------------------------------------
+               ADD   SYU-TOTAL-HKNTEN      TO   SUM-GG-HKNTEN
+      *--- 2009/02/24 ADD END ------------------------------------------
       *
            END-EVALUATE
       *    保険別金額（社保本人〜自賠責）
@@ -1703,13 +1876,15 @@
       * 20040421追加  自費金額算出用変数の初期化(バグ対応)
       *=== 自費追加対応 ADD By Takashima(2006/10/21) start
       *             IF      IDX             =   12
-             IF   IDX   =   17
-      *=== 自費追加対応 ADD By Takashima(2006/10/21) end
-               MOVE    ZERO            TO   WRK-JIHI
-      * 20040421追加  自費金額算出用変数の初期化(バグ対応)
-               MOVE    ZERO            TO   WRK-JIHI3  
-      * 20040421追加  自費金額算出用変数の初期化(バグ対応)
-             ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       IF   IDX   =   17
+      **=== 自費追加対応 ADD By Takashima(2006/10/21) end
+      *         MOVE    ZERO            TO   WRK-JIHI
+      ** 20040421追加  自費金額算出用変数の初期化(バグ対応)
+      *         MOVE    ZERO            TO   WRK-JIHI3  
+      ** 20040421追加  自費金額算出用変数の初期化(バグ対応)
+      *       ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
       *=== 消費税内税の影響対応 ADD By Uchida(2007/03/20) start
                IF  SYU-SRYYMD  <=  "20070331"
       *=== 消費税内税の影響対応 ADD By Uchida(2007/03/20) end
@@ -1733,7 +1908,9 @@
                                        +   SYU-JIHI-TOTAL-TAX
                END-IF
       *=== 消費税内税の影響対応 ADD By Uchida(2007/03/20) end
-             END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
       *  20030416  変更
       ***             COMPUTE WRK-MONEY       =   SYU-SKYMONEY
       ***                                     -   WRK-JIHI
@@ -1765,15 +1942,20 @@
       *** 20040907  MOTOHASI  小計印字
              ADD   WRK-MONEY     TO   SUM-G-MONEY (IDX)
       *** 20040907  MOTOHASI  小計印字
+      *--- 2009/02/24 ADD START ----------------------------------------
+             ADD   WRK-MONEY     TO   SUM-GG-MONEY(IDX)
+      *--- 2009/02/24 ADD END ----------------------------------------
       *
       *    自費エリア拡張に伴い修正 20021204
       ***             IF      IDX             =   7
       *=== 自費追加対応 ADD By Takashima(2006/10/21) start
       *             IF      IDX    =   12
-             IF   IDX   =   17
-      *=== 自費追加対応 ADD By Takashima(2006/10/21) end
-               CONTINUE
-             ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       IF   IDX   =   17
+      **=== 自費追加対応 ADD By Takashima(2006/10/21) end
+      *         CONTINUE
+      *       ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
                IF   WRK-JIHI  >  ZERO
       *    自費エリア拡張に伴い修正 20021204
       ***                    MOVE    WRK-JIHI
@@ -1799,12 +1981,17 @@
       *** 20040907  MOTOHASI  小計印字
                      ADD   WRK-JIHI2  TO   SUM-G-MONEY(JIHIIDX)
       *** 20040907  MOTOHASI  小計印字
+      *--- 2009/02/24 ADD START ----------------------------------------
+                     ADD   WRK-JIHI2  TO   SUM-GG-MONEY(JIHIIDX)
+      *--- 2009/02/24 ADD END ------------------------------------------
       *
                    END-IF
                  END-PERFORM
       *    自費エリア拡張に伴い修正 20021204
                END-IF
-             END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
            END-IF
       *
       ****    20030224追加
@@ -1962,6 +2149,9 @@
       *** 20040907  MOTOHASI
            IF   WRK-SYUEKI  NOT =  0
              ADD  WRK-SYUEKI   TO   SUM-G-SYUEKI
+      *--- 2009/02/24 ADD START ----------------------------------------
+             ADD  WRK-SYUEKI   TO   SUM-GG-SYUEKI
+      *--- 2009/02/24 ADD END ------------------------------------------
            END-IF
       *** 20040907  MOTOHASI
       *
@@ -2000,6 +2190,9 @@
                ADD    1                     TO   SUM-HKNKEN
       *
                ADD    SYU-TOTAL-HKNTEN      TO   SUM-G-HKNTEN
+      *--- 2009/02/24 ADD START ----------------------------------------
+               ADD    SYU-TOTAL-HKNTEN      TO   SUM-GG-HKNTEN
+      *--- 2009/02/24 ADD END ------------------------------------------
       *
            END-EVALUATE
       *    保険別金額（社保本人〜自賠責）
@@ -2053,10 +2246,12 @@
       *    自費以外のとき自費分だけ集計
              INITIALIZE WRK-JIHI
              INITIALIZE WRK-JIHI3
-             IF    IDX   =   17
-               MOVE    ZERO            TO   WRK-JIHI
-               MOVE    ZERO            TO   WRK-JIHI3
-             ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       IF    IDX   =   17
+      *         MOVE    ZERO            TO   WRK-JIHI
+      *         MOVE    ZERO            TO   WRK-JIHI3
+      *       ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
                IF  SYU-SRYYMD  <=  "20070331"
                  COMPUTE WRK-JIHI    =   SYU-TOTAL-TGMONEY
                                      +   SYU-TOTAL-TGMONEY-TAX
@@ -2076,7 +2271,9 @@
                  COMPUTE WRK-JIHI3   =   SYU-JIHI-TOTAL
                                      +   SYU-JIHI-TOTAL-TAX
                END-IF
-             END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
              COMPUTE    WRK-MONEY    =   SYU-SKYMONEY  -  WRK-JIHI3
       *
       *--- 2008/12/16 ADD START ----------------------------------------
@@ -2098,10 +2295,15 @@
              ADD     1             TO   SUM-KEN(IDX)
       *
              ADD     WRK-MONEY     TO   SUM-G-MONEY(IDX)
+      *--- 2009/02/24 ADD START ----------------------------------------
+             ADD     WRK-MONEY     TO   SUM-GG-MONEY(IDX)
+      *--- 2009/02/24 ADD END ------------------------------------------
       *
-             IF   IDX  =   17
-               CONTINUE
-             ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       IF   IDX  =   17
+      *         CONTINUE
+      *       ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
                IF   WRK-JIHI    >   ZERO
                  PERFORM  VARYING  IDX2  FROM  1  BY  1
                           UNTIL    IDX2   >   10
@@ -2116,11 +2318,16 @@
                      ADD    1          TO   SUM-KEN(JIHIIDX)
       *
                      ADD    WRK-JIHI2  TO   SUM-G-MONEY(JIHIIDX)
+      *--- 2009/02/24 ADD START ----------------------------------------
+                     ADD    WRK-JIHI2  TO   SUM-GG-MONEY(JIHIIDX)
+      *--- 2009/02/24 ADD END ------------------------------------------
       *
                    END-IF
                  END-PERFORM
                END-IF
-             END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
            END-IF
       *
       *    医療収益計算
@@ -2219,6 +2426,9 @@
       *
            IF   WRK-SYUEKI  NOT =  0
                ADD  WRK-SYUEKI   TO   SUM-G-SYUEKI
+      *--- 2009/02/24 ADD START ----------------------------------------
+               ADD  WRK-SYUEKI   TO   SUM-GG-SYUEKI
+      *--- 2009/02/24 ADD END ------------------------------------------
            END-IF
       *
            .
@@ -2366,6 +2576,44 @@
        3001-SYOUKEI-SET-EXT.
            EXIT.
       *
+      *--- 2009/02/24 ADD START ----------------------------------------
+      *****************************************************************
+      *    合計印字処理
+      *****************************************************************
+       3000-GOUKEI-SET-SEC          SECTION.
+      *
+      *    保険点数
+           INITIALIZE   WRK-SZZ
+           MOVE    SUM-GG-HKNTEN    TO   WRK-SZZ
+           MOVE    WRK-SZZ          TO   D5002-HKNTEN
+      *
+      *    保険別金額（社保本人〜自賠責）
+           PERFORM  VARYING  IDX-SUM   FROM 1  BY  1
+                    UNTIL    IDX-SUM   >   20
+             INITIALIZE  WRK-SZ
+             MOVE    SUM-GG-MONEY(IDX-SUM)   TO   WRK-SZ
+             MOVE    WRK-SZ         TO   D5002-MONEY(IDX-SUM)
+           END-PERFORM
+      *
+      *    医療収益
+           INITIALIZE   WRK-SZ10
+           MOVE    SUM-GG-SYUEKI    TO   WRK-SZ10
+           MOVE    WRK-SZ10         TO   D5002-SYUEKI
+      *
+      *    請求金額
+           INITIALIZE   WRK-SZ10
+           MOVE    SUM-GG-SEIKYU    TO   WRK-SZ10
+           MOVE    WRK-SZ10         TO   D5002-SEIKYU
+      *
+      *    領収金額
+           INITIALIZE   WRK-SZ10
+           MOVE    SUM-GG-RYOSYU    TO   WRK-SZ10
+           MOVE    WRK-SZ10         TO   D5002-RYOSYU
+           .
+       3000-GOUKEI-SET-EXT.
+           EXIT.
+      *
+      *--- 2009/02/24 ADD END ------------------------------------------
       *****************************************************************
       *    保険組合せ表示処理
       *****************************************************************
@@ -2481,6 +2729,47 @@
        390-PRINT-OUT-EXT.
            EXIT.
       *
+      *--- 2009/02/24 ADD START ----------------------------------------
+      *****************************************************************
+      *    総合計帳票印刷処理
+      *****************************************************************
+       400-PRINT-OUT-SEC                SECTION.
+      *
+           INITIALIZE                          ORCSPRTAREA
+           MOVE    "INS"                       TO   SPRT-MODE
+           MOVE    LNK-PRTKANRI-RENNUM         TO   SPRT-RENNUM
+           MOVE    LNK-PRTKANRI-TBL-KEY        TO   SPRT-TBL-KEY
+           MOVE    LNK-PRTKANRI-TBL-GROUP      TO   SPRT-TBL-GROUP
+           MOVE    LNK-PRTKANRI-SRYYM          TO   SPRT-SRYYM
+           MOVE    LNK-PRTKANRI-SKYYMD         TO   SPRT-SKYYMD
+           MOVE    LNK-PRTKANRI-SHELLID        TO   SPRT-SHELLID
+           MOVE    LNK-PRTKANRI-SHORI-RENNUM   TO   SPRT-SHORI-RENNUM
+           MOVE    LNK-PRTKANRI-PRIORITY       TO   SPRT-PRIORITY
+           IF   WRK-PARA-DENPPRTYMD  <  "20080401"
+             MOVE   "A00000D500O2.red"         TO   SPRT-PRTID
+           ELSE
+             MOVE   "A00000D500N2.red"         TO   SPRT-PRTID
+           END-IF
+           MOVE    "日計表明細（窓口領収金）"  TO   SPRT-TITLE
+           MOVE    D5002                       TO   SPRT-PRTDATA
+           MOVE    LNK-PRTKANRI-TERMID         TO   SPRT-TERMID
+           MOVE    LNK-PRTKANRI-OPID           TO   SPRT-OPID
+           MOVE    LNK-PRTKANRI-PRTNM          TO   SPRT-PRTNM
+           CALL    "ORCSPRT"                   USING
+                                               ORCSPRTAREA
+                                               SPA-AREA
+           IF   SPRT-RETURN   =   ZERO
+             CONTINUE
+           ELSE
+             MOVE   "印刷ＤＢに更新できませんでした"   TO   WRK-RECEERR
+             PERFORM 500-ERR-HENSYU-SEC
+           END-IF
+      *
+           .
+       400-PRINT-OUT-EXT.
+           EXIT.
+      *
+      *--- 2009/02/24 ADD END ------------------------------------------
       *****************************************************************
       *    エラー出力処理
       *****************************************************************
@@ -3206,6 +3495,52 @@
        900-PTINF-READ-EXT.
            EXIT.
       *
+      *--- 2009/02/20 ADD START ----------------------------------------
+      *****************************************************************
+      *    患者番号マスタ読込処理
+      *****************************************************************
+       900-PTNUM-READ-SEC         SECTION.
+      *
+           INITIALIZE                    PTNUM-REC
+           MOVE    SMEI-PTID             TO   PTNUM-PTID
+           MOVE    PTNUM-REC             TO   MCPDATA-REC
+           MOVE    "DBSELECT"            TO   MCP-FUNC
+           MOVE    "tbl_ptnum"           TO   MCP-TABLE
+           MOVE    "key"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    "DBFETCH"           TO   MCP-FUNC
+             MOVE    "tbl_ptnum"         TO   MCP-TABLE
+             MOVE    "key"               TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+             IF   MCP-RC   =   ZERO
+               MOVE    MCPDATA-REC       TO   PTNUM-REC
+             ELSE
+               INITIALIZE                PTNUM-REC
+             END-IF
+           ELSE
+             INITIALIZE                  PTNUM-REC
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"       TO   MCP-FUNC
+           MOVE    "tbl_ptnum"           TO   MCP-TABLE
+           MOVE    "key"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       900-PTNUM-READ-EXT.
+           EXIT.
+      *
+      *--- 2009/02/20 ADD END ------------------------------------------
       *****************************************************************
       *    患者保険マスター読込処理
       *****************************************************************

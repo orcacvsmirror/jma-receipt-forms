@@ -43,6 +43,7 @@
       *  08/03/25    @@@@-田中     H20年4月改正対応
       *  08/06/10    @@@@-田中     健保準拠時の自賠責の計算を修正
       *  08/11/05    @@@@-田中     帳票枚数を1枚に変更
+      *  09/03/03    @@@@-田中     印字順序の変更パラメータの追加
       *****************************************************************
       *
       *
@@ -137,6 +138,9 @@
            03  WRK-PARA-HOSPNUM    PIC 9(02).
       *=== 4.0対応 By Takashima(2007/09/10) end
            03  WRK-PARA-DENPPRTYMD PIC X(08).
+      *--- 2009/03/03 ADD START ----------------------------------------
+           03  WRK-PARA-SORTKBN    PIC X(01).
+      *--- 2009/03/03 ADD END ------------------------------------------
       *
       *    一時領域
        01  WRK-AREA.
@@ -240,6 +244,12 @@
                  07  WRK-SMEI-SRYKA         PIC X(02).
                  07  WRK-SMEI-DENPNUM       PIC 9(07).
                  07  WRK-SMEI-DENPEDANUM    PIC 9(02).
+      *--- 2009/03/03 ADD START ----------------------------------------
+               05  WRK-SMEI-SORT-KEY2. 
+                 07  WRK-SMEI-NYUGAIKBN     PIC X(01).
+                 07  WRK-SMEI-SRYKA         PIC X(02).
+                 07  WRK-SMEI-PTNUM         PIC X(20).
+      *--- 2009/03/03 ADD END ------------------------------------------
                05  WRK-SMEI-SKYMONEY        PIC S9(07).
                05  WRK-SMEI-NYUHEN-MONEY    PIC S9(07).
                05  WRK-SMEI-NYUHEN-YMD      PIC X(08).
@@ -422,6 +432,9 @@
       *=== 4.0対応 By Takashima(2007/09/10) end
                                                WRK-PARA-DENPPRTYMD
       *=== 4.0対応 By Takashima(2007/09/10) start
+      *--- 2009/03/03 ADD START ----------------------------------------
+                                               WRK-PARA-SORTKBN
+      *--- 2009/03/03 ADD END ------------------------------------------
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
       *=== 4.0対応 By Takashima(2007/09/10) end
@@ -579,17 +592,20 @@
       *
       *    収納明細テーブルより変数配列に対象データを抽出する。
       *
-           PERFORM              UNTIL   FLG-SYUMEI     =   1
+           PERFORM   UNTIL   FLG-SYUMEI  =  1
 
       * 20030707 追加 
-            PERFORM 900-SYUNOU-READ-SEC
-            INITIALIZE   PTINF-REC 
+             PERFORM 900-SYUNOU-READ-SEC
+             INITIALIZE   PTINF-REC 
       *=== 4.0対応 By Takashima(2007/09/10) start
       *      MOVE SMEI-HOSPID TO PTINF-HOSPID
-            MOVE SMEI-HOSPNUM TO PTINF-HOSPNUM
+             MOVE   SMEI-HOSPNUM   TO   PTINF-HOSPNUM
       *=== 4.0対応 By Takashima(2007/09/10) end
-            MOVE SMEI-PTID   TO PTINF-PTID
-            PERFORM 900-PTINF-READ-SEC
+             MOVE   SMEI-PTID      TO   PTINF-PTID
+             PERFORM   900-PTINF-READ-SEC
+      *--- 2009/03/03 ADD START ----------------------------------------
+             PERFORM   900-PTNUM-READ-SEC
+      *--- 2009/03/03 ADD END ------------------------------------------
       * 20030707 追加
       *    入力された日付と入返金日が一致しているかをチェック
       ***  20030707 収納明細情報抽出条件変更
@@ -639,6 +655,10 @@
                          TO    WRK-SMEI-NYUHEN-MONEY(IDX-S)
                     MOVE   SMEI-NYUHEN-YMD 
                          TO    WRK-SMEI-NYUHEN-YMD(IDX-S)
+      *--- 2009/03/03 ADD START ----------------------------------------
+                    MOVE   PTNUM-PTNUM  
+                         TO    WRK-SMEI-PTNUM(IDX-S)
+      *--- 2009/03/03 ADD END ------------------------------------------
                END-IF
              END-IF
              PERFORM 910-DBFETCH-SEC
@@ -652,14 +672,17 @@
            PERFORM              UNTIL   FLG-SYUMEI     =   1
 
       * 20030707 追加 
-             PERFORM 900-SYUNOU-READ-SEC
+             PERFORM   900-SYUNOU-READ-SEC
              INITIALIZE   PTINF-REC 
       *=== 4.0対応 By Takashima(2007/09/10) start
       *      MOVE SMEI-HOSPID TO PTINF-HOSPID
-             MOVE SMEI-HOSPNUM TO PTINF-HOSPNUM
+             MOVE   SMEI-HOSPNUM   TO   PTINF-HOSPNUM
       *=== 4.0対応 By Takashima(2007/09/10) end
-             MOVE SMEI-PTID   TO PTINF-PTID
-             PERFORM 900-PTINF-READ-SEC
+             MOVE   SMEI-PTID      TO   PTINF-PTID
+             PERFORM   900-PTINF-READ-SEC
+      *--- 2009/03/03 ADD START ----------------------------------------
+             PERFORM   900-PTNUM-READ-SEC
+      *--- 2009/03/03 ADD END ------------------------------------------
       * 20030707 追加
       *    入力された日付と入返金日が一致しているかをチェック
       ***  20030707 収納明細情報抽出条件変更
@@ -709,20 +732,24 @@
                          TO    WRK-SMEI-NYUHEN-MONEY(IDX-S)
                    MOVE   SMEI-NYUHEN-YMD 
                          TO    WRK-SMEI-NYUHEN-YMD(IDX-S)
+      *--- 2009/03/03 ADD START ----------------------------------------
+                   MOVE   PTNUM-PTNUM  
+                         TO    WRK-SMEI-PTNUM(IDX-S)
+      *--- 2009/03/03 ADD END ------------------------------------------
                END-IF
              END-IF
              PERFORM 920-DBFETCH-SEC
-          END-PERFORM 
-          PERFORM 920-DBCLOSE-SEC
+           END-PERFORM 
+           PERFORM 920-DBCLOSE-SEC
       *
       *  配列の最終レコード番号を設定
-          MOVE IDX-S TO IDX-MAX
+           MOVE IDX-S TO IDX-MAX
       *
-          IF   IDX-MAX     >    1
+           IF   IDX-MAX     >    1
       *    対象データが１件以上存在する場合は抽出フラグON
-            MOVE  1  TO  FLG-GET
+             MOVE  1  TO  FLG-GET
       *    対象データが１件以上存在する場合は終了フラグOFF
-            MOVE  ZERO    TO   FLG-END
+             MOVE  ZERO    TO   FLG-END
       *    配列に１件以上のデータが抽出されている場合はソーティング処理を行う。
       *    変数配列によるソーティング
       *    最小値より並び替えをする為にインデックスの設定
@@ -730,15 +757,25 @@
              MOVE 2  TO  IDX-N
              PERFORM UNTIL IDX-S NOT  <  IDX-MAX
               PERFORM  UNTIL IDX-N  >  IDX-MAX
-                IF WRK-SMEI-SORT-KEY(IDX-S) > 
-                    WRK-SMEI-SORT-KEY(IDX-N) 
-                      MOVE WRK-SMEI-TBL(IDX-N)
-                           TO  WRK-SV-SMEI-TBL
-                      MOVE WRK-SMEI-TBL(IDX-S)
-                           TO  WRK-SMEI-TBL(IDX-N)
-                      MOVE WRK-SV-SMEI-TBL 
-                           TO  WRK-SMEI-TBL(IDX-S)
+      *--- 2009/03/03 ADD START ----------------------------------------
+                IF  WRK-PARA-SORTKBN   =   "1"
+                  IF  WRK-SMEI-SORT-KEY2(IDX-S)  >
+                      WRK-SMEI-SORT-KEY2(IDX-N) 
+                    MOVE WRK-SMEI-TBL(IDX-N)  TO   WRK-SV-SMEI-TBL
+                    MOVE WRK-SMEI-TBL(IDX-S)  TO   WRK-SMEI-TBL(IDX-N)
+                    MOVE WRK-SV-SMEI-TBL      TO   WRK-SMEI-TBL(IDX-S)
+                  END-IF
+                ELSE
+      *--- 2009/03/03 ADD END ------------------------------------------
+                  IF  WRK-SMEI-SORT-KEY(IDX-S)
+                               >   WRK-SMEI-SORT-KEY(IDX-N)
+                    MOVE   WRK-SMEI-TBL(IDX-N)  TO   WRK-SV-SMEI-TBL
+                    MOVE   WRK-SMEI-TBL(IDX-S)  TO   WRK-SMEI-TBL(IDX-N)
+                    MOVE   WRK-SV-SMEI-TBL      TO   WRK-SMEI-TBL(IDX-S)
+                  END-IF
+      *--- 2009/03/03 ADD START ----------------------------------------
                 END-IF
+      *--- 2009/03/03 ADD END ------------------------------------------
                 ADD 1  TO  IDX-N
               END-PERFORM
       *    N番目の値を決定する為にインデックスの再設定
@@ -2548,6 +2585,52 @@
        900-PTINF-READ-EXT.
            EXIT.
       *
+      *--- 2009/03/03 ADD START ----------------------------------------
+      *****************************************************************
+      *    患者マスター読込処理
+      *****************************************************************
+       900-PTNUM-READ-SEC         SECTION.
+      *
+           INITIALIZE                    PTNUM-REC
+           MOVE    SMEI-PTID             TO   PTNUM-PTID
+           MOVE    PTNUM-REC             TO   MCPDATA-REC
+           MOVE    "DBSELECT"            TO   MCP-FUNC
+           MOVE    "tbl_ptnum"           TO   MCP-TABLE
+           MOVE    "key"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    "DBFETCH"           TO   MCP-FUNC
+             MOVE    "tbl_ptnum"         TO   MCP-TABLE
+             MOVE    "key"               TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+             IF   MCP-RC   =   ZERO
+               MOVE    MCPDATA-REC       TO   PTNUM-REC
+             ELSE
+               INITIALIZE                PTNUM-REC
+             END-IF
+           ELSE
+             INITIALIZE                  PTNUM-REC
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"       TO   MCP-FUNC
+           MOVE    "tbl_ptnum"           TO   MCP-TABLE
+           MOVE    "key"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       900-PTNUM-READ-EXT.
+           EXIT.
+      *
+      *--- 2009/03/03 ADD END ------------------------------------------
       *****************************************************************
       *    患者保険マスター読込処理
       *****************************************************************
