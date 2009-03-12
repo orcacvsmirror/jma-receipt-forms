@@ -68,6 +68,7 @@
       *              @@@@-田中    08/12/17  医療収益に減免金額を集計するように修正
       *              @@@@-田中    09/02/06  減免金額の計算式を修正
       *              @@@@-田中    09/02/17  減免計算式の条件式を修正
+      *              @@@@-門間    09/03/02  自費保険使用時の不具合を修正
       *****************************************************************
       *
       *
@@ -1807,13 +1808,15 @@
       * 20040421追加  自費金額算出用変数の初期化(バグ対応)
       *=== 自費追加対応 By Takashima(2006/11/05) start
       *             IF      IDX             =   12
-             IF   IDX   =   17
-      *=== 自費追加対応 By Takashima(2006/11/05) end
-               MOVE    ZERO            TO   WRK-JIHI
-      * 20040421追加  自費金額算出用変数の初期化(バグ対応)
-               MOVE    ZERO            TO   WRK-JIHI3
-      * 20040421追加  自費金額算出用変数の初期化(バグ対応)
-             ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       IF   IDX   =   17
+      **=== 自費追加対応 By Takashima(2006/11/05) end
+      *         MOVE    ZERO            TO   WRK-JIHI
+      ** 20040421追加  自費金額算出用変数の初期化(バグ対応)
+      *         MOVE    ZERO            TO   WRK-JIHI3
+      ** 20040421追加  自費金額算出用変数の初期化(バグ対応)
+      *       ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
       *=== 消費税内税の影響対応 ADD By Uchida(2007/03/20) start
                IF   SYU-SRYYMD  <=  "20070331"
       *=== 消費税内税の影響対応 ADD By Uchida(2007/03/20) end
@@ -1837,7 +1840,9 @@
                                      +   SYU-JIHI-TOTAL-TAX
                END-IF
       *=== 消費税内税の影響対応 ADD By Uchida(2007/03/20) end
-             END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
       *
       *** 20030416 変更
       ***             COMPUTE WRK-MONEY       =   SYU-SKYMONEY
@@ -1853,10 +1858,12 @@
       ***             IF      IDX             =   7
       *=== 自費追加対応 By Takashima(2006/11/05) start
       *             IF      IDX             =   12
-             IF  IDX    =   17
-      *=== 自費追加対応 By Takashima(2006/11/05) end
-               CONTINUE
-             ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       IF  IDX    =   17
+      **=== 自費追加対応 By Takashima(2006/11/05) end
+      *         CONTINUE
+      *       ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
                IF   WRK-JIHI   >   ZERO
       * 自費エリア拡張に伴い修正 20021204
                  PERFORM  VARYING IDX2  FROM 1  BY  1
@@ -1878,7 +1885,9 @@
                  END-PERFORM
       * 自費エリア拡張に伴い修正 20021204
                END-IF
-             END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
            END-IF
       *
       ****    20030213追加
@@ -2112,10 +2121,12 @@
       *
              INITIALIZE WRK-JIHI
              INITIALIZE WRK-JIHI3
-             IF      IDX             =   17
-               MOVE    ZERO            TO  WRK-JIHI
-               MOVE    ZERO            TO  WRK-JIHI3
-             ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       IF      IDX             =   17
+      *         MOVE    ZERO            TO  WRK-JIHI
+      *         MOVE    ZERO            TO  WRK-JIHI3
+      *       ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
                IF  SYU-SRYYMD  <=  "20070331"
                  COMPUTE WRK-JIHI    =   SYU-TOTAL-TGMONEY
                                      +   SYU-TOTAL-TGMONEY-TAX
@@ -2135,16 +2146,20 @@
                  COMPUTE WRK-JIHI3   =   SYU-JIHI-TOTAL
                                      +   SYU-JIHI-TOTAL-TAX
                END-IF
-             END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
       *
              COMPUTE WRK-MONEY       =   SYU-SKYMONEY
                                      -   WRK-JIHI3
       *
              MOVE    WRK-MONEY     TO  WRK-Z9
              ADD     WRK-MONEY     TO  SUM-MONEY (IDX)
-             IF      IDX             =   17
-               CONTINUE
-             ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       IF      IDX             =   17
+      *         CONTINUE
+      *       ELSE
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
                IF   WRK-JIHI    >   ZERO
                  PERFORM  VARYING IDX2  FROM 1  BY  1
                           UNTIL    IDX2    >   10
@@ -2160,7 +2175,9 @@
                    END-IF 
                  END-PERFORM
                END-IF
-             END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) start
+      *       END-IF
+      *--- 自費保険使用時の不具合を修正 By Monma (2009/03/02) end
            END-IF
       *
       *    医療収益計
