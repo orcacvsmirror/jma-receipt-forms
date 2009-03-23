@@ -58,7 +58,9 @@
       *              @@@@-田中    09/02/17  減免計算式の条件式を修正
       *              @@@@-田中    09/02/20  印字順序の変更パラメータの追加
       *              @@@@-田中    09/02/24  合計の頁を作成
-      *              @@@@-門間    09/03/02  自費保険使用時の不具合を修正
+      *              @@@@-門間    09/03/02  自費保険の詳細を出力するように修正
+      *              @@@@-門間    09/03/23  外来１頁目に入院最終頁の入外区分・
+      *                                     診療科が印字されていた不具合を修正
       *****************************************************************
       *
       *
@@ -1073,26 +1075,65 @@
       ***         PERFORM 310-HEAD-HEN-SEC
       *** 20030407 削除 ヘッダー部印刷タイミング変更の為削除
       *        帳票編集<明細>処理
-             PERFORM 320-BODY-HEN-SEC
+             PERFORM  320-BODY-HEN-SEC
       *    帳票印刷処理
       *--- 2009/02/24 ADD START ----------------------------------------
-             IF   WRK-PARA-GOKEIKBN  NOT =  "2"
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *       IF   WRK-PARA-GOKEIKBN  NOT =  "2"
+      *--- 2009/03/23 DELETE END   -------------------------------------
       *--- 2009/02/24 ADD END ------------------------------------------
                IF   FLG-GET  =  1
-                 PERFORM 390-PRINT-OUT-SEC
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *           PERFORM 390-PRINT-OUT-SEC
+      *--- 2009/03/23 DELETE END   -------------------------------------
+      *--- 2009/03/23 ADD START ----------------------------------------
+                 EVALUATE  WRK-PARA-GOKEIKBN
+                   WHEN  "1"
+                     PERFORM  390-PRINT-OUT-SEC
+      *--- 2009/03/23 ADD START ----------------------------------------
+                     IF   WRK-SMEI-NYUGAIKBN(IDX-S) NOT =
+                                        WRK-SMEI-NYUGAIKBN(IDX-S - 1)
+                       OR WRK-SMEI-SRYKA(IDX-S)     NOT =
+                                        WRK-SMEI-SRYKA(IDX-S - 1)
+      *--- 2009/03/23 ADD END   ----------------------------------------
+                       PERFORM  400-PRINT-OUT-SEC
+      *--- 2009/03/23 ADD START ----------------------------------------
+                       INITIALIZE       SUM-GG-AREA
+                     END-IF
+      *--- 2009/03/23 ADD END   ----------------------------------------
+                   WHEN  "2"
+      *--- 2009/03/23 ADD START ----------------------------------------
+                     IF   WRK-SMEI-NYUGAIKBN(IDX-S) NOT =
+                                        WRK-SMEI-NYUGAIKBN(IDX-S - 1)
+                       OR WRK-SMEI-SRYKA(IDX-S)     NOT =
+                                        WRK-SMEI-SRYKA(IDX-S - 1)
+      *--- 2009/03/23 ADD END   ----------------------------------------
+                       PERFORM  400-PRINT-OUT-SEC
+      *--- 2009/03/23 ADD START ----------------------------------------
+                       INITIALIZE       SUM-GG-AREA
+                     END-IF
+      *--- 2009/03/23 ADD END ----------------------------------------
+                   WHEN  OTHER
+                     PERFORM  390-PRINT-OUT-SEC
+                 END-EVALUATE
+      *--- 2009/03/23 ADD END   ----------------------------------------
                END-IF
       *--- 2009/02/24 ADD START ----------------------------------------
-             END-IF
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *       END-IF
+      *--- 2009/03/23 DELETE END   -------------------------------------
       *--- 2009/02/24 ADD END ------------------------------------------
            END-PERFORM
       *
       *--- 2009/02/24 ADD START ----------------------------------------
       *    合計印字処理
-           IF   WRK-PARA-GOKEIKBN  =  "1"  OR  "2"
-             PERFORM  320-HEAD-HEN-SEC
-             PERFORM  3000-GOUKEI-SET-SEC
-             PERFORM  400-PRINT-OUT-SEC
-           END-IF
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *     IF   WRK-PARA-GOKEIKBN  =  "1"  OR  "2"
+      *       PERFORM  320-HEAD-HEN-SEC
+      *       PERFORM  3000-GOUKEI-SET-SEC
+      *       PERFORM  400-PRINT-OUT-SEC
+      *     END-IF
+      *--- 2009/03/23 DELETE END   -------------------------------------
       *--- 2009/02/24 ADD END ------------------------------------------
       *    帳票印刷処理
            IF  FLG-GET = ZERO
@@ -1338,12 +1379,18 @@
        320-HEAD-HEN-SEC          SECTION.
       *
            MOVE    ZERO                TO  CNT-LINE
-           ADD     1                   TO  CNT-PAGE
+      *
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *     ADD     1                   TO  CNT-PAGE
+      *--- 2009/03/23 DELETE END   -------------------------------------
       *
            INITIALIZE                  D5002
            MOVE    WRK-PARA-DENPPRTYMDWH   TO   D5002-SYSYMD
-           MOVE    CNT-PAGE                TO   WRK-PAGE
-           MOVE    WRK-PAGE                TO   D5002-PAGE
+      *
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *     MOVE    CNT-PAGE                TO   WRK-PAGE
+      *     MOVE    WRK-PAGE                TO   D5002-PAGE
+      *--- 2009/03/23 DELETE END   -------------------------------------
       *
       *    入外区分名称設定
            EVALUATE WRK-NYUGAIKBN
@@ -1355,7 +1402,7 @@
                  MOVE   WRK-TJIHIN(IDX2)   TO   D5002-TJIHI(IDX2)
                END-PERFORM
              WHEN  "2"
-               MOVE   "外来"         TO   HC17-NYUGAIKBN
+               MOVE   "外来"         TO   D5002-NYUGAIKBN
       *    自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
                         UNTIL    IDX2   >  10 
@@ -1391,7 +1438,10 @@
        310-HEAD-HEN-SEC          SECTION.
       *
            MOVE    ZERO                TO  CNT-LINE
-           ADD     1                   TO  CNT-PAGE
+      *
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *     ADD     1                   TO  CNT-PAGE
+      *--- 2009/03/23 DELETE END   -------------------------------------
       *
            INITIALIZE                  HC17
       *---- (08/11/04) LINE DEL START MONMA ----------------------------
@@ -1411,8 +1461,12 @@
       *                                 TO  HC171-SYSYMD
       *=== 自費追加対応 ADD By Takashima(2006/10/21) end
       *---- (08/11/04) LINE DEL END   MONMA ----------------------------
-           MOVE    CNT-PAGE                TO   WRK-PAGE
-           MOVE    WRK-PAGE                TO   HC17-PAGE
+      *
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *     MOVE    CNT-PAGE                TO   WRK-PAGE
+      *     MOVE    WRK-PAGE                TO   HC17-PAGE
+      *--- 2009/03/23 DELETE END   -------------------------------------
+      *
       *=== 自費追加対応 ADD By Takashima(2006/10/21) start
       *     ADD     1                   TO  CNT-PAGE
       *     MOVE    CNT-PAGE            TO  WRK-PAGE
@@ -1522,9 +1576,22 @@
       *    帳票編集<見出し>処理
       *--- 2009/02/24 CHANGE START -------------------------------------
       *    PERFORM 310-HEAD-HEN-SEC
-           IF  WRK-PARA-GOKEIKBN  NOT =  "2"
+      *--- 2009/03/23 CHANGE START -------------------------------------
+      *     IF  WRK-PARA-GOKEIKBN  NOT =  "2"
+      *       PERFORM  310-HEAD-HEN-SEC
+      *     END-IF
+      *
+           EVALUATE  WRK-PARA-GOKEIKBN
+             WHEN  "1"
              PERFORM  310-HEAD-HEN-SEC
-           END-IF
+             PERFORM  320-HEAD-HEN-SEC
+             WHEN  "2"
+             PERFORM  320-HEAD-HEN-SEC
+             WHEN  OTHER
+             PERFORM  310-HEAD-HEN-SEC
+           END-EVALUATE
+      *
+      *--- 2009/03/23 CHANGE END   -------------------------------------
       *--- 2009/02/24 CHANGE END ---------------------------------------
       * 20030407 追加
       *
@@ -1539,8 +1606,12 @@
       *
       * 20030407 追加
       * 入外区分ブレイクチェック処理
+      *--- 2009/03/23 ADD START ----------------------------------------
                IF   WRK-SMEI-NYUGAIKBN(IDX-S)  NOT =  WRK-NYUGAIKBN
-      *
+                 MOVE   WRK-SMEI-NYUGAIKBN(IDX-S)  TO  WRK-NYUGAIKBN
+                 MOVE   WRK-SMEI-SRYKA(IDX-S)      TO  WRK-SRYKA
+      *--- 2009/03/23 ADD START ----------------------------------------
+      **
       *--- 2009/02/24 CHANGE START -------------------------------------
       *** 20040907  MOTOHASI  小計印字
       *           PERFORM   3001-SYOUKEI-SET-SEC
@@ -1566,16 +1637,26 @@
       *    帳票編集<見出し>処理
                      PERFORM   310-HEAD-HEN-SEC
       *    合計印字
-                     PERFORM   320-HEAD-HEN-SEC
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *               PERFORM   320-HEAD-HEN-SEC
+      *--- 2009/03/23 DELETE END   -------------------------------------
                      PERFORM   3000-GOUKEI-SET-SEC
                      PERFORM   400-PRINT-OUT-SEC
                      INITIALIZE       SUM-GG-AREA
+      *--- 2009/03/23 ADD START ----------------------------------------
+                     PERFORM   320-HEAD-HEN-SEC
+      *--- 2009/03/23 ADD END   ----------------------------------------
                    WHEN  "2"
       *    合計印字
-                     PERFORM   320-HEAD-HEN-SEC
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *               PERFORM   320-HEAD-HEN-SEC
+      *--- 2009/03/23 DELETE START -------------------------------------
                      PERFORM   3000-GOUKEI-SET-SEC
                      PERFORM   400-PRINT-OUT-SEC
                      INITIALIZE      SUM-GG-AREA
+      *--- 2009/03/23 ADD START ----------------------------------------
+                     PERFORM   320-HEAD-HEN-SEC
+      *--- 2009/03/23 ADD END   ----------------------------------------
                    WHEN  OTHER
       *    小計印字
                      PERFORM   3001-SYOUKEI-SET-SEC
@@ -1593,12 +1674,49 @@
       * 診療科ブレイクチェック処理
                IF WRK-SMEI-SRYKA(IDX-S)  NOT =  WRK-SRYKA
       *
+      *--- 2009/03/23 ADD START ----------------------------------------
+                 MOVE   WRK-SMEI-NYUGAIKBN(IDX-S)  TO  WRK-NYUGAIKBN
+                 MOVE   WRK-SMEI-SRYKA(IDX-S)      TO  WRK-SRYKA
+      *
+                 EVALUATE   WRK-PARA-GOKEIKBN
+                   WHEN  "1"
+      *    小計印字
+                     PERFORM   3001-SYOUKEI-SET-SEC
+                     PERFORM   390-PRINT-OUT-SEC
+                     INITIALIZE                    SUM-G-AREA
+      *    帳票編集<見出し>処理
+                     PERFORM   310-HEAD-HEN-SEC
+      *    合計印字
+                     PERFORM   3000-GOUKEI-SET-SEC
+                     PERFORM   400-PRINT-OUT-SEC
+                     INITIALIZE       SUM-GG-AREA
+      *
+                     PERFORM   320-HEAD-HEN-SEC
+      *
+                   WHEN  "2"
+      *    合計印字
+                     PERFORM   3000-GOUKEI-SET-SEC
+                     PERFORM   400-PRINT-OUT-SEC
+                     INITIALIZE      SUM-GG-AREA
+                     PERFORM   320-HEAD-HEN-SEC
+                   WHEN  OTHER
+      *    小計印字
+                     PERFORM   3001-SYOUKEI-SET-SEC
+                     PERFORM   390-PRINT-OUT-SEC
+                     INITIALIZE                    SUM-G-AREA
+                     PERFORM  310-HEAD-HEN-SEC
+                 END-EVALUATE
+      *--- 2009/03/23 ADD END   ----------------------------------------
       *** 20040907  MOTOHASI  小計印字
-                 PERFORM 3001-SYOUKEI-SET-SEC
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *           PERFORM 3001-SYOUKEI-SET-SEC
+      *--- 2009/03/23 DELETE END   -------------------------------------
       *** 20040907  MOTOHASI
       *
       *          帳票編集<見出し>処理
-                 PERFORM 390-PRINT-OUT-SEC
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *           PERFORM 390-PRINT-OUT-SEC
+      *--- 2009/03/23 DELETE END   -------------------------------------
       *
       *** 20040907  MOTOHASI
                  INITIALIZE                    SUM-G-AREA
@@ -1608,7 +1726,9 @@
                  MOVE    WRK-SMEI-NYUGAIKBN(IDX-S) TO   WRK-NYUGAIKBN
                  MOVE    WRK-SMEI-SRYKA(IDX-S)     TO   WRK-SRYKA
       *          帳票編集<見出し>処理
-                 PERFORM 310-HEAD-HEN-SEC
+      *--- 2009/03/23 DELETE START -------------------------------------
+      *           PERFORM 310-HEAD-HEN-SEC
+      *--- 2009/03/23 DELETE END   -------------------------------------
                END-IF
       * 20030407 追加
       *
@@ -1745,6 +1865,9 @@
       *** 20040907  MOTOHASI  小計印字
            PERFORM 3001-SYOUKEI-SET-SEC
       *** 20040907  MOTOHASI
+      *--- 2009/03/23 ADD START ----------------------------------------
+           PERFORM 3000-GOUKEI-SET-SEC
+      *--- 2009/03/23 ADD END   ----------------------------------------
       *
            .
        320-BODY-HEN-EXT.
@@ -2648,6 +2771,12 @@
       *****************************************************************
        390-PRINT-OUT-SEC                SECTION.
       *
+      *--- 2009/03/23 ADD START ----------------------------------------
+           ADD     1                       TO   CNT-PAGE
+           MOVE    CNT-PAGE                TO   WRK-PAGE
+           MOVE    WRK-PAGE                TO   HC17-PAGE
+      *--- 2009/03/23 ADD END   ----------------------------------------
+      *
            INITIALIZE                      ORCSPRTAREA
            MOVE    "INS"                   TO   SPRT-MODE
            MOVE    LNK-PRTKANRI-RENNUM     TO   SPRT-RENNUM
@@ -2734,6 +2863,12 @@
       *    総合計帳票印刷処理
       *****************************************************************
        400-PRINT-OUT-SEC                SECTION.
+      *
+      *--- 2009/03/23 ADD START ----------------------------------------
+           ADD     1                           TO   CNT-PAGE
+           MOVE    CNT-PAGE                    TO   WRK-PAGE
+           MOVE    WRK-PAGE                    TO   D5002-PAGE
+      *--- 2009/03/23 ADD END   ----------------------------------------
       *
            INITIALIZE                          ORCSPRTAREA
            MOVE    "INS"                       TO   SPRT-MODE
