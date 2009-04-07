@@ -50,6 +50,8 @@
       *  08/05/26    @@@@-田中     診療行為区分の振り分けを修正
       *  08/09/02    @@@@-田中     ０回の診療行為時の不具合の修正
       *  08/11/20    @@@@-田中     自費のフリー金額を集計するように変更
+      *  09/03/27    @@@@-田中     外泊時の回数カウント処理を修正
+      *  09/04/06    @@@@-田中     自費の数量入力時の不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -222,6 +224,9 @@
            03  SSSS               PIC 9(03).
            03  ZZZZ               PIC 9(03).
       ****2006/01/07  @@@@-BRAND  END
+      *--- 2009/03/27 ADD START ----------------------------------------
+           03  IDX8               PIC 9(02).
+      *--- 2009/03/27 ADD END ------------------------------------------
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -348,11 +353,21 @@
       * 20071105 きざみ値による点数の不具合を修正START t.tanaka
            03  WRK-KIZAMI             PIC S9(09).
       * 20071105 きざみ値による点数の不具合を修正END
+      *--- 2009/03/27 ADD START ----------------------------------------
+           03  WRK-S-SRYYMD             PIC 9(08).
+      *--- 2009/03/27 ADD END ------------------------------------------
       *  
        01  SUM-AREA.
            03  SUM-T-AREA.
                05  SUM-T-TTEN        PIC 9(12)V9(02).
                05  SUM-T-TKIN        PIC 9(12)V9(02).
+      *
+      *--- 2009/03/27 ADD END ------------------------------------------
+       01  WRK-NYUINRYO-AREA.
+           03  WRK-NYUINRYO-TBL        OCCURS 31.
+               05  WRK-NYUINRYO         PIC 9(08).
+               05  WRK-GAIHAKKBN        PIC 9(01).
+      *--- 2009/03/27 ADD END ------------------------------------------
       *
            COPY    "CPSHELLTBL.INC".
       *     
@@ -426,6 +441,11 @@
       *    入院診療会計マスタ
        01  NYUINACCT-REC.
            COPY    "CPNYUINACCT.INC".
+      *
+      *    入院診療会計マスタ２
+       01  NYUINACCT2-REC.
+           COPY    "CPNYUINACCT.INC"    REPLACING  //NACCT//
+                                        BY         //NACCT2//.
       *
       *    入院診療行為マスタ−
        01  NYUIN-SRYACT-REC.
@@ -519,6 +539,10 @@
       * 20070921 4.0対応START t.tanaka
            INITIALIZE                  SPA-AREA
       * 20070921 4.0対応END
+      *--- 2009/03/27 ADD START ----------------------------------------
+           INITIALIZE                  WRK-NYUINRYO-AREA
+           INITIALIZE                  IDX3
+      *--- 2009/03/27 ADD END ------------------------------------------
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -899,9 +923,18 @@
            MOVE WRK-PARA-PRTYM   TO    NSRY-SRYYM 
            PERFORM   900-NYUINACT-SELECT-SEC
            PERFORM   900-NYUINACT-FETCH-SEC
+      *--- 2009/03/27 ADD START ----------------------------------------
+           MOVE   NSRY-PTID           TO   WRK-PTID
+      *--- 2009/03/27 ADD END ------------------------------------------
            PERFORM   UNTIL   FLG-NYUINACT =   1
-                     PERFORM  2003-NSYORI-SEC
-                     PERFORM  900-NYUINACT-FETCH-SEC
+             PERFORM  2003-NSYORI-SEC
+             PERFORM  900-NYUINACT-FETCH-SEC
+      *--- 2009/03/27 ADD START ----------------------------------------
+             IF   NSRY-PTID  NOT =  WRK-PTID
+               MOVE   NSRY-PTID       TO   WRK-PTID
+               INITIALIZE             WRK-NYUINRYO-AREA
+             END-IF
+      *--- 2009/03/27 ADD END ------------------------------------------
            END-PERFORM
            PERFORM   900-NYUINACT-CLOSE-SEC
       *
@@ -944,30 +977,42 @@
                     PERFORM   910-NYUINACCT-READ-SEC
                     MOVE      1             TO    FLG-NYUKAIKEI
                  END-IF
-      *
+      *--- 2009/03/27 ADD START ----------------------------------------
+                 PERFORM   VARYING IDX8  FROM 1  BY 1
+                           UNTIL   IDX8  >  31
+      *    外泊日に食事などのフラグを消す
+                   PERFORM   920-NYUINACCT-READ-SEC
+                   IF   NACCT-DAY(IDX8)  >  0
+                     MOVE   WRK-PARA-PRTYM    TO   WRK-S-SRYYMD(1:6)
+                     MOVE   IDX8              TO   WRK-S-SRYYMD(7:2)
+      *--- 2009/03/27 ADD END ------------------------------------------
       ***  20040723  @@@@-MOTOHASI  食事療養費、室料差額を区分けして
       ***                           正確な回数、点数、金額を算出する
       ***             PERFORM 2003-NA010PUT-SEC
-                 IF  NSRY-SRYKBN = "97" 
+                     IF  NSRY-SRYKBN = "97" 
       *** 20070717食事療養費の修正START　T.Tanaka
       *                 AND NSRY-SRYCD(IDX1) = "099999913"
-                     AND (NSRY-SRYCD(IDX1) = "099999913"
-                     OR NSRY-SRYCD(IDX1) = "099999918" 
-                     OR NSRY-SRYCD(IDX1) = "099999919"
-                     OR NSRY-SRYCD(IDX1) = "099999920")
+                         AND (NSRY-SRYCD(IDX1) = "099999913"
+                         OR NSRY-SRYCD(IDX1) = "099999918" 
+                         OR NSRY-SRYCD(IDX1) = "099999919"
+                         OR NSRY-SRYCD(IDX1) = "099999920")
       *** 20070717食事療養費の修正END
       *    食事療養費の回数算出
-                     PERFORM 2004-NA010PUT-SEC
-                 ELSE
-                   IF  NSRY-SRYKBN = "90" 
-                       AND NSRY-SRYCD(IDX1) = "099999912"
+                       PERFORM 2004-NA010PUT-SEC
+                     ELSE
+                       IF  NSRY-SRYKBN = "90" 
+                          AND NSRY-SRYCD(IDX1) = "099999912"
       *    室料差額の回数算出
-                     PERFORM 2005-NA010PUT-SEC
-                   ELSE
-                     PERFORM 2003-NA010PUT-SEC
-                   END-IF
-                 END-IF
+                         PERFORM 2005-NA010PUT-SEC
+                       ELSE
+                         PERFORM 2003-NA010PUT-SEC
+                       END-IF
+                     END-IF
       ***  20040723  ここまで
+      *--- 2009/03/27 ADD START ----------------------------------------
+                   END-IF
+                 END-PERFORM
+      *--- 2009/03/27 ADD END ------------------------------------------
       *
                END-IF
              END-IF
@@ -1066,13 +1111,18 @@
       * 点数の設定
            MOVE TNS-TEN         TO    A010T-TEN
            MOVE TNS-TEN         TO    A010T3-TEN
-           DISPLAY SRY-SRYCD(IDX1) "   |   "A010T-OUTTYPE
       * --- 2008/11/20  ADD  START -------------------------------------
            IF   A010T-OUTTYPE         =    "95"
              OR  A010T-OUTTYPE         =    "96"
-              MOVE SRY-JIHIMONEY(IDX1)   TO    A010T-TEN
-              MOVE SRY-JIHIMONEY(IDX1)   TO    A010T-TEN2
-              MOVE SRY-JIHIMONEY(IDX1)   TO    A010T3-TEN
+      *--- 2009/04/06 ADD START ----------------------------------------
+             IF   TNS-TEN  =  ZERO
+      *--- 2009/04/06 ADD END ------------------------------------------
+               MOVE   SRY-JIHIMONEY(IDX1)   TO   A010T-TEN
+               MOVE   SRY-JIHIMONEY(IDX1)   TO   A010T-TEN2
+               MOVE   SRY-JIHIMONEY(IDX1)   TO   A010T3-TEN
+      *--- 2009/04/06 ADD START ----------------------------------------
+             END-IF
+      *--- 2009/04/06 ADD END ------------------------------------------
            END-IF
       * --- 2008/11/20  ADD  END ---------------------------------------
            IF   TNS-KZMCOMPSIKIBETU   = 1
@@ -1252,7 +1302,7 @@
              MOVE TNS-KANANAME      TO    A010T3-KANANAME
       * 20080902 ０回の診療行為時の不具合の修正END
            END-IF
-      * 2004/01/29追加 
+      * 2004/01/29追加
       *
            MOVE NSRY-SRYCD(IDX1) TO    A010T-SRYCD
       * 20080902 ０回の診療行為時の不具合の修正START
@@ -1333,55 +1383,101 @@
       ***         END-EVALUATE
       ***     END-IF   
       *
-           IF   A010T-OUTTYPE         =    "95"
-               OR  A010T-OUTTYPE         =    "96"
-      *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-             COMPUTE  WRK-ZAIKAISU =
-             NSRY-SRYSURYO(IDX1)   *    NACCT-ZAIKAISU
-             ADD  WRK-ZAIKAISU     TO   A010T-KAISU
-             MOVE 1                TO   A010T-TANI
-      * 20080902 ０回の診療行為時の不具合の修正START
-             ADD  WRK-ZAIKAISU     TO   A010T3-KAISU
-             MOVE 1                TO   A010T3-TANI
-      * 20080902 ０回の診療行為時の不具合の修正END
+      *--- 2009/03/27 ADD START ----------------------------------------
+      *    外泊の入院料計算
+           IF   NSRY-SRYCD  =  "099999911"
+      *    外泊の種類選択
+             MOVE    9                   TO   A010T-TANI
+                                              A010T3-TANI
+             MOVE    A010T-TEN2          TO   A010T-TEN
+                                              A010T3-TEN
+             DISPLAY "A010T-TEN2  =  "A010T-TEN2 
+             ADD     1                   TO   A010T-KAISU
+                                              A010T3-KAISU
            ELSE
-             EVALUATE  TNS-TENSIKIBETU
-               WHEN  1
+      *--- 2009/03/27 ADD END ------------------------------------------
+             IF   A010T-OUTTYPE   =  "95"
+                 OR  A010T-OUTTYPE  =  "96"
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-                 COMPUTE  WRK-ZAIKAISU =
-                        NSRY-SRYSURYO(IDX1)   *    NACCT-ZAIKAISU
-                 ADD  WRK-ZAIKAISU     TO   A010T-KAISU
-                 MOVE 1                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE START -------------------------------------
+      *           COMPUTE  WRK-ZAIKAISU =
+      *                  NSRY-SRYSURYO(IDX1)   *    NACCT-ZAIKAISU
+               COMPUTE  WRK-ZAIKAISU =
+                        NSRY-SRYSURYO(IDX1)  *  NACCT-DAY(IDX8)
+      *--- 2009/03/27 CHANGE END -------------------------------------
+               ADD    WRK-ZAIKAISU     TO   A010T-KAISU
+               MOVE   1                TO   A010T-TANI
       * 20080902 ０回の診療行為時の不具合の修正START
-                 ADD  WRK-ZAIKAISU     TO   A010T3-KAISU
-                 MOVE 1                TO   A010T3-TANI
+               ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
+               MOVE   1                TO   A010T3-TANI
       * 20080902 ０回の診療行為時の不具合の修正END
-               WHEN  3
-               WHEN  8
+             ELSE
+               EVALUATE  TNS-TENSIKIBETU
+                 WHEN  1
+      *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
+      *--- 2009/03/27 CHANGE START -------------------------------------
+      *             COMPUTE  WRK-ZAIKAISU =
+      *                    NSRY-SRYSURYO(IDX1)   *    NACCT-ZAIKAISU
+                   COMPUTE  WRK-ZAIKAISU =
+                          NSRY-SRYSURYO(IDX1)  *  NACCT-DAY(IDX8)
+      *--- 2009/03/27 CHANGE END -------------------------------------
+                   ADD    WRK-ZAIKAISU     TO   A010T-KAISU
+                   MOVE   1                TO   A010T-TANI
+      * 20080902 ０回の診療行為時の不具合の修正START
+                   ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
+                   MOVE   1                TO   A010T3-TANI
+      * 20080902 ０回の診療行為時の不具合の修正END
+                 WHEN  3
+                 WHEN  8
       ***         点数項目の場合は回数をデータ化する。
-                 ADD   NACCT-ZAIKAISU   TO   A010T-KAISU
-                 MOVE       ZERO       TO   A010T-TANI
+      *--- 2009/03/27 CHANGE START -------------------------------------
+      *           ADD   NACCT-ZAIKAISU   TO   A010T-KAISU
+      *           MOVE       ZERO       TO   A010T-TANI
       * 20080902 ０回の診療行為時の不具合の修正START
-                 ADD   NACCT-ZAIKAISU   TO   A010T3-KAISU
-                 MOVE       ZERO       TO   A010T3-TANI
+      *           ADD   NACCT-ZAIKAISU   TO   A010T3-KAISU
+      *           MOVE       ZERO       TO   A010T3-TANI
       * 20080902 ０回の診療行為時の不具合の修正END
-               WHEN  0
-               WHEN  4
-               WHEN  5
-               WHEN  6
-               WHEN  7
+                   ADD    NACCT-DAY(IDX8)   TO   A010T-KAISU
+                   MOVE   ZERO              TO   A010T-TANI
+                   ADD    NACCT-DAY(IDX8)   TO   A010T3-KAISU
+                   MOVE   ZERO              TO   A010T3-TANI
+      *--- 2009/03/27 CHANGE END ---------------------------------------
+                 WHEN  0
+                 WHEN  4
+                 WHEN  5
+                 WHEN  6
+                 WHEN  7
       ***           点数、金額以外の場合
-                 MOVE  ZERO             TO   A010T-TEN
-                 ADD   NACCT-ZAIKAISU   TO   A010T-KAISU
-                 MOVE  9                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE START -------------------------------------
+      *           MOVE  ZERO             TO   A010T-TEN
+      *           ADD   NACCT-ZAIKAISU   TO   A010T-KAISU
+      *           MOVE  9                TO   A010T-TANI
       * 20080902 ０回の診療行為時の不具合の修正START
-                 MOVE  ZERO             TO   A010T3-TEN
-                 ADD   NACCT-ZAIKAISU   TO   A010T3-KAISU
-                 MOVE  9                TO   A010T3-TANI
+      *           MOVE  ZERO             TO   A010T3-TEN
+      *           ADD   NACCT-ZAIKAISU   TO   A010T3-KAISU
+      *           MOVE  9                TO   A010T3-TANI
       * 20080902 ０回の診療行為時の不具合の修正END
-             END-EVALUATE
-           END-IF   
+                   MOVE   ZERO              TO   A010T-TEN
+                   ADD    NACCT-DAY(IDX8)   TO   A010T-KAISU
+                   MOVE   9                 TO   A010T-TANI
+                   MOVE   ZERO              TO   A010T3-TEN
+                   ADD    NACCT-DAY(IDX8)   TO   A010T3-KAISU
+                   MOVE   9                 TO   A010T3-TANI
+      *--- 2009/03/27 CHANGE END ---------------------------------------
+               END-EVALUATE
+             END-IF
+      *--- 2009/03/27 ADD START ----------------------------------------
+           END-IF
+      *--- 2009/03/27 ADD END ----------------------------------------
       ***  20040714  ここまで
+      *--- 2009/03/27 ADD START ----------------------------------------
+      *    外泊日の入院基本料の回数を減算
+           IF   NACCT-ZAISKBKBN  =  1
+             AND   WRK-GAIHAKKBN(IDX8)  =  1
+             COMPUTE  A010T-KAISU  =  A010T-KAISU  -  NACCT-DAY(IDX8)
+             COMPUTE  A010T3-KAISU =  A010T3-KAISU  -  NACCT-DAY(IDX8)
+           END-IF
+      *--- 2009/03/27 ADD END ------------------------------------------
       *
       * 20040129 変更
       *
@@ -1428,8 +1524,11 @@
            INITIALIZE   WRK-SYOKUJIKAI
       ****2006/01/07 @@@@-BRAND  START
       *     PERFORM   2004-SET-SYOKUJITYPE-SEC
-           PERFORM VARYING IIII FROM 1 BY 1
-	               UNTIL  IIII > 31
+      *--- 2009/03/27 CHANGE START -------------------------------------
+      *     PERFORM VARYING IIII FROM 1 BY 1
+      *             UNTIL  IIII > 31
+           MOVE   IDX8     TO    IIII
+      *--- 2009/03/27 CHANGE END ---------------------------------------
              PERFORM VARYING ZZZZ FROM 1 BY 1
                       UNTIL  ZZZZ > 4
                COMPUTE   SSSS = IIII * 3 - 2
@@ -1451,7 +1550,9 @@
                  END-IF
                END-IF
              END-PERFORM
-           END-PERFORM
+      *--- 2009/03/27 DELETE START -------------------------------------
+      *     END-PERFORM
+      *--- 2009/03/27 DELETE END ---------------------------------------
       ****2006/01/07 @@@@-BRAND  START
       *
            PERFORM  VARYING      IDX4  FROM  1  BY   1
@@ -1570,16 +1671,28 @@
                EVALUATE  IDX4
                  WHEN  1
                    ADD  WRK-SYOKUJIKAISU1   TO   A010T-KAISU
-                   MOVE ZERO                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE START -------------------------------------
+      *             MOVE ZERO                TO   A010T-TANI
+                   MOVE    1                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE END ---------------------------------------
                  WHEN  2
                    ADD  WRK-SYOKUJIKAISU2   TO   A010T-KAISU
-                   MOVE ZERO                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE START -------------------------------------
+      *             MOVE ZERO                TO   A010T-TANI
+                   MOVE    1                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE END ---------------------------------------
                  WHEN  3
                    ADD  WRK-SYOKUJIKAISU3   TO   A010T-KAISU
-                   MOVE ZERO                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE START -------------------------------------
+      *             MOVE ZERO                TO   A010T-TANI
+                   MOVE    1                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE END ---------------------------------------
                  WHEN  4
                    ADD  WRK-SYOKUJIKAISU4   TO   A010T-KAISU
-                   MOVE ZERO                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE START -------------------------------------
+      *             MOVE ZERO                TO   A010T-TANI
+                   MOVE    1                TO   A010T-TANI
+      *--- 2009/03/27 CHANGE END ---------------------------------------
                END-EVALUATE
       *
                IF   FLG-INVALID      =    ZERO
@@ -1624,10 +1737,13 @@
       *    区分けの設定(1〜30)
       *              
            INITIALIZE   WRK-SITURYOKAI-TBL
+      *--- 2009/03/27 CHANGE START -------------------------------------
+           MOVE    IDX8    TO    IIII
       ****2006/01/07 @@@@-BRAND  START
       *     PERFORM   2005-SET-SITURYOTYPE-SEC
-           PERFORM VARYING IIII FROM 1 BY 1
-	               UNTIL  IIII > 31
+      *     PERFORM VARYING IIII FROM 1 BY 1
+      *             UNTIL  IIII > 31
+      *--- 2009/03/27 CHANGE END ---------------------------------------
              PERFORM VARYING ZZZZ FROM 1 BY 1
                      UNTIL  ZZZZ > 30
                COMPUTE   SSSS = IIII * 3 - 2
@@ -1635,7 +1751,9 @@
                  ADD 1 TO  WRK-SITURYOKAI(ZZZZ)
 	           END-IF
 	         END-PERFORM
-           END-PERFORM
+      *--- 2009/03/27 DELETE START -------------------------------------
+      *     END-PERFORM
+      *--- 2009/03/27 DELETE END ---------------------------------------
       *
       ****2006/01/07 @@@@-BRAND  END
       *
@@ -1891,7 +2009,7 @@
              MOVE TNS-KANANAME      TO    A010T3-KANANAME
       * 20080902 ０回の診療行為時の不具合の修正END
            END-IF
-      * 2004/01/29追加 
+      * 2004/01/29追加
       *
            READ A010T-FILE
                 KEY      IS      A010T-KEY  
@@ -6468,6 +6586,72 @@
            .
        940-PTNUM-READ-EXT.
            EXIT.
+      *--- 2009/03/27 ADD START ----------------------------------------
+      *****************************************************************
+      *    入院診療会計情報検索
+      *****************************************************************
+       920-NYUINACCT-READ-SEC           SECTION.
+      *
+           INITIALIZE                   NYUINACCT2-REC
+           MOVE    NACCT-HOSPNUM        TO   NACCT2-HOSPNUM
+           MOVE    NACCT-PTID           TO   NACCT2-PTID
+           MOVE    NACCT-SRYYM          TO   NACCT2-SRYYM
+           MOVE    "2"                  TO   NACCT2-ZAISKBKBN
+           MOVE    NYUINACCT2-REC       TO   MCPDATA-REC
+           MOVE    "DBSELECT"           TO   MCP-FUNC
+           MOVE    "tbl_nyuinacct"      TO   MCP-TABLE
+           MOVE    "key17"              TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF  MCP-RC   =   ZERO
+             PERFORM   920-NYUINACCT-FETCH-SEC
+             EVALUATE  NACCT2-DAY(IDX8)
+               WHEN  1
+               WHEN  2
+               WHEN  3
+                 IF   NACCT-ZAISKBKBN  =  "4"  OR  "6"
+                   MOVE    0            TO   NACCT-DAY(IDX8)
+                 END-IF
+                 MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
+               WHEN  4
+                 MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
+             END-EVALUATE
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE    "tbl_nyuinacct"      TO   MCP-TABLE
+           MOVE    "key17"              TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       920-NYUINACCT-READ-EXT.
+           EXIT.
+      *****************************************************************
+      *    入院診療会計情報検索
+      *****************************************************************
+       920-NYUINACCT-FETCH-SEC           SECTION.
+      *
+           MOVE    "DBFETCH"          TO   MCP-FUNC
+           MOVE    "tbl_nyuinacct"    TO   MCP-TABLE
+           MOVE    "key17"            TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    MCPDATA-REC      TO   NYUINACCT2-REC
+           ELSE
+             INITIALIZE                    NYUINACCT2-REC
+           END-IF
+           .
+       920-NYUINACCT-FETCH-EXT.
+           EXIT.
+      *--- 2009/03/27 ADD END ------------------------------------------
       *****************************************************************
       *    終了　　処理
       *****************************************************************
