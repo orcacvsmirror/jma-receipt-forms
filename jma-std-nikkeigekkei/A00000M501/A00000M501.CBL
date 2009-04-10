@@ -69,6 +69,7 @@
       *              @@@@-ÅÄÃæ    09/02/06  ¸ºÌÈ¶â³Û¤Î·×»»¼°¤ò½¤Àµ
       *              @@@@-ÅÄÃæ    09/02/17  ¸ºÌÈ·×»»¼°¤Î¾ò·ï¼°¤ò½¤Àµ
       *              @@@@-Ìç´Ö    09/03/02  ¼«ÈñÊÝ¸±»ÈÍÑ»þ¤ÎÉÔ¶ñ¹ç¤ò½¤Àµ
+      *              @@@@-Ìç´Ö    09/04/08  °åÎÅ¼ý±×¤Î·×»»¼°¤ò½¤Àµ
       *****************************************************************
       *
       *
@@ -1902,20 +1903,27 @@
       ***                      +  SYU-CHOSEI 
       *--- 2009/02/06 ADD START ----------------------------------------
       *--- 2009/02/17 CHANGE START -------------------------------------
+      *--- °åÎÅ¼ý±×¤Î·×»»¼°¤ò½¤Àµ 2009/04/08 CHANGE START --------------
            IF  SYU-KOH4HKNNUM  NOT =  SPACE
-             MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+      *       MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+             MOVE   SYU-KOH4HKNFTNMONEY    TO   WRK-COMPFTN
            ELSE
              IF  SYU-KOH3HKNNUM  NOT =  SPACE
-               MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+      *         MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+               MOVE   SYU-KOH3HKNFTNMONEY    TO   WRK-COMPFTN
              ELSE
                IF  SYU-KOH2HKNNUM  NOT =  SPACE
-                 MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+      *           MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+                 MOVE   SYU-KOH2HKNFTNMONEY    TO   WRK-COMPFTN
                ELSE
                  IF  SYU-KOH1HKNNUM  NOT =  SPACE
-                   MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+      *             MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+                   MOVE   SYU-KOH1HKNFTNMONEY    TO   WRK-COMPFTN
                  ELSE
                    IF  SYU-SYUHKNNUM  NOT =  SPACE
-                     MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+      *               MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+                     MOVE   SYU-SYUHKNFTNMONEY    TO   WRK-COMPFTN
+      *--- °åÎÅ¼ý±×¤Î·×»»¼°¤ò½¤Àµ 2009/04/08 CHANGE END   --------------
                    END-IF
                  END-IF
                END-IF
@@ -2183,20 +2191,27 @@
       *    °åÎÅ¼ý±×·×
       *--- 2009/02/06 ADD START ----------------------------------------
       *--- 2009/02/17 CHANGE START -------------------------------------
+      *--- °åÎÅ¼ý±×¤Î·×»»¼°¤ò½¤Àµ 2009/04/08 CHANGE START --------------
            IF  SYU-KOH4HKNNUM  NOT =  SPACE
-             MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+      *       MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+             MOVE   SYU-KOH4HKNFTNMONEY    TO   WRK-COMPFTN
            ELSE
              IF  SYU-KOH3HKNNUM  NOT =  SPACE
-               MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+      *         MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+               MOVE   SYU-KOH3HKNFTNMONEY    TO   WRK-COMPFTN
              ELSE
                IF  SYU-KOH2HKNNUM  NOT =  SPACE
-                 MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+      *           MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+                 MOVE   SYU-KOH2HKNFTNMONEY    TO   WRK-COMPFTN
                ELSE
                  IF  SYU-KOH1HKNNUM  NOT =  SPACE
-                   MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+      *             MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+                   MOVE   SYU-KOH1HKNFTNMONEY    TO   WRK-COMPFTN
                  ELSE
                    IF  SYU-SYUHKNNUM  NOT =  SPACE
-                     MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+      *               MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+                     MOVE   SYU-SYUHKNFTNMONEY    TO   WRK-COMPFTN
+      *--- °åÎÅ¼ý±×¤Î·×»»¼°¤ò½¤Àµ 2009/04/08 CHANGE END   --------------
                    END-IF
                  END-IF
                END-IF
