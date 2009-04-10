@@ -36,6 +36,7 @@ echomsg "公開帳票 プログラムコピー中..."
 cp -af *.CBL ${SITESRCDIR}/cobol 2> /dev/null
 cp -af *.INC ${SITESRCDIR}/cobol/copy 2> /dev/null
 cp -af *.red ${SITESRCDIR}/form 2> /dev/null
+cp -af version_* ${SITESRCDIR}/doc
 
 # copy *.INI
 FILEINI=`find -name "*.INI" -print 2>/dev/null`
