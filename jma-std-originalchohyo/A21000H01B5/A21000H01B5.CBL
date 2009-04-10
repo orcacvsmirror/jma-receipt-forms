@@ -41,6 +41,7 @@
       *  08/09/30    @@@@-田中     ｼｽﾃﾑ管理ﾏｽﾀ1017の情報を取得できない不具合を修正
       *  08/10/28    @@@@-田中     ver4.3対応(外来カルテ一括発行)
       *  09/03/16    @@@@-門間     特別療養費の患者が健保用紙で印字される不具合を修正
+      *  09/04/02    @@@@-田中     公費の欄外印字の不具合を修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -296,6 +297,11 @@
       *    ファイルレイアウト
       *****************************************************************
       *
+      *--- 2009/04/02 ADD START ----------------------------------------
+      *    医療機関情報情報
+           COPY    "CPSK1001.INC".
+      *--- 2009/04/02 ADD END ------------------------------------------
+      *
       *    患者マスタ
        01  PTINF-REC.
            COPY    "CPPTINF.INC".
@@ -522,6 +528,23 @@
                INITIALIZE                  SYS-1017-REC
            END-IF
       ***   20041126 MOTOHASI 
+      *--- 2009/04/02 ADD START ----------------------------------------
+      *    医療機関情報
+           MOVE    SPACE               TO   SYS-1001-REC
+           INITIALIZE                  SYS-1001-REC
+           MOVE    "1001"              TO   SYS-1001-KANRICD
+           MOVE    "*"                 TO   SYS-1001-KBNCD
+           MOVE    SPA-SYSYMD          TO   SYS-1001-EDYUKYMD
+           MOVE    SPA-SYSYMD          TO   SYS-1001-STYUKYMD
+           MOVE    SPA-HOSPNUM         TO   SYS-1001-HOSPNUM
+           MOVE    SYS-1001-REC        TO   MCPDATA-REC
+           PERFORM 800-SYSKANRI-READ-SEC
+           IF    FLG-SYSKANRI   =   ZERO
+             MOVE    MCPDATA-REC         TO   SYS-1001-REC
+           ELSE
+             INITIALIZE                  SYS-1001-REC
+           END-IF
+      *--- 2009/04/02 ADD END ------------------------------------------
            .
        110-PARA-HENSYU-EXT.
            EXIT.
@@ -1296,12 +1319,21 @@
                MOVE    COMB-KOHID (IDY)    TO  PTKOH-KOHID
                PERFORM 940-PTKOHINF-READ-SEC
                IF      FLG-PTKOHINF          =   ZERO
-                 IF    PTKOH-KOHNUM        =   "141"
+      *--- 2009/04/02 CHANGE START -------------------------------------
+      *           IF    PTKOH-KOHNUM        =   "141"
+      *            OR   PTKOH-KOHNUM        =   "143"
+      *            OR   PTKOH-KOHNUM        =   "144"
+      *            OR   PTKOH-KOHNUM        =   "145"
+      *            OR   PTKOH-KOHNUM        =   "146"
+      *            OR   PTKOH-KOHNUM        =   "147"
+                 IF    (PTKOH-KOHNUM        =   "141"
                   OR   PTKOH-KOHNUM        =   "143"
                   OR   PTKOH-KOHNUM        =   "144"
                   OR   PTKOH-KOHNUM        =   "145"
                   OR   PTKOH-KOHNUM        =   "146"
-                  OR   PTKOH-KOHNUM        =   "147"
+                  OR   PTKOH-KOHNUM        =   "147")
+                  AND  SYS-1001-PREFNUM   =  "21"
+      *--- 2009/04/02 CHANGE END ---------------------------------------
       * 受給者番号
                        MOVE  PTKOH-JKYSNUM TO  H01KB5-FK-JKYSNO
                                                H01SB5-FK-JKYSNO 
