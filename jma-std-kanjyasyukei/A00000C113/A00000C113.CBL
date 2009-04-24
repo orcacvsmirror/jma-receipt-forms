@@ -34,6 +34,7 @@
       *  08/09/05    @@@@-田中     在院数の縦の加算合計を対応
       *                            担当医師がいない場合、該当医師なしに印字するよう修正
       *  08/10/20    @@@@-田中     在院数の集計条件の不具合を修正
+      *  09/04/20    @@@@-田中     複数月分まとめて出力した時、在院数の不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1083,10 +1084,12 @@
       *
                MOVE    1              TO    IDX3  
                PERFORM  UNTIL   IDX3 >      7
-                           OR   IDX2 >      SUM-DRCDMAX    
+                           OR   IDX2 >      SUM-DRCDMAX
+      *--- 2009/04/20 DELETE START -------------------------------------
       * 20080905 在院数の縦の加算合計を対応
-                INITIALIZE  SUM-GZAIIN(IDX3)
+      *          INITIALIZE  SUM-GZAIIN(IDX3)
       * 20080905 在院数の縦の加算合計を対応
+      *--- 2009/04/20 DELETE END ---------------------------------------
       * 診療科名称を集計エリアに転送
                 MOVE    SUM-DRNAME(IDX2)
                                        TO  C100N-SRYKA(IDX3)
@@ -1122,7 +1125,10 @@
                   MOVE  WRK-Z9-5 TO  C100N-12-CNT(IDX3 32)
       * 20080905 在院数の縦の加算合計を対応START
       *            MOVE  SPACE    TO  C100N-99-CNT(IDX3 32)
-                  MOVE  SUM-GZAIIN(IDX3)  TO  WRK-Z9-5
+      *--- 2009/04/20 CHANGE START -------------------------------------
+      *            MOVE  SUM-GZAIIN(IDX3)  TO  WRK-Z9-5
+                  MOVE  SUM-GZAIIN(IDX2)  TO  WRK-Z9-5
+      *--- 2009/04/20 CHANGE END ---------------------------------------
                   MOVE  WRK-Z9-5  TO  C100N-99-CNT(IDX3 32)
       * 20080905 在院数の縦の加算合計を対応END
                  ELSE                
@@ -1149,7 +1155,10 @@
                   MOVE  WRK-Z9-5 TO  C100N-99-CNT(IDX3 IDX6)
       * 20080905 在院数の縦の加算合計を対応START
                   MOVE  WRK-Z9-5    TO   WRK-S9-5
-                  ADD   WRK-S9-5    TO   SUM-GZAIIN(IDX3)
+      *--- 2009/04/20 CHANGE START -------------------------------------
+      *            ADD   WRK-S9-5    TO   SUM-GZAIIN(IDX3)
+                  ADD   WRK-S9-5    TO   SUM-GZAIIN(IDX2)
+      *--- 2009/04/20 CHANGE END ---------------------------------------
       * 20080905 在院数の縦の加算合計を対応END
                   COMPUTE   IDX9 =   IDX4     +   1  
                   MOVE  SUM-TOUZAN(IDX2 IDX4) 
@@ -1206,10 +1215,12 @@
       *
                MOVE    1              TO    IDX3  
                PERFORM  UNTIL   IDX3 >      7
-                           OR   IDX2 >      SUM-DRCDMAX    
+                           OR   IDX2 >      SUM-DRCDMAX
+      *--- 2009/04/20 DELETE START -------------------------------------
       * 20080905 在院数の縦の加算合計を対応
-                INITIALIZE  SUM-GZAIIN(IDX3)
+      *          INITIALIZE  SUM-GZAIIN(IDX3)
       * 20080905 在院数の縦の加算合計を対応
+      *--- 2009/04/20 DELETE END ---------------------------------------
       * 診療科名称を転送
                 MOVE    SUM-DRNAME(IDX2)
                                        TO  C100N-SRYKA(IDX3)
@@ -1238,7 +1249,10 @@
                   MOVE  WRK-Z9-5 TO  C100N-12-CNT(IDX3 32)
       * 20080905 在院数の縦の加算合計を対応START
       *            MOVE  SPACE    TO  C100N-99-CNT(IDX3 32)
-                  MOVE  SUM-GZAIIN(IDX3)  TO  WRK-Z9-5
+      *--- 2009/04/20 CHANGE START -------------------------------------
+      *            MOVE  SUM-GZAIIN(IDX3)  TO  WRK-Z9-5
+                  MOVE  SUM-GZAIIN(IDX2)  TO  WRK-Z9-5
+      *--- 2009/04/20 CHANGE END ---------------------------------------
                   MOVE  WRK-Z9-5  TO  C100N-99-CNT(IDX3 32)
       * 20080905 在院数の縦の加算合計を対応END
                  ELSE                
@@ -1261,7 +1275,10 @@
                   MOVE  WRK-Z9-5 TO  C100N-99-CNT(IDX3 IDX6)
       * 20080905 在院数の縦の加算合計を対応START
                   MOVE  WRK-Z9-5 TO  WRK-S9-5
-                  ADD   WRK-S9-5 TO  SUM-GZAIIN(IDX3)
+      *--- 2009/04/20 CHANGE START -------------------------------------
+      *            ADD   WRK-S9-5 TO  SUM-GZAIIN(IDX3)
+                  ADD   WRK-S9-5 TO  SUM-GZAIIN(IDX2)
+      *--- 2009/04/20 CHANGE END ---------------------------------------
       * 20080905 在院数の縦の加算合計を対応END
                   COMPUTE   IDX9 =   IDX4     +   1  
                   MOVE  SUM-TOUZAN(IDX2 IDX4) 
