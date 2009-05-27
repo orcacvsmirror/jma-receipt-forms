@@ -21,7 +21,7 @@
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 日次／月次帳票
       *  コンポーネント名  : 診療行為別使用頻度一覧表
-      *  管理者            : 
+      *  管理者            :
       *  作成日付    作業者        記述
       *  03/12/25    @@@@-半田     新規作成
       *  04/01/30    @@@@-半田     「印字順序」の仕様変更対応
@@ -36,7 +36,7 @@
       *                            "90:入院"に集計するように修正
       *                            095000000を"95:自費(税無)"、096000000を
       *                             "96:自費(税有)"に集計するように修正
-      *  05/02/08    @@@@-鈴木     回数(量)小数点以下の桁を印字するように修正 
+      *  05/02/08    @@@@-鈴木     回数(量)小数点以下の桁を印字するように修正
       *  05/10/17    @@@@-呉秀凡   DBアクセスMCPSUBへの変更
       *  06/01/06    @@@@-呉秀凡   室料差額の設定
       *  06/08/17    @@@@-高嶋     sarge対応
@@ -50,8 +50,10 @@
       *  08/05/26    @@@@-田中     診療行為区分の振り分けを修正
       *  08/09/02    @@@@-田中     ０回の診療行為時の不具合の修正
       *  08/11/20    @@@@-田中     自費のフリー金額を集計するように変更
-      *  09/03/27    @@@@-田中     外泊時の回数カウント処理を修正
+      *  08/03/27    @@@@-田中     外泊時の回数カウント処理を修正
       *  09/04/06    @@@@-田中     自費の数量入力時の不具合を修正
+      *  09/05/01    @@@@-田中     日報で出力可能に修正
+      *  09/05/01    @@@@-田中     全診療区分で出力時に区分ごとの合計を印字
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -114,7 +116,7 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域 
+      *    エラーファイル 名称領域
       * 20070921 4.0対応START t.tanaka
       *     COPY    "CPCOMMONDAT2.INC"
       *                             REPLACING  //RECE01PARA//
@@ -191,6 +193,9 @@
            03  FLG-NICDINV              PIC 9(01).
            03  FLG-GICDINV              PIC 9(01).
            03  FLG-SPACE                PIC 9(01).
+      *--- 2009/05/01 ADD START ----------------------------------------
+           03  FLG-MEIKENSU             PIC 9(01).
+      *--- 2009/05/01 ADD END ------------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -237,18 +242,24 @@
       *     03  WRK-PARA-HOSPID        PIC X(24).
            03  WRK-PARA-HOSPNUM        PIC 9(02).
       * 20070921 4.0対応END
-           03  WRK-PARA-PRTYM         PIC X(06).
+      *--- 2009/05/01 CHANGE START -------------------------------------
+      *     03  WRK-PARA-PRTYM        PIC X(06).
+           03  WRK-PARA-PRTYMD        PIC X(08).
+      *--- 2009/05/01 CHANGE END ---------------------------------------
            03  WRK-PARA-OUTTYPE       PIC X(02).
-           03  WRK-PARA-NYUGAIKBN     PIC X(01). 
-           03  WRK-PARA-PRSORT        PIC X(01). 
+           03  WRK-PARA-NYUGAIKBN     PIC X(01).
+           03  WRK-PARA-PRSORT        PIC X(01).
            03  WRK-PARA-PRTLYMD       PIC X(08).
            03  WRK-PARA-PRTSYMD       PIC X(08).
+      *--- 2009/05/01 ADD START ----------------------------------------
+           03  WRK-PARA-SYUKEIKBN     PIC X(01).
+      *--- 2009/05/01 ADD END ------------------------------------------
       *
       *    一時領域
        01  WRK-AREA.
            03  WRK-PARA-DENPPRTYMDWH PIC X(22).
            03  WRK-SYSYMDWH          PIC X(22).
-      *  
+      *
            03  WRK-ADRS              PIC X(100).
            03  WRK-NAME              PIC X(40).
            03  WRK-PTID-G.
@@ -282,20 +293,12 @@
                05  WRK-POSTATO1      PIC X(03).
                05  WRK-POSTNAKA      PIC X(01)   VALUE  "-".
                05  WRK-POSTATO2      PIC X(04).
-      *
            03  WRK-PTID2             PIC X(10).
            03  WRK-SRYCD2            PIC X(10).
            03  WRK-RENNUM            PIC 9(05).
            03  WRK-NYUGAIKBN         PIC X(01).
            03  WRK-NENREI            PIC 9(03).
-      ****2005/10/17 @@@@-BRAND  START
-      *     03  WRK-ADRS              PIC X(200).
-      ****2005/10/17 @@@@-BRAND  END
-      *
-      *  2005/02/08 @@@@-SUZUKI 変更 
-      *     03  WRK-ZAIKAISU          PIC 9(09).
            03  WRK-ZAIKAISU          PIC 9(09)V9(03).
-      *  2005/02/08 ここまで    
            03  WRK-PRSORTNUM         PIC 9(09)V9(02).
            03  WRK-TEN               PIC 9(09)V9(02).
            03  WRK-TEN2              PIC 9(09)V9(02).
@@ -325,8 +328,6 @@
            03  WRK-OUTTYPE           PIC X(02).
            03  WRK-PRT-OUTTYPE       PIC X(02).
            03  WRK-SYUKBN            PIC X(03).
-      *
-      ***  20040723  @@@@-MOTOHASI
            03  WRK-SYOKUJIKAISU       PIC 9(09).
            03  WRK-SYOKUJIKAI.
                05  WRK-SYOKUJIKAISU1 PIC 9(09).
@@ -339,24 +340,16 @@
                05  WRK-SYOKUJITEN3   PIC 9(08)V9(02).
                05  WRK-SYOKUJITEN4   PIC 9(08)V9(02).
            03  WRK-SITURYOKAI-TBL.
-      ****2005/12/27 @@@@-BRAND  START
-      *        05  WRK-SITURYOKAISU      OCCURS 20.
               05  WRK-SITURYOKAISU      OCCURS 30.
-      ****2005/12/27 @@@@-BRAND  END
                    07  WRK-SITURYOKAI    PIC 9(09).
-      ****2005/12/27 @@@@-BRAND  START
-      *     03  WRK-SITURYOYEN-TBL    OCCURS 20.
            03  WRK-SITURYOYEN-TBL    OCCURS 30.
-      ****2005/12/27 @@@@-BRAND  END
                05  WRK-SITURYOYEN    PIC 9(08)V9(02).
-      ***  20040723 
-      * 20071105 きざみ値による点数の不具合を修正START t.tanaka
-           03  WRK-KIZAMI             PIC S9(09).
-      * 20071105 きざみ値による点数の不具合を修正END
-      *--- 2009/03/27 ADD START ----------------------------------------
-           03  WRK-S-SRYYMD             PIC 9(08).
-      *--- 2009/03/27 ADD END ------------------------------------------
-      *  
+           03  WRK-KIZAMI            PIC S9(09).
+           03  WRK-S-SRYYMD          PIC 9(08).
+      *--- 2009/05/01 ADD START ----------------------------------------
+           03  WRK-DAY               PIC 9(02).
+      *--- 2009/05/01 ADD END ------------------------------------------
+      *
        01  SUM-AREA.
            03  SUM-T-AREA.
                05  SUM-T-TTEN        PIC 9(12)V9(02).
@@ -369,13 +362,21 @@
                05  WRK-GAIHAKKBN        PIC 9(01).
       *--- 2009/03/27 ADD END ------------------------------------------
       *
+      *--- 2009/05/01 ADD START ----------------------------------------
+      *
+       01  SUM-PAGESKAREA.
+           03  SUM-SKAREA.
+               05  SUM-SKTTEN           PIC 9(12)V9(02).
+               05  SUM-SKTKIN           PIC 9(12)V9(02).
+      *--- 2009/05/01 ADD END ------------------------------------------
+      *
            COPY    "CPSHELLTBL.INC".
-      *     
+      *
       * 20070921 4.0対応START t.tanaka
-      *     COPY    "ORCA-DBPATH".         
+      *     COPY    "ORCA-DBPATH".
       * 20070921 4.0対応END
       *    診療種別名テーブル
-           COPY    "CPORCSSRYSYU.INC".        
+           COPY    "CPORCSSRYSYU.INC".
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -428,7 +429,7 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
+           COPY    "CPPRTDATA.INC".
       *
       *    診療会計マスタ
        01  SRYACCT-REC.
@@ -475,7 +476,7 @@
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
       *    日付変換サブ
            COPY    "CPORCSDAY.INC".
@@ -511,7 +512,7 @@
       *
            PERFORM 100-INIT-SEC
       *
-           IF  INP-STS =  ZERO  
+           IF  INP-STS =  ZERO
       *    正常処理
              PERFORM 200-MAIN-SEC
            ELSE
@@ -536,13 +537,10 @@
            INITIALIZE                  CNT-AREA
            INITIALIZE                  A010T
            INITIALIZE                  A010
-      * 20070921 4.0対応START t.tanaka
            INITIALIZE                  SPA-AREA
-      * 20070921 4.0対応END
-      *--- 2009/03/27 ADD START ----------------------------------------
            INITIALIZE                  WRK-NYUINRYO-AREA
            INITIALIZE                  IDX3
-      *--- 2009/03/27 ADD END ------------------------------------------
+           INITIALIZE                  SUM-PAGESKAREA
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -556,75 +554,80 @@
                                                LNK-PRTKANRI-SHELLID
                                                LNK-PRTKANRI-PRIORITY
                                                LNK-PRTKANRI-TERMID
-                                               LNK-PRTKANRI-OPID    
-                                               LNK-PRTKANRI-PRTNM    
+                                               LNK-PRTKANRI-OPID
+                                               LNK-PRTKANRI-PRTNM
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      * 20070921 4.0対応START t.tanaka
-      *                                         WRK-PARA-HOSPID
                                                WRK-PARA-HOSPNUM
                                                RECEERR
-      * 20070921 4.0対応END
                                                WRK-PARA-OUTTYPE
-                                               WRK-PARA-PRTYM
+      *--- 2009/05/01 CHANGE START -------------------------------------
+      *                                         WRK-PARA-PRTYM
+                                               WRK-PARA-PRTYMD
+      *--- 2009/05/01 CHANGE END ---------------------------------------
                                                WRK-PARA-NYUGAIKBN
                                                WRK-PARA-PRSORT
-      * 20070921 4.0対応START t.tanaka
+      *--- 2009/05/01 ADD START ----------------------------------------
+                                               WRK-PARA-SYUKEIKBN
+      *--- 2009/05/01 ADD END ------------------------------------------
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
-      * 20070921 4.0対応END
       *
       *    ステップ管理開始処理
-           MOVE    "STS"           TO  SJOBKANRI-MODE
-           INITIALIZE                  JOBKANRI-REC
-      * 20070921 4.0対応START t.tanaka
-           MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      * 20070921 4.0対応END
-           MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
+           MOVE    "STS"           TO   SJOBKANRI-MODE
+           INITIALIZE                   JOBKANRI-REC
+           MOVE    SPA-HOSPNUM     TO   JOB-HOSPNUM
+           MOVE    WRK-PARA-JOBID  TO   JOB-JOBID
            MOVE    WRK-PARA-SHELLID
-                                   TO  JOB-SHELLID
+                                   TO   JOB-SHELLID
            MOVE    "A00000A010"    TO  JOB-PGID
            MOVE    "診療行為別使用頻度一覧"
-                                   TO  JOB-SHELLMSG
+                                   TO   JOB-SHELLMSG
            CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
+                                   ORCSJOBKANRIAREA
                                    JOBKANRI-REC
-      * 20070921 4.0対応START t.tanaka
                                    SPA-AREA
       *
-      *     MOVE    "RECEERR"       TO  RECEERR-FILE-ID
-      *     MOVE    LNK-PRTKANRI-TERMID
-      *                             TO  RECEERR-TERMID
-      * 20070921 4.0対応END
-      *  
       *    システム日付セット
            MOVE    LNK-PRTKANRI-SKYYMD   TO   WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG           TO   WRK-SYSYMDWH 
+           MOVE    WRK-HENYMDG           TO   WRK-SYSYMDWH
       *
       *    対象年月最終日取得
            INITIALIZE  WRK-SYMD
-           MOVE    WRK-PARA-PRTYM        TO   WRK-SYMD(1:6)
+      *--- 2009/05/01 CHANGE START -------------------------------------
+      *     MOVE    WRK-PARA-PRTYM        TO   WRK-SYMD(1:6)
+           MOVE    WRK-PARA-PRTYMD(1:6)  TO   WRK-SYMD(1:6)
+      *--- 2009/05/01 CHANGE END ---------------------------------------
            PERFORM 31012-LASTDAY-GET-SEC
            MOVE    WRK-SYMD              TO   WRK-PARA-PRTLYMD
       *
       *    対象年月初日取得
            INITIALIZE  WRK-SYMD
-           MOVE    WRK-PARA-PRTYM        TO   WRK-PARA-PRTSYMD(1:6)
+      *--- 2009/05/01 CHANGE START -------------------------------------
+      *     MOVE    WRK-PARA-PRTYM        TO   WRK-PARA-PRTSYMD(1:6)
+           MOVE    WRK-PARA-PRTYMD(1:6)  TO   WRK-PARA-PRTSYMD(1:6)
+      *--- 2009/05/01 CHANGE END ---------------------------------------
            MOVE    "01"                  TO   WRK-PARA-PRTSYMD(7:2)
       *
+      *--- 2009/05/01 ADD START ----------------------------------------
+      *    日報時対象日の取得
+           IF  WRK-PARA-SYUKEIKBN  =  1
+             MOVE    WRK-PARA-PRTYMD        TO   WRK-PARA-PRTLYMD
+             MOVE    WRK-PARA-PRTYMD        TO   WRK-PARA-PRTSYMD
+             MOVE    WRK-PARA-PRTYMD(7:2)   TO   WRK-DAY
+           END-IF
+      *--- 2009/05/01 ADD END ------------------------------------------
       *    対象年月日編集
            INITIALIZE  WRK-SYMD
-      ***     MOVE    WRK-PARA-PRTYM  TO    WRK-SYMD
-      ***     MOVE    "01"  TO  WRK-SYMD(7:2)     
            MOVE    WRK-PARA-PRTLYMD  TO    WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG         TO  WRK-PARA-DENPPRTYMDWH 
+           MOVE    WRK-HENYMDG         TO  WRK-PARA-DENPPRTYMDWH
       *
       *    診療分類指定のチェック
            IF   WRK-PARA-OUTTYPE       =  SPACE
                OR  WRK-PARA-OUTTYPE       =  "0"
-             MOVE   1       TO   FLG-OUTALL    
+             MOVE   1       TO   FLG-OUTALL
            ELSE
              IF   WRK-PARA-OUTTYPE   NOT =  "10"
                  AND WRK-PARA-OUTTYPE   NOT =  "21"
@@ -655,50 +658,34 @@
       *    入外区分のチェック
       *
            IF  WRK-PARA-NYUGAIKBN   =  SPACE
-      ***  20040727  @@@@-MOTOHASI  追加
-      ****2005/12/27 @@@@-BRAND  START
-      *         OR  WRK-PARA-NYUGAIKBN   =  3
                OR  WRK-PARA-NYUGAIKBN   =  "3"
-      ****2005/12/27 @@@@-BRAND  END
-      ***  ここまで
              MOVE   1       TO    FLG-NYUGAIALL
            ELSE
              IF   WRK-PARA-NYUGAIKBN NOT =  "1"
-                 AND WRK-PARA-NYUGAIKBN NOT =  "2"
-      ***  20040727  @@@@-MOTOHASI  追加
-                 AND WRK-PARA-NYUGAIKBN NOT =  "3"
-      ***  ここまで
+                 AND  WRK-PARA-NYUGAIKBN NOT =  "2"
+                 AND  WRK-PARA-NYUGAIKBN NOT =  "3"
       *    入外区分入力値エラーの場合
                MOVE   4       TO    INP-STS
              END-IF
            END-IF
       *
       *    出力順序のチェック
-      *
-      * 20040129変更
-      ***     IF   WRK-PARA-PRSORT NOT =  SPACE
-      ***      AND WRK-PARA-PRSORT NOT =  "0"
-      ***      AND WRK-PARA-PRSORT NOT =  "1"
            IF   WRK-PARA-PRSORT NOT =  SPACE
                AND WRK-PARA-PRSORT NOT =  "1"
                AND WRK-PARA-PRSORT NOT =  "2"
                AND WRK-PARA-PRSORT NOT =  "8"
                AND WRK-PARA-PRSORT NOT =  "9"
-      * 20040129変更
       *    印刷順序入力値エラーの場合
              MOVE   5      TO    INP-STS
            END-IF
       *
-      ***  20040723  @@@@-MOTOHASI  食事療養費点数算出
            INITIALIZE                SYS-5000-REC
            MOVE    "5000"            TO   SYS-5000-KANRICD
-      ****2005/10/17 @@@@-BRAND  START
-      *     MOVE    WRK-PARA-PRTLYMD  TO   WRK-SYMD
-           MOVE  WRK-PARA-PRTLYMD    TO  SYS-5000-STYUKYMD
-           MOVE  WRK-PARA-PRTSYMD    TO  SYS-5000-EDYUKYMD
-      ****2005/10/17 @@@@-BRAND  END
+           MOVE    WRK-PARA-PRTLYMD  TO   SYS-5000-STYUKYMD
+           MOVE    WRK-PARA-PRTSYMD  TO   SYS-5000-EDYUKYMD
            PERFORM 820-SYSKANRI-DBSELECT-SEC
            IF   FLG-SYSKANRI = ZERO
+      *
       *    食事療養費
              MOVE  SYS-5000-SHOKUJIRYOYOCD TO    TNS-SRYCD
              PERFORM   910-TENSU-READ-SEC
@@ -706,6 +693,7 @@
                                    WRK-SYOKUJITEN2
                                    WRK-SYOKUJITEN3
                                    WRK-SYOKUJITEN4
+      *
       *    食事療養費(特別管理加算)の算定判定
              IF  SYS-5000-SHOKUKBN(1)  =  "2"
                MOVE  SYS-5000-SHOKUCD(1) TO    TNS-SRYCD
@@ -714,7 +702,8 @@
                                    WRK-SYOKUJITEN2
                                    WRK-SYOKUJITEN3
                                    WRK-SYOKUJITEN4
-             END-IF  
+             END-IF
+      *
       *    食事療養費(食堂加算)の算定判定
              IF  SYS-5000-SHOKUKBN(2)  =  "2"
                MOVE  SYS-5000-SHOKUCD(2) TO    TNS-SRYCD
@@ -723,54 +712,39 @@
                                    WRK-SYOKUJITEN2
                                    WRK-SYOKUJITEN3
                                    WRK-SYOKUJITEN4
-             END-IF  
+             END-IF
              PERFORM 820-SYSKANRI-DBCLOSE-SEC
-           END-IF  
-      ***  1:食事療養費のみ(WRK-SYOKUJITEN1)
-      ***  2:食事療養費＋特別食加算(WRK-SYOKUJITEN2)
-      ***  3:食事療養費＋複数献立加算(WRK-SYOKUJITEN3)
-      ***  4:食事療養費＋特別食加算＋複数献立加算(WRK-SYOKUJITEN4)
+           END-IF
+      *    1:食事療養費のみ(WRK-SYOKUJITEN1)
+      *    2:食事療養費＋特別食加算(WRK-SYOKUJITEN2)
+      *    3:食事療養費＋複数献立加算(WRK-SYOKUJITEN3)
+      *    4:食事療養費＋特別食加算＋複数献立加算(WRK-SYOKUJITEN4)
       *
-      ***  特別食加算の算出
-           MOVE  "197000470"   TO    TNS-SRYCD
+      *    特別食加算の算出
+           MOVE  "197000470"         TO   TNS-SRYCD
            PERFORM   910-TENSU-READ-SEC
       *
-           ADD    TNS-TEN      TO    WRK-SYOKUJITEN2
-                                     WRK-SYOKUJITEN4
-      ***  複数献立加算の算出
-           MOVE  "197000670"   TO    TNS-SRYCD
+           ADD    TNS-TEN            TO   WRK-SYOKUJITEN2
+                                          WRK-SYOKUJITEN4
+      *
+      *    複数献立加算の算出
+           MOVE   "197000670"        TO   TNS-SRYCD
            PERFORM   910-TENSU-READ-SEC
-      *
-           ADD    TNS-TEN      TO    WRK-SYOKUJITEN3
-                                     WRK-SYOKUJITEN4
-      ***  20040723  ここまで
-      *
-      ***  20040723  @@@@-MOTOHASI  室料差額算出
-           INITIALIZE         SYS-5113-REC
-           MOVE    "5113"      TO   SYS-5113-KANRICD
-      ****2005/10/17 @@@@-BRAND  START
-      *     MOVE    WRK-PARA-PRTLYMD  TO   WRK-SYMD
-      * 20080121 入院診療行為の点数、回数の不具合を修正START t.tanaka
-           MOVE  SPA-HOSPNUM      TO  SYS-5113-HOSPNUM
-      * 20080121 入院診療行為の点数、回数の不具合を修正START t.tanaka
-           MOVE  WRK-PARA-PRTLYMD    TO  SYS-5113-STYUKYMD
-           MOVE  WRK-PARA-PRTSYMD    TO  SYS-5113-EDYUKYMD
-
-      ****2005/10/17 @@@@-BRAND  END
+           ADD    TNS-TEN            TO   WRK-SYOKUJITEN3
+                                          WRK-SYOKUJITEN4
+           INITIALIZE                SYS-5113-REC
+           MOVE    "5113"            TO   SYS-5113-KANRICD
+           MOVE    SPA-HOSPNUM       TO   SYS-5113-HOSPNUM
+           MOVE    WRK-PARA-PRTLYMD  TO   SYS-5113-STYUKYMD
+           MOVE    WRK-PARA-PRTSYMD  TO   SYS-5113-EDYUKYMD
            PERFORM 830-SYSKANRI-DBSELECT-SEC
-           PERFORM   UNTIL   FLG-SYSKANRI =   1
-      ****2005/12/27 @@@@-BRAND  START
-      *                 OR    IDX3  >= 20
-                       OR    IDX3 >= 30
-      ****2005/12/27 @@@@-BRAND  END
-             ADD   1        TO    IDX3
-             MOVE  SYS-5113-BRM-SAGAKU-NM    TO   WRK-SITURYOYEN(IDX3)
-             PERFORM 830-SYSKANRI-DBFETCH-SEC
+           PERFORM   UNTIL  FLG-SYSKANRI  =   1
+                     OR  IDX3  >=  30
+             ADD    1                TO   IDX3
+             MOVE   SYS-5113-BRM-SAGAKU-NM    TO   WRK-SITURYOYEN(IDX3)
+             PERFORM  830-SYSKANRI-DBFETCH-SEC
            END-PERFORM
-      ***  20040723  ここまで
-      *=== sarge対応 ADD By Takashima(2006/09/16) start
-           PERFORM 830-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/09/16) end
+           PERFORM  830-SYSKANRI-DBCLOSE-SEC
       *
            .
        100-INIT-EXT.
@@ -779,24 +753,26 @@
       *    主処理
       *****************************************************************
        200-MAIN-SEC                SECTION.
+      *
       *    診療行為情報抽出処理
-           PERFORM 2001-SRYGET-SEC
+           PERFORM  2001-SRYGET-SEC
+      *
       *    入院診療行為情報抽出処理
-           PERFORM 2001-NSRYGET-SEC
-      * 20040129変更
-      ***     PERFORM 2001-ICDGET-SEC
+           PERFORM  2001-NSRYGET-SEC
+      *
       *    未使用分入力コード情報抽出処理
       *    (未使用分は印刷順序指定が"1"の場合に限りデータ抽出を行う。)
-           IF    WRK-PARA-PRSORT  = "8"
-               OR   WRK-PARA-PRSORT  = "9"
-             PERFORM 2001-ICDGET-SEC
+           IF    WRK-PARA-PRSORT  =  "8"
+               OR   WRK-PARA-PRSORT  =  "9"
+             PERFORM  2001-ICDGET-SEC
            END-IF
-      * 20040129変更
+      *
       *    帳票明細印字順番号設定処理
-           PERFORM 2001-SET-PRSORTNUM-SEC
+           PERFORM  2001-SET-PRSORTNUM-SEC
+      *
       *    帳票印字処理
-           PERFORM 2001-PRT-SEC
-      * 
+           PERFORM  2001-PRT-SEC
+      *
            .
        200-MAIN-EXT.
            EXIT.
@@ -828,24 +804,23 @@
       *    診療行為回数情報抽出処理
       *****************************************************************
        2001-SRYGET-SEC                SECTION.
-      * 
+      *
            OPEN     OUTPUT             A010T-FILE
            CLOSE                       A010T-FILE
            OPEN     I-O                A010T-FILE
-      * 20080902 ０回の診療行為時の不具合の修正START
            OPEN     OUTPUT             A010T3-FILE
            CLOSE                       A010T3-FILE
            OPEN     I-O                A010T3-FILE
-      * 20080902 ０回の診療行為時の不具合の修正END
+      *
       *    入院患者読み込み
            INITIALIZE   SRYACT-REC
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE WRK-PARA-HOSPID  TO   SRY-HOSPID 
-           MOVE WRK-PARA-HOSPNUM  TO   SRY-HOSPNUM 
-           MOVE WRK-PTID  TO   SRY-PTID
-           MOVE WRK-SRYKA  TO   SRY-SRYKA
-      * 20070921 4.0対応END
-           MOVE WRK-PARA-PRTYM   TO    SRY-SRYYM 
+           MOVE    WRK-PARA-HOSPNUM    TO   SRY-HOSPNUM
+           MOVE    WRK-PTID            TO   SRY-PTID
+           MOVE    WRK-SRYKA           TO   SRY-SRYKA
+      *--- 2009/05/01 CHANGE START -------------------------------------
+      *     MOVE    WRK-PARA-PRTYM      TO   SRY-SRYYM
+           MOVE    WRK-PARA-PRTYMD(1:6)   TO   SRY-SRYYM
+      *--- 2009/05/01 CHANGE END ---------------------------------------
            PERFORM   900-SRYACT-SELECT-SEC
            PERFORM   900-SRYACT-FETCH-SEC
            PERFORM   UNTIL   FLG-SRYACT =   1
@@ -864,45 +839,47 @@
       *****************************************************************
        2003-SYORI-SEC                SECTION.
       *
-           MOVE     ZERO         TO    FLG-KAIKEI
+           MOVE     ZERO        TO   FLG-KAIKEI
       *
-           PERFORM  VARYING      IDX1  FROM  1  BY   1
-                    UNTIL        IDX1  >  5 
-              IF       SRY-SRYCD(IDX1)   NOT =  SPACE
-                  AND ((  FLG-NYUGAIALL         =  1 )
-                  OR  (  FLG-NYUGAIALL     NOT =  1
-                  AND   WRK-PARA-NYUGAIKBN    =  SRY-NYUGAIKBN ))
-      ***       点数マスタ読込み
-                MOVE  SRY-SRYCD(IDX1) TO    TNS-SRYCD
-      * 20070921 4.0対応START t.tanaka
-                MOVE  SPA-HOSPNUM     TO    TNS-HOSPNUM
-      * 20070921 4.0対応END
-                PERFORM   910-TENSU-READ-SEC
+           PERFORM  VARYING   IDX1  FROM  1  BY   1
+                    UNTIL     IDX1  >  5
+             IF       SRY-SRYCD(IDX1)  NOT =  SPACE
+                 AND ((  FLG-NYUGAIALL  =  1 )
+                 OR  (  FLG-NYUGAIALL   NOT =  1
+                 AND   WRK-PARA-NYUGAIKBN  =  SRY-NYUGAIKBN ))
+      *    点数マスタ読込み
+               MOVE   SRY-SRYCD(IDX1)   TO   TNS-SRYCD
+               MOVE   SPA-HOSPNUM       TO   TNS-HOSPNUM
+               PERFORM   910-TENSU-READ-SEC
       *
-                IF     FLG-TENSU       =     ZERO      
-      ***             AND ( TNS-DATAKBN    =     1
-      ***               OR  TNS-DATAKBN    =     2 )
-
-                  IF     FLG-KAIKEI      =     ZERO
-      ***             診療会計情報読込み
-      * 20070921 4.0対応START t.tanaka
-      *                MOVE  SRY-HOSPID      TO    ACCT-HOSPID
-                    MOVE  SRY-HOSPNUM      TO    ACCT-HOSPNUM
-      * 20070921 4.0対応END
-                    MOVE  SRY-NYUGAIKBN   TO    ACCT-NYUGAIKBN
-                    MOVE  SRY-PTID        TO    ACCT-PTID
-                    MOVE  SRY-SRYKA       TO    ACCT-SRYKA
-                    MOVE  SRY-SRYYM       TO    ACCT-SRYYM
-                    MOVE  SRY-SRYKBN      TO    ACCT-SRYKBN
-                    MOVE  SRY-ZAINUM      TO    ACCT-ZAINUM
-                    PERFORM   910-SRYACCT-READ-SEC
+               IF   FLG-TENSU  =   ZERO
+                 IF   FLG-KAIKEI  =  ZERO
+      *    診療会計情報読込み
+                   MOVE   SRY-HOSPNUM      TO   ACCT-HOSPNUM
+                   MOVE   SRY-NYUGAIKBN    TO   ACCT-NYUGAIKBN
+                   MOVE   SRY-PTID         TO   ACCT-PTID
+                   MOVE   SRY-SRYKA        TO   ACCT-SRYKA
+                   MOVE   SRY-SRYYM        TO   ACCT-SRYYM
+                   MOVE   SRY-SRYKBN       TO   ACCT-SRYKBN
+                   MOVE   SRY-ZAINUM       TO   ACCT-ZAINUM
+                   PERFORM   910-SRYACCT-READ-SEC
       *
-                    MOVE      1           TO    FLG-KAIKEI
-                  END-IF
+                   MOVE      1           TO    FLG-KAIKEI
+                 END-IF
       *
-                  PERFORM 2003-A010PUT-SEC
-                END-IF
-              END-IF
+      *--- 2009/05/01 ADD START ----------------------------------------
+                 IF   WRK-PARA-SYUKEIKBN  =  SPACE
+      *--- 2009/05/01 ADD END ------------------------------------------
+                   PERFORM  2003-A010PUT-SEC
+      *--- 2009/05/01 ADD START ----------------------------------------
+                 ELSE
+                   IF   ACCT-DAY(1 WRK-DAY)  >  0
+                     PERFORM  2003-A010PUT-SEC
+                   END-IF
+                 END-IF
+      *--- 2009/05/01 ADD END ------------------------------------------
+               END-IF
+             END-IF
            END-PERFORM
       *
            .
@@ -913,28 +890,24 @@
       *    入院 診療行為回数情報抽出処理
       *****************************************************************
        2001-NSRYGET-SEC                SECTION.
-      * 
+      *
       *    入院患者読み込み
-           INITIALIZE                  NYUIN-SRYACT-REC
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE WRK-PARA-HOSPID   TO   NSRY-HOSPID 
+           INITIALIZE              NYUIN-SRYACT-REC
            MOVE WRK-PARA-HOSPNUM   TO   NSRY-HOSPNUM
-      * 20070921 4.0対応END
-           MOVE WRK-PARA-PRTYM   TO    NSRY-SRYYM 
+      *--- 2009/05/01 CHANGE START -------------------------------------
+           MOVE    WRK-PARA-PRTYMD(1:6)   TO   NSRY-SRYYM
+      *     MOVE    WRK-PARA-PRTYM         TO   NSRY-SRYYM
+      *--- 2009/05/01 CHANGE END ---------------------------------------
            PERFORM   900-NYUINACT-SELECT-SEC
            PERFORM   900-NYUINACT-FETCH-SEC
-      *--- 2009/03/27 ADD START ----------------------------------------
            MOVE   NSRY-PTID           TO   WRK-PTID
-      *--- 2009/03/27 ADD END ------------------------------------------
            PERFORM   UNTIL   FLG-NYUINACT =   1
              PERFORM  2003-NSYORI-SEC
              PERFORM  900-NYUINACT-FETCH-SEC
-      *--- 2009/03/27 ADD START ----------------------------------------
              IF   NSRY-PTID  NOT =  WRK-PTID
                MOVE   NSRY-PTID       TO   WRK-PTID
                INITIALIZE             WRK-NYUINRYO-AREA
              END-IF
-      *--- 2009/03/27 ADD END ------------------------------------------
            END-PERFORM
            PERFORM   900-NYUINACT-CLOSE-SEC
       *
@@ -949,71 +922,89 @@
       *
            MOVE     ZERO         TO    FLG-NYUKAIKEI
       *
-           PERFORM  VARYING      IDX1  FROM  1  BY   1
-                    UNTIL        IDX1  >  5 
-             IF       NSRY-SRYCD(IDX1)   NOT =  SPACE
-                 AND ((  FLG-NYUGAIALL          =  1 )
-                 OR  (  FLG-NYUGAIALL      NOT =  1  
-                 AND   WRK-PARA-NYUGAIKBN     =  NSRY-NYUGAIKBN ))
+           PERFORM  VARYING   IDX1  FROM  1  BY   1
+                    UNTIL   IDX1  >  5
+             IF       NSRY-SRYCD(IDX1)  NOT =  SPACE
+                 AND ((  FLG-NYUGAIALL  =  1 )
+                 OR  (  FLG-NYUGAIALL  NOT =  1
+                 AND   WRK-PARA-NYUGAIKBN  =  NSRY-NYUGAIKBN ))
       *    点数マスタ読込み
-               MOVE  NSRY-SRYCD(IDX1) TO    TNS-SRYCD
+               MOVE    NSRY-SRYCD(IDX1)    TO   TNS-SRYCD
                PERFORM   910-TENSU-READ-SEC
       *
-               IF     FLG-TENSU       =     ZERO 
-      ***          AND ( TNS-DATAKBN    =     1
-      ***            OR  TNS-DATAKBN    =     2 )
+               IF     FLG-TENSU       =     ZERO
                  IF     FLG-NYUKAIKEI      =     ZERO
-      ***         診療会計情報読込み
-      * 20070921 4.0対応START t.tanaka
-      *                MOVE  NSRY-HOSPID      TO    NACCT-HOSPID
-                    MOVE  NSRY-HOSPNUM      TO    NACCT-HOSPNUM
-      * 20070921 4.0対応END
-                    MOVE  NSRY-NYUGAIKBN    TO    NACCT-NYUGAIKBN
-                    MOVE  NSRY-PTID         TO    NACCT-PTID
-                    MOVE  NSRY-SRYKA        TO    NACCT-SRYKA
-                    MOVE  NSRY-SRYYM        TO    NACCT-SRYYM
-                    MOVE  NSRY-SRYKBN       TO    NACCT-SRYKBN
-                    MOVE  NSRY-ZAINUM       TO    NACCT-ZAINUM
+      *    診療会計情報読込み
+                    MOVE    NSRY-HOSPNUM      TO   NACCT-HOSPNUM
+                    MOVE    NSRY-NYUGAIKBN    TO   NACCT-NYUGAIKBN
+                    MOVE    NSRY-PTID         TO   NACCT-PTID
+                    MOVE    NSRY-SRYKA        TO   NACCT-SRYKA
+                    MOVE    NSRY-SRYYM        TO   NACCT-SRYYM
+                    MOVE    NSRY-SRYKBN       TO   NACCT-SRYKBN
+                    MOVE    NSRY-ZAINUM       TO   NACCT-ZAINUM
                     PERFORM   910-NYUINACCT-READ-SEC
                     MOVE      1             TO    FLG-NYUKAIKEI
                  END-IF
-      *--- 2009/03/27 ADD START ----------------------------------------
-                 PERFORM   VARYING IDX8  FROM 1  BY 1
+      *
+      *--- 2009/05/01 ADD START ----------------------------------------
+                 IF   WRK-PARA-SYUKEIKBN  =  SPACE
+      *    月報時
+      *--- 2009/05/01 ADD END ------------------------------------------
+                   PERFORM   VARYING IDX8  FROM 1  BY 1
                            UNTIL   IDX8  >  31
       *    外泊日に食事などのフラグを消す
-                   PERFORM   920-NYUINACCT-READ-SEC
-                   IF   NACCT-DAY(IDX8)  >  0
-                     MOVE   WRK-PARA-PRTYM    TO   WRK-S-SRYYMD(1:6)
-                     MOVE   IDX8              TO   WRK-S-SRYYMD(7:2)
-      *--- 2009/03/27 ADD END ------------------------------------------
-      ***  20040723  @@@@-MOTOHASI  食事療養費、室料差額を区分けして
-      ***                           正確な回数、点数、金額を算出する
-      ***             PERFORM 2003-NA010PUT-SEC
-                     IF  NSRY-SRYKBN = "97" 
-      *** 20070717食事療養費の修正START　T.Tanaka
-      *                 AND NSRY-SRYCD(IDX1) = "099999913"
-                         AND (NSRY-SRYCD(IDX1) = "099999913"
-                         OR NSRY-SRYCD(IDX1) = "099999918" 
-                         OR NSRY-SRYCD(IDX1) = "099999919"
-                         OR NSRY-SRYCD(IDX1) = "099999920")
-      *** 20070717食事療養費の修正END
+                     PERFORM   920-NYUINACCT-READ-SEC
+                     IF   NACCT-DAY(IDX8)  >  0
+                       MOVE  WRK-PARA-PRTYMD(1:6) TO   WRK-S-SRYYMD(1:6)
+                       MOVE  IDX8                 TO   WRK-S-SRYYMD(7:2)
+      *
+      *    食事療養費、室料差額を区分けして
+      *    正確な回数、点数、金額を算出する
+                       IF  NSRY-SRYKBN = "97"
+                           AND (NSRY-SRYCD(IDX1) = "099999913"
+                           OR NSRY-SRYCD(IDX1) = "099999918"
+                           OR NSRY-SRYCD(IDX1) = "099999919"
+                           OR NSRY-SRYCD(IDX1) = "099999920")
       *    食事療養費の回数算出
-                       PERFORM 2004-NA010PUT-SEC
-                     ELSE
-                       IF  NSRY-SRYKBN = "90" 
-                          AND NSRY-SRYCD(IDX1) = "099999912"
-      *    室料差額の回数算出
-                         PERFORM 2005-NA010PUT-SEC
+                         PERFORM 2004-NA010PUT-SEC
                        ELSE
-                         PERFORM 2003-NA010PUT-SEC
+                         IF  NSRY-SRYKBN = "90"
+                            AND NSRY-SRYCD(IDX1) = "099999912"
+      *    室料差額の回数算出
+                           PERFORM 2005-NA010PUT-SEC
+                         ELSE
+                           PERFORM 2003-NA010PUT-SEC
+                         END-IF
                        END-IF
                      END-IF
-      ***  20040723  ここまで
-      *--- 2009/03/27 ADD START ----------------------------------------
-                   END-IF
-                 END-PERFORM
-      *--- 2009/03/27 ADD END ------------------------------------------
-      *
+                   END-PERFORM
+      *--- 2009/05/01 ADD START ----------------------------------------
+                 ELSE
+      *    日報時
+      *    外泊日に食事などのフラグを消す
+                     MOVE   WRK-DAY  TO  IDX8
+                     PERFORM   920-NYUINACCT-READ-SEC
+                     IF   NACCT-DAY(IDX8)  >  0
+                       MOVE   WRK-PARA-PRTYMD    TO   WRK-S-SRYYMD
+                       IF   NSRY-SRYKBN  =  "97"
+                           AND   (NSRY-SRYCD(IDX1)  =  "099999913"
+                           OR   NSRY-SRYCD(IDX1)  =  "099999918"
+                           OR   NSRY-SRYCD(IDX1)  =  "099999919"
+                           OR   NSRY-SRYCD(IDX1)  =  "099999920")
+      *    食事療養費の回数算出
+                         PERFORM  2004-NA010PUT-SEC
+                       ELSE
+                         IF   NSRY-SRYKBN  =  "90"
+                            AND   NSRY-SRYCD(IDX1)  =  "099999912"
+      *    室料差額の回数算出
+                           PERFORM  2005-NA010PUT-SEC
+                         ELSE
+                           PERFORM  2003-NA010PUT-SEC
+                         END-IF
+                       END-IF
+                     END-IF
+                 END-IF
+      *--- 2009/05/01 ADD END ------------------------------------------
                END-IF
              END-IF
            END-PERFORM
@@ -1026,7 +1017,7 @@
       *    未使用分入力コード情報抽出処理
       *****************************************************************
        2001-ICDGET-SEC                SECTION.
-      * 
+      *
       *    入院患者読み込み
            INITIALIZE                   INPUTCD-REC
            PERFORM   900-INPUTCD-SELECT-SEC
@@ -1069,169 +1060,117 @@
       *
            INITIALIZE   A010T
            INITIALIZE   FLG-INVALID
-      * 20080902 ０回の診療行為時の不具合の修正START
            INITIALIZE   A010T3
            INITIALIZE   FLG-INVALID2
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    出力区分の設定
-           PERFORM   2003-SET-OUTTYPE-SEC
+           PERFORM  2003-SET-OUTTYPE-SEC
       *
       *    入外区分の設定
-           MOVE SRY-NYUGAIKBN   TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
-           MOVE SRY-NYUGAIKBN   TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
-      *
-      ***  20040727  @@@@-MOTOHASI  入外合計
-           IF  WRK-PARA-NYUGAIKBN  =  "3"
-             MOVE "0"             TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
-             MOVE "0"             TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
+           MOVE    SRY-NYUGAIKBN   TO   A010T-NYUGAIKBN
+           MOVE    SRY-NYUGAIKBN   TO   A010T3-NYUGAIKBN
+           IF   WRK-PARA-NYUGAIKBN  =  "3"
+             MOVE    "0"             TO   A010T-NYUGAIKBN
+             MOVE    "0"             TO   A010T3-NYUGAIKBN
            END-IF
-      ***  ここまで
       *
-      * 2004/01/29追加 
       *    カナ名称
-           IF   WRK-PARA-PRSORT  =     "2"
-               OR  WRK-PARA-PRSORT  =     "9"
-             MOVE TNS-KANANAME      TO    A010T-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正START
-             MOVE TNS-KANANAME      TO    A010T3-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正END
+           IF   WRK-PARA-PRSORT  =   "2"
+               OR   WRK-PARA-PRSORT  =   "9"
+             MOVE    TNS-KANANAME      TO   A010T-KANANAME
+             MOVE    TNS-KANANAME      TO   A010T3-KANANAME
            END-IF
-      * 2004/01/29追加 
       *
-           MOVE SRY-SRYCD(IDX1) TO    A010T-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正START
-           MOVE SRY-SRYCD(IDX1) TO    A010T3-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正END
-      * 20071105 きざみ値による点数の不具合を修正START t.tanaka
-      * 点数の設定
-           MOVE TNS-TEN         TO    A010T-TEN
-           MOVE TNS-TEN         TO    A010T3-TEN
-      * --- 2008/11/20  ADD  START -------------------------------------
-           IF   A010T-OUTTYPE         =    "95"
-             OR  A010T-OUTTYPE         =    "96"
+           MOVE    SRY-SRYCD(IDX1)     TO   A010T-SRYCD
+           MOVE    SRY-SRYCD(IDX1)     TO   A010T3-SRYCD
+      *    点数の設定
+           MOVE    TNS-TEN             TO   A010T-TEN
+           MOVE    TNS-TEN             TO   A010T3-TEN
+           IF    A010T-OUTTYPE   =  "95"
+             OR   A010T-OUTTYPE   =  "96"
       *--- 2009/04/06 ADD START ----------------------------------------
              IF   TNS-TEN  =  ZERO
       *--- 2009/04/06 ADD END ------------------------------------------
-               MOVE   SRY-JIHIMONEY(IDX1)   TO   A010T-TEN
-               MOVE   SRY-JIHIMONEY(IDX1)   TO   A010T-TEN2
-               MOVE   SRY-JIHIMONEY(IDX1)   TO   A010T3-TEN
+               MOVE    SRY-JIHIMONEY(IDX1)   TO   A010T-TEN
+               MOVE    SRY-JIHIMONEY(IDX1)   TO   A010T-TEN2
+               MOVE    SRY-JIHIMONEY(IDX1)   TO   A010T3-TEN
       *--- 2009/04/06 ADD START ----------------------------------------
              END-IF
       *--- 2009/04/06 ADD END ------------------------------------------
            END-IF
-      * --- 2008/11/20  ADD  END ---------------------------------------
-           IF   TNS-KZMCOMPSIKIBETU   = 1
-             MOVE TNS-TEN         TO    A010T-TEN2
+           IF   TNS-KZMCOMPSIKIBETU   =  1
+             MOVE    TNS-TEN         TO   A010T-TEN2
              IF  SRY-SRYSURYO(IDX1)  >=  TNS-KZMJGN
-               COMPUTE  WRK-KIZAMI  =  TNS-KZMJGN - TNS-KZMKGN
+               COMPUTE  WRK-KIZAMI  =  TNS-KZMJGN  -  TNS-KZMKGN
              ELSE
-               COMPUTE  WRK-KIZAMI  =  SRY-SRYSURYO(IDX1) - TNS-KZMKGN
+               COMPUTE  WRK-KIZAMI  =  SRY-SRYSURYO(IDX1)  -  TNS-KZMKGN
              END-IF
-             MOVE  1  TO  A010T-KZMWAKE
-             
-             PERFORM    UNTIL WRK-KIZAMI <= 0
-               COMPUTE  WRK-KIZAMI  =  WRK-KIZAMI - TNS-KZM
-               COMPUTE  A010T-TEN2  =  A010T-TEN2 + TNS-KZMTEN
+             MOVE   1    TO   A010T-KZMWAKE
+
+             PERFORM    UNTIL  WRK-KIZAMI  <=  0
+               COMPUTE  WRK-KIZAMI  =  WRK-KIZAMI  -  TNS-KZM
+               COMPUTE  A010T-TEN2  =  A010T-TEN2  +  TNS-KZMTEN
              END-PERFORM
            END-IF
-      * 20071105 きざみ値による点数の不具合を修正END
            READ A010T-FILE
-                KEY      IS      A010T-KEY  
-                INVALID  KEY     MOVE  1  TO FLG-INVALID
+             KEY      IS      A010T-KEY
+             INVALID  KEY     MOVE  1  TO FLG-INVALID
            END-READ
-      * 20080902 ０回の診療行為時の不具合の修正START
            READ A010T3-FILE
-                KEY      IS      A010T3-KEY  
-                INVALID  KEY     MOVE  1  TO FLG-INVALID2
+             KEY      IS      A010T3-KEY
+             INVALID  KEY     MOVE  1  TO FLG-INVALID2
            END-READ
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    (点数マスタ)点識別の設定
-           MOVE TNS-TENSIKIBETU TO    A010T-TENSIKIBETU
-      * 20080902 ０回の診療行為時の不具合の修正START
-           MOVE TNS-TENSIKIBETU TO    A010T3-TENSIKIBETU
-      * 20080902 ０回の診療行為時の不具合の修正END
+           MOVE    TNS-TENSIKIBETU    TO   A010T-TENSIKIBETU
+           MOVE    TNS-TENSIKIBETU    TO   A010T3-TENSIKIBETU
       *
-      * 診療行為名称の設定
-           MOVE TNS-NAME        TO    A010T-NAME
-      * 20080902 ０回の診療行為時の不具合の修正START
-           MOVE TNS-NAME        TO    A010T3-NAME
-      * 20080902 ０回の診療行為時の不具合の修正END
-      * 20071105 きざみ値による点数の不具合を修正START t.tanaka
-      * 点数の設定
-      *     MOVE TNS-TEN         TO    A010T-TEN
-      * 20071105 きざみ値による点数の不具合を修正END
-      *
-      * 20040129 変更
-      *
-      ***     IF   TNS-TENSIKIBETU       =    1
-      ***      OR  A010T-OUTTYPE         =    "95"
-      ***      OR  A010T-OUTTYPE         =    "96"
-      *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      ***          COMPUTE  WRK-ZAIKAISU =
-      ***          SRY-SRYSURYO(IDX1)    *    ACCT-ZAIKAISU
-      ***          ADD  WRK-ZAIKAISU     TO   A010T-KAISU
-      ***     ELSE  
-      ***       点数項目の場合は回数をデータ化する。
-      ***          ADD  ACCT-ZAIKAISU    TO   A010T-KAISU
-      ***     END-IF  
+      *    診療行為名称の設定
+           MOVE    TNS-NAME           TO   A010T-NAME
+           MOVE    TNS-NAME           TO   A010T3-NAME
       *
            IF   A010T-OUTTYPE         =    "95"
                OR  A010T-OUTTYPE         =    "96"
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
              COMPUTE  WRK-ZAIKAISU =
-             SRY-SRYSURYO(IDX1)    *    ACCT-ZAIKAISU
-             ADD  WRK-ZAIKAISU     TO   A010T-KAISU
-             MOVE 1                TO   A010T-TANI
-      * 20080902 ０回の診療行為時の不具合の修正START
-             ADD  WRK-ZAIKAISU     TO   A010T3-KAISU
-             MOVE 1                TO   A010T3-TANI
-      * 20080902 ０回の診療行為時の不具合の修正END
+             SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
+             ADD    WRK-ZAIKAISU      TO   A010T-KAISU
+             MOVE   1                 TO   A010T-TANI
+             ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
+             MOVE   1                 TO   A010T3-TANI
            ELSE
              EVALUATE  TNS-TENSIKIBETU
                WHEN  1
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
                  COMPUTE  WRK-ZAIKAISU =
                          SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
-                 ADD  WRK-ZAIKAISU     TO   A010T-KAISU
-                 MOVE 1                TO   A010T-TANI
-      * 20080902 ０回の診療行為時の不具合の修正START
-                 ADD  WRK-ZAIKAISU     TO   A010T3-KAISU
-                 MOVE 1                TO   A010T3-TANI
-      * 20080902 ０回の診療行為時の不具合の修正END
+                 ADD    WRK-ZAIKAISU     TO   A010T-KAISU
+                 MOVE   1                TO   A010T-TANI
+                 ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
+                 MOVE   1                TO   A010T3-TANI
                WHEN  3
                WHEN  8
       *    点数項目の場合は回数をデータ化する。
-                 ADD  ACCT-ZAIKAISU    TO   A010T-KAISU
-                 MOVE ZERO             TO   A010T-TANI
-      * 20080902 ０回の診療行為時の不具合の修正START
-                 ADD  ACCT-ZAIKAISU    TO   A010T3-KAISU
-                 MOVE ZERO             TO   A010T3-TANI
-      * 20080902 ０回の診療行為時の不具合の修正END
+                 ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
+                 MOVE   ZERO             TO   A010T-TANI
+                 ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
+                 MOVE   ZERO             TO   A010T3-TANI
                WHEN  0
                WHEN  4
                WHEN  5
                WHEN  6
                WHEN  7
       *    点数、金額以外の場合
-                 MOVE ZERO             TO   A010T-TEN
-                 ADD  ACCT-ZAIKAISU    TO   A010T-KAISU
-                 MOVE 9                TO   A010T-TANI
-      * 20080902 ０回の診療行為時の不具合の修正START
-                     MOVE ZERO             TO   A010T3-TEN
-                     ADD  ACCT-ZAIKAISU    TO   A010T3-KAISU
-                     MOVE 9                TO   A010T3-TANI
-      * 20080902 ０回の診療行為時の不具合の修正END
+                 MOVE   ZERO             TO   A010T-TEN
+                 ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
+                 MOVE   9                TO   A010T-TANI
+                 MOVE   ZERO             TO   A010T3-TEN
+                 ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
+                 MOVE   9                TO   A010T3-TANI
                END-EVALUATE
-           END-IF   
-      * 20040129 変更
+           END-IF
       *
-           IF   FLG-INVALID      =    ZERO 
+           IF   FLG-INVALID      =    ZERO
              INITIALIZE       FLG-INVALID
              REWRITE A010T
                      INVALID  KEY
@@ -1244,21 +1183,19 @@
                      MOVE  1  TO FLG-INVALID
              END-WRITE
            END-IF
-      * 20080902 ０回の診療行為時の不具合の修正START
-           IF   FLG-INVALID2      =    ZERO 
+           IF   FLG-INVALID2      =    ZERO
              INITIALIZE       FLG-INVALID2
              REWRITE A010T3
-               INVALID  KEY  
+               INVALID  KEY
                MOVE  1  TO FLG-INVALID2
              END-REWRITE
            ELSE
              INITIALIZE       FLG-INVALID2
              WRITE A010T3
-               INVALID  KEY  
+               INVALID  KEY
                MOVE  1  TO FLG-INVALID2
              END-WRITE
            END-IF
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
            .
        2003-A010PUT-EXT.
@@ -1270,232 +1207,124 @@
       *
            INITIALIZE   A010T
            INITIALIZE   FLG-INVALID
-      * 20080902 ０回の診療行為時の不具合の修正START
            INITIALIZE   A010T3
            INITIALIZE   FLG-INVALID2
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    出力区分の設定
            PERFORM   2003-SET-OUTTYPE-SEC
       *
       *    入外区分の設定
-           MOVE NSRY-NYUGAIKBN   TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
-           MOVE NSRY-NYUGAIKBN   TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
+           MOVE    NSRY-NYUGAIKBN    TO   A010T-NYUGAIKBN
+           MOVE    NSRY-NYUGAIKBN    TO   A010T3-NYUGAIKBN
       *
-      ***  20040727  @@@@-MOTOHASI  入外合計
            IF  WRK-PARA-NYUGAIKBN  =  "3"
-             MOVE "0"             TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
-             MOVE "0"             TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
+             MOVE    "0"             TO   A010T-NYUGAIKBN
+             MOVE    "0"             TO   A010T3-NYUGAIKBN
            END-IF
-      ***  ここまで
       *
-      * 2004/01/29追加 
       *    カナ名称
-           IF   WRK-PARA-PRSORT  =     "2"
-               OR  WRK-PARA-PRSORT  =     "9"
-             MOVE TNS-KANANAME      TO    A010T-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正START
-             MOVE TNS-KANANAME      TO    A010T3-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正END
+           IF   WRK-PARA-PRSORT  =  "2"
+               OR   WRK-PARA-PRSORT  =  "9"
+             MOVE   TNS-KANANAME        TO   A010T-KANANAME
+             MOVE   TNS-KANANAME        TO   A010T3-KANANAME
            END-IF
-      * 2004/01/29追加
       *
-           MOVE NSRY-SRYCD(IDX1) TO    A010T-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正START
-           MOVE NSRY-SRYCD(IDX1) TO    A010T3-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正END
+           MOVE    NSRY-SRYCD(IDX1)     TO   A010T-SRYCD
+           MOVE    NSRY-SRYCD(IDX1)     TO   A010T3-SRYCD
       *
            READ A010T-FILE
-                KEY      IS      A010T-KEY  
-                INVALID  KEY     MOVE  1  TO FLG-INVALID
+                KEY      IS    A010T-KEY
+                INVALID  KEY   MOVE  1  TO   FLG-INVALID
            END-READ
-      * 20080902 ０回の診療行為時の不具合の修正START
            READ A010T3-FILE
-                KEY      IS      A010T3-KEY  
-                INVALID  KEY     MOVE  1  TO FLG-INVALID2
+                KEY      IS    A010T3-KEY
+                INVALID  KEY   MOVE  1  TO   FLG-INVALID2
            END-READ
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
-      * (点数マスタ)点識別の設定
-           MOVE TNS-TENSIKIBETU  TO    A010T-TENSIKIBETU
-      * 20080902 ０回の診療行為時の不具合の修正START
-           MOVE TNS-TENSIKIBETU  TO    A010T3-TENSIKIBETU
-      * 20080902 ０回の診療行為時の不具合の修正END
+      *    (点数マスタ)点識別の設定
+           MOVE    TNS-TENSIKIBETU      TO   A010T-TENSIKIBETU
+           MOVE    TNS-TENSIKIBETU      TO   A010T3-TENSIKIBETU
       *
       *    診療行為名称の設定
-           MOVE TNS-NAME         TO    A010T-NAME
-      * 20080902 ０回の診療行為時の不具合の修正START
-           MOVE TNS-NAME         TO    A010T3-NAME
-      * 20080902 ０回の診療行為時の不具合の修正END
-      * 点数の設定
-           MOVE TNS-TEN          TO    A010T-TEN
-      * 20080902 ０回の診療行為時の不具合の修正START
-           MOVE TNS-TEN          TO    A010T3-TEN
-      * 20080902 ０回の診療行為時の不具合の修正END
+           MOVE    TNS-NAME             TO   A010T-NAME
+           MOVE    TNS-NAME             TO   A010T3-NAME
+      *    点数の設定
+           MOVE    TNS-TEN              TO   A010T-TEN
+           MOVE    TNS-TEN              TO   A010T3-TEN
       *
-      * 20040129 変更
-      ***     IF   TNS-TENSIKIBETU       =    1
-      ***      OR  A010T-OUTTYPE         =    "95"
-      ***      OR  A010T-OUTTYPE         =    "96"
-      ***     金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      ***          COMPUTE  WRK-ZAIKAISU =
-      ***          NSRY-SRYSURYO(IDX1)   *    NACCT-ZAIKAISU
-      ***          ADD  WRK-ZAIKAISU     TO   A010T-KAISU
-      ***     ELSE  
-      ******       点数項目の場合は回数をデータ化する。
-      ***          ADD  NACCT-ZAIKAISU   TO   A010T-KAISU
-      ***     END-IF  
-      *
-      ***  20040714  @@@@-MOTOHASI  SRYACT、SRYACCTを参照している不具合修正
-      ***     IF   A010T-OUTTYPE         =    "95"
-      ***      OR  A010T-OUTTYPE         =    "96"
-      *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      ***         COMPUTE  WRK-ZAIKAISU =
-      ***         SRY-SRYSURYO(IDX1)    *    ACCT-ZAIKAISU
-      ***         ADD  WRK-ZAIKAISU     TO   A010T-KAISU
-      ***         MOVE 1                TO   A010T-TANI
-      ***     ELSE
-      ***         EVALUATE  TNS-TENSIKIBETU
-      ***         WHEN  1
-      *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      ***               COMPUTE  WRK-ZAIKAISU =
-      ***               SRY-SRYSURYO(IDX1)    *    ACCT-ZAIKAISU
-      ***               ADD  WRK-ZAIKAISU     TO   A010T-KAISU
-      ***               MOVE 1                TO   A010T-TANI
-      ***         WHEN  3
-      ***         WHEN  8
-      ******            点数項目の場合は回数をデータ化する。
-      ***               ADD  ACCT-ZAIKAISU    TO   A010T-KAISU
-      ***               MOVE ZERO             TO   A010T-TANI
-      ***         WHEN  0
-      ***         WHEN  4
-      ***         WHEN  5
-      ***         WHEN  6
-      ***         WHEN  7
-      ******           点数、金額以外の場合
-      ***               MOVE ZERO             TO   A010T-TEN
-      ***               ADD  ACCT-ZAIKAISU    TO   A010T-KAISU
-      ***               MOVE 9                TO   A010T-TANI
-      ***         END-EVALUATE
-      ***     END-IF   
-      *
-      *--- 2009/03/27 ADD START ----------------------------------------
+
       *    外泊の入院料計算
            IF   NSRY-SRYCD  =  "099999911"
       *    外泊の種類選択
-             MOVE    9                   TO   A010T-TANI
-                                              A010T3-TANI
-             MOVE    A010T-TEN2          TO   A010T-TEN
-                                              A010T3-TEN
-             DISPLAY "A010T-TEN2  =  "A010T-TEN2 
-             ADD     1                   TO   A010T-KAISU
-                                              A010T3-KAISU
+             MOVE    9                  TO   A010T-TANI
+                                             A010T3-TANI
+             MOVE    A010T-TEN2         TO   A010T-TEN
+                                             A010T3-TEN
+             ADD     1                  TO   A010T-KAISU
+                                             A010T3-KAISU
            ELSE
-      *--- 2009/03/27 ADD END ------------------------------------------
+      *
              IF   A010T-OUTTYPE   =  "95"
                  OR  A010T-OUTTYPE  =  "96"
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      *--- 2009/03/27 CHANGE START -------------------------------------
-      *           COMPUTE  WRK-ZAIKAISU =
-      *                  NSRY-SRYSURYO(IDX1)   *    NACCT-ZAIKAISU
-               COMPUTE  WRK-ZAIKAISU =
+               COMPUTE  WRK-ZAIKAISU  =
                         NSRY-SRYSURYO(IDX1)  *  NACCT-DAY(IDX8)
-      *--- 2009/03/27 CHANGE END -------------------------------------
                ADD    WRK-ZAIKAISU     TO   A010T-KAISU
                MOVE   1                TO   A010T-TANI
-      * 20080902 ０回の診療行為時の不具合の修正START
                ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
                MOVE   1                TO   A010T3-TANI
-      * 20080902 ０回の診療行為時の不具合の修正END
              ELSE
                EVALUATE  TNS-TENSIKIBETU
                  WHEN  1
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      *--- 2009/03/27 CHANGE START -------------------------------------
-      *             COMPUTE  WRK-ZAIKAISU =
-      *                    NSRY-SRYSURYO(IDX1)   *    NACCT-ZAIKAISU
                    COMPUTE  WRK-ZAIKAISU =
                           NSRY-SRYSURYO(IDX1)  *  NACCT-DAY(IDX8)
-      *--- 2009/03/27 CHANGE END -------------------------------------
-                   ADD    WRK-ZAIKAISU     TO   A010T-KAISU
-                   MOVE   1                TO   A010T-TANI
-      * 20080902 ０回の診療行為時の不具合の修正START
-                   ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
-                   MOVE   1                TO   A010T3-TANI
-      * 20080902 ０回の診療行為時の不具合の修正END
+                   ADD    WRK-ZAIKAISU      TO   A010T-KAISU
+                   MOVE   1                 TO   A010T-TANI
+                   ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
+                   MOVE   1                 TO   A010T3-TANI
                  WHEN  3
                  WHEN  8
-      ***         点数項目の場合は回数をデータ化する。
-      *--- 2009/03/27 CHANGE START -------------------------------------
-      *           ADD   NACCT-ZAIKAISU   TO   A010T-KAISU
-      *           MOVE       ZERO       TO   A010T-TANI
-      * 20080902 ０回の診療行為時の不具合の修正START
-      *           ADD   NACCT-ZAIKAISU   TO   A010T3-KAISU
-      *           MOVE       ZERO       TO   A010T3-TANI
-      * 20080902 ０回の診療行為時の不具合の修正END
                    ADD    NACCT-DAY(IDX8)   TO   A010T-KAISU
                    MOVE   ZERO              TO   A010T-TANI
                    ADD    NACCT-DAY(IDX8)   TO   A010T3-KAISU
                    MOVE   ZERO              TO   A010T3-TANI
-      *--- 2009/03/27 CHANGE END ---------------------------------------
                  WHEN  0
                  WHEN  4
                  WHEN  5
                  WHEN  6
                  WHEN  7
-      ***           点数、金額以外の場合
-      *--- 2009/03/27 CHANGE START -------------------------------------
-      *           MOVE  ZERO             TO   A010T-TEN
-      *           ADD   NACCT-ZAIKAISU   TO   A010T-KAISU
-      *           MOVE  9                TO   A010T-TANI
-      * 20080902 ０回の診療行為時の不具合の修正START
-      *           MOVE  ZERO             TO   A010T3-TEN
-      *           ADD   NACCT-ZAIKAISU   TO   A010T3-KAISU
-      *           MOVE  9                TO   A010T3-TANI
-      * 20080902 ０回の診療行為時の不具合の修正END
+      *    点数、金額以外の場合
                    MOVE   ZERO              TO   A010T-TEN
                    ADD    NACCT-DAY(IDX8)   TO   A010T-KAISU
                    MOVE   9                 TO   A010T-TANI
                    MOVE   ZERO              TO   A010T3-TEN
                    ADD    NACCT-DAY(IDX8)   TO   A010T3-KAISU
                    MOVE   9                 TO   A010T3-TANI
-      *--- 2009/03/27 CHANGE END ---------------------------------------
                END-EVALUATE
              END-IF
-      *--- 2009/03/27 ADD START ----------------------------------------
            END-IF
-      *--- 2009/03/27 ADD END ----------------------------------------
-      ***  20040714  ここまで
-      *--- 2009/03/27 ADD START ----------------------------------------
       *    外泊日の入院基本料の回数を減算
            IF   NACCT-ZAISKBKBN  =  1
-             AND   WRK-GAIHAKKBN(IDX8)  =  1
+               AND   WRK-GAIHAKKBN(IDX8)  =  1
              COMPUTE  A010T-KAISU  =  A010T-KAISU  -  NACCT-DAY(IDX8)
-             COMPUTE  A010T3-KAISU =  A010T3-KAISU  -  NACCT-DAY(IDX8)
+             COMPUTE  A010T3-KAISU  =  A010T3-KAISU  -  NACCT-DAY(IDX8)
            END-IF
-      *--- 2009/03/27 ADD END ------------------------------------------
-      *
-      * 20040129 変更
       *
            IF   FLG-INVALID      =    ZERO
                 INITIALIZE       FLG-INVALID
                 REWRITE A010T
-                        INVALID  KEY  
+                        INVALID  KEY
                         MOVE  1  TO FLG-INVALID
                 END-REWRITE
            ELSE
                 INITIALIZE       FLG-INVALID
                 WRITE A010T
-                        INVALID  KEY  
+                        INVALID  KEY
                         MOVE  1  TO FLG-INVALID
                 END-WRITE
            END-IF
-      * 20080902 ０回の診療行為時の不具合の修正START
-           IF   FLG-INVALID2      =    ZERO 
+           IF   FLG-INVALID2      =    ZERO
                 INITIALIZE       FLG-INVALID2
                 REWRITE A010T3
                         INVALID  KEY
@@ -1508,52 +1337,49 @@
                         MOVE  1  TO FLG-INVALID2
                 END-WRITE
            END-IF
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
            .
        2003-NA010PUT-EXT.
            EXIT.
       *****************************************************************
-      *    食事療養費 診療行為回数一時ファイルヘの書込 2004/07/23
+      *    食事療養費 診療行為回数一時ファイルヘの書込
       *****************************************************************
        2004-NA010PUT-SEC                SECTION.
       *
       *    区分けの設定(1:食事療養のみ、2:食事療養＋特食、
-      *              3:食事療養＋選択食、4:食事療養＋特食＋選択食)
+      *                 3:食事療養＋選択食、4:食事療養＋特食＋選択食)
            INITIALIZE   WRK-SYOKUJIKAISU
            INITIALIZE   WRK-SYOKUJIKAI
-      ****2006/01/07 @@@@-BRAND  START
-      *     PERFORM   2004-SET-SYOKUJITYPE-SEC
-      *--- 2009/03/27 CHANGE START -------------------------------------
-      *     PERFORM VARYING IIII FROM 1 BY 1
-      *             UNTIL  IIII > 31
-           MOVE   IDX8     TO    IIII
-      *--- 2009/03/27 CHANGE END ---------------------------------------
-             PERFORM VARYING ZZZZ FROM 1 BY 1
-                      UNTIL  ZZZZ > 4
-               COMPUTE   SSSS = IIII * 3 - 2
-               IF ZZZZ = NACCT-DAY-TBL(SSSS:3)
-                 IF  ZZZZ = 1
-                   ADD 1 TO WRK-SYOKUJIKAISU1
-                 ELSE 
-                   IF ZZZZ = 2
-                     ADD 1 TO WRK-SYOKUJIKAISU2
+      *--- 2009/05/01 ADD START ----------------------------------------
+           IF   WRK-PARA-SYUKEIKBN  =  SPACE
+      *--- 2009/05/01 ADD END ------------------------------------------
+             MOVE   IDX8        TO   IIII
+      *--- 2009/05/01 ADD START ----------------------------------------
+           ELSE
+             MOVE   WRK-DAY     TO   IIII
+           END-IF
+      *--- 2009/05/01 ADD END ------------------------------------------
+           PERFORM  VARYING  ZZZZ  FROM  1  BY  1
+                    UNTIL   ZZZZ  >  4
+             COMPUTE   SSSS  =  IIII  *  3  -  2
+             IF   ZZZZ  =  NACCT-DAY-TBL(SSSS:3)
+               IF   ZZZZ  =  1
+                 ADD   1      TO   WRK-SYOKUJIKAISU1
+               ELSE
+                 IF   ZZZZ  =  2
+                   ADD   1      TO   WRK-SYOKUJIKAISU2
+                 ELSE
+                   IF   ZZZZ  =  3
+                     ADD   1      TO   WRK-SYOKUJIKAISU3
                    ELSE
-                     IF ZZZZ = 3
-                       ADD 1  TO WRK-SYOKUJIKAISU3
-                     ELSE
-                       IF ZZZZ = 4
-                         ADD 1  TO WRK-SYOKUJIKAISU4
-                       END-IF
+                     IF   ZZZZ  =  4
+                       ADD   1      TO   WRK-SYOKUJIKAISU4
                      END-IF
                    END-IF
                  END-IF
                END-IF
-             END-PERFORM
-      *--- 2009/03/27 DELETE START -------------------------------------
-      *     END-PERFORM
-      *--- 2009/03/27 DELETE END ---------------------------------------
-      ****2006/01/07 @@@@-BRAND  START
+             END-IF
+           END-PERFORM
       *
            PERFORM  VARYING      IDX4  FROM  1  BY   1
                     UNTIL        IDX4  >  4
@@ -1637,7 +1463,7 @@
                  WHEN  1
                    MOVE "01：食事療養のみ"            TO  A010T-NAME
       *** 20070717食事療養費の修正START　T.Tanaka
-                   EVALUATE NSRY-SRYCD(IDX1) 
+                   EVALUATE NSRY-SRYCD(IDX1)
                      WHEN 099999918
                        MOVE "01：食事療養のみ(朝)"    TO  A010T-NAME
                      WHEN 099999919
@@ -1709,8 +1535,8 @@
                  END-WRITE
                END-IF
       * 20080902 ０回の診療行為時の不具合の修正START
-               IF   FLG-INVALID2      =    ZERO 
-                 INITIALIZE       FLG-INVALID2 
+               IF   FLG-INVALID2      =    ZERO
+                 INITIALIZE       FLG-INVALID2
                  REWRITE A010T3
                          INVALID  KEY
                          MOVE  1  TO FLG-INVALID2
@@ -1735,31 +1561,26 @@
        2005-NA010PUT-SEC                SECTION.
       *
       *    区分けの設定(1〜30)
-      *              
-           INITIALIZE   WRK-SITURYOKAI-TBL
-      *--- 2009/03/27 CHANGE START -------------------------------------
-           MOVE    IDX8    TO    IIII
-      ****2006/01/07 @@@@-BRAND  START
-      *     PERFORM   2005-SET-SITURYOTYPE-SEC
-      *     PERFORM VARYING IIII FROM 1 BY 1
-      *             UNTIL  IIII > 31
-      *--- 2009/03/27 CHANGE END ---------------------------------------
-             PERFORM VARYING ZZZZ FROM 1 BY 1
-                     UNTIL  ZZZZ > 30
-               COMPUTE   SSSS = IIII * 3 - 2
-               IF  NACCT-DAY-TBL(SSSS:3) = ZZZZ
-                 ADD 1 TO  WRK-SITURYOKAI(ZZZZ)
-	           END-IF
-	         END-PERFORM
-      *--- 2009/03/27 DELETE START -------------------------------------
-      *     END-PERFORM
-      *--- 2009/03/27 DELETE END ---------------------------------------
       *
-      ****2006/01/07 @@@@-BRAND  END
+           INITIALIZE   WRK-SITURYOKAI-TBL
+      *--- 2009/05/01 ADD START ----------------------------------------
+           IF   WRK-PARA-SYUKEIKBN  =  SPACE
+      *--- 2009/05/01 ADD END ------------------------------------------
+             MOVE   IDX8        TO   IIII
+      *--- 2009/05/01 ADD START ----------------------------------------
+           ELSE
+             MOVE   WRK-DAY     TO   IIII
+           END-IF
+      *--- 2009/05/01 ADD END ------------------------------------------
+           PERFORM VARYING ZZZZ FROM 1 BY 1
+                   UNTIL  ZZZZ  >  30
+             COMPUTE   SSSS  =  IIII  *  3  -  2
+             IF  NACCT-DAY-TBL(SSSS:3)  =  ZZZZ
+               ADD   1    TO   WRK-SITURYOKAI(ZZZZ)
+	         END-IF
+	       END-PERFORM
       *
            PERFORM  VARYING      IDX5  FROM  1  BY   1
-      ****2005/12/27 @@@@-BRAND  START
-      *             UNTIL        IDX5  >  20
                     UNTIL        IDX5 > 30
       ****2005/12/27 @@@@-BRAND  END
       *
@@ -1810,12 +1631,12 @@
       * 20080902 ０回の診療行為時の不具合の修正END
       *
                READ A010T-FILE
-                 KEY      IS      A010T-KEY  
+                 KEY      IS      A010T-KEY
                  INVALID  KEY     MOVE  1  TO FLG-INVALID
                END-READ
       * 20080902 ０回の診療行為時の不具合の修正START
                READ A010T3-FILE
-                 KEY      IS      A010T3-KEY  
+                 KEY      IS      A010T3-KEY
                  INVALID  KEY     MOVE  1  TO FLG-INVALID2
                END-READ
       * 20080902 ０回の診療行為時の不具合の修正END
@@ -1863,7 +1684,7 @@
                    MOVE "18：室料差額"            TO  WRK-NAME
                  WHEN  19
                    MOVE "19：室料差額"            TO  WRK-NAME
-                 WHEN  20 
+                 WHEN  20
                    MOVE "20：室料差額"            TO  WRK-NAME
       ****2005/12/27 @@@@-BRAND  START
                  WHEN  21
@@ -1896,12 +1717,12 @@
       *        PERFORM   UNTIL   FLG-SPACE =   1
       *                    OR    IDX6  >= 20
                PERFORM   UNTIL   FLG-SPACE =   1
-                         OR    IDX6  >= 7 
+                         OR    IDX6  >= 7
       ****2005/10/17  @@@@-BRAND END
                  ADD  1       TO    IDX6
                  IF   WRK-Z7(IDX6:1)   =  "0" OR "1" OR "2" OR "3" OR
                                           "4" OR "5" OR "6" OR "7" OR
-                                          "8" OR "9" 
+                                          "8" OR "9"
                    MOVE    1    TO    FLG-SPACE
                  END-IF
                END-PERFORM
@@ -1922,7 +1743,7 @@
                  END-IF
                  ADD  2       TO    IDX6
                END-PERFORM
-               SUBTRACT      3        FROM IDX6  
+               SUBTRACT      3        FROM IDX6
                IF  A010T-NAME(IDX6:1) = SPACE
                  ADD  1       TO    IDX6
                  MOVE "円"              TO   A010T-NAME(IDX6:)
@@ -1936,7 +1757,7 @@
                ADD  WRK-SITURYOKAI(IDX5)    TO   A010T-KAISU
                MOVE 1                       TO   A010T-TANI
       *
-               IF   FLG-INVALID      =    ZERO 
+               IF   FLG-INVALID      =    ZERO
                  INITIALIZE       FLG-INVALID
                  REWRITE A010T
                          INVALID  KEY
@@ -1945,21 +1766,21 @@
                ELSE
                  INITIALIZE       FLG-INVALID
                  WRITE   A010T
-                         INVALID  KEY  
+                         INVALID  KEY
                          MOVE  1  TO  FLG-INVALID
                  END-WRITE
                END-IF
       * 20080902 ０回の診療行為時の不具合の修正START
-               IF   FLG-INVALID2      =    ZERO 
+               IF   FLG-INVALID2      =    ZERO
                  INITIALIZE       FLG-INVALID2
                  REWRITE A010T3
-                          INVALID  KEY  
+                          INVALID  KEY
                           MOVE  1  TO FLG-INVALID2
                  END-REWRITE
                ELSE
-                 INITIALIZE       FLG-INVALID2     
+                 INITIALIZE       FLG-INVALID2
                  WRITE A010T3
-                       INVALID  KEY  
+                       INVALID  KEY
                        MOVE  1  TO FLG-INVALID2
                  END-WRITE
                END-IF
@@ -1981,7 +1802,7 @@
            INITIALIZE   A010T3
            INITIALIZE   FLG-INVALID2
       * 20080902 ０回の診療行為時の不具合の修正END
-      *  
+      *
       *    出力区分の設定
            PERFORM   2003-SET-OUTTYPE-SEC
       *
@@ -2000,7 +1821,7 @@
            MOVE "1"              TO    A010T3-NYUGAIKBN
       * 20080902 ０回の診療行為時の不具合の修正END
       *
-      * 2004/01/29追加 
+      * 2004/01/29追加
       *    カナ名称
            IF   WRK-PARA-PRSORT  =     "2"
                OR   WRK-PARA-PRSORT  =     "9"
@@ -2012,14 +1833,14 @@
       * 2004/01/29追加
       *
            READ A010T-FILE
-                KEY      IS      A010T-KEY  
+                KEY      IS      A010T-KEY
       * 20080902 ０回の診療行為時の不具合の修正START
       *          INVALID  KEY     MOVE  1  TO FLG-NICDINV
       * 20080902 ０回の診療行為時の不具合の修正END
            END-READ
       * 20080902 ０回の診療行為時の不具合の修正START
            READ A010T3-FILE
-                KEY      IS      A010T3-KEY  
+                KEY      IS      A010T3-KEY
                 INVALID  KEY     MOVE  1  TO FLG-NICDINV
            END-READ
       * 20080902 ０回の診療行為時の不具合の修正END
@@ -2030,7 +1851,7 @@
            MOVE "2"              TO    A010T3-NYUGAIKBN
       * 20080902 ０回の診療行為時の不具合の修正END
       *
-      * 2004/01/29追加 
+      * 2004/01/29追加
       *    カナ名称
            IF   WRK-PARA-PRSORT  =     "2"
                OR  WRK-PARA-PRSORT  =     "9"
@@ -2039,36 +1860,36 @@
              MOVE TNS-KANANAME      TO    A010T3-KANANAME
       * 20080902 ０回の診療行為時の不具合の修正END
            END-IF
-      * 2004/01/29追加 
+      * 2004/01/29追加
       *
            READ A010T-FILE
-                KEY      IS      A010T-KEY  
+                KEY      IS      A010T-KEY
       * 20080902 ０回の診療行為時の不具合の修正START
       *          INVALID  KEY     MOVE  1  TO FLG-GICDINV
       * 20080902 ０回の診療行為時の不具合の修正END
            END-READ
       * 20080902 ０回の診療行為時の不具合の修正START
            READ A010T3-FILE
-                KEY      IS      A010T3-KEY  
+                KEY      IS      A010T3-KEY
                 INVALID  KEY     MOVE  1  TO FLG-GICDINV
            END-READ
       * 20080902 ０回の診療行為時の不具合の修正END
       *
            IF  FLG-NICDINV      =   1
                AND FLG-GICDINV      =   1
-      * 
+      *
       *    入院、外来共に未使用の場合は未使用としてデータを抽出する。
       *
       *        入外区分の設定
              MOVE "9"             TO    A010T-NYUGAIKBN
       *
-      * 2004/01/29追加 
+      * 2004/01/29追加
       *    カナ名称の設定
              IF   WRK-PARA-PRSORT  =    "2"
                  OR WRK-PARA-PRSORT  =    "9"
                MOVE TNS-KANANAME     TO    A010T-KANANAME
              END-IF
-      * 2004/01/29追加 
+      * 2004/01/29追加
       *
       *    (点数マスタ)点識別の設定
              MOVE TNS-TENSIKIBETU TO    A010T-TENSIKIBETU
@@ -2079,7 +1900,7 @@
       *    点数の設定
              MOVE TNS-TEN         TO    A010T-TEN
       *
-      * 2004/01/29追加 
+      * 2004/01/29追加
              IF   A010T-OUTTYPE      =     "95"
                  OR  A010T-OUTTYPE      =     "96"
                MOVE 1             TO    A010T-TANI
@@ -2100,16 +1921,16 @@
       *    点数、金額以外の場合
                    MOVE ZERO       TO    A010T-TEN
                    MOVE 9          TO    A010T-TANI
-               END-EVALUATE  
-             END-IF   
-      * 2004/01/29追加 
+               END-EVALUATE
+             END-IF
+      * 2004/01/29追加
       *
       *    回数の設定
-             MOVE ZERO             TO    A010T-KAISU 
+             MOVE ZERO             TO    A010T-KAISU
       *
              INITIALIZE            FLG-INVALID
              WRITE    A010T
-                      INVALID  KEY  
+                      INVALID  KEY
                MOVE 1  TO    FLG-INVALID
              END-WRITE
            END-IF
@@ -2131,7 +1952,7 @@
       * 20080902 ０回の診療行為時の不具合の修正END
       * 20080526 診療行為区分の振り分けを修正STRAT tanaka
                EVALUATE   TNS-SRYKBN
-                 WHEN  "80" 
+                 WHEN  "80"
                    MOVE  "80"    TO    A010T-OUTTYPE
       * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "80"    TO    A010T3-OUTTYPE
@@ -2212,11 +2033,12 @@
       * 20080402 H20年4月改正対応START tanaka
       *               MOVE  "60"    TO    A010T-OUTTYPE
       *    病理診断
-               IF WRK-PARA-PRTYM  <  "200804"
+      *--- 2009/05/01 CHANGE START -------------------------------------
+      *        IF  WRK-PARA-PRTYM  <  "200804"
+               IF  WRK-PARA-PRTYMD  <  "20080401"
+      *--- 2009/05/01 CHANGE END ---------------------------------------
                  MOVE  "60"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                  MOVE  "60"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                ELSE
                  IF  TNS-KNSJISGRPKBN = 7
                    MOVE  "64"    TO    A010T-OUTTYPE
@@ -2412,8 +2234,8 @@
       * 20080902 ０回の診療行為時の不具合の修正START
                        MOVE  "99"  TO  A010T3-OUTTYPE
       * 20080902 ０回の診療行為時の不具合の修正END
-                   END-EVALUATE 
-               END-EVALUATE 
+                   END-EVALUATE
+               END-EVALUATE
            END-EVALUATE
       *
            .
@@ -2478,7 +2300,7 @@
              WHEN 4
                ADD  1     TO   WRK-SYOKUJIKAISU4
            END-EVALUATE
-      * 
+      *
            EVALUATE  NACCT-DAY-6
              WHEN 1
                ADD  1     TO   WRK-SYOKUJIKAISU1
@@ -2544,8 +2366,8 @@
              WHEN 4
                ADD  1     TO   WRK-SYOKUJIKAISU4
            END-EVALUATE
-      * 
-     
+      *
+
            EVALUATE  NACCT-DAY-12
              WHEN 1
                ADD  1     TO   WRK-SYOKUJIKAISU1
@@ -2567,7 +2389,7 @@
              WHEN 4
                ADD  1     TO   WRK-SYOKUJIKAISU4
            END-EVALUATE
-      *  
+      *
            EVALUATE  NACCT-DAY-14
              WHEN 1
                ADD  1     TO   WRK-SYOKUJIKAISU1
@@ -2589,7 +2411,7 @@
              WHEN 4
                ADD  1     TO   WRK-SYOKUJIKAISU4
            END-EVALUATE
-      *       
+      *
            EVALUATE  NACCT-DAY-16
              WHEN 1
                ADD  1     TO   WRK-SYOKUJIKAISU1
@@ -2827,18 +2649,18 @@
                ADD  1     TO   WRK-SITURYOKAI(24)
              WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
-      
+
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-2
@@ -2883,25 +2705,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -2948,25 +2770,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3013,25 +2835,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3078,25 +2900,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3143,25 +2965,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
              ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3208,25 +3030,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3273,25 +3095,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3338,25 +3160,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3403,25 +3225,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3468,25 +3290,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3533,25 +3355,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3598,25 +3420,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3663,25 +3485,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3728,25 +3550,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3793,25 +3615,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3858,25 +3680,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3923,25 +3745,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -3992,9 +3814,9 @@
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24 
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
              WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
@@ -4053,25 +3875,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4118,25 +3940,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4183,25 +4005,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4248,25 +4070,25 @@
              WHEN 20
                 ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4313,25 +4135,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4378,25 +4200,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4443,25 +4265,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4508,25 +4330,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4591,7 +4413,7 @@
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4638,25 +4460,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4703,25 +4525,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4768,25 +4590,25 @@
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
       ****2006/01/06 @@@@-BRAND  START
-             WHEN 21       
+             WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
-             WHEN 22  
+             WHEN 22
                ADD  1     TO   WRK-SITURYOKAI(22)
-             WHEN 23 
+             WHEN 23
                ADD  1     TO   WRK-SITURYOKAI(23)
-             WHEN 24       
+             WHEN 24
                ADD  1     TO   WRK-SITURYOKAI(24)
-             WHEN 25  
+             WHEN 25
                ADD  1     TO   WRK-SITURYOKAI(25)
-             WHEN 26 
+             WHEN 26
                ADD  1     TO   WRK-SITURYOKAI(26)
-             WHEN 27       
+             WHEN 27
                ADD  1     TO   WRK-SITURYOKAI(27)
-             WHEN 28  
+             WHEN 28
                ADD  1     TO   WRK-SITURYOKAI(28)
              WHEN 29
                ADD  1     TO   WRK-SITURYOKAI(29)
-             WHEN 30 
+             WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
       ****2006/01/06 @@@@-BRNAD  END
            END-EVALUATE
@@ -4906,55 +4728,55 @@
            OPEN    OUTPUT  A010T2-FILE
            CLOSE           A010T2-FILE
            OPEN    I-O     A010T2-FILE
-      * 
+      *
            IF  FLG-OUTALL       =  1
                MOVE  "10"               TO  A010T-OUTTYPE
            ELSE
                MOVE  WRK-PARA-OUTTYPE   TO  A010T-OUTTYPE
            END-IF
-      * 2004/01/29変更 
+      * 2004/01/29変更
       ***     IF  WRK-PARA-PRSORT  =  1
            IF   WRK-PARA-PRSORT  =  "8"
                AND WRK-PARA-PRSORT  =  "9"
-      * 2004/01/29変更 
+      * 2004/01/29変更
              MOVE  "9"                TO  A010T-NYUGAIKBN
            END-IF
       *    抽出患者情報読み込み
       *
            START   A010T-FILE
-                   KEY IS      >=  A010T-KEY  
+                   KEY IS      >=  A010T-KEY
            END-START
            PERFORM UNTIL   FLG-ATEND =   1
              PERFORM 910-A010-READ-SEC
-      * 2004/01/29変更 
+      * 2004/01/29変更
       ***         IF      FLG-ATEND       NOT =   1
       ***          AND (( WRK-PARA-PRSORT NOT =  "1" )
-      ***           OR  ( WRK-PARA-PRSORT     =  "1" 
-      ***            AND  A010T-NYUGAIKBN     =  "9" )) 
+      ***           OR  ( WRK-PARA-PRSORT     =  "1"
+      ***            AND  A010T-NYUGAIKBN     =  "9" ))
              IF      FLG-ATEND       NOT =   1
                  AND (( WRK-PARA-PRSORT NOT =  "8" )
-                 OR  ( WRK-PARA-PRSORT     =  "8" 
-                 AND  A010T-NYUGAIKBN     =  "9" )) 
+                 OR  ( WRK-PARA-PRSORT     =  "8"
+                 AND  A010T-NYUGAIKBN     =  "9" ))
                  AND (( WRK-PARA-PRSORT NOT =  "9" )
-                 OR  ( WRK-PARA-PRSORT     =  "9" 
-                 AND  A010T-NYUGAIKBN     =  "9" )) 
-      * 2004/01/29変更 
+                 OR  ( WRK-PARA-PRSORT     =  "9"
+                 AND  A010T-NYUGAIKBN     =  "9" ))
+      * 2004/01/29変更
       *            レコード転送
                MOVE  A010T   TO  A010T2
-      * 
+      *
       *            点数 × 回数
-      * 20080121 入院行為の不具合をを修正START  t.tanaka 
+      * 20080121 入院行為の不具合をを修正START  t.tanaka
                IF A010T-KZMWAKE = ZERO
       * 20080121 入院行為の不具合をを修正END
                  COMPUTE    WRK-TEN =
                               A010T-TEN    *      A010T-KAISU
                  MOVE WRK-TEN            TO     A010T2-TTEN
-      * 20080121 入院行為の不具合をを修正START  t.tanaka 
+      * 20080121 入院行為の不具合をを修正START  t.tanaka
                ELSE
                  COMPUTE    WRK-TEN =
-                            A010T-TEN2    *     A010T-KAISU  
-                 MOVE WRK-TEN            TO     A010T2-TTEN 
-               END-IF     
+                            A010T-TEN2    *     A010T-KAISU
+                 MOVE WRK-TEN            TO     A010T2-TTEN
+               END-IF
       * 20080121 入院行為の不具合をを修正END
       *            明細印字順番号
                EVALUATE   WRK-PARA-PRSORT
@@ -4962,17 +4784,17 @@
                    COMPUTE     WRK-PRSORTNUM   =
                                 999999999.99   -   A010T-KAISU
                    MOVE WRK-PRSORTNUM  TO   A010T2-PRSORTNUM
-      * 2004/01/29変更 
-      ***                 WHEN   "0" 
-                 WHEN   "1" 
-      * 2004/01/29変更 
+      * 2004/01/29変更
+      ***                 WHEN   "0"
+                 WHEN   "1"
+      * 2004/01/29変更
                    COMPUTE    WRK-PRSORTNUM   =
                               999999999.99  -  WRK-TEN
                    MOVE WRK-PRSORTNUM  TO   A010T2-PRSORTNUM
                END-EVALUATE
                INITIALIZE       FLG-INVALID
                WRITE A010T2
-                    INVALID  KEY  
+                    INVALID  KEY
                     MOVE  1  TO FLG-INVALID
                END-WRITE
              END-IF
@@ -4997,13 +4819,13 @@
       *    抽出患者情報読み込み
       *
            START   A010T2-FILE
-                   KEY IS      >=  A010T2-KEY  
+                   KEY IS      >=  A010T2-KEY
            END-START
       *
            PERFORM 910-A010-READ2-SEC
            MOVE    A010T2-OUTTYPE    TO  WRK-OUTTYPE
            MOVE    A010T2-NYUGAIKBN  TO  WRK-NYUGAIKBN
-           MOVE    1                 TO  IDX2  
+           MOVE    1                 TO  IDX2
            PERFORM UNTIL    FLG-ATEND =   1
              IF  FLG-ATEND NOT = 1
                  PERFORM 2007-SYORI-SEC
@@ -5053,9 +4875,15 @@
       *
       * 明細数オーバーのチェック
            IF  IDX2     >          38
+      *--- 2009/05/01 ADD START ----------------------------------------
+             MOVE     1             TO   FLG-MEIKENSU
+      *--- 2009/05/01 ADD END ------------------------------------------
              PERFORM  330-TERM-HEN-SEC
              MOVE     1     TO   IDX2
              INITIALIZE          A010
+      *--- 2009/05/01 ADD START ----------------------------------------
+             INITIALIZE              FLG-MEIKENSU
+      *--- 2009/05/01 ADD END ------------------------------------------
            END-IF
       *
       * 診療コード
@@ -5085,10 +4913,10 @@
       * 20080121 入院診療行為の不具合を修正START t.tanaka
            IF A010T2-KZMWAKE = ZERO
              MOVE  A010T2-TEN          TO  WRK-Z9TEN2
-           ELSE 
+           ELSE
              MOVE  A010T2-TEN2          TO  WRK-Z9TEN2
            END-IF
-     
+
            MOVE  WRK-Z9TEN2          TO  A010-TEN(IDX2)
       * 20080121 入院診療行為の不具合を修正END
       * 回数
@@ -5135,23 +4963,29 @@
              WHEN  ZERO
       *    単位が点数の場合
                ADD   A010T2-TTEN    TO  SUM-T-TTEN
+      *--- 2009/05/01 ADD START ----------------------------------------
+               ADD   A010T2-TTEN    TO   SUM-SKTTEN
+      *--- 2009/05/01 ADD END ------------------------------------------
              WHEN  1
       *    単位が金額の場合
                ADD   A010T2-TTEN    TO  SUM-T-TKIN
+      *--- 2009/05/01 ADD START ----------------------------------------
+               ADD   A010T2-TTEN    TO   SUM-SKTKIN
+      *--- 2009/05/01 ADD END ------------------------------------------
                MOVE  "円"           TO  A010-TENTANI(IDX2)
-
+     
              WHEN  9
       *    単位が点数、金額以外の場合
                MOVE  "＠"           TO  A010-TENTANI(IDX2)
-           END-EVALUATE  
+           END-EVALUATE
       * 20040129 変更
       * 連番
-           ADD   1                   TO  WRK-PRDTLCNT 
-           MOVE  WRK-PRDTLCNT        TO  WRK-Z5 
+           ADD   1                   TO  WRK-PRDTLCNT
+           MOVE  WRK-PRDTLCNT        TO  WRK-Z5
            MOVE  WRK-Z5              TO  A010-NUM(IDX2)
       *
       * 印字明細数カウントアップ
-           ADD   1                   TO  IDX2  
+           ADD   1                   TO  IDX2
       *
            .
        2007-SYORI-EXT.
@@ -5160,15 +4994,29 @@
       *****************************************************************
       *    帳票編集処理
       *****************************************************************
-      *    
-       330-TERM-HEN-SEC         SECTION.
-      * 
       *
-           INSPECT  WRK-PARA-DENPPRTYMDWH
-                    REPLACING  CHARACTERS  BY  " "
-                    AFTER  "月"
-           MOVE    WRK-PARA-DENPPRTYMDWH   TO  A010-SRYYM
-           MOVE    WRK-SYSYMDWH            TO  A010-SYSYMD
+       330-TERM-HEN-SEC         SECTION.
+      *
+      *
+      *--- 2009/05/01 ADD START ----------------------------------------
+           IF  WRK-PARA-SYUKEIKBN  =  1
+             MOVE    WRK-PARA-DENPPRTYMDWH   TO   A010-SRYYMD
+             MOVE    SPACE                   TO   A010-SRYYM
+             MOVE    WRK-SYSYMDWH            TO   A010-SYSYMD
+           ELSE
+      *--- 2009/05/01 ADD END ------------------------------------------
+             INSPECT  WRK-PARA-DENPPRTYMDWH
+                      REPLACING  CHARACTERS  BY  " "
+                      AFTER  "月"
+      *
+             MOVE    WRK-PARA-DENPPRTYMDWH   TO   A010-SRYYM
+      *--- 2009/05/01 ADD START ----------------------------------------
+             MOVE    SPACE                   TO   A010-SRYYMD
+      *--- 2009/05/01 ADD END ------------------------------------------
+             MOVE    WRK-SYSYMDWH            TO   A010-SYSYMD
+      *--- 2009/05/01 ADD START ----------------------------------------
+           END-IF
+      *--- 2009/05/01 ADD END ------------------------------------------
       *
       *    ページ数
            ADD     1                       TO  CNT-PAGE
@@ -5185,7 +5033,7 @@
              MOVE  WRK-OUTTYPE        TO  WRK-PRT-OUTTYPE
            ELSE
              MOVE  WRK-PARA-OUTTYPE   TO  WRK-PRT-OUTTYPE
-           END-IF 
+           END-IF
            EVALUATE WRK-PRT-OUTTYPE
              WHEN  "10"
                MOVE  "初診・再診・指導・在宅"  TO  A010-OUTTYPE
@@ -5231,7 +5079,7 @@
              WHEN  "ZZ"
                MOVE  "その他分類" TO  A010-OUTTYPE
            END-EVALUATE
-      * 
+      *
       *    入外区分
            EVALUATE  WRK-NYUGAIKBN
              WHEN  "1"
@@ -5247,7 +5095,22 @@
       ***  ここまで
       *
            END-EVALUATE
-      * 
+      *
+      *--- 2009/05/01 ADD START ----------------------------------------
+      *    診療区分別小計
+           IF   FLG-MEIKENSU  NOT =  1
+             MOVE    SUM-SKTTEN              TO   WRK-Z9TENGK
+             MOVE    WRK-Z9TENGK             TO   A010-SKTTEN
+             MOVE    SUM-SKTKIN              TO   WRK-Z9TENGK
+             MOVE    WRK-Z9TENGK             TO   A010-SKTKIN
+      *
+      *    点数単位
+             MOVE    "点"                    TO   A010-SKTENTANI
+             MOVE    "円"                    TO   A010-SKYENTANI
+             INITIALIZE    SUM-SKTTEN
+             INITIALIZE    SUM-SKTKIN
+           END-IF
+      *--- 2009/05/01 ADD END ------------------------------------------
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"                 TO  SPRT-MODE
            MOVE    LNK-PRTKANRI-RENNUM   TO  SPRT-RENNUM
@@ -5318,7 +5181,7 @@
       *****************************************************************
       *    管理マスタ読み込み
       *****************************************************************
-       800-SYSKANRI-READ-SEC           SECTION.  
+       800-SYSKANRI-READ-SEC           SECTION.
       *
       ****2005/10/17 @@@@-BRAND  START
       *     MOVE    WRK-SYSYMD          TO  ORC-DBYMD
@@ -5549,7 +5412,7 @@
       ****2005/10/17 @@@@-BRAND  END
            MOVE    SYS-5113-REC         TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
-      ***  20040914  @@@@-MOTOHASI  
+      ***  20040914  @@@@-MOTOHASI
       ***     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
       ****2005/10/17 @@@@-BRAND  START
       *    MOVE    "SYSKANRI-KEY5"      TO  ORC-DBPATH
@@ -5592,7 +5455,7 @@
        830-SYSKANRI-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      ***  20040914  @@@@-MOTOHASI  
+      ***  20040914  @@@@-MOTOHASI
       ***     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
       ****2005/10/17 @@@@-BRAND  START
       *    MOVE    "SYSKANRI-KEY5"      TO  ORC-DBPATH
@@ -5640,7 +5503,7 @@
       *     MOVE  "DBCLOSE"          TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
       *=== sarge対応 UP By Takashima(2006/08/17) end
-      ***  20040914  @@@@-MOTOHASI  
+      ***  20040914  @@@@-MOTOHASI
       ***     MOVE    "SYSKANRI-KEY2"  TO  ORC-DBPATH
       ****2005/10/17 @@@@-BRAND  START
       *    MOVE    "SYSKANRI-KEY5"  TO  ORC-DBPATH
@@ -5676,20 +5539,14 @@
       *****************************************************************
        900-SRYACT-SELECT-SEC               SECTION.
       *
-           MOVE    SRYACT-REC      TO  MCPDATA-REC
-           MOVE    "DBSELECT"      TO  MCP-FUNC
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACT-ST-KEY4     TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-           MOVE    "tbl_sryact"    TO  MCP-TABLE
-           MOVE    "st_key4"       TO  MCP-PATHNAME
+           MOVE    SRYACT-REC      TO   MCPDATA-REC
+           MOVE    "DBSELECT"      TO   MCP-FUNC
+           MOVE    "tbl_sryact"    TO   MCP-TABLE
+           MOVE    "st_key4"       TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"     USING
-      * 20070921 4.0対応END
                                    MCPAREA
                                    MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                    SPA-AREA
-      * 20070921 4.0対応END
 
            IF      MCP-RC           =   ZERO
              MOVE    ZERO          TO  FLG-SRYACT
@@ -5805,7 +5662,7 @@
            ELSE
              MOVE    1            TO  FLG-NYUINACT
              INITIALIZE               NYUIN-SRYACT-REC
-           END-IF  
+           END-IF
            .
        900-NYUINACT-FETCH-EXT.
            EXIT.
@@ -5868,7 +5725,7 @@
              MOVE    ZERO        TO  FLG-INPUTCD
            ELSE
              MOVE    1           TO  FLG-INPUTCD
-           END-IF        
+           END-IF
            .
        900-INPUTCD-SELECT-EXT.
            EXIT.
@@ -5996,7 +5853,7 @@
       *    件数集計
            IF   FLG-ATEND     NOT = 1
              ADD      1     TO  CNT-A010T2
-           END-IF 
+           END-IF
            .
        910-A010-READ2-EXT.
            EXIT.
@@ -6282,7 +6139,7 @@
              INITIALIZE                 TNS-TENSU-REC
              MOVE    1                  TO  FLG-TENSU
            END-IF
-      
+
       *=== sarge対応 UP By Takashima(2006/08/17) start
       *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
@@ -6656,7 +6513,7 @@
       *    終了　　処理
       *****************************************************************
        300-END-SEC                 SECTION.
-      *     
+      *
       *    ステップ管理終了処理
            MOVE    "STE"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
@@ -6770,7 +6627,7 @@
       * 20070921 4.0対応END
       ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START 
+      ****2005/10/17 @@@@-BRAND  START
       *                                 ORCMCPAREA
       ****2005/10/17 @@@@-BRAND  END
       * 20070921 4.0対応START t.tanaka
