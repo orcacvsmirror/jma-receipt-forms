@@ -33,6 +33,8 @@
       *  07/09/21    @@@@-長屋     4.0対応
       *  01.00.03       田中    08/04/24   H20年4月改正対応(後期高齢者)
       *  01.00.04       田中    08/07/01   処理速度向上の修正
+      *  01.00.05       門間    09/02/23   SETTEI.TXTからINIへ拡張子の変更
+      *  01.00.06       門間    09/05/13   プログラムオプション対応(INIファイル)
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -50,12 +52,14 @@
       *    エラーファイル
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
-      *****  04/02/04 INS
-           SELECT  SETTEI-FILE   ASSIGN FILE-NAME
-                                 ORGANIZATION   IS  LINE SEQUENTIAL
-                                 ACCESS MODE    IS  SEQUENTIAL
-                                 FILE   STATUS  IS  STS-SETTEI.
-      *****
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE START
+      ******  04/02/04 INS
+      *     SELECT  SETTEI-FILE   ASSIGN FILE-NAME
+      *                           ORGANIZATION   IS  LINE SEQUENTIAL
+      *                           ACCESS MODE    IS  SEQUENTIAL
+      *                           FILE   STATUS  IS  STS-SETTEI.
+      ******
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE END
       *
        DATA                        DIVISION.
        FILE                        SECTION.
@@ -67,11 +71,13 @@
 006900*    エラーファイル
        FD  RECEERR-FILE.
        01  RECEERR-REC             PIC X(200). 
-      ***** 04/02/04 INS
-      *    優先保険者番号ファイル
-       FD  SETTEI-FILE.
-       01  SETTEI-PARA             PIC X(01). 
-      *****
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE START
+      ****** 04/02/04 INS
+      **    優先保険者番号ファイル
+      * FD  SETTEI-FILE.
+      * 01  SETTEI-PARA             PIC X(01). 
+      ******
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE END
       *
        WORKING-STORAGE             SECTION.
       *    印刷用データ 名称領域 
@@ -246,6 +252,9 @@
            03  WRK-CHK-FTNJANUM      PIC X(20).
       *    ファイル名称用エリア
            03  FILE-NAME             PIC X(512).
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD START
+           03  SETTEI-PARA           PIC 9(01).
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD END
       *****
       *
            03  WRK-GOKEI-AREA.
@@ -393,6 +402,11 @@
       *    ファイルディレクトリ位置指定サブ
            COPY    "CPMKPASS.INC".
       *****
+      *
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD START
+      *    プログラムオプション編集パラメタ
+           COPY    "CPORCSPRGOPTION.INC".
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD END
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -591,9 +605,18 @@
              SUBTRACT  1        FROM IDX1  
              MOVE  IDX1         TO   SUM-SRYKAMAX
       *
-      ***** 04/02/04 INS
-           PERFORM  110-INI-FILE-SEC
-      *****
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 CHANGE START
+      ****** 04/02/04 INS
+      *     PERFORM  110-INI-FILE-SEC
+      ******
+           INITIALIZE                      ORCSPRGOPTIONAREA
+           MOVE    "A00000L200"        TO  ORCSPRGOPTION-PRGID
+           MOVE    "SETTEI"            TO  ORCSPRGOPTION-IN-DATA
+           CALL    "ORCSPRGOPTION"     USING   SPA-AREA
+                                               ORCSPRGOPTIONAREA
+           MOVE  ORCSPRGOPTION-OT-PARA(1:1)  TO  SETTEI-PARA
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 CHANGE END
+      *
       *    システム日付セット
            MOVE  LNK-PRTKANRI-SKYYMD  TO  WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
@@ -605,33 +628,39 @@
            .
        100-INIT-EXT.
            EXIT.
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE START
       *****************************************************************
       *    対象設定ファイル読み込み処理  04/02/04 INS
       *****************************************************************
-       110-INI-FILE-SEC                SECTION.
+      * 110-INI-FILE-SEC                SECTION.
+      **
+      **    ファイルディレクトリ位置指定
+      *     INITIALIZE           ORCSMKPASSAREA
+      **--- (2009/02/23) line change start ------------------------------
+      **     MOVE  "data/SETTEI.TXT"     TO  MKPASS-IN-01
+      *     MOVE  "data/SETTEI.INI"     TO  MKPASS-IN-01
+      **--- (2009/02/23) line change start ------------------------------
+      *     CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
+      *     MOVE  MKPASS-OT-01  TO  FILE-NAME
+      **
+      **
+      *     INITIALIZE   SETTEI-PARA
+      **
+      *     OPEN  INPUT  SETTEI-FILE
+      **
+      *     READ SETTEI-FILE
+      *       AT END
+      *         MOVE      1   TO  SETTEI-PARA
+      *     END-READ
+      **
+      **
+      *     CLOSE SETTEI-FILE
+      **
+      *     .
+      * 110-INI-FILE-EXT.
+      *     EXIT.
       *
-      *    ファイルディレクトリ位置指定
-           INITIALIZE           ORCSMKPASSAREA
-           MOVE  "data/SETTEI.TXT"     TO  MKPASS-IN-01
-           CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
-           MOVE  MKPASS-OT-01  TO  FILE-NAME
-      *
-      *
-           INITIALIZE   SETTEI-PARA
-      *
-           OPEN  INPUT  SETTEI-FILE
-      *
-           READ SETTEI-FILE
-             AT END
-               MOVE      1   TO  SETTEI-PARA
-           END-READ
-      *
-      *
-           CLOSE SETTEI-FILE
-      *
-           .
-       110-INI-FILE-EXT.
-           EXIT.
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE END
       *
       *****************************************************************
       *    パラメタチェック処理
