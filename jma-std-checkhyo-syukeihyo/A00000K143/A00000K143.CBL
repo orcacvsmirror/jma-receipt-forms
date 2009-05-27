@@ -46,6 +46,7 @@
       *  08/08/13    @@@@-田中     診療行為画面から入院料を入力すると重複してしまう不具合を修正
       *  08/09/30    @@@@-田中     入院のみの患者が集計されない不具合を修正
       *  09/02/10    @@@@-田中     入院料・室料差額・食事の件数を修正
+      *  09/05/07    @@@@-田中     プログラムオプション対応
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -168,6 +169,11 @@
            03  FLG-OK              PIC 9(01).
            03  FLG-NG              PIC 9(01).
       */20040413 追加
+      *--- 2009/05/07 ADD START ----------------------------------------
+           03  FLG-PRGOPTION       PIC 9(01).
+           03  FLG-DATEKBN         PIC 9(01).
+           03  FLG-DATEKBN2        PIC 9(01).
+      *--- 2009/05/07 ADD END ----------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -207,6 +213,12 @@
            03  IDZ                PIC 9(04).
            03  IDM                PIC 9(04).
            03  IDX-MAX            PIC 9(04).
+      *--- 2009/05/07 ADD START ----------------------------------------
+           03  IDX9               PIC 9(03).
+           03  IDX12              PIC 9(03).
+           03  IDX13              PIC 9(02).
+           03  IDX14              PIC 9(05).
+      *--- 2009/05/07 ADD END ----------------------------------------
            
       *
       *    パラメタ領域
@@ -332,6 +344,11 @@
            03  WRK-ZENPTID2          PIC 9(10).
            03  WRK-TENSU3            PIC 9(09).
       * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
+      *--- 2009/05/07 ADD START ----------------------------------------
+           03  WRK-OPT-SIZE          PIC 9(05).
+           03  WRK-LINE              PIC X(44000).
+           03  WRK-ITEM              PIC X(430).
+      *--- 2009/05/07 ADD END ------------------------------------------
       *
       *    地区別退避エリア
        01  WRK-TIKU-AREA.
@@ -365,6 +382,15 @@
               05  WRK-K143ALL-KAISU  PIC  9(11).
       *
            COPY    "CPSHELLTBL.INC".
+      *
+      *--- 2009/05/07 ADD START ----------------------------------------
+      *    プログラムオプションパラメタ
+       01  PARA-AREA.
+           03  PARA-TIKU-REC          OCCURS 50.
+               05  PARA-TIKUNAME      PIC X(20).
+               05  FILLER             PIC X(01).
+               05  PARA-TIKUNUM       PIC X(400).
+      *--- 2009/05/07 ADD END ------------------------------------------
       *
       ***07/09/18 nagaya 4.0対応 start
       *     COPY    "ORCA-DBPATH".
@@ -462,6 +488,12 @@
       *
        01  PRTDATA-REC.
            COPY    "CPPRTDATA.INC".          
+      *
+      *--- 2009/05/07 ADD START ------------------------------------------
+      *    プログラムオプション追加
+       01  PRGOPTION-REC.
+           COPY    "CPPRGOPTION.INC".
+      *--- 2009/05/07 ADD END ------------------------------------------
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -652,8 +684,13 @@
                GO              TO  100-INIT-EXT
            END-IF
       *
+      *--- 2009/05/07 ADD + DELETE START -------------------------------
+      *    プログラムオプション取得処理
+           PERFORM 110-GET-PRGOPTION-SEC
+      *
       *    地区別印刷K143NPT
-           PERFORM  110-TIKU-PARA-HENSYU-SEC
+      *     PERFORM  110-TIKU-PARA-HENSYU-SEC
+      *--- 2009/05/07 ADD + DELETE END ---------------------------------
       *
       *    入院自費情報取得
       *    区分11
@@ -1116,7 +1153,7 @@
        100-INIT-EXT.
            EXIT.
       *****************************************************************
-      *    地区編集処理
+      *    地区編集処理(未使用)
       *****************************************************************
        110-TIKU-PARA-HENSYU-SEC              SECTION.
       *
@@ -1164,6 +1201,152 @@
        110-TIKU-PARA-HENSYU-EXT.
            EXIT.
       *
+      *--- 2009/05/07 ADD START ----------------------------------------
+      *****************************************************************
+      *    プログラムオプション取得処理
+      *****************************************************************
+      *
+       110-GET-PRGOPTION-SEC           SECTION.
+      *
+           PERFORM   900-PRGOPTION-KEY-SEL-SEC
+      *
+           MOVE    1               TO   IDX13
+           MOVE    1               TO   IDX9
+           MOVE    1               TO   WRK-OPT-SIZE
+           STRING  PRGOPTION-OPTION   DELIMITED   BY   SIZE
+                                      INTO   WRK-LINE
+                                      WITH   POINTER   WRK-OPT-SIZE
+           END-STRING
+           COMPUTE  WRK-OPT-SIZE   =   WRK-OPT-SIZE  -  1
+      *
+           MOVE    1             TO   IDX14
+           PERFORM  UNTIL  IDX14  >  WRK-OPT-SIZE
+                    OR  PRGOPTION-OPTION(IDX14:)  =   SPACE
+                    OR  IDX13   >   50
+                    OR  FLG-DATEKBN  =  1 
+      *
+             MOVE    SPACE       TO   WRK-LINE
+      *
+             UNSTRING    PRGOPTION-OPTION  DELIMITED   BY X"0A"
+                                           INTO    WRK-ITEM
+                                           WITH    POINTER  IDX14
+             END-UNSTRING
+      *
+             IF   (WRK-ITEM(1:1)  =  "#" )
+               CONTINUE
+             ELSE
+               IF  (WRK-ITEM(1:5)  =  "CHIKU" )
+                 MOVE   WRK-ITEM(9:20)      TO   WRK-TIKUNAME(IDX13)
+                 PERFORM  VARYING  IDX12  FROM  30  BY  8
+                          UNTIL  IDX12  >  189
+                          OR  IDX9  >  20
+                          OR  FLG-DATEKBN2  =  1 
+                   IF   WRK-ITEM(IDX12:1)  =  SPACE
+                     MOVE    21       TO   IDX9
+                     MOVE    1        TO   FLG-DATEKBN2
+                   ELSE
+                     MOVE   WRK-ITEM(IDX12:7)
+                                         TO   WRK-POST-NUM(IDX13 IDX9)
+                     ADD    1            TO   IDX9
+                   END-IF
+                 END-PERFORM
+               ELSE
+                 MOVE    1        TO   FLG-DATEKBN
+                 COMPUTE  IDX13  =   IDX13  -  1
+               END-IF
+             END-IF
+             ADD     1            TO   IDX13
+             MOVE    1            TO   IDX9
+             INITIALIZE           FLG-DATEKBN2
+      *
+           END-PERFORM
+      *
+           MOVE    "その他"          TO   WRK-TIKUNAME(IDX13)
+           MOVE    "*******"         TO   WRK-POST-NUM(IDX13 1)
+           ADD     1                 TO   IDX13
+           MOVE    IDX13             TO   WRK-TIKUMAX
+      *
+          .
+       110-GET-PRGOPTION-EXT.
+           EXIT.
+      *****************************************************************
+      *    プログラムオプション検索処理
+      *****************************************************************
+       900-PRGOPTION-KEY-SEL-SEC       SECTION.
+      *
+           MOVE    ZERO              TO   FLG-PRGOPTION
+      *
+           MOVE    SPA-HOSPNUM       TO   PRGOPTION-HOSPNUM
+           MOVE    "A00000K143"      TO   PRGOPTION-PRGID
+           MOVE    "*"               TO   PRGOPTION-KBNCD
+           MOVE    PRGOPTION-REC     TO   MCPDATA-REC
+           MOVE    "tbl_prgoption"   TO   MCP-TABLE
+           MOVE    "key"             TO   MCP-PATHNAME
+           PERFORM  910-DBSELECT-SEC
+           IF   (MCP-RC  =  ZERO)
+             MOVE    MCPDATA-REC     TO   PRGOPTION-REC
+           ELSE
+             INITIALIZE              PRGOPTION-REC
+             MOVE    1               TO   FLG-PRGOPTION
+           END-IF
+      *
+           MOVE    "tbl_prgoption"   TO   MCP-TABLE
+           MOVE    "key"             TO   MCP-PATHNAME
+           PERFORM  910-DBCLOSECURSOR-SEC
+      *
+           .
+       900-PRGOPTION-KEY-SEL-EXT.
+           EXIT.
+
+      *****************************************************************
+      *    ＤＢ検索処理（FHETCHも行う)
+      *****************************************************************
+       910-DBSELECT-SEC              SECTION.
+      *
+           MOVE    "DBSELECT"        TO   MCP-FUNC
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF   (MCP-RC  =  ZERO )
+             PERFORM  910-DBFETCH-SEC
+           END-IF
+      *
+           .
+      *
+       910-DBSELECT-EXT.
+           EXIT.
+      *****************************************************************
+      *    ＤＢ読み込み処理
+      *****************************************************************
+       910-DBFETCH-SEC                 SECTION.
+      *
+           MOVE    "DBFETCH"           TO   MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+      *
+       910-DBFETCH-EXT.
+           EXIT.
+      *****************************************************************
+      *    ＤＢクローズ処理
+      *****************************************************************
+       910-DBCLOSECURSOR-SEC           SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+      *
+       910-DBCLOSECURSOR-EXT.
+           EXIT.
+      *--- 2009/05/07 ADD END ------------------------------------------
       *****************************************************************
       *    主　　処理
       *****************************************************************
