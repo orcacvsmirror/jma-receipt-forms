@@ -30,6 +30,7 @@
       *  05/03/02    @@@@-鈴木     open-cobol 0.23への対応
       *  06/09/04    @@@@-吉川     sarge対応
       *  07/09/21    @@@@-大竹     Ver4.0対応
+      *  09/04/16    @@@@-門間     プログラムオプション対応(INIファイル)
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -41,11 +42,13 @@
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
       *
-      *    預り金対象CD定義用INIファイル
-           SELECT  L300I-FILE      ASSIGN  L300IPARA
-                                   ORGANIZATION    SEQUENTIAL
-                                   ACCESS  MODE    SEQUENTIAL
-                                   FILE    STATUS  IS  STS-PARA.
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      **    預り金対象CD定義用INIファイル
+      *     SELECT  L300I-FILE      ASSIGN  L300IPARA
+      *                             ORGANIZATION    SEQUENTIAL
+      *                             ACCESS  MODE    SEQUENTIAL
+      *                             FILE    STATUS  IS  STS-PARA.
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    未収金／預り金対象者抽出ファイル
            SELECT  L300T-FILE      ASSIGN  L300TPARA
@@ -61,11 +64,13 @@
        FD  RECEERR-FILE.
        01  RECEERR-REC             PIC X(200). 
       *
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
       *    預り金対象CD定義用INIファイル
-       FD  L300I-FILE.
-       01  L300I. 
-           03  L300I-SRYCD         PIC X(09).
-           03  FILLER              PIC X(81).
+      * FD  L300I-FILE.
+      * 01  L300I. 
+      *     03  L300I-SRYCD         PIC X(09).
+      *     03  FILLER              PIC X(81).
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
       *
       *    未収金／預り金対象者抽出ファイル
        FD  L300T-FILE.
@@ -88,11 +93,13 @@
       *
        01  L300IPARA.
            03  FILLER              PIC X(256) VALUE  SPACE.
-
-       01  L300INAME.
-           03  FILLER              PIC  X(05) VALUE  "data/".
-           03  FILLER              PIC  X(10) VALUE  "A00000L300".
-           03  FILLER              PIC  X(04) VALUE  ".INI".
+      *
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      * 01  L300INAME.
+      *     03  FILLER              PIC  X(05) VALUE  "data/".
+      *     03  FILLER              PIC  X(10) VALUE  "A00000L300".
+      *     03  FILLER              PIC  X(04) VALUE  ".INI".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
       *
        01  L300TPARA.
            03  FILLER   PIC  X(05) VALUE "/tmp/".
@@ -392,6 +399,10 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      *    プログラムオプション編集パラメタ
+           COPY    "CPORCSPRGOPTION.INC".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -582,22 +593,35 @@
               END-IF
            END-IF
       *
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE START
       *    預り金対象CD定義用INIファイル情報抽出
-           INITIALIZE              ORCSMKPASSAREA
-           MOVE  L300INAME     TO  MKPASS-IN-01
-           CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
-           MOVE  MKPASS-OT-01  TO  L300IPARA
-      *
-           OPEN  INPUT L300I-FILE
-           INITIALIZE  L300I
-           READ  L300I-FILE
-           END-READ
-           CLOSE       L300I-FILE
-      *
-           IF          L300I-SRYCD  NOT =  SPACE
-             MOVE      L300I-SRYCD  TO   WRK-INI-AZUKARICD
+      *     INITIALIZE              ORCSMKPASSAREA
+      *     MOVE  L300INAME     TO  MKPASS-IN-01
+      *     CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
+      *     MOVE  MKPASS-OT-01  TO  L300IPARA
+      **
+      *     OPEN  INPUT L300I-FILE
+      *     INITIALIZE  L300I
+      *     READ  L300I-FILE
+      *     END-READ
+      *     CLOSE       L300I-FILE
+      **
+      *     IF          L300I-SRYCD  NOT =  SPACE
+      *       MOVE      L300I-SRYCD  TO   WRK-INI-AZUKARICD
+      *     END-IF
+      *     
+      *    プログラムオプション取込み（預り金コード）
+           INITIALIZE                      ORCSPRGOPTIONAREA
+           MOVE    "A00000L300"        TO  ORCSPRGOPTION-PRGID
+           MOVE    "AZUKARICD"         TO  ORCSPRGOPTION-IN-DATA
+           CALL    "ORCSPRGOPTION"     USING   SPA-AREA
+                                               ORCSPRGOPTIONAREA
+           IF  ORCSPRGOPTION-OT-PARA(1:9)  NOT =  SPACE
+             MOVE  ORCSPRGOPTION-OT-PARA(1:9)  TO  WRK-INI-AZUKARICD
            END-IF
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE START
       *
+           DISPLAY "aaa"
            .
        110-PARA-HENSYU-EXT.
            EXIT.

@@ -49,6 +49,7 @@
       *  01.00.17      田中    08/10/27   CSV出力処理を追加
       *  01.00.18      田中    09/01/29   食事療養費欄の追加
       *  01.00.18      田中    09/01/29   本人負担額に自費を含まないよう修正
+      *  01.00.19      門間    09/04/16   プログラムオプション対応(INIファイル)
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -69,23 +70,25 @@
                                                          SEQUENTIAL
                                      FILE    STATUS  IS  STS-CSV.
       *---- 2008/10/27  ADD  END ---------------------------------------
-      *    自治体名用ファイル
-           SELECT  CITY-FILE     ASSIGN FILE-NAME
-                                 ORGANIZATION   IS  LINE SEQUENTIAL
-                                 ACCESS MODE    IS  SEQUENTIAL
-                                 FILE   STATUS  IS  STS-CITY.
-      *    償還払対象公費用ファイル
-           SELECT  KOHI-FILE     ASSIGN FILE-NAME
-      ***** 04/06/03 DEL
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      **    自治体名用ファイル
+      *     SELECT  CITY-FILE     ASSIGN FILE-NAME
       *                           ORGANIZATION   IS  LINE SEQUENTIAL
-      *****
-                                 ACCESS MODE    IS  SEQUENTIAL
-                                 FILE   STATUS  IS  STS-KOHI.
-      ***** 04/06/03 INS
-           SELECT  KOHS-FILE     ASSIGN FILE-NAME
-                                 ACCESS MODE    IS  SEQUENTIAL
-                                 FILE   STATUS  IS  STS-KOHS.
-      *****
+      *                           ACCESS MODE    IS  SEQUENTIAL
+      *                           FILE   STATUS  IS  STS-CITY.
+      **    償還払対象公費用ファイル
+      *     SELECT  KOHI-FILE     ASSIGN FILE-NAME
+      ****** 04/06/03 DEL
+      **                           ORGANIZATION   IS  LINE SEQUENTIAL
+      ******
+      *                           ACCESS MODE    IS  SEQUENTIAL
+      *                           FILE   STATUS  IS  STS-KOHI.
+      ****** 04/06/03 INS
+      *     SELECT  KOHS-FILE     ASSIGN FILE-NAME
+      *                           ACCESS MODE    IS  SEQUENTIAL
+      *                           FILE   STATUS  IS  STS-KOHS.
+      ******
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    エラーファイル
            SELECT  RECEERR-FILE  ASSIGN  RECEERR
@@ -105,37 +108,39 @@
        01  A00000KOHS-REC            PIC X(400).
       *---- 2008/10/27  ADD  END ---------------------------------------
       
-      *    優先保険者番号ファイル
-       FD  CITY-FILE.
-      ***** 04/06/03 UPD
-      * 01  CITY-CITYNAME             PIC X(16). 
-       01  CITY-CITYNAME             PIC X(40). 
-      *****
-      *
-      *    償還払対象公費用ファイル
-       FD  KOHI-FILE.
-       01  KOHI-REC.
-      ***** 04/06/03 UPD
-      *     03 KOHI-DATA-TBL  OCCURS 10.
-      *        05  KOHI-SP1           PIC X(05).
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      **    優先保険者番号ファイル
+      * FD  CITY-FILE.
+      ****** 04/06/03 UPD
+      ** 01  CITY-CITYNAME             PIC X(16). 
+      * 01  CITY-CITYNAME             PIC X(40). 
+      ******
+      **
+      **    償還払対象公費用ファイル
+      * FD  KOHI-FILE.
+      * 01  KOHI-REC.
+      ****** 04/06/03 UPD
+      **     03 KOHI-DATA-TBL  OCCURS 10.
+      **        05  KOHI-SP1           PIC X(05).
+      **        05  KOHI-KOHNUM        PIC X(03).
+      **        05  KOHI-SP2           PIC X(01). 
+      *     03 KOHI-DATA-TBL  OCCURS 40.
+      *        05  KOHI-SP1           PIC X(06).
       *        05  KOHI-KOHNUM        PIC X(03).
       *        05  KOHI-SP2           PIC X(01). 
-           03 KOHI-DATA-TBL  OCCURS 40.
-              05  KOHI-SP1           PIC X(06).
-              05  KOHI-KOHNUM        PIC X(03).
-              05  KOHI-SP2           PIC X(01). 
-      *****
-      ***** 04/06/03 INS
-       FD  KOHS-FILE.
-       01  KOHS-REC.
-           03 KOHS-DATA-TBL.
-      ***** 04/07/28 DEL
-      *        05  FILLER             PIC X(17).
-      *        05  KOHS-SYUTURYOKU    PIC 9(01).
-      *****
-              05  FILELR             PIC X(15).
-              05  KOHS-KAIPAGE       PIC 9(01). 
-      *****
+      ******
+      ****** 04/06/03 INS
+      * FD  KOHS-FILE.
+      * 01  KOHS-REC.
+      *     03 KOHS-DATA-TBL.
+      ****** 04/07/28 DEL
+      **        05  FILLER             PIC X(17).
+      **        05  KOHS-SYUTURYOKU    PIC 9(01).
+      ******
+      *        05  FILELR             PIC X(15).
+      *        05  KOHS-KAIPAGE       PIC 9(01). 
+      ******
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    エラーファイル
        FD  RECEERR-FILE.
@@ -222,6 +227,9 @@
       *---- 2008/10/27  ADD  END ---------------------------------------
            03  IDY                  PIC 9(04).
            03  IDZ                  PIC 9(04).
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD START
+           03  IDXP                 PIC 9(02).
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD END
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -287,6 +295,13 @@
            03  WRK-SKYMONEY         PIC 9(09).
       *--- 2009/01/29 ADD END ------------------------------------------
       *
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD START
+       01  PGOPTION-AREA.
+           03  CITY-CITYNAME        PIC X(40).
+           03  KOHS-KAIPAGE         PIC 9(01).
+           03  KOHI-DATA-TBL        OCCURS 40.
+               05  KOHI-KOHNUM      PIC X(03). 
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD END
       *    カウント領域
        01  CNT-AREA.
            03  CNT-RECE10           PIC 9(06).
@@ -384,6 +399,10 @@
            COPY    "CPMKPASS.INC".
       *
            COPY    "COMMON-SPA".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD START
+      *    プログラムオプション編集パラメタ
+           COPY    "CPORCSPRGOPTION.INC".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD END
       *
       *****************************************************************
        LINKAGE  SECTION.
@@ -553,64 +572,100 @@
       *****************************************************************
        110-INI-FILE-SEC                SECTION.
       *
-      *    ファイルディレクトリ位置指定
-           INITIALIZE           ORCSMKPASSAREA
-           MOVE    "data/CITYNAME.INI"     TO   MKPASS-IN-01
-           CALL    "ORCSMKPASSSITE"        USING
-                                           ORCSMKPASSAREA
-           MOVE    MKPASS-OT-01            TO   FILE-NAME
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE START
+      **    ファイルディレクトリ位置指定
+      *     INITIALIZE           ORCSMKPASSAREA
+      *     MOVE    "data/CITYNAME.INI"     TO   MKPASS-IN-01
+      *     CALL    "ORCSMKPASSSITE"        USING
+      *                                     ORCSMKPASSAREA
+      *     MOVE    MKPASS-OT-01            TO   FILE-NAME
+      **
+      *     INITIALIZE   CITY-CITYNAME
+      **
+      *     OPEN  INPUT  CITY-FILE
+      **
+      *     READ CITY-FILE
+      *       AT END
+      *         INITIALIZE          CITY-CITYNAME
+      *     END-READ
+      **
+      **
+      *     CLOSE CITY-FILE
+      **
+      **    ファイルディレクトリ位置指定
+      *     INITIALIZE                  ORCSMKPASSAREA
+      *     MOVE    "data/KOHI.INI"     TO   MKPASS-IN-01
+      *     CALL    "ORCSMKPASSSITE"    USING
+      *                                 ORCSMKPASSAREA
+      *     MOVE    MKPASS-OT-01        TO   FILE-NAME
+      **
+      **
+      *     INITIALIZE   KOHI-REC
+      **
+      *     OPEN  INPUT  KOHI-FILE
+      **
+      *     READ KOHI-FILE
+      *       AT END
+      *         INITIALIZE        KOHI-REC
+      *     END-READ
+      **
+      *     CLOSE KOHI-FILE
+      **
+      ****** 04/06/03 INS
+      **    ファイルディレクトリ位置指定
+      *     INITIALIZE           ORCSMKPASSAREA
+      *     MOVE    "data/KOHS.INI"     TO   MKPASS-IN-01
+      *     CALL    "ORCSMKPASSSITE"    USING
+      *                                 ORCSMKPASSAREA
+      *     MOVE    MKPASS-OT-01        TO   FILE-NAME
+      **
+      **
+      *     INITIALIZE   KOHS-REC
+      **
+      *     OPEN  INPUT   KOHS-FILE
+      **
+      *     READ KOHS-FILE
+      *       AT END
+      *         INITIALIZE        KOHS-REC
+      *     END-READ
+      **
+      **
+      *     CLOSE KOHS-FILE
       *
-           INITIALIZE   CITY-CITYNAME
+      *    プログラムオプション取込み
+           INITIALIZE                        ORCSPRGOPTIONAREA
+                                             PGOPTION-AREA
+           MOVE    "A00000KOHS"      TO      ORCSPRGOPTION-PRGID
+      *    自治体名
+           MOVE    "JICHI"           TO      ORCSPRGOPTION-IN-DATA
+           CALL    "ORCSPRGOPTION"   USING   SPA-AREA
+                                               ORCSPRGOPTIONAREA
+           IF  ORCSPRGOPTION-OT-PARA  NOT =  SPACE
+             MOVE  ORCSPRGOPTION-OT-PARA  TO  CITY-CITYNAME
+           END-IF
       *
-           OPEN  INPUT  CITY-FILE
+      *    改ページ
+           MOVE    "PAGE"            TO      ORCSPRGOPTION-IN-DATA
+           CALL    "ORCSPRGOPTION"   USING   SPA-AREA
+                                               ORCSPRGOPTIONAREA
+           IF  ORCSPRGOPTION-OT-PARA  NOT =  SPACE
+             MOVE  ORCSPRGOPTION-OT-PARA  TO  KOHS-KAIPAGE
+           END-IF
       *
-           READ CITY-FILE
-             AT END
-               INITIALIZE          CITY-CITYNAME
-           END-READ
-      *
-      *
-           CLOSE CITY-FILE
-      *
-      *    ファイルディレクトリ位置指定
-           INITIALIZE                  ORCSMKPASSAREA
-           MOVE    "data/KOHI.INI"     TO   MKPASS-IN-01
-           CALL    "ORCSMKPASSSITE"    USING
-                                       ORCSMKPASSAREA
-           MOVE    MKPASS-OT-01        TO   FILE-NAME
-      *
-      *
-           INITIALIZE   KOHI-REC
-      *
-           OPEN  INPUT  KOHI-FILE
-      *
-           READ KOHI-FILE
-             AT END
-               INITIALIZE        KOHI-REC
-           END-READ
-      *
-           CLOSE KOHI-FILE
-      *
-      ***** 04/06/03 INS
-      *    ファイルディレクトリ位置指定
-           INITIALIZE           ORCSMKPASSAREA
-           MOVE    "data/KOHS.INI"     TO   MKPASS-IN-01
-           CALL    "ORCSMKPASSSITE"    USING
-                                       ORCSMKPASSAREA
-           MOVE    MKPASS-OT-01        TO   FILE-NAME
-      *
-      *
-           INITIALIZE   KOHS-REC
-      *
-           OPEN  INPUT   KOHS-FILE
-      *
-           READ KOHS-FILE
-             AT END
-               INITIALIZE        KOHS-REC
-           END-READ
-      *
-      *
-           CLOSE KOHS-FILE
+      *    償還払公費
+           MOVE    "KOH"             TO      ORCSPRGOPTION-IN-DATA
+           PERFORM  VARYING  IDXP  FROM  1  BY  1
+                    UNTIL    IDXP  >    40
+             MOVE   IDXP             TO      ORCSPRGOPTION-IN-DATA(4:2)
+             CALL   "ORCSPRGOPTION"  USING   SPA-AREA
+                                                 ORCSPRGOPTIONAREA
+             IF  ORCSPRGOPTION-OT-PARA  NOT =  SPACE
+               MOVE  ORCSPRGOPTION-OT-PARA  TO  KOHI-KOHNUM(IDXP)
+             ELSE
+               MOVE  41                     TO  IDXP
+             END-IF
+           END-PERFORM
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE END
       *
            .
        110-INI-FILE-EXT.
