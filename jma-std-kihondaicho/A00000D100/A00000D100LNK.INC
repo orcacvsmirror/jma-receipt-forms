@@ -46,3 +46,4 @@
            03  D100LNK-NYUGAIKBN                    PIC X(01).
            03  D100LNK-SRYKACD                      PIC X(02).
            03  D100LNK-DRCD                         PIC X(05).
+           03  D100LNK-ZERO                         PIC X(01).

@@ -48,6 +48,8 @@
       *  08/04/01    @@@@-田中     H20年4月改正対応
       *  08/07/08    @@@@-田中     収納明細を更新した場合に、入金額が表示されない不具合の修正
       *  09/02/25    @@@@-門間     預り金の重複を修正
+      *  09/03/04    @@@@-田中     再診、その他の件数処理を修正
+      *  09/04/13    @@@@-門間     ０件印字対応（医師・地区別）
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者        日付      内容
@@ -171,6 +173,9 @@
            03  FLG-SRYACCT         PIC 9(01).
            03  FLG-SRYACT          PIC 9(01).
            03  FLG-JYURRK          PIC 9(01).
+      *--- 2009/03/04 ADD START ----------------------------------------
+           03  FLG-JYURRK2         PIC 9(01).
+      *--- 2009/03/04 ADD END ----------------------------------------
            03  FLG-HKNNUM          PIC 9(01).
            03  FLG-PTNYUINRRK      PIC 9(01).
            03  FLG-TENSU           PIC 9(01).
@@ -181,8 +186,10 @@
            03  FLG-INI             PIC 9(01).
            03  FLG-OK              PIC 9(01).
            03  FLG-NG              PIC 9(01).
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
+           03  FLG-OTHER           PIC 9(01).
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
       */20040406 追加
-      *
       *    カウント領域
        01  CNT-AREA.
            03  CNT-LINE          PIC 9(02).
@@ -206,6 +213,10 @@
       * 20040407 追加 Y.Takahashi
            03  I7                PIC 9(04).
       */20040407 追加
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
+           03  I8                PIC 9(04).
+           03  I9                PIC 9(04).
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
            03  IDX1              PIC 9(04).
            03  IDX2              PIC 9(04).
            03  IDX3              PIC 9(04).
@@ -228,6 +239,10 @@
       *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
            03  IDX9              PIC 9(04).
       *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+      *--- 2009/03/04 ADD START ----------------------------------------
+           03  IDX10             PIC 9(02).
+           03  IDX11             PIC 9(02).
+      *--- 2009/03/04 ADD END ------------------------------------------
       *
       *    一時領域
        01  WRK-AREA.
@@ -331,7 +346,18 @@
       ****2005/12/30  @@@@-BRAND END
       * 20071011追加 T.Tanaka
            03  WRK-GENMEN        PIC 9(09).
-      * 20071011追加 
+      * 20071011追加
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
+           03  WRK-TIKU-TBL             OCCURS 50.
+             05  WRK-TIKUFLG            PIC  9(01).
+             05  WRK-POST-REC-G.
+               07  WRK-TIKUNAME         PIC  X(20).
+               07  FILLER               PIC  X(01).
+               07  WRK-POST-NUM-TBL     OCCURS 20.
+                 09  WRK-POST-NUM       PIC  X(07).
+                 09  FILLER             PIC  X(01).
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
+      *
       */20040406 追加
       * 20040406 編集 Y.Takahashi 
        01  SUM-AREA.
@@ -435,7 +461,7 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
+           COPY    "CPPRTDATA.INC".
       *
       *    収納マスタ
        01  SYUNOU-REC.
@@ -482,7 +508,7 @@
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
       *    ファイルデイレクトリ位置指定サブ
            COPY    "CPMKPASS.INC".
@@ -1082,8 +1108,16 @@
                NOT  AT  END
                IF    POST-TIKUNAME(1:4) NOT =  "終了"  AND
                      POST-TIKUNAME(1:8) NOT =  "サンプル"
-                  ADD     1    TO    IDX1
-                  MOVE  POST-REC  TO    SUM-POST-REC-G(IDX1)
+      *--- ０件印字対応（医師・地区別） 2009/04/13 CHANGE START
+                 ADD   1         TO  IDX1
+                 IF  D100LNK-ZERO  =  1
+                   MOVE  POST-REC  TO  WRK-POST-REC-G(IDX1)
+                 ELSE
+                   MOVE  POST-REC  TO  SUM-POST-REC-G(IDX1)
+                 END-IF
+      *           ADD     1    TO    IDX1
+      *           MOVE  POST-REC  TO    SUM-POST-REC-G(IDX1)
+      *--- ０件印字対応（医師・地区別） 2009/04/13 CHANGE END
       *            MOVE  POST-TIKUNAME   TO  SUM-TIKUNAME(IDX1)
                END-IF
                IF    IDX1   =  50  OR
@@ -1092,10 +1126,64 @@
                END-IF
              END-READ
            END-PERFORM
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
+           IF  D100LNK-ZERO  =  1
+             PERFORM  910-DBSELECT-SEC
+             PERFORM  UNTIL      FLG-SYUNOU  = 1
+               IF     D100LNK-YMD1  <=  SYU-DENPPRTYMD
+                 AND  D100LNK-YMD2  >=  SYU-DENPPRTYMD
+                 IF       D100LNK-SRYKACD      =  SPACE
+                     AND  D100LNK-DRCD         =  SPACE
+                   PERFORM  110-ZERO-SEC
+                 END-IF
+                 IF       D100LNK-SRYKACD  NOT =  SPACE
+                     AND  D100LNK-DRCD     NOT =  SPACE
+                   IF     D100LNK-SRYKACD      =  SYU-SRYKA
+                     AND  D100LNK-DRCD(2:4)    =  SYU-DRCD
+                     PERFORM  110-ZERO-SEC
+                   END-IF
+                 END-IF
+                 IF       D100LNK-SRYKACD  NOT =  SPACE
+                     AND  D100LNK-DRCD         =  SPACE
+                   IF     D100LNK-SRYKACD      =  SYU-SRYKA
+                     PERFORM  110-ZERO-SEC
+                   END-IF
+                 END-IF
+                 IF       D100LNK-DRCD     NOT =  SPACE
+                     AND  D100LNK-SRYKACD      =  SPACE
+                   IF     D100LNK-DRCD(2:4)    =  SYU-DRCD
+                     PERFORM  110-ZERO-SEC
+                   END-IF
+                 END-IF
+               END-IF
+               PERFORM  910-DBFETCH-SEC
+             END-PERFORM
+             PERFORM  910-DBCLOSE-SEC
       *
-           ADD     1             TO    IDX1
-           MOVE    "その他"      TO    SUM-TIKUNAME(IDX1)
-           MOVE    "*******"     TO    SUM-POST-NUM(IDX1 1)
+             MOVE    IDX1    TO    I8
+             MOVE    ZERO    TO    IDX1
+             PERFORM  VARYING  I9  FROM  1  BY  1
+                      UNTIL    I9  >     I8
+               IF   WRK-TIKUFLG(I9)  =  1
+                 ADD   1                    TO   IDX1
+                 MOVE  WRK-POST-REC-G(I9)   TO   SUM-POST-REC-G(IDX1)
+               END-IF
+             END-PERFORM
+           END-IF
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
+      *
+      *--- ０件印字対応（医師・地区別） 2009/04/13 CHANGE START
+           IF     D100LNK-ZERO  NOT =  1
+             OR  (D100LNK-ZERO      =  1
+             AND  FLG-OTHER         =  1)
+             ADD     1             TO    IDX1
+             MOVE    "その他"      TO    SUM-TIKUNAME(IDX1)
+             MOVE    "*******"     TO    SUM-POST-NUM(IDX1 1)
+           END-IF
+      *     ADD     1             TO    IDX1
+      *     MOVE    "その他"      TO    SUM-TIKUNAME(IDX1)
+      *     MOVE    "*******"     TO    SUM-POST-NUM(IDX1 1)
+      *--- ０件印字対応（医師・地区別） 2009/04/13 CHANGE END
            ADD     1             TO    IDX1
            MOVE    "全地区合計"  TO    SUM-TIKUNAME(IDX1)
            MOVE    IDX1          TO    SUM-TIKUMAX
@@ -1109,6 +1197,38 @@
        110-INI-FILE-EXT.
            EXIT.
       *
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
+      *****************************************************************
+      *    ０件印字処理
+      *****************************************************************
+       110-ZERO-SEC                SECTION.
+      *
+           INITIALIZE                PTINF-REC
+           MOVE   SYU-HOSPNUM   TO   PTINF-HOSPNUM
+           MOVE   SYU-PTID      TO   PTINF-PTID
+           PERFORM  900-PTINF-READ-SEC
+           PERFORM  VARYING  I8  FROM  1  BY  1
+                    UNTIL    I8  >     IDX1
+                    OR       PTINF-HOME-POST = SPACE
+                    OR       PTINF-HOME-ADRS = SPACE
+             PERFORM  VARYING  I9  FROM  1  BY  1
+                      UNTIL    I9  >     20
+               IF   WRK-POST-NUM(I8 I9)      = PTINF-HOME-POST
+               OR  (WRK-POST-NUM(I8 I9)(1:3) = PTINF-HOME-POST(1:3)
+               AND  WRK-POST-NUM(I8 I9)(4:4) = "****")
+                 MOVE   1   TO   WRK-TIKUFLG(I8)
+               END-IF
+             END-PERFORM
+           END-PERFORM
+      *
+           IF  PTINF-HOME-POST  =  SPACE
+             MOVE   1   TO   FLG-OTHER
+           END-IF
+           .
+       110-ZERO-EXT.
+           EXIT.
+      *
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
       *****************************************************************
       *    主　　処理
       *****************************************************************
@@ -1545,15 +1665,29 @@
             END-IF
       *=== 初診、再診、その他振分け修正 ADD By Yoshikawa(2007/06/27) end
       ***      受診履歴情報により初診、再診、その他件数を取得する。
-                PERFORM 900-JYURRK-READ-SEC
+      *--- 2009/03/04 CHANGE START -------------------------------------
+      *     PERFORM 900-JYURRK-READ-SEC
+           INITIALIZE     FLG-JYURRK2
+           PERFORM   910-JYURRK-READ-SEC
+      *--- 2009/03/04 CHANGE END ---------------------------------------
       *--- 預り金の重複を修正 BY Monma (2009/02/25) start
-                MOVE    JYURRK-RENNUM     TO   IDX4
+           MOVE    JYURRK-RENNUM     TO   IDX4
       *--- 預り金の重複を修正 BY Monma (2009/02/25) end
+      *--- 2009/03/04 ADD START ----------------------------------------
+           PERFORM  UNTIL  FLG-JYURRK  =  1
+             IF  FLG-JYURRK2  =  ZERO
                 PERFORM 320-JYURRK-CNT-SUB-SEC
-      *        当日預り金
-      ***      患者別に当日預り金を診療行為情報より取得する。
-                   PERFORM 320-AZUKARI-GET-SEC
+             END-IF
+      *--- 2009/03/04 ADD END ------------------------------------------
+      *    当日預り金
+      *    患者別に当日預り金を診療行為情報より取得する。
       * 20040401 削除 Y.Takahashi
+             PERFORM  320-AZUKARI-GET-SEC
+      *--- 2009/03/04 ADD START ----------------------------------------
+             PERFORM   910-JYURRK-FETCH-SEC
+           END-PERFORM
+           PERFORM   910-JYURRK-CLOSE-SEC
+      *--- 2009/03/04 ADD END ------------------------------------------
       *             PERFORM 911-SRY-SELECT-SEC
       *             PERFORM 320-AZUKARI-GET-SUB-SEC
       */20040401 削除
@@ -2333,15 +2467,25 @@
                          ADD  1  TO  SUM-YOSO(SUM-TIKUMAX 2)
                          ADD  1  TO  SUM-YOSO(I3 5)
                          ADD  1  TO  SUM-YOSO(SUM-TIKUMAX 5)
+      *--- 2009/03/04 ADD START ----------------------------------------
+                         MOVE  1 TO  FLG-JYURRK2
+      *--- 2009/03/04 ADD END ------------------------------------------
                  ELSE
       ****2006/03/27 @@@@-BRAND  START
-                      MOVE   2                   TO  JYURRK-RENNUM
+      *--- 2009/03/04 ADD + DELETE START -------------------------------
+      *                MOVE   2                   TO   JYURRK-RENNUM
+                      COMPUTE   JYURRK-EDANUM   =  JYURRK-EDANUM  +  1
+                      MOVE   JYURRK-REC          TO   MCPDATA-REC
+      *--- 2009/03/04 ADD + DELETE END ---------------------------------
                       MOVE "DBSELECT"          TO  MCP-FUNC
       * 20070913 4.0対応START t.tanaka
       *                MOVE PATH-TBL-JYURRK-KEY5 TO MCP-PATH
       *     CALL    "MCPSUB"             USING
                       MOVE    "tbl_jyurrk"             TO  MCP-TABLE
-                      MOVE    "key5"                  TO  MCP-PATHNAME
+      *--- 2009/03/04 CHANGE START -------------------------------------
+      *                MOVE   "key5"             TO   MCP-PATHNAME
+                      MOVE   "key22"             TO   MCP-PATHNAME
+      *--- 2009/03/04 CHANGE END ---------------------------------------
                       CALL    "ORCDBMAIN"          USING
       * 20070913 4.0対応END
                                           MCPAREA
@@ -2350,10 +2494,24 @@
                                         SPA-AREA
       * 20070913 4.0対応END
                       IF  MCP-RC             = ZERO
-                        MOVE  ZERO             TO  FLG-JYURRK
-                        MOVE  JYURRK-ZAINUM1   TO  ACCT-ZAINUM
+                          MOVE  ZERO             TO  FLG-JYURRK2
+      *--- 2009/03/04 ADD + DELETE START -------------------------------
+      *                    MOVE   JYURRK-ZAINUM1    TO   ACCT-ZAINUM
+                          MOVE   "DBFETCH"         TO   MCP-FUNC
+                          MOVE   "tbl_jyurrk"      TO   MCP-TABLE
+                          MOVE   "key22"           TO   MCP-PATHNAME
+                          CALL   "ORCDBMAIN"       USING
+                                                   MCPAREA
+                                                   MCPDATA-REC
+                                                   SPA-AREA
+                          IF   MCP-RC  =  ZERO
+                            MOVE   ZERO            TO   FLG-JYURRK2
+                          ELSE
+                            MOVE   1               TO   FLG-JYURRK2
+                          END-IF
+      *--- 2009/03/04 ADD + DELETE END ---------------------------------
                       ELSE
-                        MOVE  1                TO  FLG-JYURRK
+                        MOVE  1                TO  FLG-JYURRK2
                       END-IF
       *
       *=== sarge対応 UP By Takashima(2006/08/18) start
@@ -2364,7 +2522,10 @@
       *                MOVE PATH-TBL-JYURRK-KEY5 TO MCP-PATH
       *     CALL    "MCPSUB"             USING
                       MOVE    "tbl_jyurrk"             TO  MCP-TABLE
-                      MOVE    "key5"                  TO  MCP-PATHNAME
+      *--- 2009/03/04 CHANGE START -------------------------------------
+      *                MOVE   "key5"             TO   MCP-PATHNAME
+                      MOVE   "key22"             TO   MCP-PATHNAME
+      *--- 2009/03/04 CHANGE END ---------------------------------------
                       CALL    "ORCDBMAIN"          USING
       * 20070913 4.0対応END
                                           MCPAREA
@@ -2373,74 +2534,92 @@
                                         SPA-AREA
       * 20070913 4.0対応END
       ****2006/03/27 @@@@-BRAND  END
+      *--- 2009/03/04 ADD START ----------------------------------------
+                      PERFORM  VARYING  IDX11  FROM 1  BY 1
+                               UNTIL   IDX11  >  15
+                        MOVE   JYURRK-ZAINUM(IDX11)    TO   ACCT-ZAINUM
+      *--- 2009/03/04 ADD END ------------------------------------------
       * 20070913 4.0対応START t.tanaka
       *                MOVE JYURRK-HOSPID TO  ACCT-HOSPID  
-                      MOVE JYURRK-HOSPNUM TO  ACCT-HOSPNUM  
+                        MOVE    JYURRK-HOSPNUM      TO   ACCT-HOSPNUM
       * 20070913 4.0対応END
-                      MOVE JYURRK-NYUGAIKBN    TO  ACCT-NYUGAIKBN
-                      MOVE JYURRK-PTID         TO  ACCT-PTID
-                      MOVE JYURRK-SRYKA        TO  ACCT-SRYKA
-                      MOVE JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
-                      MOVE "12"                TO  ACCT-SRYKBN
+                        MOVE    JYURRK-NYUGAIKBN    TO   ACCT-NYUGAIKBN
+                        MOVE    JYURRK-PTID         TO   ACCT-PTID
+                        MOVE    JYURRK-SRYKA        TO   ACCT-SRYKA
+                        MOVE    JYURRK-SRYYMD(1:6)  TO   ACCT-SRYYM
+                        MOVE    "12"                TO   ACCT-SRYKBN
       ****2006/03/27 @@@@-BRAND  START
-      ****              PERFORM 900-SRYACCT-READ-SEC
-                      MOVE    SRYACCT-REC      TO  MCPDATA-REC
-                      MOVE    "DBSELECT"       TO  MCP-FUNC
+      ****               PERFORM 900-SRYACCT-READ-SEC
+                        MOVE    SRYACCT-REC      TO   MCPDATA-REC
+                        MOVE    "DBSELECT"       TO   MCP-FUNC
       * 20070913 4.0対応START t.tanaka
-      *                MOVE  PATH-TBL-SRYACCT-KEY5  TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-                      MOVE    "tbl_sryacct"             TO  MCP-TABLE
-                      MOVE    "key5"                  TO  MCP-PATHNAME
-                      CALL    "ORCDBMAIN"          USING
+      *                  MOVE  PATH-TBL-SRYACCT-KEY5  TO  MCP-PATH
+      *                  CALL    "MCPSUB"         USING
+                        MOVE    "tbl_sryacct"    TO   MCP-TABLE
+                        MOVE    "key5"           TO   MCP-PATHNAME
+                        CALL    "ORCDBMAIN"      USING
+      * 20070913 4.0対応END
+                                                 MCPAREA
+                                                 MCPDATA-REC
+      * 20070913 4.0対応START t.tanaka
+                                                 SPA-AREA
+      * 20070913 4.0対応END
+                        IF      MCP-RC    =   ZERO
+                          MOVE    "DBFETCH"      TO   MCP-FUNC
+      * 20070913 4.0対応START t.tanaka
+      *                    MOVE  PATH-TBL-SRYACCT-KEY5  TO  MCP-PATH
+      *                    CALL    "MCPSUB"             USING
+                          MOVE    "tbl_sryacct"  TO   MCP-TABLE
+                          MOVE    "key5"         TO   MCP-PATHNAME
+                          CALL    "ORCDBMAIN"    USING
       * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
       * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
       * 20070913 4.0対応END
-                      IF      MCP-RC              =   ZERO
-                        MOVE    "DBFETCH"             TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *                MOVE  PATH-TBL-SRYACCT-KEY5  TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-                        MOVE    "tbl_sryacct"           TO  MCP-TABLE
-                        MOVE    "key5"                TO  MCP-PATHNAME
-                        CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
-                                          MCPAREA
-                                          MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
-                                        SPA-AREA
-      * 20070913 4.0対応END
-                        IF      MCP-RC              =   ZERO
-                          MOVE    MCPDATA-REC   TO  SRYACCT-REC
-                          MOVE    ZERO          TO  FLG-SRYACCT
+                          IF   MCP-RC   =   ZERO
+                            MOVE    MCPDATA-REC    TO  SRYACCT-REC
+                            MOVE    ZERO           TO  FLG-SRYACCT
+                          ELSE
+                            MOVE    1              TO  FLG-SRYACCT
+                            INITIALIZE             SRYACCT-REC
+                          END-IF
                         ELSE
-                          MOVE    1                   TO  FLG-SRYACCT
-                          INITIALIZE                  SRYACCT-REC
+                          MOVE    1                TO  FLG-SRYACCT
+                          INITIALIZE               SRYACCT-REC
                         END-IF
-                      ELSE
-                        MOVE    1                   TO  FLG-SRYACCT
-                        INITIALIZE                  SRYACCT-REC
-                      END-IF
       *
       *=== sarge対応 UP By Takashima(2006/08/18) start
       *                MOVE    "DBCLOSE"           TO  MCP-FUNC
-                      MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+                        MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
       *=== sarge対応 UP By Takashima(2006/08/18) end
       * 20070913 4.0対応START t.tanaka
-      *                MOVE  PATH-TBL-SRYACCT-KEY5  TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-                      MOVE    "tbl_sryacct"             TO  MCP-TABLE
-                      MOVE    "key5"                  TO  MCP-PATHNAME
-                      CALL    "ORCDBMAIN"          USING
+      *                  MOVE  PATH-TBL-SRYACCT-KEY5  TO  MCP-PATH
+      *                  CALL    "MCPSUB"             USING
+                        MOVE    "tbl_sryacct"       TO  MCP-TABLE
+                        MOVE    "key5"              TO  MCP-PATHNAME
+                        CALL    "ORCDBMAIN"         USING
       * 20070913 4.0対応END
-                                          MCPAREA
-                                          MCPDATA-REC
+                                                    MCPAREA
+                                                    MCPDATA-REC
       * 20070913 4.0対応START t.tanaka
-                                        SPA-AREA
+                                                    SPA-AREA
       * 20070913 4.0対応END
       ****2006/03/27 @@@@-BRAND  END
+      *--- 2009/03/04 ADD START ----------------------------------------
+                        IF  IDX11  <  15
+                          COMPUTE   IDX10   =   IDX11   +   1
+                          IF   JYURRK-ZAINUM(IDX10)  =  ZERO
+                            MOVE    16               TO   IDX11
+                          END-IF
+                        END-IF
+                        IF   ACCT-SRYKBN   =  "12"
+                          MOVE    16               TO   IDX11
+                        END-IF
+                      END-PERFORM
+      *--- 2009/03/04 ADD END ------------------------------------------
+      *
       *
       ***  20050325  複数診療科への対応  MOTO
                       INITIALIZE               SRYACT-REC
@@ -2473,12 +2652,21 @@
                          ADD  1  TO  SUM-YOSO(SUM-TIKUMAX 3)
                          ADD  1  TO  SUM-YOSO(I3 5)
                          ADD  1  TO  SUM-YOSO(SUM-TIKUMAX 5)
+      *--- 2009/03/04 ADD START ----------------------------------------
+                         MOVE   1   TO  FLG-JYURRK2
+      *--- 2009/03/04 ADD END ------------------------------------------
                       ELSE
       *  その他件数としてカウントする。
-                         ADD  1  TO  SUM-YOSO(I3 4)
-                         ADD  1  TO  SUM-YOSO(SUM-TIKUMAX 4)
-                         ADD  1  TO  SUM-YOSO(I3 5)
-                         ADD  1  TO  SUM-YOSO(SUM-TIKUMAX 5)
+      *--- 2009/03/04 ADD START ----------------------------------------
+                        IF  FLG-JYURRK2   =  1
+      *--- 2009/03/04 ADD END ------------------------------------------
+                          ADD  1  TO  SUM-YOSO(I3 4)
+                          ADD  1  TO  SUM-YOSO(SUM-TIKUMAX 4)
+                          ADD  1  TO  SUM-YOSO(I3 5)
+                          ADD  1  TO  SUM-YOSO(SUM-TIKUMAX 5)
+      *--- 2009/03/04 ADD START ----------------------------------------
+                        END-IF
+      *--- 2009/03/04 ADD END ------------------------------------------
                       END-IF
                  END-IF
            END-IF
@@ -3812,81 +4000,153 @@
            .
        910-TENSU-READ-EXT.
            EXIT.
+      *--- 2009/03/04 CHANGE START -------------------------------------
       *****************************************************************
       *    受診履歴情報読込処理
       *****************************************************************
-       900-JYURRK-READ-SEC         SECTION.
+      * 900-JYURRK-READ-SEC         SECTION.
+      **
+      *     INITIALIZE                 JYURRK-REC
+      ** 20070913 4.0対応START t.tanaka
+      **     MOVE    SYU-HOSPID     TO  JYURRK-HOSPID  
+      *     MOVE    SYU-HOSPNUM     TO  JYURRK-HOSPNUM  
+      ** 20070913 4.0対応END
+      *     MOVE    SYU-PTID       TO  JYURRK-PTID  
+      *     MOVE    SYU-NYUGAIKBN  TO  JYURRK-NYUGAIKBN  
+      *     MOVE    SYU-DENPNUM    TO  JYURRK-DENPNUM  
+      **
+      *     MOVE    JYURRK-REC     TO  MCPDATA-REC
+      *     MOVE    "DBSELECT"     TO  MCP-FUNC
+      ** 20070913 4.0対応START t.tanaka
+      **     MOVE    PATH-TBL-JYURRK-KEY6    TO  MCP-PATH
+      **     CALL    "MCPSUB"             USING
+      *     MOVE    "tbl_jyurrk"             TO  MCP-TABLE
+      *     MOVE    "key6"                  TO  MCP-PATHNAME
+      *     CALL    "ORCDBMAIN"          USING
+      ** 20070913 4.0対応END
+      *                                    MCPAREA
+      *                                    MCPDATA-REC
+      ** 20070913 4.0対応START t.tanaka
+      *                                  SPA-AREA
+      ** 20070913 4.0対応END
+      *     IF  MCP-RC             =   ZERO
+      *         MOVE    "DBFETCH"      TO  MCP-FUNC
+      ** 20070913 4.0対応START t.tanaka
+      **     MOVE    PATH-TBL-JYURRK-KEY6    TO  MCP-PATH
+      **     CALL    "MCPSUB"             USING
+      *         MOVE    "tbl_jyurrk"             TO  MCP-TABLE
+      *         MOVE    "key6"                  TO  MCP-PATHNAME
+      *         CALL    "ORCDBMAIN"          USING
+      ** 20070913 4.0対応END
+      *                                    MCPAREA
+      *                                    MCPDATA-REC
+      ** 20070913 4.0対応START t.tanaka
+      *                                  SPA-AREA
+      ** 20070913 4.0対応END
+      *         IF  MCP-RC             =   ZERO
+      *             MOVE    MCPDATA-REC  TO  JYURRK-REC
+      *             MOVE    ZERO         TO  FLG-JYURRK
+      *         ELSE
+      *             MOVE    1            TO  FLG-JYURRK
+      *             INITIALIZE               JYURRK-REC
+      *         END-IF
+      *     ELSE
+      *         MOVE    1                TO  FLG-JYURRK
+      *         INITIALIZE                   JYURRK-REC
+      *     END-IF
+      **
+      **=== sarge対応 UP By Takashima(2006/08/18) start
+      **     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *     MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+      **=== sarge対応 UP By Takashima(2006/08/18) end
+      ** 20070913 4.0対応START t.tanaka
+      **     MOVE    PATH-TBL-JYURRK-KEY6    TO  MCP-PATH
+      **     CALL    "MCPSUB"             USING
+      *     MOVE    "tbl_jyurrk"             TO  MCP-TABLE
+      *     MOVE    "key6"                  TO  MCP-PATHNAME
+      *     CALL    "ORCDBMAIN"          USING
+      ** 20070913 4.0対応END
+      *                                    MCPAREA
+      *                                    MCPDATA-REC
+      ** 20070913 4.0対応START t.tanaka
+      *                                  SPA-AREA
+      ** 20070913 4.0対応END
+      **
+      *     .
+      * 900-JYURRK-READ-EXT.
+      *     EXIT.
+      *
+      *****************************************************************
+      *    受診履歴情報SELECT処理
+      *****************************************************************
+       910-JYURRK-READ-SEC         SECTION.
       *
            INITIALIZE                 JYURRK-REC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    SYU-HOSPID     TO  JYURRK-HOSPID  
-           MOVE    SYU-HOSPNUM     TO  JYURRK-HOSPNUM  
-      * 20070913 4.0対応END
-           MOVE    SYU-PTID       TO  JYURRK-PTID  
-           MOVE    SYU-NYUGAIKBN  TO  JYURRK-NYUGAIKBN  
-           MOVE    SYU-DENPNUM    TO  JYURRK-DENPNUM  
-      *
-           MOVE    JYURRK-REC     TO  MCPDATA-REC
-           MOVE    "DBSELECT"     TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY6    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-           MOVE    "tbl_jyurrk"             TO  MCP-TABLE
-           MOVE    "key6"                  TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
-                                          MCPAREA
-                                          MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
-                                        SPA-AREA
-      * 20070913 4.0対応END
-           IF  MCP-RC             =   ZERO
-               MOVE    "DBFETCH"      TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY6    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-               MOVE    "tbl_jyurrk"             TO  MCP-TABLE
-               MOVE    "key6"                  TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
-                                          MCPAREA
-                                          MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
-                                        SPA-AREA
-      * 20070913 4.0対応END
-               IF  MCP-RC             =   ZERO
-                   MOVE    MCPDATA-REC  TO  JYURRK-REC
-                   MOVE    ZERO         TO  FLG-JYURRK
-               ELSE
-                   MOVE    1            TO  FLG-JYURRK
-                   INITIALIZE               JYURRK-REC
-               END-IF
+           MOVE    SYU-HOSPNUM        TO   JYURRK-HOSPNUM
+           MOVE    SYU-PTID           TO   JYURRK-PTID
+           MOVE    SYU-NYUGAIKBN      TO   JYURRK-NYUGAIKBN
+           MOVE    SYU-DENPNUM        TO   JYURRK-DENPNUM
+           MOVE    JYURRK-REC         TO   MCPDATA-REC
+           MOVE    "DBSELECT"         TO   MCP-FUNC
+           MOVE    "tbl_jyurrk"       TO   MCP-TABLE
+           MOVE    "key6"             TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    ZERO                TO   FLG-JYURRK
+             PERFORM  910-JYURRK-FETCH-SEC
            ELSE
-               MOVE    1                TO  FLG-JYURRK
-               INITIALIZE                   JYURRK-REC
+             MOVE    1                TO   FLG-JYURRK
+             INITIALIZE                    JYURRK-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/18) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/18) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY6    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-           MOVE    "tbl_jyurrk"             TO  MCP-TABLE
-           MOVE    "key6"                  TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
-                                          MCPAREA
-                                          MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
-                                        SPA-AREA
-      * 20070913 4.0対応END
-      *
            .
-       900-JYURRK-READ-EXT.
+       910-JYURRK-READ-EXT.
            EXIT.
       *      
+      *****************************************************************
+      *    受診履歴情報FETCH処理
+      *****************************************************************
+       910-JYURRK-FETCH-SEC         SECTION.
+      *
+           MOVE   "DBFETCH"         TO   MCP-FUNC
+           MOVE   "tbl_jyurrk"      TO   MCP-TABLE
+           MOVE   "key6"            TO   MCP-PATHNAME
+           CALL   "ORCDBMAIN"       USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    MCPDATA-REC    TO   JYURRK-REC
+           ELSE
+             MOVE    1              TO   FLG-JYURRK
+             INITIALIZE             JYURRK-REC
+           END-IF
+      *
+           .
+       910-JYURRK-FETCH-EXT.
+           EXIT.
+      *      
+      *****************************************************************
+      *    受診履歴情報CLOSE処理
+      *****************************************************************
+       910-JYURRK-CLOSE-SEC         SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"    TO   MCP-FUNC
+           MOVE    "tbl_jyurrk"       TO   MCP-TABLE
+           MOVE    "key6"             TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+      *
+           .
+       910-JYURRK-CLOSE-EXT.
+           EXIT.
+      *
+      *--- 2009/03/04 CHANGE END ---------------------------------------
       *****************************************************************
       *    受診履歴情報読込処理
       *****************************************************************
