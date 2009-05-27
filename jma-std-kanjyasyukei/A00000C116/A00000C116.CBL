@@ -37,6 +37,7 @@
       *  07/09/12    @@@@-佐藤     4.0対応
       *  08/10/30    @@@@-田中     地区の登録数を20→50に変更
       *  09/03/13    @@@@-田中     再診、その他の件数処理を修正
+      *  09/04/24    @@@@-田中     プログラムオプションに対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -122,6 +123,11 @@
            03  INP-STS             PIC 9(04).
            03  FLG-11DUMMY         PIC 9(01).
            03  FLG-12DUMMY         PIC 9(01).
+      *--- 2009/04/24 ADD START ----------------------------------------
+           03  FLG-PRGOPTION       PIC 9(01).
+           03  FLG-DATEKBN         PIC 9(01).
+           03  FLG-DATEKBN2         PIC 9(01).
+      *--- 2009/04/24 ADD END ----------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -161,7 +167,12 @@
            03  IDX10             PIC 9(02).
            03  IDX11             PIC 9(02).
       *--- 2009/03/13 ADD END ------------------------------------------
-      *
+      *--- 2009/04/24 ADD START ----------------------------------------
+           03  IDX9              PIC 9(03).
+           03  IDX12             PIC 9(03).
+           03  IDX13             PIC 9(02).
+           03  IDX14             PIC 9(05).
+      *--- 2009/04/24 ADD END ----------------------------------------
       **** 20050301 open-cobol 0.23への対応 SUZUKI
       *     03  IDX2              PIC 9(04).
       **** 20050301 SUZUKI
@@ -240,6 +251,11 @@
       *--- 2009/03/13 ADD START ----------------------------------------
            03  WRK-DENPNUM       PIC 9(07).
       *--- 2009/03/13 ADD END ------------------------------------------
+      *--- 2009/04/24 ADD START ----------------------------------------
+           03  WRK-OPT-SIZE        PIC 9(05).
+           03  WRK-LINE            PIC X(44000).
+           03  WRK-ITEM            PIC X(430).
+      *--- 2009/04/24 ADD END ------------------------------------------
       *
        01  SUM-AREA                VALUE  ZERO.
            03  SUM-SRYKAMAX        PIC    9(03).
@@ -273,6 +289,14 @@
       *****07/09/10  4.0対応  Satoh  START*****
       *     COPY    "ORCA-DBPATH".         
       *****07/09/10  4.0対応  Satoh  END*******
+      *--- 2009/04/24 ADD START ----------------------------------------
+      *    プログラムオプションパラメタ
+       01  PARA-AREA.
+           03  PARA-TIKU-REC          OCCURS 50.
+               05  PARA-TIKUNAME      PIC X(20).
+               05  FILLER             PIC X(01).
+               05  PARA-TIKUNUM       PIC X(400).
+      *--- 2009/04/24 ADD END ------------------------------------------
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -352,6 +376,12 @@
       *    患者入院履歴情報
        01  PTNYUINRRK-REC.
            COPY    "CPPTNYUINRRK.INC".
+      *
+      *--- 2009/04/24 ADD START ------------------------------------------
+      *    プログラムオプション追加
+       01  PRGOPTION-REC.
+           COPY    "CPPRGOPTION.INC".
+      *--- 2009/04/24 ADD END ------------------------------------------
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -535,8 +565,13 @@
              PERFORM 500-ERR-HENSYU-SEC
            END-IF                                     
       *
+      *--- 2009/04/24 ADD + DELETE START -------------------------------
+      *    プログラムオプション取得処理
+           PERFORM 110-GET-PRGOPTION-SEC
+      *
       *    地区名、郵便番号取得
-           PERFORM  110-INI-FILE-SEC
+      *     PERFORM  110-INI-FILE-SEC
+      *--- 2009/04/24 ADD + DELETE END ---------------------------------
       *
            IF  C100LNK-MDKBN   =   SPACE
       *      印刷年月日取得
@@ -596,7 +631,7 @@
            EXIT.
       *
       *****************************************************************
-      *    INIファイル読み込み処理
+      *    INIファイル読み込み処理(未使用)
       *****************************************************************
        110-INI-FILE-SEC                SECTION.
       *
@@ -646,6 +681,160 @@
        110-INI-FILE-EXT.
            EXIT.
       *
+      *--- 2009/04/24 ADD START ----------------------------------------
+      *****************************************************************
+      *    プログラムオプション取得処理
+      *****************************************************************
+       110-GET-PRGOPTION-SEC           SECTION.
+      *
+           PERFORM   900-PRGOPTION-KEY-SEL-SEC
+      *
+           MOVE    1               TO   IDX13
+           MOVE    1               TO   IDX9
+           MOVE    1               TO   WRK-OPT-SIZE
+           STRING  PRGOPTION-OPTION   DELIMITED   BY   SIZE
+                                      INTO   WRK-LINE
+                                      WITH   POINTER   WRK-OPT-SIZE
+           END-STRING
+           COMPUTE  WRK-OPT-SIZE   =   WRK-OPT-SIZE  -  1
+      *
+           MOVE    1             TO   IDX14
+           PERFORM  UNTIL  IDX14  >  WRK-OPT-SIZE
+                    OR  PRGOPTION-OPTION(IDX14:)  =   SPACE
+                    OR  IDX13   >   50
+                    OR  FLG-DATEKBN  =  1 
+      *
+             MOVE    SPACE       TO   WRK-LINE
+      *
+             UNSTRING    PRGOPTION-OPTION  DELIMITED   BY X"0A"
+                                           INTO    WRK-ITEM
+                                           WITH    POINTER  IDX14
+             END-UNSTRING
+             IF  (WRK-ITEM(9:20)  =  SPACE )
+               MOVE    1        TO   FLG-DATEKBN
+               MOVE    1        TO   FLG-DATEKBN2
+             END-IF
+      *
+             IF   (WRK-ITEM(1:1)  =  "#" )
+               CONTINUE
+             ELSE
+               IF  (WRK-ITEM(1:5)  =  "CHIKU" )
+                 IF   FLG-DATEKBN2  =  1
+                   COMPUTE  IDX13  =   IDX13  -  1
+                 ELSE
+                   MOVE   WRK-ITEM(9:20)     TO   SUM-SRYKANAME(IDX13)
+                 END-IF
+                 PERFORM  VARYING  IDX12  FROM  30  BY  8
+                          UNTIL  IDX12  >  429
+                          OR  IDX9  >  50
+                          OR  FLG-DATEKBN2  =  1 
+                   IF   WRK-ITEM(IDX12:1)  =  SPACE
+                     MOVE    51           TO   IDX9
+                     MOVE    1        TO   FLG-DATEKBN2
+                   ELSE
+                     MOVE   WRK-ITEM(IDX12:7)
+                                         TO   WRK-POST-NUM(IDX13 IDX9)
+                     ADD    1            TO   IDX9
+                   END-IF
+                 END-PERFORM
+               ELSE
+                 MOVE    1        TO   FLG-DATEKBN
+                 COMPUTE  IDX13  =   IDX13  -  1
+               END-IF
+             END-IF
+             ADD     1            TO   IDX13
+             MOVE    1            TO   IDX9
+             INITIALIZE           FLG-DATEKBN2
+      *
+           END-PERFORM
+      *
+           MOVE    "その他"          TO   SUM-SRYKANAME(IDX13)
+           MOVE    "*******"         TO   WRK-POST-NUM(IDX13 1)
+           ADD     1                 TO   IDX13
+           MOVE    "全地区合計"      TO   SUM-SRYKANAME(IDX13)
+           MOVE    IDX13             TO   SUM-SRYKAMAX
+      *
+          .
+       110-GET-PRGOPTION-EXT.
+           EXIT.
+      *****************************************************************
+      *    プログラムオプション検索処理
+      *****************************************************************
+       900-PRGOPTION-KEY-SEL-SEC       SECTION.
+      *
+           MOVE    ZERO              TO   FLG-PRGOPTION
+      *
+           MOVE    SPA-HOSPNUM       TO   PRGOPTION-HOSPNUM
+           MOVE    "A00000C116"      TO   PRGOPTION-PRGID
+           MOVE    "*"               TO   PRGOPTION-KBNCD
+           MOVE    PRGOPTION-REC     TO   MCPDATA-REC
+           MOVE    "tbl_prgoption"   TO   MCP-TABLE
+           MOVE    "key"             TO   MCP-PATHNAME
+           PERFORM 910-DBSELECT-SEC
+           IF   (MCP-RC  =  ZERO)
+             MOVE    MCPDATA-REC     TO   PRGOPTION-REC
+           ELSE
+             INITIALIZE              PRGOPTION-REC
+             MOVE    1               TO   FLG-PRGOPTION
+           END-IF
+      *
+           MOVE    "tbl_prgoption"   TO   MCP-TABLE
+           MOVE    "key"             TO   MCP-PATHNAME
+           PERFORM 910-DBCLOSECURSOR-SEC
+      *
+           .
+       900-PRGOPTION-KEY-SEL-EXT.
+           EXIT.
+
+      *****************************************************************
+      *    ＤＢ検索処理（FHETCHも行う)
+      *****************************************************************
+       910-DBSELECT-SEC              SECTION.
+      *
+           MOVE    "DBSELECT"        TO   MCP-FUNC
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF   (MCP-RC  =  ZERO )
+             PERFORM 910-DBFETCH-SEC
+           END-IF
+      *
+           .
+      *
+       910-DBSELECT-EXT.
+           EXIT.
+      *****************************************************************
+      *    ＤＢ読み込み処理
+      *****************************************************************
+       910-DBFETCH-SEC                 SECTION.
+      *
+           MOVE    "DBFETCH"           TO   MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+      *
+       910-DBFETCH-EXT.
+           EXIT.
+      *****************************************************************
+      *    ＤＢクローズ処理
+      *****************************************************************
+       910-DBCLOSECURSOR-SEC           SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+      *
+       910-DBCLOSECURSOR-EXT.
+           EXIT.
+      *--- 2009/04/24 ADD END ------------------------------------------
       *****************************************************************
       *    主処理
       *****************************************************************
