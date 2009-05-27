@@ -38,12 +38,6 @@ cp -af *.INC ${SITESRCDIR}/cobol/copy 2> /dev/null
 cp -af *.red ${SITESRCDIR}/form 2> /dev/null
 cp -af version_* ${SITESRCDIR}/doc
 
-# copy *.INI
-FILEINI=`find -name "*.INI" -print 2>/dev/null`
-if test "$FILEINI" != "" ; then
-  cp -ai *.INI ${SITESRCDIR}/data
-fi
-
 # run site-upgrade.sh
 if [ -f ${SCRIPTSDIR}/allways/site-upgrade.sh ] ; then
   sh ${SCRIPTSDIR}/allways/site-upgrade.sh
