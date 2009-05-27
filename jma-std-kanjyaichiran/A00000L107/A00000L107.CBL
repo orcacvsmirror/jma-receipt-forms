@@ -38,6 +38,7 @@
       *  08/04/03    @@@@-吉川     シス管の値が取得できない不具合を修正
       *                            後期高齢者対応(ver4.2.0)
       *                            記号・番号１６文字以上対応(ver4.2.0)
+      *  09/05/13    @@@@-門間     プログラムオプション対応(INIファイル)
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -55,12 +56,14 @@
                                    ALTERNATE RECORD KEY 
                                      L107T-REAZUKARI WITH DUPLICATES 
                                    FILE    STATUS  IS  STS-PARA.
-      *    預り金対象CD定義用INIファイル
-           SELECT  L107I-FILE      ASSIGN  L107IPARA
-                                   ORGANIZATION    SEQUENTIAL
-                                   ACCESS  MODE    SEQUENTIAL
-                                   FILE    STATUS  IS  STS-PARA.
-      *
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE START
+      **    預り金対象CD定義用INIファイル
+      *     SELECT  L107I-FILE      ASSIGN  L107IPARA
+      *                             ORGANIZATION    SEQUENTIAL
+      *                             ACCESS  MODE    SEQUENTIAL
+      *                             FILE    STATUS  IS  STS-PARA.
+      **
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE END
       *
        DATA                        DIVISION.
        FILE                        SECTION.
@@ -73,11 +76,13 @@
        FD  L107T-FILE.
            COPY    "A00000L107TMP.INC".
       *
-      *    預り金対象CD定義用INIファイル
-       FD  L107I-FILE.
-       01  L107I.
-           03  L107I-SRYCD         PIC X(09).
-           03  FILLER              PIC X(81).
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE START
+      **    預り金対象CD定義用INIファイル
+      * FD  L107I-FILE.
+      * 01  L107I.
+      *     03  L107I-SRYCD         PIC X(09).
+      *     03  FILLER              PIC X(81).
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE END
       *
        WORKING-STORAGE             SECTION.
       *    シェル用領域
@@ -446,6 +451,10 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD START
+      *    プログラムオプション編集パラメタ
+           COPY    "CPORCSPRGOPTION.INC".
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD END
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -669,21 +678,32 @@
                  PERFORM 500-ERR-HENSYU-SEC
               END-IF                                     
       *  
-      *    預り金対象CD定義用INIファイル情報抽出
-           INITIALIZE              ORCSMKPASSAREA
-           MOVE  L107INAME     TO  MKPASS-IN-01
-           CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
-           MOVE  MKPASS-OT-01  TO  L107IPARA
-      *
-           OPEN  INPUT L107I-FILE
-           INITIALIZE  L107I
-           READ  L107I-FILE
-           END-READ
-           CLOSE       L107I-FILE
-      *
-           IF          L107I-SRYCD  NOT =  SPACE
-               MOVE    L107I-SRYCD  TO   WRK-INI-AZUKARICD
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 CHANGE START
+      **    預り金対象CD定義用INIファイル情報抽出
+      *     INITIALIZE              ORCSMKPASSAREA
+      *     MOVE  L107INAME     TO  MKPASS-IN-01
+      *     CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
+      *     MOVE  MKPASS-OT-01  TO  L107IPARA
+      **
+      *     OPEN  INPUT L107I-FILE
+      *     INITIALIZE  L107I
+      *     READ  L107I-FILE
+      *     END-READ
+      *     CLOSE       L107I-FILE
+      **
+      *     IF          L107I-SRYCD  NOT =  SPACE
+      *         MOVE    L107I-SRYCD  TO   WRK-INI-AZUKARICD
+      *     END-IF
+      *    プログラムオプション取込み（預り金コード）
+           INITIALIZE                      ORCSPRGOPTIONAREA
+           MOVE    "A00000L107"        TO  ORCSPRGOPTION-PRGID
+           MOVE    "AZUKARICD"         TO  ORCSPRGOPTION-IN-DATA
+           CALL    "ORCSPRGOPTION"     USING   SPA-AREA
+                                               ORCSPRGOPTIONAREA
+           IF  ORCSPRGOPTION-OT-PARA(1:9)  NOT =  SPACE
+             MOVE  ORCSPRGOPTION-OT-PARA(1:9)  TO  WRK-INI-AZUKARICD
            END-IF
+      *--- プログラムオプション対応(INIファイル) 2009/05/13 CHANGE END
       *
            .
        110-PARA-HENSYU-EXT.
