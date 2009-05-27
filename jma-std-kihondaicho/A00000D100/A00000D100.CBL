@@ -30,6 +30,7 @@
       *                            再診数カウント処理追加
       *  07/09/13    @@@@-田中     4.0対応
       *  08/03/03    @@@@-田中     4.0対応漏れを修正
+      *  09/04/13    @@@@-門間     ０件印字対応（医師・地区別）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -130,6 +131,9 @@
            03  WRK-PARA-NYUGAIKBN    PIC X(01).
            03  WRK-PARA-SRYKACD      PIC X(02).
            03  WRK-PARA-DRCD         PIC X(05).
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
+           03  WRK-PARA-ZERO         PIC X(01).
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
       *
       *    一時領域
        01  WRK-AREA.
@@ -293,6 +297,9 @@
       * 20080303 4.0対応漏れを修正START tanaka
                                                WRK-PARA-DRCD
       * 20080303 4.0対応漏れを修正END
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
+                                               WRK-PARA-ZERO
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
            END-UNSTRING
 
            .
@@ -337,6 +344,9 @@
            MOVE  WRK-PARA-NYUGAIKBN     TO    D100LNK-NYUGAIKBN
            MOVE  WRK-PARA-SRYKACD       TO    D100LNK-SRYKACD
            MOVE  WRK-PARA-DRCD          TO    D100LNK-DRCD
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
+           MOVE  WRK-PARA-ZERO          TO    D100LNK-ZERO
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
       *
       *    帳票別サブプログラムCALL
            EVALUATE  WRK-PARA-PRTYPE

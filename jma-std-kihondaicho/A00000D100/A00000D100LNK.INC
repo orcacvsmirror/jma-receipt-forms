@@ -46,3 +46,6 @@
            03  D100LNK-NYUGAIKBN                    PIC X(01).
            03  D100LNK-SRYKACD                      PIC X(02).
            03  D100LNK-DRCD                         PIC X(05).
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
+           03  D100LNK-ZERO                         PIC X(01).
+      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
