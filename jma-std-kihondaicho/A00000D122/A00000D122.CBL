@@ -47,6 +47,7 @@
       *  08/02/26    @@@@-田中   4.0対応漏れ修正
       *  08/03/28    @@@@-田中   H20年4月改正対応
       *  08/07/16    @@@@-田中   収納明細を更新した場合に、入金額が表示されない不具合の修正
+      *  09/04/16    @@@@-門間   プログラムオプション対応(INIファイル)
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -56,11 +57,13 @@
       *    エラーファイル
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
-      *    基本台帳用INIファイル
-           SELECT  D100I-FILE      ASSIGN  D100IPARA
-                                   ORGANIZATION    SEQUENTIAL
-                                   ACCESS  MODE    SEQUENTIAL
-                                   FILE    STATUS  IS  STS-PARA.
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      **    基本台帳用INIファイル
+      *     SELECT  D100I-FILE      ASSIGN  D100IPARA
+      *                             ORGANIZATION    SEQUENTIAL
+      *                             ACCESS  MODE    SEQUENTIAL
+      *                             FILE    STATUS  IS  STS-PARA.
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    基本台帳(入院日報)用対象患者ファイル
            SELECT  D122PT-FILE     ASSIGN  D122PPARA
@@ -76,11 +79,13 @@
        FD  RECEERR-FILE.
        01  RECEERR-REC             PIC X(200). 
       *
-      *    基本台帳用INIファイル
-       FD  D100I-FILE.
-       01  D100I. 
-           03  D100I-SRYCD         PIC X(09).
-           03  FILLER              PIC X(81).
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      **    基本台帳用INIファイル
+      * FD  D100I-FILE.
+      * 01  D100I. 
+      *     03  D100I-SRYCD         PIC X(09).
+      *     03  FILLER              PIC X(81).
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    基本台帳(入院日報)用対象患者ファイル
        FD  D122PT-FILE.
@@ -106,10 +111,12 @@
        01  D100IPARA.
            03  FILLER              PIC X(256) VALUE  SPACE.
 
-       01  D100INAME.
-           03  FILLER              PIC  X(05) VALUE  "data/".
-           03  FILLER              PIC  X(10) VALUE  "A00000D100".
-           03  FILLER              PIC  X(04) VALUE  ".INI".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      * 01  D100INAME.
+      *     03  FILLER              PIC  X(05) VALUE  "data/".
+      *     03  FILLER              PIC  X(10) VALUE  "A00000D100".
+      *     03  FILLER              PIC  X(04) VALUE  ".INI".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    診療日別受信患者ファイル
        01  D122PPARA.
@@ -495,6 +502,10 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD START
+      *    プログラムオプション編集パラメタ
+           COPY    "CPORCSPRGOPTION.INC".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD END
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -993,20 +1004,33 @@
       *    病床数の取得
            ADD  WRK-SYS-BEDSU      TO  SUM-BEDSUIPN
       *
-      *    基本台帳用INIファイル情報抽出
-           INITIALIZE              ORCSMKPASSAREA
-           MOVE  D100INAME     TO  MKPASS-IN-01
-           CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
-           MOVE  MKPASS-OT-01  TO  D100IPARA
-      *
-           OPEN  INPUT D100I-FILE
-           INITIALIZE  D100I
-           READ  D100I-FILE
-           END-READ
-           CLOSE       D100I-FILE
-           IF     D100I-SRYCD   NOT =  SPACE
-             MOVE D100I-SRYCD       TO     WRK-INI-AZUKARICD
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE START
+      **    基本台帳用INIファイル情報抽出
+      *     INITIALIZE              ORCSMKPASSAREA
+      *     MOVE  D100INAME     TO  MKPASS-IN-01
+      *     CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
+      *     MOVE  MKPASS-OT-01  TO  D100IPARA
+      **
+      *     OPEN  INPUT D100I-FILE
+      *     INITIALIZE  D100I
+      *     READ  D100I-FILE
+      *     END-READ
+      *     CLOSE       D100I-FILE
+      *     IF     D100I-SRYCD   NOT =  SPACE
+      *       MOVE D100I-SRYCD       TO     WRK-INI-AZUKARICD
+      *     END-IF
+      *     
+      *    プログラムオプション取込み（預り金コード）
+           INITIALIZE                      ORCSPRGOPTIONAREA
+           MOVE    "A00000D100"        TO  ORCSPRGOPTION-PRGID
+           MOVE    "AZUKARICD"         TO  ORCSPRGOPTION-IN-DATA
+           CALL    "ORCSPRGOPTION"     USING   SPA-AREA
+                                               ORCSPRGOPTIONAREA
+           IF  ORCSPRGOPTION-OT-PARA(1:9)  NOT =  SPACE
+             MOVE  ORCSPRGOPTION-OT-PARA(1:9)  TO  WRK-INI-AZUKARICD
            END-IF
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE END
+      *
       *    点数マスタ読込み
            MOVE   WRK-INI-AZUKARICD TO     TNS-SRYCD
       * 20080226 4.0対応漏れ修正START t.tanaka
