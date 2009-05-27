@@ -33,6 +33,7 @@
       *  07/09/21    @@@@-長屋     4.0対応
       *  01.00.03       田中    08/04/24   H20年4月改正対応(後期高齢者)
       *  01.00.04       田中    08/07/01   処理速度向上の修正
+      *  01.00.05       門間    09/02/23   SETTEI.TXTからINIへ拡張子の変更
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -612,7 +613,10 @@
       *
       *    ファイルディレクトリ位置指定
            INITIALIZE           ORCSMKPASSAREA
-           MOVE  "data/SETTEI.TXT"     TO  MKPASS-IN-01
+      *--- (2009/02/23) line change start ------------------------------
+      *     MOVE  "data/SETTEI.TXT"     TO  MKPASS-IN-01
+           MOVE  "data/SETTEI.INI"     TO  MKPASS-IN-01
+      *--- (2009/02/23) line change start ------------------------------
            CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
            MOVE  MKPASS-OT-01  TO  FILE-NAME
       *
