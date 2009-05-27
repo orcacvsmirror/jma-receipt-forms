@@ -39,6 +39,7 @@
       *                            後期高齢者対応(ver4.2.0)
       *                            記号・番号１６文字以上対応(ver4.2.0)
       *  08/06/02    @@@@-田中     診療行為の欄が空白になる不具合を修正
+      *  09/04/30    @@@@-田中     Ubuntu対応
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -818,12 +819,20 @@
       *               "and (b.hospid = a.hospid) "  DELIMITED   BY  SIZE
       *               "and (h.ptid = a.ptid) "  DELIMITED   BY  SIZE
       *               "and (b.ptid = a.ptid) "  DELIMITED   BY  SIZE
-                     " and (b.nyugaikbn ="     DELIMITED   BY  SIZE
+      *--- 2009/04/30 CHANGE START -------------------------------------
+      *               " and (b.nyugaikbn ="     DELIMITED   BY  SIZE
+      *               JYURRK-NYUGAIKBN          DELIMITED   BY  SIZE
+      *               ") "                      DELIMITED   BY  SIZE
+                     " and (b.nyugaikbn = '"     DELIMITED   BY  SIZE
                      JYURRK-NYUGAIKBN          DELIMITED   BY  SIZE
-                     ") "                      DELIMITED   BY  SIZE
-                     " and (b.sryymd ="        DELIMITED   BY  SIZE
+                     "') "                      DELIMITED   BY  SIZE
+      *               " and (b.sryymd ="        DELIMITED   BY  SIZE
+      *               JYURRK-SRYYMD             DELIMITED   BY  SIZE
+      *               ") "                      DELIMITED   BY  SIZE
+                     " and (b.sryymd = '"        DELIMITED   BY  SIZE
                      JYURRK-SRYYMD             DELIMITED   BY  SIZE
-                     ") "                      DELIMITED   BY  SIZE
+                     "') "                      DELIMITED   BY  SIZE
+      *--- 2009/04/30 CHANGE END ---------------------------------------
                      " and (b.sryka ='"        DELIMITED   BY  SIZE
                      JYURRK-SRYKA              DELIMITED   BY  SIZE
                      "') "                      DELIMITED   BY  SIZE
