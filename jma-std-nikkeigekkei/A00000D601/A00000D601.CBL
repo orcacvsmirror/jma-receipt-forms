@@ -44,6 +44,8 @@
       *  07/12/18    @@@@-吉川     在宅等が再診で集計される不具合を修正
       *  08/03/26    @@@@-田中     H20年4月改正対応
       *  08/06/10    @@@@-田中     健保準拠時の自賠責の計算を修正
+      *  09/05/26    @@@@-門間     生活療養費・生活負担額が保険分金額・患者負担金額・
+      *                            医療収益に加算されていない不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1185,6 +1187,9 @@
                         COMPUTE WRK-MONEY = 
                            WRK-MONEY
                         +  SYU-RYOYOHI-SKJ  
+      ***  2009/05/26 ADD START ----------------------------------------
+                        +  SYU-RYOYOHI-LIFE
+      ***  2009/05/26 ADD END   ----------------------------------------
       ***           レセプト１円単位表示区分が"1"の場合は１０円未満を四捨五入する。
                     IF  HKN-RECEFTNDSPKBN  =  "1"
                         IF  WRK-MONEY(8:1) >   4
@@ -1205,6 +1210,9 @@
                         +  SYU-RSISDO-MONEY 
                         +  SYU-RSIETC-MONEY
                         +  SYU-RYOYOHI-SKJ  
+      ***  2009/05/26 ADD START ----------------------------------------
+                        +  SYU-RYOYOHI-LIFE
+      ***  2009/05/26 ADD END   ----------------------------------------
                     WHEN  6
       ***             自賠の場合
       *=== 自賠責計算式変更対応 By Takashima(2006/12/20) start
@@ -1254,6 +1262,9 @@
                         +  SYU-JIHI-TOTAL-TAX
                         +  SYU-RMSAGAKU
                         +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      ***  2009/05/26 ADD START ----------------------------------------
+                        +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                         IF      SYU-SRYYMD  <  "20070401"
                             COMPUTE WRK-JIHI4    =   WRK-JIHI4 
                                                 +   SYU-JIHI-TAX
@@ -1263,6 +1274,11 @@
       * 20080326  H20年4月改正対応END
                     
                     END-EVALUATE
+      ***  2009/05/26 ADD START ----------------------------------------
+                    COMPUTE WRK-MONEY  =  WRK-MONEY
+                                       -  SYU-SKYMONEY-SKJ-KEI
+                                       -  SYU-SKYMONEY-LIFE-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                     ADD    WRK-MONEY  TO  SUM-HKNFTN
                END-IF  
       *
@@ -1340,6 +1356,10 @@
                     +  WRK-JIHI
                     +  SYU-SKYMONEY-SKJ-KEI
                     +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      ***  2009/05/26 ADD START ----------------------------------------
+                    +  SYU-SKYMONEY-LIFE-KEI
+                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                     +  SYU-RMSAGAKU
                  END-IF  
                  ADD   WRK-MONEY  TO  SUM-JIHIFTN

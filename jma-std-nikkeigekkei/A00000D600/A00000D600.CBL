@@ -44,6 +44,8 @@
       *  08/06/10    @@@@-ÅÄÃæ     ·òÊÝ½àµò»þ¤Î¼«ÇåÀÕ¤Î·×»»¤ò½¤Àµ
       *  08/11/05    @@@@-ÅÄÃæ     Ä¢É¼Ëç¿ô¤ò1Ëç¤ËÊÑ¹¹
       *  09/03/03    @@@@-ÅÄÃæ     °õ»ú½ç½ø¤ÎÊÑ¹¹¥Ñ¥é¥á¡¼¥¿¤ÎÄÉ²Ã
+      *  09/05/26    @@@@-Ìç´Ö     À¸³èÎÅÍÜÈñ¡¦À¸³èÉéÃ´³Û¤¬ÊÝ¸±Ê¬¶â³Û¡¦´µ¼ÔÉéÃ´¶â³Û¡¦
+      *                            °åÎÅ¼ý±×¤Ë²Ã»»¤µ¤ì¤Æ¤¤¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
       *****************************************************************
       *
       *
@@ -1378,6 +1380,9 @@
       *****
                         COMPUTE WRK-MONEY =  WRK-MONEY
                                         +  SYU-RYOYOHI-SKJ  
+      ***  2009/05/26 ADD START ----------------------------------------
+                                        +  SYU-RYOYOHI-LIFE
+      ***  2009/05/26 ADD END   ----------------------------------------
       ***          ¥ì¥»¥×¥È£±±ßÃ±°ÌÉ½¼¨¶èÊ¬¤¬"1"¤Î¾ì¹ç¤Ï£±£°±ßÌ¤Ëþ¤ò»Í¼Î¸ÞÆþ¤¹¤ë¡£
                         IF  HKN-RECEFTNDSPKBN  =  "1"
                             IF  WRK-MONEY(8:1) >   4
@@ -1402,6 +1407,9 @@
                                              +  SYU-RSISDO-MONEY 
                                              +  SYU-RSIETC-MONEY
                                              +  SYU-RYOYOHI-SKJ  
+      ***  2009/05/26 ADD START ----------------------------------------
+                                             +  SYU-RYOYOHI-LIFE
+      ***  2009/05/26 ADD END   ----------------------------------------
       *--- 2008/11/05  ADD  START --------------------------------------
                       END-IF
       *--- 2008/11/05  ADD  END ----------------------------------------
@@ -1454,6 +1462,9 @@
                                           +  SYU-JIHI-TOTAL-TAX
                                           +  SYU-RMSAGAKU
                                           +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      ***  2009/05/26 ADD START ----------------------------------------
+                                          +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                         IF      SYU-SRYYMD  <  "20070401"
                             COMPUTE WRK-JIHI4    =   WRK-JIHI4 
                                                 +   SYU-JIHI-TAX
@@ -1462,6 +1473,11 @@
                                                 -  WRK-JIHI4
       * 20080325 H20Ç¯4·î²þÀµÂÐ±þEND
                     END-EVALUATE
+      ***  2009/05/26 ADD START ----------------------------------------
+                    COMPUTE WRK-MONEY  =  WRK-MONEY
+                                       -  SYU-SKYMONEY-SKJ-KEI
+                                       -  SYU-SKYMONEY-LIFE-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                     MOVE    WRK-MONEY  TO  WRK-SZ-8
       *=== ´ðËÜ¿ÇÎÅ¹àÌÜÄÉ²ÃÂÐ±þ By Takashima(2006/10/28) start
       *--- 2008/11/05  CHANGE  START -----------------------------------
@@ -1539,6 +1555,9 @@
                                                +  SYU-RSISDO-MONEY 
                                                +  SYU-RSIETC-MONEY
                                                +  SYU-RYOYOHI-SKJ  
+      ***  2009/05/26 ADD START ----------------------------------------
+                                               +  SYU-RYOYOHI-LIFE
+      ***  2009/05/26 ADD END   ----------------------------------------
                         END-IF
                     WHEN 6
                         IF  SYU-PTFTNRATE  =  ZERO
@@ -1588,6 +1607,10 @@
                      +  WRK-JIHI
                      +  SYU-SKYMONEY-SKJ-KEI
                      +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      ***  2009/05/26 ADD START ----------------------------------------
+                     +  SYU-SKYMONEY-LIFE-KEI
+                     +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                      +  SYU-RMSAGAKU
                  END-IF  
                  MOVE  WRK-MONEY  TO  WRK-SZ-8

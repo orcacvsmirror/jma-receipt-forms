@@ -46,6 +46,8 @@
       *  07/12/18    @@@@-µÈÀî     ºßÂðÅù¤¬ºÆ¿Ç¤Ç½¸·×¤µ¤ì¤ëÉÔ¶ñ¹ç¤ò½¤Àµ
       *  08/03/25    @@@@-¹âÅè     H20Ç¯4·î²þÀµÂÐ±þ
       *  08/06/12    @@@@-ÅÄÃæ     ·òÊÝ½àµò»þ¤Î¼«ÇåÀÕ¤Î·×»»¤ò½¤Àµ
+      *  09/05/26    @@@@-Ìç´Ö     À¸³èÎÅÍÜÈñ¡¦À¸³èÉéÃ´³Û¤¬ÊÝ¸±Ê¬¶â³Û¡¦´µ¼ÔÉéÃ´¶â³Û¡¦
+      *                            °åÎÅ¼ý±×¤Ë²Ã»»¤µ¤ì¤Æ¤¤¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1267,6 +1269,9 @@
                         COMPUTE WRK-MONEY = 
                            WRK-MONEY
                         +  SYU-RYOYOHI-SKJ  
+      ***  2009/05/26 ADD START ----------------------------------------
+                        +  SYU-RYOYOHI-LIFE
+      ***  2009/05/26 ADD END   ----------------------------------------
       ***           ¥ì¥»¥×¥È£±±ßÃ±°ÌÉ½¼¨¶èÊ¬¤¬"1"¤Î¾ì¹ç¤Ï£±£°±ßÌ¤Ëþ¤ò»Í¼Î¸ÞÆþ¤¹¤ë¡£
                     IF  HKN-RECEFTNDSPKBN  =  "1"
                         IF  WRK-MONEY(8:1) >   4
@@ -1287,6 +1292,9 @@
                         +  SYU-RSISDO-MONEY 
                         +  SYU-RSIETC-MONEY
                         +  SYU-RYOYOHI-SKJ  
+      ***  2009/05/26 ADD START ----------------------------------------
+                        +  SYU-RYOYOHI-LIFE
+      ***  2009/05/26 ADD END   ----------------------------------------
                     WHEN  6
       ***             ¼«Çå¤Î¾ì¹ç
       * 20080612 ·òÊÝ½àµò»þ¤Î¼«ÇåÀÕ¤Î·×»»¤ò½¤ÀµSTART tanaka
@@ -1337,6 +1345,9 @@
                                            +  SYU-JIHI-TOTAL-TAX
                                            +  SYU-RMSAGAKU
                                            +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      ***  2009/05/26 ADD START ----------------------------------------
+                                           +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                         IF      SYU-SRYYMD  <  "20070401"
                             COMPUTE WRK-JIHI4    =   WRK-JIHI4 
                                                  +   SYU-JIHI-TAX
@@ -1345,6 +1356,11 @@
                                             -   WRK-JIHI4
       *=== H20Ç¯4·î²þÀµÂÐ±þ by k.takashima (2008/03/25) end
                     END-EVALUATE
+      ***  2009/05/26 ADD START ----------------------------------------
+                    COMPUTE WRK-MONEY  =  WRK-MONEY
+                                       -  SYU-SKYMONEY-SKJ-KEI
+                                       -  SYU-SKYMONEY-LIFE-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                     ADD    WRK-MONEY  TO  SUM-HKNFTN(IDX1)
                                           SUM-HKNFTN(32)
                END-IF  
@@ -1423,6 +1439,10 @@
                     +  WRK-JIHI
                     +  SYU-SKYMONEY-SKJ-KEI
                     +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      ***  2009/05/26 ADD START ----------------------------------------
+                    +  SYU-SKYMONEY-LIFE-KEI
+                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                     +  SYU-RMSAGAKU
                  END-IF  
                  ADD   WRK-MONEY  TO  SUM-JIHIFTN(IDX1)
