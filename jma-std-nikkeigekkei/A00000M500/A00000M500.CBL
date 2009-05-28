@@ -58,6 +58,9 @@
       *    09/02/06    @@@@-ÅÄÃæ     ¸ºÌÈ¶â³Û¤Î·×»»¼°¤ò½¤Àµ
       *    09/02/17    @@@@-ÅÄÃæ     ¸ºÌÈ·×»»¼°¤Î¾ò·ï¼°¤ò½¤Àµ
       *    09/04/08    @@@@-Ìç´Ö     °åÎÅ¼ý±×¤Î·×»»¼°¤ò½¤Àµ
+      *    09/05/26    @@@@-Ìç´Ö     ´µ¼ÔÉéÃ´Ê¬¤¬2½Å¤Ë²Ã»»¤µ¤ì¤Æ¤¤¤¿ÉÔ¶ñ¹ç¤Î½¤Àµ
+      *                              À¸³èÎÅÍÜÈñ¡¦À¸³èÉéÃ´³Û¤¬ÊÝ¸±Ê¬¶â³Û¡¦´µ¼ÔÉéÃ´¶â³Û¡¦
+      *                              °åÎÅ¼ý±×¤Ë²Ã»»¤µ¤ì¤Æ¤¤¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2082,25 +2085,27 @@
       *--- 2009/02/06 ADD START ----------------------------------------
       *--- 2009/02/17 CHANGE START -------------------------------------
       *--- °åÎÅ¼ý±×¤Î·×»»¼°¤ò½¤Àµ 2009/04/08 CHANGE START --------------
+      ***  2009/05/26 CHANGE START -------------------------------------
            IF  SYU-KOH4HKNNUM  NOT =  SPACE
-      *       MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
-             MOVE   SYU-KOH4HKNFTNMONEY    TO   WRK-COMPFTN
+             MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+      *       MOVE   SYU-KOH4HKNFTNMONEY    TO   WRK-COMPFTN
            ELSE
              IF  SYU-KOH3HKNNUM  NOT =  SPACE
-      *         MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
-               MOVE   SYU-KOH3HKNFTNMONEY    TO   WRK-COMPFTN
+               MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+      *         MOVE   SYU-KOH3HKNFTNMONEY    TO   WRK-COMPFTN
              ELSE
                IF  SYU-KOH2HKNNUM  NOT =  SPACE
-      *           MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
-                 MOVE   SYU-KOH2HKNFTNMONEY    TO   WRK-COMPFTN
+                 MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+      *           MOVE   SYU-KOH2HKNFTNMONEY    TO   WRK-COMPFTN
                ELSE
                  IF  SYU-KOH1HKNNUM  NOT =  SPACE
-      *             MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
-                   MOVE   SYU-KOH1HKNFTNMONEY    TO   WRK-COMPFTN
+                   MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+      *             MOVE   SYU-KOH1HKNFTNMONEY    TO   WRK-COMPFTN
                  ELSE
                    IF  SYU-SYUHKNNUM  NOT =  SPACE
-      *               MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
-                     MOVE   SYU-SYUHKNFTNMONEY    TO   WRK-COMPFTN
+                     MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+      *               MOVE   SYU-SYUHKNFTNMONEY    TO   WRK-COMPFTN
+      ***  2009/05/26 CHANGE END   -------------------------------------
       *--- °åÎÅ¼ý±×¤Î·×»»¼°¤ò½¤Àµ 2009/04/08 CHANGE END   --------------
                    END-IF
                  END-IF
@@ -2135,6 +2140,9 @@
                                   +  SYU-RYOYOHI-SKJ-JIHI
       * 20080418 °åÎÅ¼ý±×¤ËÀ¸³èÎÅÍÜÈñµÚ¤ÓÉéÃ´³Û¤¬²Ã»»¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµSTART
                                   +  SYU-RYOYOHI-LIFE
+      ***  2009/05/26 ADD START ----------------------------------------
+                                  +  SYU-RYOYOHI-LIFE-JIHI
+      ***  2009/05/26 ADD END   ----------------------------------------
       * 20080603 °åÎÅ¼ý±×¤ÎÃÍ¤¬Àµ¤·¤¯°õ»ú¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµSTART tanaka
       *                  +  SYU-SKYMONEY-LIFE-KEI
       * 20080603 °åÎÅ¼ý±×¤ÎÃÍ¤¬Àµ¤·¤¯°õ»ú¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµEND
@@ -2204,6 +2212,9 @@
                                   +  SYU-JIHI-TOTAL-TAX
                                   +  SYU-RMSAGAKU
                                   +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      ***  2009/05/26 ADD START ----------------------------------------
+                                  +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      ***  2009/05/26 ADD END   ----------------------------------------
                IF   SYU-SRYYMD  <  "20070401"
                  COMPUTE   WRK-JIHI4    =   WRK-JIHI4 
                                         +   SYU-JIHI-TAX
@@ -2226,6 +2237,9 @@
                                      +  SYU-RYOYOHI-SKJ-JIHI
       * 20080418 °åÎÅ¼ý±×¤ËÀ¸³èÎÅÍÜÈñµÚ¤ÓÉéÃ´³Û¤¬²Ã»»¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµSTART
                                      +  SYU-RYOYOHI-LIFE
+      ***  2009/05/26 ADD START ----------------------------------------
+                                     +  SYU-RYOYOHI-LIFE-JIHI
+      ***  2009/05/26 ADD END   ----------------------------------------
       * 20080603 °åÎÅ¼ý±×¤ÎÃÍ¤¬Àµ¤·¤¯°õ»ú¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµSTART tanaka
       *                  +  SYU-SKYMONEY-LIFE-KEI
       * 20080603 °åÎÅ¼ý±×¤ÎÃÍ¤¬Àµ¤·¤¯°õ»ú¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤ÀµEND
@@ -2238,6 +2252,9 @@
       *--- 2008/12/17 ADD START ----------------------------------------
       *--- 2009/02/06 CHANGE START ----------------------------------------
       *         COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  -  SYU-DISCOUNT-MONEY
+      ***  2009/05/26 ADD START ----------------------------------------
+               IF  SYU-DISCOUNT-MONEY  >  0
+      ***  2009/05/26 ADD END   ----------------------------------------
                COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
                                     -  (WRK-COMPFTN
                                     +  SYU-SKYMONEY-SKJ-KEI
@@ -2248,6 +2265,9 @@
                                     +  SYU-CHOSEI 
                                     +  WRK-JIHI
                                     -  SYU-SKYMONEY)
+      ***  2009/05/26 ADD START ----------------------------------------
+               END-IF
+      ***  2009/05/26 ADD END   ----------------------------------------
       *--- 2009/02/06 CHANGE END ---------------------------------------
       *--- 2008/12/17 ADD END ------------------------------------------
       *
