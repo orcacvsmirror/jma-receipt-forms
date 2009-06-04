@@ -73,6 +73,7 @@
       *              @@@@-門間    09/05/26  患者負担分が2重に加算されていた不具合の修正
       *                                     生活療養費・生活負担額が保険分金額・患者負担金額・
       *                                     医療収益に加算されていない不具合を修正
+      *              @@@@-田中    09/06/04  初診件数判定の処理を修正
       *****************************************************************
       *
       *
@@ -131,7 +132,9 @@
       *--- 2008/12/04 ADD END ------------------------------------------
            03  FLG-HKNNUM          PIC 9(01).
            03  DEBUG-SW            PIC 9(01).
-      *
+      *--- 2009/06/04 ADD START ----------------------------------------
+           03  FLG-ACCTEND         PIC 9(01).
+      *--- 2009/06/04 ADD END ------------------------------------------
       *  件数用フラグ領域
       **** 20050228 open-cobol 0.23への対応 SUZUKI
       *     03  FLG-KENSUU          PIC 9(01).
@@ -2521,6 +2524,45 @@
              IF      MCP-RC         =   ZERO
                MOVE  MCPDATA-REC  TO   SRYACCT-REC
                MOVE  ZERO         TO   FLG-SRYACCT
+      *--- 2009/06/04 ADD START ----------------------------------------
+      *    同月に   初診が2回目以降の時のデータを取得
+               INITIALIZE  FLG-ACCTEND
+               PERFORM  UNTIL  FLG-ACCTEND  =  1
+                 IF  JYURRK-ZAINUM(1)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(2)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(3)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(4)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(5)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(6)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(7)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(8)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(9)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(10)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(11)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(12)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(13)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(14)  =  ACCT-ZAINUM
+                     OR  JYURRK-ZAINUM(15)  =  ACCT-ZAINUM
+                   MOVE    MCPDATA-REC       TO   SRYACCT-REC
+                   MOVE    ZERO              TO   FLG-SRYACCT
+                   MOVE    1                 TO   FLG-ACCTEND
+                 ELSE
+                   MOVE    "DBFETCH"         TO   MCP-FUNC
+                   MOVE    "tbl_sryacct"     TO   MCP-TABLE
+                   MOVE    "key3"            TO   MCP-PATHNAME
+                   CALL    "ORCDBMAIN"       USING
+                                             MCPAREA
+                                             MCPDATA-REC
+                                             SPA-AREA
+                   IF   MCP-RC  =  ZERO
+                     MOVE    MCPDATA-REC     TO   SRYACCT-REC
+                     MOVE    ZERO            TO   FLG-SRYACCT
+                   ELSE
+                     MOVE    1               TO   FLG-ACCTEND
+                   END-IF
+                 END-IF
+               END-PERFORM
+      *--- 2009/06/04 ADD END ----------------------------------------
              ELSE
                MOVE  1            TO   FLG-SRYACCT
                INITIALIZE              SRYACCT-REC
