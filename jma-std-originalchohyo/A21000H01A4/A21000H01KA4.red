@@ -658,10 +658,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O8">
       <attribute name="obj_pos">
-        <point val="9.6,6.35"/>
+        <point val="9.6,6.3"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="9.0445,5.91204;9.6,6.46204"/>
+        <rectangle val="9.0445,5.86204;9.6,6.41204"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#OTOKO#</string>
@@ -681,7 +681,7 @@
             <real val="0.55"/>
           </attribute>
           <attribute name="pos">
-            <point val="9.6,6.35"/>
+            <point val="9.6,6.3"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -700,10 +700,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O9">
       <attribute name="obj_pos">
-        <point val="10.4,6.35"/>
+        <point val="10.4,6.3"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="9.8445,5.91204;10.4,6.46204"/>
+        <rectangle val="9.8445,5.86204;10.4,6.41204"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#ONNA[0]#</string>
@@ -723,7 +723,7 @@
             <real val="0.55"/>
           </attribute>
           <attribute name="pos">
-            <point val="10.4,6.35"/>
+            <point val="10.4,6.3"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -7226,10 +7226,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O163">
       <attribute name="obj_pos">
-        <point val="12.9681,27.9804"/>
+        <point val="13.1724,27.9282"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="12.9681,27.3991;18.1292,28.1291"/>
+        <rectangle val="13.1724,27.331;18.4749,28.081"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#FTN-JKY-TBL[1].JKYSNO#</string>
@@ -7246,10 +7246,10 @@
             <font name="Courier"/>
           </attribute>
           <attribute name="height">
-            <real val="0.73"/>
+            <real val="0.75"/>
           </attribute>
           <attribute name="pos">
-            <point val="12.9681,27.9804"/>
+            <point val="13.1724,27.9282"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -7258,20 +7258,20 @@
             <enum val="0"/>
           </attribute>
           <attribute name="single">
-            <real val="0.44238"/>
+            <real val="0.4545"/>
           </attribute>
           <attribute name="multi">
-            <real val="0.36865"/>
+            <real val="0.37875"/>
           </attribute>
         </composite>
       </attribute>
     </object>
     <object type="Embed - Text" version="0" id="O164">
       <attribute name="obj_pos">
-        <point val="12.9663,27.0938"/>
+        <point val="13.1706,27.0416"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="12.9663,26.5125;18.8647,27.2425"/>
+        <rectangle val="13.1706,26.4444;19.2306,27.1944"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#FTN-JKY-TBL[1].FTNSNO#</string>
@@ -7288,10 +7288,10 @@
             <font name="Courier"/>
           </attribute>
           <attribute name="height">
-            <real val="0.73"/>
+            <real val="0.75"/>
           </attribute>
           <attribute name="pos">
-            <point val="12.9663,27.0938"/>
+            <point val="13.1706,27.0416"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -7300,10 +7300,10 @@
             <enum val="0"/>
           </attribute>
           <attribute name="single">
-            <real val="0.44238"/>
+            <real val="0.4545"/>
           </attribute>
           <attribute name="multi">
-            <real val="0.36865"/>
+            <real val="0.37875"/>
           </attribute>
         </composite>
       </attribute>
@@ -9892,10 +9892,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O226">
       <attribute name="obj_pos">
-        <point val="13.1457,27.0022"/>
+        <point val="13.35,26.95"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="13.1457,26.62;17.9937,27.1"/>
+        <rectangle val="13.35,26.5519;18.4,27.0519"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#FTN-JKY-N-TBL[1].FTNSNON#</string>
@@ -9912,10 +9912,10 @@
             <font name="Courier"/>
           </attribute>
           <attribute name="height">
-            <real val="0.48"/>
+            <real val="0.5"/>
           </attribute>
           <attribute name="pos">
-            <point val="13.1457,27.0022"/>
+            <point val="13.35,26.95"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -9924,20 +9924,20 @@
             <enum val="0"/>
           </attribute>
           <attribute name="single">
-            <real val="0.29088"/>
+            <real val="0.303"/>
           </attribute>
           <attribute name="multi">
-            <real val="0.2424"/>
+            <real val="0.2525"/>
           </attribute>
         </composite>
       </attribute>
     </object>
     <object type="Embed - Text" version="0" id="O227">
       <attribute name="obj_pos">
-        <point val="13.1294,27.9074"/>
+        <point val="13.3337,27.8552"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="13.1294,27.5252;17.9774,28.0052"/>
+        <rectangle val="13.3337,27.4571;18.3837,27.9571"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#FTN-JKY-N-TBL[1].JKYSNON#</string>
@@ -9954,10 +9954,10 @@
             <font name="Courier"/>
           </attribute>
           <attribute name="height">
-            <real val="0.48"/>
+            <real val="0.5"/>
           </attribute>
           <attribute name="pos">
-            <point val="13.1294,27.9074"/>
+            <point val="13.3337,27.8552"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -9966,10 +9966,10 @@
             <enum val="0"/>
           </attribute>
           <attribute name="single">
-            <real val="0.29088"/>
+            <real val="0.303"/>
           </attribute>
           <attribute name="multi">
-            <real val="0.2424"/>
+            <real val="0.2525"/>
           </attribute>
         </composite>
       </attribute>
@@ -10236,10 +10236,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O234">
       <attribute name="obj_pos">
-        <point val="10.65,6.35"/>
+        <point val="10.65,6.3"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="10.0945,5.91204;10.65,6.46204"/>
+        <rectangle val="10.0945,5.86204;10.65,6.41204"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#ONNA[1]#</string>
@@ -10259,7 +10259,7 @@
             <real val="0.55"/>
           </attribute>
           <attribute name="pos">
-            <point val="10.65,6.35"/>
+            <point val="10.65,6.3"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
