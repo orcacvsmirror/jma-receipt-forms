@@ -50,7 +50,7 @@
         <embed object="string" length="2"/>
       </appinfo>
     </element>
-    <element name="ONNA" occurs="1">
+    <element name="ONNA" occurs="2">
       <appinfo>
         <embed object="string" length="2"/>
       </appinfo>
@@ -658,10 +658,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O8">
       <attribute name="obj_pos">
-        <point val="9.63137,6.33039"/>
+        <point val="9.6,6.35"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="9.07587,5.89243;9.63137,6.44243"/>
+        <rectangle val="9.0445,5.91204;9.6,6.46204"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#OTOKO#</string>
@@ -681,7 +681,7 @@
             <real val="0.55"/>
           </attribute>
           <attribute name="pos">
-            <point val="9.63137,6.33039"/>
+            <point val="9.6,6.35"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -700,13 +700,13 @@
     </object>
     <object type="Embed - Text" version="0" id="O9">
       <attribute name="obj_pos">
-        <point val="10.4167,6.33557"/>
+        <point val="10.4,6.35"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="9.8612,5.89761;10.4167,6.44761"/>
+        <rectangle val="9.8445,5.91204;10.4,6.46204"/>
       </attribute>
       <attribute name="dnode_path">
-        <string>#ONNA#</string>
+        <string>#ONNA[0]#</string>
       </attribute>
       <attribute name="embed_text_string">
         <enum val="0"/>
@@ -723,7 +723,7 @@
             <real val="0.55"/>
           </attribute>
           <attribute name="pos">
-            <point val="10.4167,6.33557"/>
+            <point val="10.4,6.35"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -10230,6 +10230,48 @@
           </attribute>
           <attribute name="multi">
             <real val="0.1616"/>
+          </attribute>
+        </composite>
+      </attribute>
+    </object>
+    <object type="Embed - Text" version="0" id="O234">
+      <attribute name="obj_pos">
+        <point val="10.65,6.35"/>
+      </attribute>
+      <attribute name="obj_bb">
+        <rectangle val="10.0945,5.91204;10.65,6.46204"/>
+      </attribute>
+      <attribute name="dnode_path">
+        <string>#ONNA[1]#</string>
+      </attribute>
+      <attribute name="embed_text_string">
+        <enum val="0"/>
+      </attribute>
+      <attribute name="text">
+        <composite type="text">
+          <attribute name="string">
+            <string>#&#161;&#251;#</string>
+          </attribute>
+          <attribute name="font">
+            <font name="Courier"/>
+          </attribute>
+          <attribute name="height">
+            <real val="0.55"/>
+          </attribute>
+          <attribute name="pos">
+            <point val="10.65,6.35"/>
+          </attribute>
+          <attribute name="color">
+            <color val="#000000"/>
+          </attribute>
+          <attribute name="alignment">
+            <enum val="2"/>
+          </attribute>
+          <attribute name="single">
+            <real val="0.3333"/>
+          </attribute>
+          <attribute name="multi">
+            <real val="0.27775"/>
           </attribute>
         </composite>
       </attribute>
