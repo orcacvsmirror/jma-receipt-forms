@@ -54,6 +54,7 @@
       *  09/04/06    @@@@-田中     自費の数量入力時の不具合を修正
       *  09/05/01    @@@@-田中     日報で出力可能に修正
       *  09/05/01    @@@@-田中     全診療区分で出力時に区分ごとの合計を印字
+      *  09/06/18    @@@@-田中     日報出力の回数計算を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1129,46 +1130,95 @@
            MOVE    TNS-NAME           TO   A010T-NAME
            MOVE    TNS-NAME           TO   A010T3-NAME
       *
-           IF   A010T-OUTTYPE         =    "95"
-               OR  A010T-OUTTYPE         =    "96"
+      *--- 2009/06/18 ADD START ----------------------------------------
+           IF   WRK-PARA-SYUKEIKBN  =  SPACE
+      *    月報
+      *--- 2009/06/18 ADD END ------------------------------------------
+             IF   A010T-OUTTYPE         =    "95"
+                 OR  A010T-OUTTYPE         =    "96"
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-             COMPUTE  WRK-ZAIKAISU =
-             SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
-             ADD    WRK-ZAIKAISU      TO   A010T-KAISU
-             MOVE   1                 TO   A010T-TANI
-             ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
-             MOVE   1                 TO   A010T3-TANI
-           ELSE
-             EVALUATE  TNS-TENSIKIBETU
-               WHEN  1
+               COMPUTE  WRK-ZAIKAISU =
+               SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
+               ADD    WRK-ZAIKAISU      TO   A010T-KAISU
+               MOVE   1                 TO   A010T-TANI
+               ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
+               MOVE   1                 TO   A010T3-TANI
+             ELSE
+               EVALUATE  TNS-TENSIKIBETU
+                 WHEN  1
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-                 COMPUTE  WRK-ZAIKAISU =
-                         SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
-                 ADD    WRK-ZAIKAISU     TO   A010T-KAISU
-                 MOVE   1                TO   A010T-TANI
-                 ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
-                 MOVE   1                TO   A010T3-TANI
-               WHEN  3
-               WHEN  8
+                   COMPUTE  WRK-ZAIKAISU =
+                           SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
+                   ADD    WRK-ZAIKAISU     TO   A010T-KAISU
+                   MOVE   1                TO   A010T-TANI
+                   ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
+                   MOVE   1                TO   A010T3-TANI
+                 WHEN  3
+                 WHEN  8
       *    点数項目の場合は回数をデータ化する。
-                 ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
-                 MOVE   ZERO             TO   A010T-TANI
-                 ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
-                 MOVE   ZERO             TO   A010T3-TANI
-               WHEN  0
-               WHEN  4
-               WHEN  5
-               WHEN  6
-               WHEN  7
+                   ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
+                   MOVE   ZERO             TO   A010T-TANI
+                   ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
+                   MOVE   ZERO             TO   A010T3-TANI
+                 WHEN  0
+                 WHEN  4
+                 WHEN  5
+                 WHEN  6
+                 WHEN  7
       *    点数、金額以外の場合
-                 MOVE   ZERO             TO   A010T-TEN
-                 ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
-                 MOVE   9                TO   A010T-TANI
-                 MOVE   ZERO             TO   A010T3-TEN
-                 ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
-                 MOVE   9                TO   A010T3-TANI
-               END-EVALUATE
+                   MOVE   ZERO             TO   A010T-TEN
+                   ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
+                   MOVE   9                TO   A010T-TANI
+                   MOVE   ZERO             TO   A010T3-TEN
+                   ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
+                   MOVE   9                TO   A010T3-TANI
+                 END-EVALUATE
+             END-IF
+      *--- 2009/06/18 ADD START ----------------------------------------
+           ELSE
+      *    日報
+             IF   A010T-OUTTYPE         =    "95"
+                 OR  A010T-OUTTYPE         =    "96"
+      *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
+               COMPUTE  WRK-ZAIKAISU =
+               SRY-SRYSURYO(IDX1)  *  ACCT-DAY(1 WRK-DAY)
+               ADD    WRK-ZAIKAISU      TO   A010T-KAISU
+               MOVE   1                 TO   A010T-TANI
+               ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
+               MOVE   1                 TO   A010T3-TANI
+             ELSE
+               EVALUATE  TNS-TENSIKIBETU
+                 WHEN  1
+      *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
+                   COMPUTE  WRK-ZAIKAISU =
+                           SRY-SRYSURYO(IDX1)  *  ACCT-DAY(1 WRK-DAY)
+                   ADD    WRK-ZAIKAISU     TO   A010T-KAISU
+                   MOVE   1                TO   A010T-TANI
+                   ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
+                   MOVE   1                TO   A010T3-TANI
+                 WHEN  3
+                 WHEN  8
+      *      点数項目の場合は回数をデータ化する。
+                   ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T-KAISU
+                   MOVE   ZERO             TO   A010T-TANI
+                   ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T3-KAISU
+                   MOVE   ZERO             TO   A010T3-TANI
+                 WHEN  0
+                 WHEN  4
+                 WHEN  5
+                 WHEN  6
+                 WHEN  7
+      *      点数、金額以外の場合
+                   MOVE   ZERO             TO   A010T-TEN
+                   ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T-KAISU
+                   MOVE   9                TO   A010T-TANI
+                   MOVE   ZERO             TO   A010T3-TEN
+                   ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T3-KAISU
+                   MOVE   9                TO   A010T3-TANI
+                 END-EVALUATE
+             END-IF
            END-IF
+      *--- 2009/06/18 ADD END ------------------------------------------
       *
            IF   FLG-INVALID      =    ZERO
              INITIALIZE       FLG-INVALID
