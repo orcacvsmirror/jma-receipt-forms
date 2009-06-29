@@ -777,7 +777,7 @@
       *    一般後期高齢
            IF  ( SYU-SYUHKNNUM   =  "039"
              OR  SYU-SYUHKNNUM   =  "040" )
-             IF  SYU-PTFTNRATE   =  10
+             IF  PTHKN-HOJOKBN   =  "1"
                MOVE       1      TO    IDX1
              ELSE
                MOVE       2      TO    IDX1
