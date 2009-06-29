@@ -57,6 +57,7 @@
       *  08/12/26    @@@@-門間     医療収益の計算式を変更
       *  09/01/08    @@@@-田中     公費請求額の計算式を変更
       *  09/02/25    @@@@-田中     入院時診療科名の不具合を修正
+      *  09/06/26    @@@@-門間     自費分が正しく集計されない不具合を修正
       *********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -140,6 +141,9 @@
            03  FLG-RJNHKN               PIC 9(01).
            03  FLG-END                  PIC 9(01).
            03  FLG-HKNCOMBI             PIC 9(01).
+      *--- 2009/06/26 ADD START ----------------------------------------
+           03  FLG-FIRST                PIC 9(01).
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -283,6 +287,10 @@
            03  WRK-CNT4                 PIC 9(02).
            03  WRK-KOHNAME-G            PIC X(24).
            03  WRK-KOHNAME-G2           PIC X(24).
+      *--- 2009/06/26 ADD START ----------------------------------------
+           03  WRK-JIHI                 PIC 9(07).
+           03  WRK-TGMONEY              PIC 9(07).
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *
            03  WRK-PAGE                 PIC ZZ9.
            03  WRK-Z3                   PIC ZZ9.
@@ -465,6 +473,11 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *
+      *--- 2009/06/26 ADD START ----------------------------------------
+      *    保険年齢パラメタ
+           COPY    "CPORCSAGECHK.INC".
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -743,6 +756,13 @@
            OPEN     OUTPUT  S139TMP-FILE
            CLOSE            S139TMP-FILE
            OPEN     I-O     S139TMP-FILE
+      *--- 2009/06/26 ADD START ----------------------------------------
+      *    自費データ集計
+           IF  WRK-PARA-NYUGAIKBN  =  2
+             OR  WRK-PARA-NYUGAIKBN  =  SPACE
+             PERFORM  2001-JIHI-SYUKEI-SEC
+           END-IF
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *    社保データ集計
            PERFORM  2001-SYAHO-SYUKEI-SEC
       *
@@ -764,6 +784,232 @@
        2001-SYUKEI-EXT.
            EXIT.
       *
+      *--- 2009/06/26 ADD START ----------------------------------------
+      *****************************************************************
+      *    自費データ抽出処理１
+      *****************************************************************
+       2001-JIHI-SYUKEI-SEC                SECTION.
+      *
+           INITIALIZE            FLG-FIRST
+                                 SYUNOU-REC
+           MOVE    2        TO   WRK-NYUGAIKBN
+           PERFORM  920-DBSELECT3-SEC
+             PERFORM  UNTIL   FLG-JYURRK   =   1
+      *    データ集計
+             PERFORM  2001-JIHI-G-SEC
+             PERFORM  920-DBFETCH3-SEC
+           END-PERFORM
+      *
+           PERFORM  920-DBCLOSE3-SEC
+      *
+           IF       WRK-JIHI       NOT =  0
+             OR     WRK-TGMONEY    NOT =  0
+             PERFORM  2001-KASAN-JIHI-G-SEC
+           END-IF
+      *
+           .
+       2001-JIHI-SYUKEI-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    自費データ抽出処理２
+      *****************************************************************
+        2001-JIHI-G-SEC                SECTION.
+      *
+      *    自費集計処理
+           IF     FLG-FIRST   =   1
+             IF  SYU-SYUHKNNUM(1:2)  NOT =  "97" AND "98"
+               PERFORM  2001-KASAN-JIHI-G-SEC
+               MOVE   0   TO   WRK-JIHI
+                               WRK-TGMONEY
+             END-IF
+           END-IF
+      *
+      *    収納情報よりデータ抽出
+           PERFORM  940-SYUNOU-READ-SEC
+           IF  SYU-SYUHKNNUM(1:2)  NOT =  "97" AND "98"
+             IF       SYU-TOTAL-HKNTEN            =  0
+               AND    SYU-TOTAL-MONEY             =  0
+               AND  ( SYU-JIHI-TOTAL         NOT  =  0
+               OR     SYU-JIHI-TOTAL-TAX     NOT  =  0 
+               OR     SYU-TOTAL-TGMONEY      NOT  =  0
+               OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
+               
+               COMPUTE  WRK-JIHI     =  WRK-JIHI
+                                     +  SYU-JIHI-TOTAL
+                                     +  SYU-JIHI-TOTAL-TAX
+               COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
+                                     +  SYU-TOTAL-TGMONEY
+                                     +  SYU-TOTAL-TGMONEY-TAX
+             END-IF
+           END-IF
+      *
+           MOVE   1           TO    FLG-FIRST
+      *
+           .
+        2001-JIHI-G-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    自費集計処理１
+      *****************************************************************
+        2001-KASAN-JIHI-G-SEC                SECTION.
+      *
+           INITIALIZE                   WRK-PATH
+           MOVE     "JIHI"          TO  WRK-PATH
+           MOVE     SYU-PTID        TO  WRK-PTID
+           PERFORM  900-PTINF-READ-SEC
+           PERFORM  930-HKNCOMBI-SET-SEC
+      *
+      *    保険算定年齢チェック等
+           INITIALIZE                  ORCSAGECHKAREA
+           MOVE    SYU-HOSPNUM         TO  AGECHK-HOSPNUM
+           MOVE    SYU-PTID            TO  AGECHK-PTID
+           MOVE    S100LNK-YM          TO  AGECHK-SRYYMD(1:6)
+           MOVE    "01"                TO  AGECHK-SRYYMD(7:2)
+           MOVE    COMB-HKNCOMBINUM    TO  AGECHK-HKNCOMBINUM
+           CALL    "ORCSAGECHK"        USING
+                                       ORCSAGECHKAREA
+                                       SPA-AREA
+      *
+      *    キー設定
+           INITIALIZE    S139TMP-REC
+      *
+           IF    SYS-1001-HOSPSBT1  =  1 
+             OR  SYS-2009-SYUKA-KBN = 1
+             MOVE  SYU-SRYKA        TO  S139TMP-SRYKA
+           ELSE
+             MOVE  "00"             TO  S139TMP-SRYKA
+           END-IF
+           
+           MOVE    "9"              TO  S139TMP-SRYYMKBN
+      *    TMPファイル読み込み
+           MOVE    3                TO  FLG-TYPE
+           PERFORM  800-SKTTMP-READ-SEC
+      *
+           PERFORM  2001-JIHI-IDX-SET-SEC
+           PERFORM  2001-JIHI-DATA-SET-SEC
+      *
+      *    書き出し
+           IF  FLG-S139TMP   =  1
+             ADD      1             TO   CNT-DATA
+             WRITE    S139TMP-REC
+           ELSE
+             REWRITE  S139TMP-REC
+           END-IF
+      *
+           .
+        2001-KASAN-JIHI-G-EXT.
+           EXIT.
+      *****************************************************************
+      *    自費集計場所設定
+      *****************************************************************
+       2001-JIHI-IDX-SET-SEC                SECTION.
+      *
+      *    入外区分設定
+           MOVE    2                TO  IDX1
+      *
+      *    明細場所設定
+           IF    SYU-SYUHKNNUM  NOT = "060" AND "067"
+             IF    SYU-SYUHKNNUM = "039" OR 
+                   SYU-SYUHKNNUM = "040"
+               IF  SYU-KOH1HKNNUM = SPACE
+                 MOVE    17         TO  IDX2
+               ELSE
+                 MOVE    18         TO  IDX2
+               END-IF
+      *    小計加算場所設定
+               MOVE      5          TO  IDX3
+             ELSE
+               
+               IF    AGECHK-SYUGAKUKBN   =  1
+                 MOVE    6          TO  IDX2
+               ELSE
+                 IF  SYU-KOH1HKNNUM = SPACE
+                   MOVE  1          TO  IDX2
+                 ELSE
+                   MOVE  3          TO  IDX2
+                 END-IF
+      *    家族の場合１加算
+                 IF    COMB-HONKZKKBN NOT = "1"
+                   ADD   1          TO  IDX2
+                 END-IF
+               END-IF
+      *    小計加算場所設定
+               MOVE      1          TO  IDX3
+             END-IF
+           ELSE
+             EVALUATE  TRUE
+             
+             WHEN AGECHK-SYUGAKUKBN   =  1
+               MOVE      14         TO  IDX2
+             WHEN SYU-SYUHKNNUM = "067"
+               IF    COMB-HONKZKKBN  =  "1"
+                 MOVE    11         TO  IDX2
+               ELSE
+                 MOVE    12         TO  IDX2
+               END-IF
+             WHEN OTHER
+               IF    SYU-KOH1HKNNUM  =  SPACE
+                 MOVE    7          TO  IDX2
+               ELSE
+                 MOVE    9          TO  IDX2
+               END-IF
+      *    家族の場合１加算
+               IF    COMB-HONKZKKBN  NOT =  "1"
+                 ADD     1          TO  IDX2
+               END-IF    
+             END-EVALUATE
+      *    小計加算場所設定
+             MOVE        2          TO  IDX3
+           END-IF
+      *
+      *    公費単独時の設定
+           IF    SYU-SYUHKNNUM = SPACE
+             MOVE        15         TO  IDX2
+             MOVE        3          TO  IDX3
+           END-IF
+      *
+           .
+       2001-JIHI-IDX-SET-EXT.
+           EXIT.
+      *****************************************************************
+      *    自費集計処理２
+      *****************************************************************
+       2001-JIHI-DATA-SET-SEC                SECTION.
+      *
+      *    自費・保険外のみの場合、件数・日数は集計しない
+      *
+      *    窓口請求額加算
+           ADD    WRK-TGMONEY       TO   S139TMP-MADOGK(IDX1 IDX2)
+                                         S139TMP-S-MADOGK(IDX1 IDX3)
+                                         S139TMP-S-MADOGK(IDX1 4)
+                                         S139TMP-GMADOGK(1)
+                                         S139TMP-GMADOGK(6)
+      *    自費加算
+           ADD    WRK-JIHI          TO   S139TMP-JIHIGK(IDX1 IDX2)
+                                         S139TMP-S-JIHIGK(IDX1 IDX3)
+                                         S139TMP-S-JIHIGK(IDX1 4)
+                                         S139TMP-GJIHIGK(1)
+                                         S139TMP-GJIHIGK(6)
+      *
+      *    医療収益
+           ADD    WRK-JIHI          TO   S139TMP-SYUEKI(IDX1 IDX2)
+                                         S139TMP-S-SYUEKI(IDX1 IDX3)
+                                         S139TMP-S-SYUEKI(IDX1 4)
+                                         S139TMP-GSYUEKI(1)
+                                         S139TMP-GSYUEKI(6)
+      *
+           ADD    WRK-TGMONEY       TO   S139TMP-SYUEKI(IDX1 IDX2)
+                                         S139TMP-S-SYUEKI(IDX1 IDX3)
+                                         S139TMP-S-SYUEKI(IDX1 4)
+                                         S139TMP-GSYUEKI(1)
+                                         S139TMP-GSYUEKI(6)
+      *
+           .
+       2001-JIHI-IDX-SET-K-EXT.
+           EXIT.
+      *--- 2009/06/26 ADD START ----------------------------------------
       *****************************************************************
       *    社保データ抽出処理
       *****************************************************************
@@ -3640,6 +3886,16 @@
                PERFORM  925-SYUNOU-READ-SEC
       *
                PERFORM  UNTIL  FLG-SYUNOU  =  1
+      *--- 2009/06/26 ADD START ----------------------------------------
+               IF       SYU-TOTAL-HKNTEN =  0
+                 AND    SYU-TOTAL-MONEY             =  0
+                 AND  ( SYU-JIHI-TOTAL         NOT  =  0
+                 OR     SYU-JIHI-TOTAL-TAX     NOT  =  0 
+                 OR     SYU-TOTAL-TGMONEY      NOT  =  0
+                 OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
+                 CONTINUE
+               ELSE
+      *--- 2009/06/26 ADD START ----------------------------------------
                  IF  RECE10-SRYYM  =  SYU-SRYYMD(1:6)
                      AND  SYU-DENPJTIKBN   NOT = "3"
                      AND  RECE10-TEKSTYMD  <=  SYU-SRYYMD
@@ -3661,6 +3917,9 @@
                      PERFORM  800-SEIKYU-SEC
                    END-IF
                  END-IF
+      *--- 2009/06/26 ADD START ----------------------------------------
+               END-IF
+      *--- 2009/06/26 ADD START ----------------------------------------
       *
                  MOVE  "SYUNOU-KEY2"     TO   ORC-DBPATH
                  PERFORM   925-SYUNOU-READ-SEC
@@ -3930,6 +4189,13 @@
       ***07/09/20 nagaya 4.0対応 end
            MOVE  JYURRK-PTID            TO   COMB-PTID
            MOVE  JYURRK-HKNCOMBINUM     TO   COMB-HKNCOMBINUM
+      *--- 2009/06/26 ADD START ----------------------------------------
+           IF   WRK-PATH   =   "JIHI"
+             MOVE  SYU-HOSPNUM          TO   COMB-HOSPNUM
+             MOVE  SYU-PTID             TO   COMB-PTID
+             MOVE  SYU-HKNCOMBINUM      TO   COMB-HKNCOMBINUM
+           END-IF
+      *--- 2009/06/26 ADD END   ----------------------------------------
            MOVE  HKNCOMBI-REC           TO   MCPDATA-REC
            MOVE  "DBSELECT"             TO   MCP-FUNC
       ***07/09/20 nagaya 4.0対応 start

@@ -33,6 +33,7 @@
       *                            食事療養の収益を医療収益に加算
       *  09/01/08    @@@@-田中     医療収益の計算式を変更
       *  09/01/08    @@@@-田中     公費請求額の計算式を変更
+      *  09/06/26    @@@@-門間     自費分が正しく集計されない不具合を修正
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -113,6 +114,9 @@
            03  FLG-RJNHKN               PIC 9(01).
            03  FLG-END                  PIC 9(01).
            03  FLG-HKNCOMBI             PIC 9(01).
+      *--- 2009/06/26 ADD START ----------------------------------------
+           03  FLG-FIRST                PIC 9(01).
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -257,6 +261,13 @@
       * 20081014 市町村ごとの集計を追加end
            03  WRK-KOHNAME-G             PIC X(24).
            03  WRK-KOHNAME-G2            PIC X(24).
+      *--- 2009/06/26 ADD START ----------------------------------------
+           03  WRK-JIHI                  PIC 9(07).
+           03  WRK-TGMONEY               PIC 9(07).
+           03  WRK-JIHI-HKNJANUM         PIC X(08).
+           03  WRK-JIHI-TBL        OCCURS 4.
+               05  WRK-JIHI-HKNNUM       PIC X(03).
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *
            03  WRK-MAE-INPUT             PIC X(200).
            03  WRK-OUT-INPUT             PIC X(200).
@@ -329,6 +340,11 @@
       *
       *    労災医療機関情報
            COPY    "CPSK4001.INC".
+      *
+      *--- 2009/06/26 ADD START ----------------------------------------
+      *    主科設定情報 
+           COPY    "CPSK2009.INC".
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *
       *    出力先プリンタ名割り当て情報
            COPY  "CPSK1031.INC".
@@ -618,6 +634,13 @@
            OPEN     OUTPUT  S140TMP-FILE
            CLOSE            S140TMP-FILE
            OPEN     I-O     S140TMP-FILE
+      *--- 2009/06/26 ADD START ----------------------------------------
+      *    自費データ集計
+           IF  WRK-PARA-NYUGAIKBN  =  2
+             OR  WRK-PARA-NYUGAIKBN  =  SPACE
+             PERFORM  2001-JIHI-SYUKEI-SEC
+           END-IF
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *    後期高齢データ集計
            PERFORM  2001-KOKUHO-SYUKEI-SEC
       *
@@ -627,6 +650,232 @@
        2001-SYUKEI-EXT.
            EXIT.
       *
+      *--- 2009/06/26 ADD START ----------------------------------------
+      *****************************************************************
+      *    自費データ抽出処理１
+      *****************************************************************
+       2001-JIHI-SYUKEI-SEC                SECTION.
+      *
+           INITIALIZE            FLG-FIRST
+                                 SYUNOU-REC
+                                 WRK-JIHI-HKNJANUM
+           MOVE    2        TO   WRK-NYUGAIKBN
+           PERFORM  920-DBSELECT3-SEC
+             PERFORM  UNTIL   FLG-JYURRK   =   1
+      *    データ集計
+             PERFORM  2001-JIHI-G-SEC
+             PERFORM  920-DBFETCH3-SEC
+           END-PERFORM
+      *
+           PERFORM  920-DBCLOSE3-SEC
+      *
+           IF       WRK-JIHI       NOT =  0
+             OR     WRK-TGMONEY    NOT =  0
+             PERFORM  2001-KASAN-JIHI-G-SEC
+           END-IF
+      *
+           .
+       2001-JIHI-SYUKEI-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    自費データ抽出処理２
+      *****************************************************************
+        2001-JIHI-G-SEC                SECTION.
+      *
+      *    保険者番号読み込み
+           PERFORM  910-PTHKNINF-READ-SEC
+      *    自費集計処理
+           IF     FLG-FIRST   =   1
+             IF  SYU-SYUHKNNUM  =  "039"  OR  "040"
+             PERFORM  2001-KASAN-JIHI-G-SEC
+             MOVE   0   TO   WRK-JIHI
+                             WRK-TGMONEY
+             END-IF
+           END-IF
+      *
+      *    収納情報よりデータ抽出
+           PERFORM  940-SYUNOU-READ-SEC
+           PERFORM  910-PTHKNINF-READ-SEC
+           IF  SYU-SYUHKNNUM  =  "039"  OR  "040"
+             IF       SYU-TOTAL-HKNTEN            =  0
+               AND    SYU-TOTAL-MONEY             =  0
+               AND  ( SYU-JIHI-TOTAL         NOT  =  0
+               OR     SYU-JIHI-TOTAL-TAX     NOT  =  0 
+               OR     SYU-TOTAL-TGMONEY      NOT  =  0
+               OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
+               COMPUTE  WRK-JIHI     =  WRK-JIHI
+                                     +  SYU-JIHI-TOTAL
+                                     +  SYU-JIHI-TOTAL-TAX
+               COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
+                                     +  SYU-TOTAL-TGMONEY
+                                     +  SYU-TOTAL-TGMONEY-TAX
+             END-IF
+           END-IF
+      *
+           MOVE   1           TO    FLG-FIRST
+      *
+           .
+        2001-JIHI-G-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    自費集計処理１
+      *****************************************************************
+        2001-KASAN-JIHI-G-SEC               SECTION.
+      *
+      *    キー設定
+           INITIALIZE    S140TMP-REC
+      *
+           MOVE     SYU-NYUGAIKBN       TO    S140TMP-NYUGAIKBN
+      *
+           IF    SYS-1001-HOSPSBT1  =  1 
+             OR  SYS-2009-SYUKA-KBN = 1
+             MOVE    SYU-SRYKA          TO    S140TMP-SRYKA
+           ELSE
+             MOVE    "00"               TO    S140TMP-SRYKA
+           END-IF
+      *
+      *    TMPファイル読み込み
+           MOVE    2         TO   FLG-TYPE
+           PERFORM  800-SKTTMP-READ-SEC
+      *
+           MOVE   PTHKN-HKNJANUM   TO    WRK-HKNJANUM
+      *
+      *    公費設定
+           MOVE   SYU-KOH1HKNNUM   TO   WRK-JIHI-HKNNUM(1)
+           MOVE   SYU-KOH2HKNNUM   TO   WRK-JIHI-HKNNUM(2)
+           MOVE   SYU-KOH3HKNNUM   TO   WRK-JIHI-HKNNUM(3)
+           MOVE   SYU-KOH4HKNNUM   TO   WRK-JIHI-HKNNUM(4)
+      *
+      *    公費集計処理 
+           IF    SYU-KOH1HKNNUM  NOT =  SPACE
+             PERFORM  2001-JIHI-K-DATA-SEC
+           END-IF
+      *
+      *    明細集計場所設定
+           PERFORM  2001-JIHI-IDX-SET-SEC
+      *    社保データ集計
+           PERFORM  2001-JIHI-DATA-SET-SEC
+      *
+      *    書き出し
+           IF  FLG-S140TMP   =  1
+             ADD      1             TO   CNT-DATA
+             WRITE    S140TMP-REC
+           ELSE
+             REWRITE  S140TMP-REC
+           END-IF
+      *
+           .
+        2001-KASAN-JIHI-G-EXT.
+           EXIT.
+      *****************************************************************
+      *    自費集計場所設定
+      *****************************************************************
+       2001-JIHI-IDX-SET-SEC                SECTION.
+      *
+      *    一般後期高齢
+           IF  ( SYU-SYUHKNNUM   =  "039"
+             OR  SYU-SYUHKNNUM   =  "040" )
+             IF  SYU-PTFTNRATE   =  10
+               MOVE       1      TO    IDX1
+             ELSE
+               MOVE       2      TO    IDX1
+             END-IF
+      *    小計集計場所設定
+             MOVE       3      TO    IDX2
+           END-IF
+      *
+           .
+       2001-JIHI-IDX-SET-EXT.
+           EXIT.
+      *****************************************************************
+      *    自費集計処理２
+      *****************************************************************
+       2001-JIHI-DATA-SET-SEC                SECTION.
+      *
+      *    自費・保険外のみの場合、件数・日数は集計しない
+      *    窓口請求額加算
+           ADD     WRK-TGMONEY      TO     S140TMP-MADOGK(IDX1)
+                                           S140TMP-MADOGK(IDX2)
+                                           S140TMP-GMADOGK
+      *
+      *    自費金額加算
+           ADD     WRK-JIHI         TO     S140TMP-JIHIGK(IDX1)
+                                           S140TMP-JIHIGK(IDX2)
+                                           S140TMP-GJIHIGK
+      *
+      *    医療収益
+           ADD     WRK-JIHI         TO     S140TMP-SYUEKI(IDX1)
+                                           S140TMP-SYUEKI(IDX2)
+                                           S140TMP-GSYUEKI
+           ADD     WRK-TGMONEY      TO     S140TMP-SYUEKI(IDX1)
+                                           S140TMP-SYUEKI(IDX2)
+                                           S140TMP-GSYUEKI
+      *
+           MOVE    1                  TO   IDC
+           MOVE    300                TO   IDX-MAX
+           PERFORM    UNTIL   IDC   >    IDX-MAX
+             IF   S140TMP-HKNJANUM(IDC)   =  SPACE  OR  WRK-HKNJANUM
+               MOVE    WRK-HKNJANUM   TO   S140TMP-HKNJANUM(IDC)
+               MOVE    ZERO           TO   IDX-MAX
+             ELSE
+               ADD     1              TO   IDC
+             END-IF     
+           END-PERFORM
+      *
+      *    保険者加算
+           IF    IDC    <=  300
+      *
+      *    自費・保険外のみの場合、件数・日数は集計しない
+      *    窓口請求額加算
+             ADD    WRK-TGMONEY          TO    S140TMP-HMADOGK(IDC)
+      *
+      *    自費計加算
+             ADD    WRK-JIHI             TO    S140TMP-HJIHIGK(IDC)
+      *
+      *    医療収益
+             ADD    WRK-JIHI             TO    S140TMP-HSYUEKI(IDC)
+             ADD    WRK-TGMONEY          TO    S140TMP-HSYUEKI(IDC)
+      *
+           END-IF
+      *
+           .
+       2001-JIHI-DATA-SET-EXT.
+           EXIT.
+      *****************************************************************
+      *    後期高齢公費集計処理
+      *****************************************************************
+       2001-JIHI-K-DATA-SEC                SECTION.
+      *
+           PERFORM VARYING IDX5   FROM 1  BY  1
+                   UNTIL   IDX5  >   4
+                   OR  WRK-JIHI-TBL(IDX5)   =   SPACE
+      *    公費判別
+             PERFORM  VARYING  IDX4  FROM  1  BY  1
+                      UNTIL    IDX4  >     300
+                      OR       S140TMP-KOH1-KEY (IDX4) = SPACE
+               IF  WRK-JIHI-TBL (IDX5)  =  S140TMP-KOHNUM (IDX4)
+                 MOVE    IDX4      TO   CNT-KOH
+                 MOVE    300       TO   IDX4
+               END-IF
+             END-PERFORM
+      *
+      *    該当公費がなかった場合
+             IF  IDX4  < 300
+               MOVE  IDX4  TO  CNT-KOH
+             END-IF
+      *
+      *    公費名
+             MOVE  WRK-JIHI-TBL(IDX5)    TO   S140TMP-KOHNUM(CNT-KOH)
+      *    自費・保険外のみの場合、件数・日数は集計しない
+      *
+           END-PERFORM
+           .
+       2001-DATA-SET21-EXT.
+           EXIT.
+      *
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *****************************************************************
       *    後期高齢データ抽出処理
       *****************************************************************
@@ -664,7 +913,6 @@
       *    後期高齢集計場所設定
       *****************************************************************
         2001-IDX-SET2-SEC                SECTION.
-      *
       *
       *    一般後期高齢
            IF  (RECE10-HKNNUM  =  "039"
@@ -2280,6 +2528,54 @@
        900-PTINF-READ-EXT.
            EXIT.
       *
+      *--- 2009/06/26 ADD START ----------------------------------------
+      *****************************************************************
+      *    患者保険情報マスター読込処理
+      *****************************************************************
+       910-PTHKNINF-READ-SEC         SECTION.
+      *
+           INITIALIZE                      PTHKNINF-REC
+           MOVE    SYU-HOSPNUM         TO  PTHKN-HOSPNUM
+           MOVE    SYU-PTID            TO  PTHKN-PTID
+           MOVE    PTHKNINF-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_pthkninf"      TO  MCP-TABLE
+           MOVE    "key6"              TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"             USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+           IF      MCP-RC              =   ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_pthkninf"    TO  MCP-TABLE
+             MOVE    "key6"            TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"           USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+             IF      MCP-RC            =   ZERO
+               MOVE    MCPDATA-REC   TO  PTHKNINF-REC
+               MOVE    ZERO          TO  FLG-PTHKNINF
+             ELSE
+               MOVE    1             TO  FLG-PTHKNINF
+               INITIALIZE            PTHKNINF-REC
+             END-IF
+           ELSE
+             MOVE    1               TO  FLG-PTHKNINF
+             INITIALIZE              PTHKNINF-REC
+           END-IF
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_pthkninf"         TO  MCP-TABLE
+           MOVE    "key6"              TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+       910-PTHKNINF-READ-EXT.
+           EXIT.
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *****************************************************************
       *   保険者情報セット
       *****************************************************************
@@ -2468,6 +2764,16 @@
              PERFORM  925-SYUNOU-READ-SEC
       *
              PERFORM  UNTIL  FLG-SYUNOU  =  1
+      *--- 2009/06/26 ADD START ----------------------------------------
+               IF       SYU-TOTAL-HKNTEN =  0
+                 AND    SYU-TOTAL-MONEY             =  0
+                 AND  ( SYU-JIHI-TOTAL         NOT  =  0
+                 OR     SYU-JIHI-TOTAL-TAX     NOT  =  0 
+                 OR     SYU-TOTAL-TGMONEY      NOT  =  0
+                 OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
+                 CONTINUE
+               ELSE
+      *--- 2009/06/26 ADD START ----------------------------------------
                IF  RECE10-SRYYM  =  SYU-SRYYMD(1:6)
                    AND  SYU-DENPJTIKBN   NOT = "3"
                    AND  RECE10-TEKSTYMD  <=  SYU-SRYYMD
@@ -2486,6 +2792,9 @@
                    PERFORM  800-SEIKYU-SEC
                  END-IF
                END-IF
+      *--- 2009/06/26 ADD START ----------------------------------------
+               END-IF
+      *--- 2009/06/26 ADD START ----------------------------------------
       *
                MOVE  "SYUNOU-KEY2"       TO   ORC-DBPATH
                PERFORM   925-SYUNOU-READ-SEC
@@ -2702,6 +3011,82 @@
        930-HKNCOMBI-SET-EXT.
            EXIT.
       *
+      *--- 2009/06/26 ADD START ----------------------------------------
+      ******************************************************************
+      *    受診履歴情報検索
+      ******************************************************************
+       920-DBSELECT3-SEC                 SECTION.
+      *
+           INITIALIZE                 JYURRK-REC
+           MOVE    WRK-PARA-HOSPNUM   TO   JYURRK-HOSPNUM
+           MOVE    WRK-NYUGAIKBN      TO   JYURRK-NYUGAIKBN
+           MOVE    WRK-PARA-PRTSYMD   TO   JYURRK-SRYYMD
+           MOVE    WRK-PARA-PRTLYMD   TO   JYURRK-UPSRYYMD
+           MOVE    JYURRK-REC         TO   MCPDATA-REC
+           MOVE    "DBSELECT"         TO   MCP-FUNC
+           MOVE    "tbl_jyurrk"       TO   MCP-TABLE
+           MOVE    "key21"            TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+           IF   MCP-RC    =   ZERO
+             PERFORM 920-DBFETCH3-SEC
+           ELSE
+             MOVE    1                TO   FLG-JYURRK
+           END-IF
+           .
+       920-DBSELECT3-EXT.
+           EXIT.
+      *
+      ******************************************************************
+      *     受診履歴情報フェッチ
+      ******************************************************************
+       920-DBFETCH3-SEC                SECTION.
+      *
+           MOVE    "DBFETCH"        TO   MCP-FUNC
+           MOVE    "tbl_jyurrk"     TO   MCP-TABLE
+           MOVE    "key21"          TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    ZERO           TO   FLG-JYURRK
+             MOVE    MCPDATA-REC    TO   JYURRK-REC
+      *
+      *    テスト患者は対象外
+             MOVE    JYURRK-PTID    TO   WRK-PTID
+             PERFORM  900-PTINF-READ-SEC
+             IF   FLG-PTINF   =   ZERO
+                 AND    PTINF-TSTPTNUMKBN  =  "1"
+               GO  TO  920-DBFETCH3-SEC
+             END-IF
+      *
+           ELSE
+             MOVE    1            TO  FLG-JYURRK
+           END-IF
+           .
+       920-DBFETCH3-EXT.
+           EXIT.
+      *
+      ******************************************************************
+      *    受診履歴情報クローズ処理
+      ******************************************************************
+       920-DBCLOSE3-SEC                 SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"         TO   MCP-FUNC
+           MOVE    "tbl_jyurrk"            TO   MCP-TABLE
+           MOVE    "key21"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"             USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+           .
+       920-DBCLOSE3-EXT.
+           EXIT.
+      *
+      *--- 2009/06/26 ADD END   ----------------------------------------
       *****************************************************************
       *   保険番号情報セット
       *****************************************************************
