@@ -114,9 +114,6 @@
            03  FLG-RJNHKN               PIC 9(01).
            03  FLG-END                  PIC 9(01).
            03  FLG-HKNCOMBI             PIC 9(01).
-      *--- 2009/06/26 ADD START ----------------------------------------
-           03  FLG-FIRST                PIC 9(01).
-      *--- 2009/06/26 ADD END   ----------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -264,7 +261,6 @@
       *--- 2009/06/26 ADD START ----------------------------------------
            03  WRK-JIHI                  PIC 9(07).
            03  WRK-TGMONEY               PIC 9(07).
-           03  WRK-JIHI-HKNJANUM         PIC X(08).
            03  WRK-JIHI-TBL        OCCURS 4.
                05  WRK-JIHI-HKNNUM       PIC X(03).
       *--- 2009/06/26 ADD END   ----------------------------------------
@@ -656,9 +652,6 @@
       *****************************************************************
        2001-JIHI-SYUKEI-SEC                SECTION.
       *
-           INITIALIZE            FLG-FIRST
-                                 SYUNOU-REC
-                                 WRK-JIHI-HKNJANUM
            MOVE    2        TO   WRK-NYUGAIKBN
            PERFORM  920-DBSELECT3-SEC
              PERFORM  UNTIL   FLG-JYURRK   =   1
@@ -669,11 +662,6 @@
       *
            PERFORM  920-DBCLOSE3-SEC
       *
-           IF       WRK-JIHI       NOT =  0
-             OR     WRK-TGMONEY    NOT =  0
-             PERFORM  2001-KASAN-JIHI-G-SEC
-           END-IF
-      *
            .
        2001-JIHI-SYUKEI-EXT.
            EXIT.
@@ -682,17 +670,6 @@
       *    自費データ抽出処理２
       *****************************************************************
         2001-JIHI-G-SEC                SECTION.
-      *
-      *    保険者番号読み込み
-           PERFORM  910-PTHKNINF-READ-SEC
-      *    自費集計処理
-           IF     FLG-FIRST   =   1
-             IF  SYU-SYUHKNNUM  =  "039"  OR  "040"
-             PERFORM  2001-KASAN-JIHI-G-SEC
-             MOVE   0   TO   WRK-JIHI
-                             WRK-TGMONEY
-             END-IF
-           END-IF
       *
       *    収納情報よりデータ抽出
            PERFORM  940-SYUNOU-READ-SEC
@@ -710,11 +687,11 @@
                COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
                                      +  SYU-TOTAL-TGMONEY
                                      +  SYU-TOTAL-TGMONEY-TAX
+               PERFORM  2001-KASAN-JIHI-G-SEC
+               MOVE     0   TO   WRK-JIHI
+                                 WRK-TGMONEY
              END-IF
            END-IF
-      *
-           MOVE  1               TO  FLG-FIRST
-           MOVE  PTHKN-HKNJANUM  TO  WRK-JIHI-HKNJANUM
       *
            .
         2001-JIHI-G-EXT.
@@ -868,7 +845,12 @@
              END-IF
       *
       *    公費名
-             MOVE  WRK-JIHI-TBL(IDX5)    TO   S140TMP-KOHNUM(CNT-KOH)
+      *    ０９１と０５１を同じ公費として扱う
+             IF   WRK-JIHI-TBL(IDX5)  =  "091"
+               MOVE  "051"               TO   S140TMP-KOHNUM(CNT-KOH)
+             ELSE
+               MOVE  WRK-JIHI-TBL(IDX5)  TO   S140TMP-KOHNUM(CNT-KOH)
+             END-IF
       *    自費・保険外のみの場合、件数・日数は集計しない
       *
            END-PERFORM
@@ -2539,36 +2521,43 @@
            INITIALIZE                      PTHKNINF-REC
            MOVE    SYU-HOSPNUM         TO  PTHKN-HOSPNUM
            MOVE    SYU-PTID            TO  PTHKN-PTID
+      *+
+		   MOVE    SYU-SYUHKNNUM       TO  PTHKN-HKNNUM
+           MOVE    SYU-SRYYMD          TO  PTHKN-TEKSTYMD
+           MOVE    SYU-SRYYMD          TO  PTHKN-TEKEDYMD
+      *+
            MOVE    PTHKNINF-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_pthkninf"      TO  MCP-TABLE
-           MOVE    "key6"              TO  MCP-PATHNAME
+           MOVE    "key9"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"             USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
+      *
            IF      MCP-RC              =   ZERO
              MOVE    "DBFETCH"         TO  MCP-FUNC
              MOVE    "tbl_pthkninf"    TO  MCP-TABLE
-             MOVE    "key6"            TO  MCP-PATHNAME
+             MOVE    "key9"            TO  MCP-PATHNAME
              CALL    "ORCDBMAIN"           USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
              IF      MCP-RC            =   ZERO
-               MOVE    MCPDATA-REC   TO  PTHKNINF-REC
-               MOVE    ZERO          TO  FLG-PTHKNINF
+               MOVE    MCPDATA-REC     TO  PTHKNINF-REC
+               MOVE    ZERO            TO  FLG-PTHKNINF
              ELSE
-               MOVE    1             TO  FLG-PTHKNINF
-               INITIALIZE            PTHKNINF-REC
+               MOVE    1               TO  FLG-PTHKNINF
+               INITIALIZE                  PTHKNINF-REC
              END-IF
            ELSE
-             MOVE    1               TO  FLG-PTHKNINF
-             INITIALIZE              PTHKNINF-REC
+             MOVE    1                 TO  FLG-PTHKNINF
+             INITIALIZE                PTHKNINF-REC
            END-IF
+      *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_pthkninf"         TO  MCP-TABLE
-           MOVE    "key6"              TO  MCP-PATHNAME
+           MOVE    "tbl_pthkninf"      TO  MCP-TABLE
+           MOVE    "key9"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
