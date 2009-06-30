@@ -141,9 +141,6 @@
            03  FLG-RJNHKN               PIC 9(01).
            03  FLG-END                  PIC 9(01).
            03  FLG-HKNCOMBI             PIC 9(01).
-      *--- 2009/06/26 ADD START ----------------------------------------
-           03  FLG-FIRST                PIC 9(01).
-      *--- 2009/06/26 ADD END   ----------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -790,8 +787,6 @@
       *****************************************************************
        2001-JIHI-SYUKEI-SEC                SECTION.
       *
-           INITIALIZE            FLG-FIRST
-                                 SYUNOU-REC
            MOVE    2        TO   WRK-NYUGAIKBN
            PERFORM  920-DBSELECT3-SEC
              PERFORM  UNTIL   FLG-JYURRK   =   1
@@ -802,11 +797,6 @@
       *
            PERFORM  920-DBCLOSE3-SEC
       *
-           IF       WRK-JIHI       NOT =  0
-             OR     WRK-TGMONEY    NOT =  0
-             PERFORM  2001-KASAN-JIHI-G-SEC
-           END-IF
-      *
            .
        2001-JIHI-SYUKEI-EXT.
            EXIT.
@@ -815,15 +805,6 @@
       *    自費データ抽出処理２
       *****************************************************************
         2001-JIHI-G-SEC                SECTION.
-      *
-      *    自費集計処理
-           IF     FLG-FIRST   =   1
-             IF  SYU-SYUHKNNUM(1:2)  NOT =  "97" AND "98"
-               PERFORM  2001-KASAN-JIHI-G-SEC
-               MOVE   0   TO   WRK-JIHI
-                               WRK-TGMONEY
-             END-IF
-           END-IF
       *
       *    収納情報よりデータ抽出
            PERFORM  940-SYUNOU-READ-SEC
@@ -841,10 +822,11 @@
                COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
                                      +  SYU-TOTAL-TGMONEY
                                      +  SYU-TOTAL-TGMONEY-TAX
+               PERFORM  2001-KASAN-JIHI-G-SEC
+               MOVE     0   TO   WRK-JIHI
+                                 WRK-TGMONEY
              END-IF
            END-IF
-      *
-           MOVE   1           TO    FLG-FIRST
       *
            .
         2001-JIHI-G-EXT.
