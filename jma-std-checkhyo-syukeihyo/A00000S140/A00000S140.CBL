@@ -34,6 +34,7 @@
       *  09/01/08    @@@@-ÅÄÃæ     °åÎÅ¼ý±×¤Î·×»»¼°¤òÊÑ¹¹
       *  09/01/08    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤òÊÑ¹¹
       *  09/06/26    @@@@-Ìç´Ö     ¼«ÈñÊ¬¤¬Àµ¤·¤¯½¸·×¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
+      *  09/07/01    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -1537,12 +1538,10 @@
              MOVE     WRK-Z92               TO    S140G1-TENSU(IDX1)
       *
       *    Áë¸ýÀÁµá³Û
-      *+
       *       MOVE     S140TMP-MADOGK(IDX1)   TO    WRK-Z92
       *       MOVE     WRK-Z92               TO    S140G1-MADOGK(IDX1)
              MOVE     S140TMP-MADOGK(IDX1)  TO    WRK-Z93
              MOVE     WRK-Z93               TO    S140G1-MADOGK(IDX1)
-      *+
       *
       *--- (2008/12/12) line add start monma ---------------------------
       *    ¼«Èñ·×
@@ -1580,12 +1579,10 @@
              MOVE     WRK-Z92                TO    S140G1-GTENSU
       *
       *    Áë¸ýÀÁµá³Û
-      *+
       *       MOVE     S140TMP-GMADOGK         TO    WRK-Z92
       *       MOVE     WRK-Z92                TO    S140G1-GMADOGK
              MOVE     S140TMP-GMADOGK        TO    WRK-Z93
              MOVE     WRK-Z93                TO    S140G1-GMADOGK
-      *+
       *
       *--- (2008/12/12) line add start monma ---------------------------
       *    ¼«Èñ·×
@@ -1661,12 +1658,10 @@
              MOVE     WRK-Z92                TO    S140N1-TENSU(IDX1)
       *
       *    Áë¸ýÀÁµá³Û
-      *+
-      *+       MOVE     S140TMP-MADOGK(IDX1)   TO    WRK-Z92
-      *+       MOVE     WRK-Z92                TO    S140N1-MADOGK(IDX1)
+      *       MOVE     S140TMP-MADOGK(IDX1)   TO    WRK-Z92
+      *       MOVE     WRK-Z92                TO    S140N1-MADOGK(IDX1)
              MOVE     S140TMP-MADOGK(IDX1)   TO    WRK-Z93
              MOVE     WRK-Z93                TO    S140N1-MADOGK(IDX1)
-      *+
       *
       *--- (2008/12/12) line add start monma ---------------------------
       *    ¼«Èñ·×
@@ -1744,12 +1739,10 @@
              MOVE     WRK-Z92               TO    S140N1-GTENSU
       *
       *    Áë¸ýÀÁµá³Û
-      *+
       *       MOVE     S140TMP-GMADOGK       TO    WRK-Z92
       *       MOVE     WRK-Z92               TO    S140N1-GMADOGK
              MOVE     S140TMP-GMADOGK       TO    WRK-Z93
              MOVE     WRK-Z93               TO    S140N1-GMADOGK
-      *+
       *
       *--- (2008/12/12) line add start monma ---------------------------
       *    ¼«Èñ·×
@@ -1816,12 +1809,10 @@
              MOVE     WRK-Z92               TO    S140G2-TENSU(IDX3)
       *
       *    Áë¸ýÀÁµá³Û
-      *+
       *       MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
       *       MOVE     WRK-Z92               TO    S140G2-MADOGK(IDX3)
              MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z93
              MOVE     WRK-Z93               TO    S140G2-MADOGK(IDX3)
-      *+
       *
       *--- (2008/12/12) line add start monma ---------------------------
       *    ¼«Èñ·×
@@ -1877,12 +1868,10 @@
              MOVE     WRK-Z92               TO    S140N2-TENSU(IDX3)
       *
       *    Áë¸ýÀÁµá³Û
-      *+
       *       MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z92
       *       MOVE     WRK-Z92               TO    S140N2-MADOGK(IDX3)
              MOVE     S140TMP-HMADOGK(WRK-CNT3)   TO    WRK-Z93
              MOVE     WRK-Z93               TO    S140N2-MADOGK(IDX3)
-      *+
       *
       *--- (2008/12/12) line add start monma ---------------------------
       *    ¼«Èñ·×
@@ -2663,24 +2652,26 @@
       *                                          -  SYU-SKJ-FTN(IDX)
                    IF    RECE10-FTNMONEY(1)  =  ZERO
                        AND  RECE10-KYURATE  NOT = ZERO
-           DISPLAY "¸ÂÅÙ¤Ê¤·" RECE10-PTNUM
+      *    ¸ÂÅÙ¤Ê¤·
                      MOVE  SYU-KOH-HKNNUM(IDX)   TO  WRK-KOHNUM
                      PERFORM   950-HKNNUM-SET-SEC
-                     IF   HKN-RECEFTNDSPKBN  =  1
-           DISPLAY "»Í¼Î¸ÞÆþ¤¹¤ë" 
-                       COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
-                                                 -  SYU-KOH-COMPFTN(IDX)
-                       COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-                                                    -  SYU-SKJ-FTN(IDX)
-                     ELSE
-           DISPLAY "»Í¼Î¸ÞÆþ¤·¤Ê¤¤" 
+      *--- 2009/07/01 DELETE START -------------------------------------
+      *               IF   HKN-RECEFTNDSPKBN  =  1
+      *                 COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
+      *                                           -  SYU-KOH-COMPFTN(IDX)
+      *                 COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+      *                                              -  SYU-SKJ-FTN(IDX)
+      *               ELSE
+      *--- 2009/07/01 DELETE END ---------------------------------------
                        COMPUTE  WRK-KOHSEIKYUGK = SYU-SYUCOMPFTN-ENTANI
                                           -  SYU-KOH-COMPFTN-ENTANI(IDX)
                        COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
                                                     -  SYU-SKJ-FTN(IDX)
-                     END-IF
+      *--- 2009/07/01 DELETE START -------------------------------------
+      *               END-IF
+      *--- 2009/07/01 DELETE END ---------------------------------------
                    ELSE
-           DISPLAY "¸ÂÅÙ¤¢¤ê" RECE10-PTNUM
+      *    ¸ÂÅÙ¤¢¤ê
                      ADD    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
                      MOVE   1   TO    WRK-FTNFLG
                      COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN

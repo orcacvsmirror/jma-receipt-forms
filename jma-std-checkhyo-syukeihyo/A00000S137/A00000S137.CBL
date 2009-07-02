@@ -55,6 +55,7 @@
       *  08/12/23    @@@@-田中     医療収益の計算式を変更
       *  09/01/08    @@@@-田中     公費請求額の計算式を変更
       *  09/06/26    @@@@-門間     自費分が正しく集計されない不具合を修正
+      *  09/07/01    @@@@-田中     公費請求額の端数処理を修正
       ******************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -3355,11 +3356,11 @@
            INITIALIZE                      PTHKNINF-REC
            MOVE    SYU-HOSPNUM         TO  PTHKN-HOSPNUM
            MOVE    SYU-PTID            TO  PTHKN-PTID
-      *+
+      *
 		   MOVE    SYU-SYUHKNNUM       TO  PTHKN-HKNNUM
            MOVE    SYU-SRYYMD          TO  PTHKN-TEKSTYMD
            MOVE    SYU-SRYYMD          TO  PTHKN-TEKEDYMD
-      *+
+      *
            MOVE    PTHKNINF-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_pthkninf"      TO  MCP-TABLE
@@ -3685,28 +3686,28 @@
       *                                       -  SYU-KOH-COMPFTN(IDX)
       *             COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
       *                                          -  SYU-SKJ-FTN(IDX)
-           DISPLAY  "  RECE10-FTNMONEY(1)  =  "RECE10-FTNMONEY(1)
-           DISPLAY  "  RECE10-KYURATE  =  "RECE10-KYURATE
                    IF    RECE10-FTNMONEY(1)  =  ZERO
                        AND  RECE10-KYURATE  NOT = ZERO
-           DISPLAY "限度なし" RECE10-PTNUM
+      *    限度なし
                      MOVE  SYU-KOH-HKNNUM(IDX)   TO  WRK-KOHNUM
                      PERFORM   950-HKNNUM-SET-SEC
-                     IF   HKN-RECEFTNDSPKBN  =  1
-           DISPLAY "四捨五入する" 
-                       COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
-                                                 -  SYU-KOH-COMPFTN(IDX)
-                       COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-                                                    -  SYU-SKJ-FTN(IDX)
-                     ELSE
-           DISPLAY "四捨五入しない" 
+      *--- 2009/07/01 DELETE START -------------------------------------
+      *               IF   HKN-RECEFTNDSPKBN  =  1
+      *                 COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
+      *                                           -  SYU-KOH-COMPFTN(IDX)
+      *                 COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+      *                                              -  SYU-SKJ-FTN(IDX)
+      *               ELSE
+      *--- 2009/07/01 DELETE END ---------------------------------------
                        COMPUTE  WRK-KOHSEIKYUGK = SYU-SYUCOMPFTN-ENTANI
                                           -  SYU-KOH-COMPFTN-ENTANI(IDX)
                        COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
                                                     -  SYU-SKJ-FTN(IDX)
-                     END-IF
+      *--- 2009/07/01 DELETE START -------------------------------------
+      *               END-IF
+      *--- 2009/07/01 DELETE END ---------------------------------------
                    ELSE
-           DISPLAY "限度あり" RECE10-PTNUM    
+      *    限度あり
                      ADD    SYU-KOH-COMPFTN(IDX)  TO  WRK-KOHFTN
                      MOVE   1   TO    WRK-FTNFLG
                      COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
