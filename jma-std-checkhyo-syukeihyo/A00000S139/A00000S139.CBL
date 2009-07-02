@@ -58,6 +58,8 @@
       *  09/01/08    @@@@-田中     公費請求額の計算式を変更
       *  09/02/25    @@@@-田中     入院時診療科名の不具合を修正
       *  09/06/26    @@@@-門間     自費分が正しく集計されない不具合を修正
+      *  09/07/01    @@@@-田中     公費請求額の端数処理を修正
+      *                            保険情報の読込処理を修正
       *********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -3775,25 +3777,29 @@
       *    限度なし
                      MOVE  SYU-KOH-HKNNUM(IDX)   TO  WRK-KOHNUM
                      PERFORM   950-HKNNUM-SET-SEC
-                     IF   HKN-RECEFTNDSPKBN  =  1
+      *--- 2009/07/01 DELETE START -------------------------------------
+      *               IF   HKN-RECEFTNDSPKBN  =  1
       *    四捨五入する 
-                       COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
-                                                 -  SYU-KOH-COMPFTN(IDX)
-                       COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-                                                    -  SYU-SKJ-FTN(IDX)
-                     ELSE
+      *                 COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
+      *                                           -  SYU-KOH-COMPFTN(IDX)
+      *                 COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+      *                                              -  SYU-SKJ-FTN(IDX)
+      *               ELSE
+      *--- 2009/07/01 DELETE END ---------------------------------------
       *    四捨五入しない 
                        COMPUTE  WRK-KOHSEIKYUGK = SYU-SYUCOMPFTN-ENTANI
                                           -  SYU-KOH-COMPFTN-ENTANI(IDX)
                        COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
                                                     -  SYU-SKJ-FTN(IDX)
-                     END-IF
+      *--- 2009/07/01 DELETE START -------------------------------------
+      *               END-IF
+      *--- 2009/07/01 DELETE END ---------------------------------------
                    ELSE
       *    限度あり
                      ADD    SYU-KOH-COMPFTN(IDX)  TO   WRK-KOHFTN
                      MOVE   1   TO    WRK-FTNFLG
                      COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-                                                 -  SYU-SKJ-FTN(IDX)
+                                                  -  SYU-SKJ-FTN(IDX)
                    END-IF
       *--- 2009/01/08 ADD+DELETE END -----------------------------------
       ***  20050907 MOTOHASI 公費助成額の算出を修正
@@ -4283,6 +4289,21 @@
              PERFORM  955-HKNNUM-READ-SEC
       *     ELSE
            END-IF
+      *
+      *--- 2009/07/01 ADD START ----------------------------------------
+           PERFORM   UNTIL  FLG-HKNNUM   =   1
+             IF   HKN-TEKSTYMD   <=   WRK-SRYYMD
+                 AND   HKN-TEKEDYMD   >=   WRK-SRYYMD
+               MOVE  1        TO  FLG-HKNNUM
+             END-IF
+      *
+             IF   FLG-HKNNUM   =   ZERO
+               MOVE    "tbl_hknnum"     TO   MCP-TABLE
+               MOVE    "key2"           TO   MCP-PATHNAME
+               PERFORM  955-HKNNUM-READ-SEC
+             END-IF
+           END-PERFORM
+      *--- 2009/07/01 ADD END ------------------------------------------
       *
            INITIALIZE  MCPAREA
       *=== sarge対応 Takashima(2006/08/09)
