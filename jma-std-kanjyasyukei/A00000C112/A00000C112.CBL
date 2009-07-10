@@ -39,6 +39,8 @@
       *  07/09/12    @@@@-佐藤     4.0対応
       *  09/03/13    @@@@-田中     再診、その他の件数処理を修正
       *  09/07/09    @@@@-門間     再診、その他の振分け修正
+      *                            該当医師がいない場合、合計に2重に集計
+      *                            されていた不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -543,7 +545,10 @@
       *=== sarge対応 ADD By Takashima(2006/08/10) start
            PERFORM 820-SYSKANRI-DBCLOSE-SEC
       *=== sarge対応 ADD By Takashima(2006/08/10) end
-           MOVE SPACE         TO   SUM-DRCD(IDX1)  
+      *--- 2009/07/09 CHANGE START -------------------------------------
+      *     MOVE SPACE         TO   SUM-DRCD(IDX1)  
+           MOVE "9999"        TO   SUM-DRCD(IDX1)  
+      *--- 2009/07/09 CHANGE END   -------------------------------------
            MOVE "全医師合計"  TO   SUM-DRNAME(IDX1) 
            MOVE  IDX1         TO   SUM-DRCDMAX 
       *
