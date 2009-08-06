@@ -60,6 +60,7 @@
       *  09/06/26    @@@@-Ìç´Ö     ¼«ÈñÊ¬¤¬Àµ¤·¤¯½¸·×¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
       *  09/07/01    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *                            ÊÝ¸±¾ðÊó¤ÎÆÉ¹þ½èÍý¤ò½¤Àµ
+      *  09/07/29    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
       *********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -143,6 +144,9 @@
            03  FLG-RJNHKN               PIC 9(01).
            03  FLG-END                  PIC 9(01).
            03  FLG-HKNCOMBI             PIC 9(01).
+      *--- 2009/07/29 ADD START ----------------------------------------
+           03  FLG-TYOKI                PIC 9(01).
+      *--- 2009/07/29 ADD END ------------------------------------------
       *
       *    ¥«¥¦¥ó¥ÈÎÎ°è
        01  CNT-AREA.
@@ -330,6 +334,11 @@
            03  WRK-HKNFTN               PIC 9(09).
            03  WRK-KOHFTN               PIC 9(09).
       *--- 2009/01/08 ADD END ------------------------------------------
+      *--- 2009/07/29 ADD START ----------------------------------------
+           03  WRK-HKNSKYMONEY          PIC 9(09).
+           03  WRK-MSKYMONEY            PIC 9(09). 
+           03  WRK-TYOKIFTN             PIC 9(09). 
+      *--- 2009/07/29 ADD END ------------------------------------------
       *
       *    ¿ÇÎÅ²ÊÌ¾ÂàÈò¥¨¥ê¥¢
        01  SUM-AREA.
@@ -1091,14 +1100,37 @@
       *
            MOVE    RECE10-JNISSU(1)    TO   WRK-NISSU
            MOVE    RECE10-TOTALTEN(1)  TO   WRK-TENSU
+      *--- 2009/07/29 ADD START ----------------------------------------
+           MOVE    ZERO                TO   FLG-TYOKI
+      *--- 2009/07/29 ADD END ------------------------------------------
       *
       *    ¸ÂÅÙ³Û¤¬Í­¤ë¾ì¹ç¤Ï(ÅÀ¿ô¡ß£±£°) ¡Ý ´µ¼ÔÉéÃ´ ¤Ç»»½Ð¤¹¤ë
            IF    RECE10-FTNMONEY(1)  =  ZERO
       ***  20050419  @@@@-MOTOHASI  
                    AND  RECE10-KYURATE  NOT =  ZERO
       ***  20050419  @@@@-MOTOHASI  
-             COMPUTE  WRK-HKNGK  =  RECE10-TOTALTEN(1)
-                                 *  RECE10-KYURATE
+      *--- 2009/07/29 ADD START ----------------------------------------
+             IF   (RECE10-TOKKI(1)  =  "02"
+                 OR  RECE10-TOKKI(2)  =  "02"
+                 OR  RECE10-TOKKI(3)  =  "02"
+                 OR  RECE10-TOKKI(4)  =  "02"
+                 OR  RECE10-TOKKI(5)  =  "02")
+               MOVE    1        TO   FLG-TYOKI
+             ELSE
+               IF  (RECE10-TOKKI(1)  =  "16"
+                   OR  RECE10-TOKKI(2)  =  "16"
+                   OR  RECE10-TOKKI(3)  =  "16"
+                   OR  RECE10-TOKKI(4)  =  "16"
+                   OR  RECE10-TOKKI(5)  =  "16")
+                 MOVE    2        TO   FLG-TYOKI
+               ELSE
+      *--- 2009/07/29 ADD END ------------------------------------------
+                 COMPUTE  WRK-HKNGK  =  RECE10-TOTALTEN(1)
+                                     *  RECE10-KYURATE
+      *--- 2009/07/29 ADD START ----------------------------------------
+               END-IF
+             END-IF
+      *--- 2009/07/29 ADD END ------------------------------------------
            ELSE
              COMPUTE  WRK-HKNGK  =  (RECE10-TOTALTEN(1) * 10)
                                  -  RECE10-FTNMONEY(1)
@@ -3563,6 +3595,57 @@
        920-DBSELECT3-EXT.
            EXIT.
       *
+      *--- 2009/07/29 ADD START ----------------------------------------
+      *****************************************************************
+      *    ´µ¼ÔÊÝ¸±¾ðÊó¥Þ¥¹¥¿¡¼ÆÉ¹þ½èÍý
+      *****************************************************************
+       920-PTHKNINF-READ-SEC         SECTION.
+      *
+           INITIALIZE                      PTHKNINF-REC
+           MOVE    SYU-HOSPNUM         TO  PTHKN-HOSPNUM
+           MOVE    SYU-PTID            TO  PTHKN-PTID
+           MOVE    SYU-SYUHKNNUM       TO  PTHKN-HKNNUM
+           MOVE    SYU-SRYYMD          TO  PTHKN-TEKSTYMD
+           MOVE    SYU-SRYYMD          TO  PTHKN-TEKEDYMD
+           MOVE    PTHKNINF-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_pthkninf"      TO  MCP-TABLE
+           MOVE    "key9"              TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"             USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+           IF      MCP-RC              =   ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_pthkninf"    TO  MCP-TABLE
+             MOVE    "key9"            TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"           USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+             IF      MCP-RC    =   ZERO
+               MOVE    MCPDATA-REC   TO  PTHKNINF-REC
+               MOVE    ZERO          TO  FLG-PTHKNINF
+             ELSE
+               MOVE    1             TO  FLG-PTHKNINF
+               INITIALIZE            PTHKNINF-REC
+             END-IF
+           ELSE
+             MOVE    1               TO  FLG-PTHKNINF
+             INITIALIZE              PTHKNINF-REC
+           END-IF
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_pthkninf"      TO  MCP-TABLE
+           MOVE    "key9"              TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+       910-PTHKNINF-READ-EXT.
+           EXIT.
+      *--- 2009/07/29 ADD END   ----------------------------------------
       *****************************************************************
       *     ¼õ¿ÇÍúÎò¾ðÊó¥Õ¥§¥Ã¥Á
       *****************************************************************
@@ -3736,6 +3819,33 @@
                                  WRK-FTNFLG
       *--- 2009/01/08 ADD END ------------------------------------------
       *
+      *--- 2009/07/29 ADD START ----------------------------------------
+           IF   RECE10-FTNMONEY(1)  =  ZERO
+               AND   RECE10-KYURATE  NOT =  ZERO
+             PERFORM  VARYING  IDX7  FROM  1  BY  1
+                      UNTIL  IDX7  >  4
+                      OR  SYU-KOH-HKNNUM(IDX7)  =  SPACE
+               IF   FLG-TYOKI  =  1
+                   AND  SYU-KOH-HKNNUM(IDX7)  =  "972"
+                 COMPUTE  WRK-HKNSKYMONEY  =  (SYU-TOTAL-HKNTEN  *  10)
+                                         -  SYU-KOH-COMPFTN-ENTANI(IDX7)
+                 ADD    WRK-HKNSKYMONEY   TO   WRK-HKNGK
+                 MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)
+                                              TO   SYU-SYUCOMPFTN-ENTANI
+                 MOVE    SYU-KOH-COMPFTN(IDX7)  TO   SYU-SYUCOMPFTN
+               END-IF
+               IF   FLG-TYOKI  =  2
+                   AND  SYU-KOH-HKNNUM(IDX7)  =  "974"
+                 COMPUTE  WRK-HKNSKYMONEY  =  (SYU-TOTAL-HKNTEN  *  10)
+                                         -  SYU-KOH-COMPFTN-ENTANI(IDX7)
+                 ADD    WRK-HKNSKYMONEY   TO   WRK-HKNGK
+                 MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)
+                                              TO   SYU-SYUCOMPFTN-ENTANI
+                 MOVE    SYU-KOH-COMPFTN(IDX7)  TO   SYU-SYUCOMPFTN
+               END-IF
+             END-PERFORM
+           END-IF
+      *--- 2009/07/29 ADD END ------------------------------------------
       ***  20050907 MOTOHASI ¸øÈñ½õÀ®³Û¤Î»»½Ð¤ò½¤Àµ
            IF   RECE10-RJNHKNNUM  NOT =  SPACE
              MOVE   SYU-KOH-COMPFTN(1)    TO   WRK-ZENCOMPFTN
@@ -3832,6 +3942,27 @@
            ADD    WRK-KOHSKJSEIKYUGK  TO   WRK-KOHSEIKYUGK-G
            ADD    SYU-SKYMONEY        TO   WRK-MADOSEIKYUGK-G
       *
+      *--- 2009/07/29 ADD START ----------------------------------------
+           COMPUTE   WRK-MSKYMONEY   =  WRK-MADOSEIKYUGK-G
+                                     -  RECE10-SHOKUJIFTN(1)
+           IF   FLG-TYOKI  =  1
+             IF   WRK-TYOKIFTN  =  ZERO
+                 AND  RECE10-TEISYUTUSAKI  =  6
+               MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
+             ELSE
+               COMPUTE  WRK-KOHSEIKYUGK-G  =  10000 - WRK-MSKYMONEY
+             END-IF
+           END-IF
+           IF   FLG-TYOKI  =  2
+             IF   WRK-TYOKIFTN  =  ZERO
+                 AND  RECE10-TEISYUTUSAKI  =  6
+               MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
+             ELSE
+               COMPUTE  WRK-KOHSEIKYUGK-G  =  20000 - WRK-MSKYMONEY
+             END-IF
+           END-IF
+      *--- 2009/07/29 ADD END ------------------------------------------
+      *
            .
        800-SEIKYU-SEC-EXT.
            EXIT.
@@ -3883,6 +4014,9 @@
                  OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
                  CONTINUE
                ELSE
+      *--- 2009/07/29 ADD START ----------------------------------------
+                 PERFORM  920-PTHKNINF-READ-SEC
+      *--- 2009/07/29 ADD END ------------------------------------------
       *--- 2009/06/26 ADD START ----------------------------------------
                  IF  RECE10-SRYYM  =  SYU-SRYYMD(1:6)
                      AND  SYU-DENPJTIKBN   NOT = "3"
@@ -3890,6 +4024,9 @@
       *
       ***  20050412  @@@@-MOTOHASI  
                      AND  SYU-SYUHKNNUM  =  RECE10-HKNNUM
+      *--- 2009/07/29 ADD START ----------------------------------------
+                     AND  PTHKN-HKNJANUM  =  RECE10-HKNJANUM
+      *--- 2009/07/29 ADD END ------------------------------------------
       ***  20050412  @@@@-MOTOHASI  
       *
       *
