@@ -49,7 +49,7 @@
       *  08/10/23    @@@@−田中    ver4.3対応(退院時院外処方箋)
       *  09/06/01    @@@@ー門間    後発医薬品不可署名が印字されない不具合を修正
       *  09/08/04    @@@@ー門間    自賠責保険(0%)の負担割合を0に修正
-      *  09/08/20    @@@@ー門間    自賠責保険(0%)の処理を修正
+      *  09/08/20    @@@@ー門間    労災保険・自賠責保険の処理を修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -405,6 +405,11 @@
            COPY    "CPSK1010.INC".
       *    処方箋ＧＥ表示
            COPY    "CPSK1030.INC".
+      *
+      *--- 2009/08/20 ADD START ----------------------------------------
+      *    労災医療機関情報
+           COPY    "CPSK4001.INC".
+      *--- 2009/08/20 ADD END   ----------------------------------------
       *
       *    出力先プリンタ名割り当て情報
            COPY  "CPSK1031.INC".
@@ -809,6 +814,45 @@
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key10"             TO  MCP-PATHNAME
            PERFORM 990-DBCLOSE-SEC
+      *
+      *--- 2009/08/20 ADD START ----------------------------------------
+      *    労災医療機関情報編集
+           MOVE    SPACE               TO  SYS-4001-REC
+           INITIALIZE                      SYS-4001-REC
+           MOVE    "4001"              TO  SYS-4001-KANRICD
+           MOVE    "*"                 TO  SYS-4001-KBNCD
+           MOVE    SPA-HOSPNUM         TO  SYS-4001-HOSPNUM
+           MOVE    SPA-SYSYMD          TO  SYS-4001-STYUKYMD
+           MOVE    SPA-SYSYMD          TO  SYS-4001-EDYUKYMD
+           MOVE    SYS-4001-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_syskanri"      TO  MCP-TABLE
+           MOVE    "key10"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+      *
+           IF      MCP-RC              =   ZERO
+             MOVE    "tbl_syskanri"    TO  MCP-TABLE
+             MOVE    "key10"           TO  MCP-PATHNAME
+             PERFORM 900-KANRIMST-READ-SEC
+             IF      MCP-RC            =   ZERO
+               MOVE    MCPDATA-REC     TO  SYS-4001-REC
+             END-IF
+           ELSE
+             INITIALIZE                    SYS-4001-REC
+             MOVE    1                 TO  FLG-SYSKANRI
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_syskanri"      TO  MCP-TABLE
+           MOVE    "key10"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+      *--- 2009/08/20 ADD END   ----------------------------------------
       *
       *---(03.04.01) LINE ADD START -----------------------------------
            MOVE    SYS-1001-HOSPNAME   TO  WRK-HOSPNAME
@@ -1494,6 +1538,10 @@
                    END-IF
       *
                END-IF
+      *--- 2009/08/20 ADD START ----------------------------------------
+           ELSE
+             INITIALIZE                      PTRSIINF-REC
+      *--- 2009/08/20 ADD END   ----------------------------------------
            END-IF
       *
       *    ３歳未満・老人判定
@@ -1845,15 +1893,33 @@
                  MOVE    WRK-FTNRATE  TO  WRK-Z9VZ
                  MOVE    WRK-Z9VZ         TO  HCM19-FTNWARI
            END-IF
+      *--- 2009/08/20 DELETE START -------------------------------------
       *--- 2009/08/04 ADD START ----------------------------------------
-           IF   PTRSI-JIBAISEIKBN   =  "2"
-      *--- 2009/08/20 ADD START ----------------------------------------
-             AND  ( PTRSI-HKNNUM    =  "971"
-             OR     PTRSI-HKNNUM    =  "973" )
-      *--- 2009/08/20 ADD END   ----------------------------------------
-             MOVE   "0"   TO   HCM19-FTNWARI
-           END-IF
+      *     IF  PTRSI-JIBAISEIKBN  =  "2"
+      *       MOVE   "0"   TO   HCM19-FTNWARI
+      *     END-IF
       *--- 2009/08/04 ADD END   ----------------------------------------
+      *--- 2009/08/20 DELETE END   -------------------------------------
+      *
+      *--- 2009/08/20 ADD START ----------------------------------------
+           IF  PTRSI-HKNNUM  =  "971"  OR
+               PTRSI-HKNNUM  =  "973"
+             IF  PTRSI-HKNKBN  =  "4"  OR
+                 PTRSI-HKNKBN  =  "5"
+               IF  PTRSI-JIBAISEIKBN    =  "1"
+                 MOVE   "10"  TO   HCM19-FTNWARI
+               ELSE
+                 MOVE   "0"   TO   HCM19-FTNWARI
+               END-IF
+             ELSE
+               IF  SYS-4001-RSIIRYOKBN  =  "0"
+                 MOVE   "10"  TO   HCM19-FTNWARI
+               ELSE
+                 MOVE   "0"   TO   HCM19-FTNWARI
+               END-IF
+             END-IF
+           END-IF
+      *--- 2009/08/20 ADD END   ----------------------------------------
       *
       ***  20060401 onuki  特定疾患は強制的に0
            IF  ( COMB-KOHHKNNUM(1)  =  "051" OR "091" )
