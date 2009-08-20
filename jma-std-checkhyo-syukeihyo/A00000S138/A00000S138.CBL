@@ -51,6 +51,7 @@
       *  09/06/26    @@@@-Ìç´Ö     ¼«ÈñÊ¬¤¬Àµ¤·¤¯½¸·×¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
       *  09/07/01    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *  09/07/29    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
+      *  09/08/18    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
       ********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -263,7 +264,10 @@
       *--- (2008/12/12) line add start monma ---------------------------
            03  WRK-JIHIGK-G              PIC 9(09).
       *--- (2008/12/12) line add end   monma ---------------------------
-           03  WRK-KOHSEIKYUGK           PIC 9(09).
+      *--- 2009/08/18 CHANGE START -------------------------------------
+      *     03  WRK-KOHSEIKYUGK          PIC 9(09).
+           03  WRK-KOHSEIKYUGK          PIC S9(09).
+      *--- 2009/08/18 CHANGE END ---------------------------------------
            03  WRK-KOHSEIKYUGK-G         PIC 9(09).
            03  WRK-ZENCOMPFTN            PIC 9(09).
            03  WRK-KOHSKJSEIKYUGK        PIC 9(09).
@@ -329,7 +333,10 @@
       *--- 2009/01/08 ADD END ------------------------------------------
       *--- 2009/07/29 ADD START ----------------------------------------
            03  WRK-HKNSKYMONEY          PIC 9(09).
-           03  WRK-MSKYMONEY            PIC 9(09). 
+      *--- 2009/08/18 CHANGE START -------------------------------------
+      *     03  WRK-KOHSEIKYUGK          PIC 9(09).
+           03  WRK-KOHSEIKYUGK          PIC S9(09).
+      *--- 2009/08/18 CHANGE END ---------------------------------------
       *--- 2009/07/29 ADD END ------------------------------------------
       *
       *    ¿ÇÎÅ²ÊÌ¾ÂàÈò¥¨¥ê¥¢
@@ -4214,6 +4221,10 @@
                     UNTIL    IDX  >    4 OR
                     SYU-KOH-HKNNUM(IDX)  =  SPACE
              IF    SYU-KOH-HKNNUM(IDX) NOT  =  "027"
+      *--- 2009/08/18 ADD START ----------------------------------------
+                 AND  SYU-KOH-HKNNUM(IDX)  NOT =  "972"
+                 AND  SYU-KOH-HKNNUM(IDX)  NOT =  "974"
+      *--- 2009/08/18 ADD END ------------------------------------------
       *    º¹³Û¤«¤é½õÀ®³Û(¸øÈñÀÁµá³Û)¤ò»»½Ð
                IF    RECE10-RJNHKNNUM  NOT = SPACE
       *
@@ -4232,7 +4243,9 @@
                ELSE
       *
       ***  20050907 MOTOHASI ¸øÈñ½õÀ®³Û¤Î»»½Ð¤ò½¤Àµ
-                 IF  SYU-KOH-COMPFTN(IDX) < WRK-ZENCOMPFTN
+      *--- 2009/08/18 DELETE START -------------------------------------
+      *           IF  SYU-KOH-COMPFTN(IDX)  <  WRK-ZENCOMPFTN
+      *--- 2009/08/18 DELETE END ---------------------------------------
       ***  20050907 MOTOHASI ¸øÈñ½õÀ®³Û¤Î»»½Ð¤ò½¤Àµ
       *
       *--- 2009/01/08 ADD+DELETE START ---------------------------------
@@ -4270,7 +4283,9 @@
       *--- 2009/01/08 ADD+DELETE END -----------------------------------
       ***  20050907 MOTOHASI ¸øÈñ½õÀ®³Û¤Î»»½Ð¤ò½¤Àµ
                    MOVE   SYU-KOH-COMPFTN(IDX)  TO  WRK-ZENCOMPFTN
-                 END-IF
+      *--- 2009/08/18 DELETE START -------------------------------------
+      *         END-IF
+      *--- 2009/08/18 DELETE END ---------------------------------------
       ***  20050907 MOTOHASI ¸øÈñ½õÀ®³Û¤Î»»½Ð¤ò½¤Àµ
                END-IF
       *
@@ -4279,8 +4294,12 @@
       *
       *--- 2009/01/08 ADD START ----------------------------------------
            IF  WRK-FTNFLG  =  1
-             COMPUTE  WRK-HKNFTN       =   WRK-HKNFTN
-                                       -   WRK-KOHFTN
+             COMPUTE  WRK-HKNFTN  =  WRK-HKNFTN  -   WRK-KOHFTN
+      *--- 2009/08/18 ADD START ----------------------------------------
+             IF  WRK-HKNFTN  <=  10
+               MOVE    ZERO      TO   WRK-HKNFTN 
+             END-IF
+      *--- 2009/08/18 ADD END ------------------------------------------
              INITIALIZE    WRK-KOHFTN
            ELSE
              ADD    WRK-KOHSEIKYUGK     TO   WRK-KOHSEIKYUGK-G
@@ -4299,14 +4318,16 @@
            ADD    SYU-SKYMONEY     TO    WRK-MADOSEIKYUGK-G
       *
       *--- 2009/07/29 ADD START ----------------------------------------
-           COMPUTE   WRK-MSKYMONEY   =  WRK-MADOSEIKYUGK-G
-                                     -  RECE10-SHOKUJIFTN(1)
-           IF   FLG-TYOKI  =  1
-             COMPUTE  WRK-KOHSEIKYUGK-G  =  10000 - WRK-MSKYMONEY
-           END-IF
-           IF   FLG-TYOKI  =  2
-             COMPUTE  WRK-KOHSEIKYUGK-G  =  20000 - WRK-MSKYMONEY
-           END-IF
+      *--- 2009/08/18 DELETE START -------------------------------------
+      *     COMPUTE   WRK-MSKYMONEY   =  WRK-MADOSEIKYUGK-G
+      *                               -  RECE10-SHOKUJIFTN(1)
+      *     IF   FLG-TYOKI  =  1
+      *       COMPUTE  WRK-KOHSEIKYUGK-G  =  10000 - WRK-MSKYMONEY
+      *     END-IF
+      *     IF   FLG-TYOKI  =  2
+      *       COMPUTE  WRK-KOHSEIKYUGK-G  =  20000 - WRK-MSKYMONEY
+      *     END-IF
+      *--- 2009/08/18 DELETE END ---------------------------------------
       *--- 2009/07/29 ADD END ------------------------------------------
       *
            .
@@ -4362,6 +4383,12 @@
                ELSE
       *--- 2009/07/29 ADD START ----------------------------------------
                  PERFORM  920-PTHKNINF-READ-SEC
+      *--- 2009/08/18 ADD START ----------------------------------------
+                 IF    RECE10-KOHNUM(1)  NOT =   SPACE
+                     AND RECE10-HKNNUM   =   SPACE
+                   MOVE    ZERO     TO   PTHKN-HKNJANUM
+                 END-IF
+      *--- 2009/08/18 ADD END ------------------------------------------
       *--- 2009/07/29 ADD END ------------------------------------------
       *--- 2009/06/26 ADD START ----------------------------------------
                  IF  RECE10-SRYYM  =  SYU-SRYYMD(1:6)
