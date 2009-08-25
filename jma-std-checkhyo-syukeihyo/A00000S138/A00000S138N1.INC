@@ -33,7 +33,10 @@
                       07  S138N1-HKNGK      PIC  X(09).
                       07  S138N1-KOHGK      PIC  X(09).
                       07  S138N1-SYUEKI     PIC  X(09).
-                      07  S138N1-SNISSU     PIC  X(04).
+      *--- 2009/08/20 ADD START ----------------------------------------
+      *                07  S138N1-SNISSU     PIC  X(04).
+                      07  S138N1-SNISSU     PIC  X(05).
+      *--- 2009/08/20 ADD END ------------------------------------------
                       07  S138N1-SSEIKYU    PIC  X(09).
                       07  S138N1-SFTNGK     PIC  X(09).
                       07  FILLER1         PIC  X(09).
@@ -61,7 +64,10 @@
                       07  S138N1-K-HKNGK      PIC  X(09).
                       07  S138N1-K-KOHGK      PIC  X(09).
                       07  S138N1-K-SYUEKI     PIC  X(09).
-                      07  S138N1-K-SNISSU     PIC  X(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *                07  S138N1-K-SNISSU     PIC  X(04).
+                      07  S138N1-K-SNISSU     PIC  X(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                       07  S138N1-K-SSEIKYU    PIC  X(09).
                       07  S138N1-K-SFTNGK     PIC  X(09).
                       07  FILLER9           PIC  X(09).
@@ -89,7 +95,10 @@
                       07  S138N1-GHKNGK      PIC  X(09).
                       07  S138N1-GKOHGK      PIC  X(09).
                       07  S138N1-GSYUEKI     PIC  X(09).
-                      07  S138N1-SGNISSU     PIC  X(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *                07  S138N1-SGNISSU     PIC  X(04).
+                      07  S138N1-SGNISSU     PIC  X(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                       07  S138N1-SGSEIKYU    PIC  X(09).
                       07  S138N1-SGFTNGK     PIC  X(09).
                       07  FILLER17          PIC  X(09).

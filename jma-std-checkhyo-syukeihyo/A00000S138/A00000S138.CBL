@@ -52,6 +52,7 @@
       *  09/07/01    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *  09/07/29    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
       *  09/08/18    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
+      *  09/08/20    @@@@-ÅÄÃæ     ¿©»öÎÅÍÜÈñ¤Î²ó¿ô¤ò5·å¤ËÊÑ¹¹
       ********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -247,7 +248,10 @@
                05  WRK-HKNGK             PIC 9(09).
                05  WRK-KOHGK             PIC 9(09).
                05  WRK-SYUEKI            PIC 9(09).
-               05  WRK-SNISSU            PIC 9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         05  WRK-SNISSU            PIC 9(04).
+               05  WRK-SNISSU            PIC 9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                05  WRK-SSEIKYU           PIC 9(09).
                05  WRK-SFTNGK            PIC 9(09).
                05  WRK-KKENSU            PIC 9(04).
@@ -321,6 +325,9 @@
       *--- (2008/12/26) line add start monma ---------------------------
            03  WRK-Z93                   PIC --------Z.
       *--- (2008/12/26) line add end   monma ---------------------------
+      *--- 2009/08/20 ADD START ----------------------------------------
+           03  WRK-Z52                   PIC ZZZZZ.
+      *--- 2009/08/20 ADD END ------------------------------------------
       *
       * 2004/03/18  ÄÉ²Ã
            03  WRK-SYS-BEDSU             PIC 9(04).
@@ -2697,9 +2704,12 @@
              MOVE     S138TMP-SYUEKI(IDX1)   TO    WRK-Z92
              MOVE     WRK-Z92               TO    S138N1-SYUEKI(IDX1)
       ***  ¿©»öÎÅÍÜ
-      *    Æü¿ô
-             MOVE     S138TMP-SNISSU(IDX1)    TO    WRK-Z4
-             MOVE     WRK-Z4                TO    S138N1-SNISSU(IDX1)
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *       MOVE     S138TMP-SNISSU(IDX1)    TO    WRK-Z4
+      *       MOVE     WRK-Z4                TO    S138N1-SNISSU(IDX1)
+             MOVE     S138TMP-SNISSU(IDX1)    TO    WRK-Z52
+             MOVE     WRK-Z52                TO    S138N1-SNISSU(IDX1)
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    ÀÁµá³Û
              MOVE     S138TMP-SSEIKYU(IDX1)   TO    WRK-Z92
@@ -2789,8 +2799,12 @@
                MOVE     WRK-Z92               TO   S138N1-K-SYUEKI(IDX1)
       ***  ¿©»öÎÅÍÜ
       *    Æü¿ô
-               MOVE     S138TMP-K-SNISSU(IDX1)    TO    WRK-Z4
-               MOVE     WRK-Z4                TO   S138N1-K-SNISSU(IDX1)
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         MOVE     S138TMP-K-SNISSU(IDX1)    TO    WRK-Z4
+      *         MOVE     WRK-Z4                TO   S138N1-K-SNISSU(IDX1)
+               MOVE     S138TMP-K-SNISSU(IDX1)    TO    WRK-Z52
+               MOVE     WRK-Z52               TO   S138N1-K-SNISSU(IDX1)
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    ÀÁµá³Û
                MOVE     S138TMP-K-SSEIKYU(IDX1)   TO    WRK-Z92
@@ -2873,8 +2887,12 @@
              MOVE     WRK-Z92                TO    S138N1-GSYUEKI
       ***  ¿©»öÎÅÍÜ
       *    Æü¿ô
-             MOVE     S138TMP-SGNISSU    TO    WRK-Z4
-             MOVE     WRK-Z4                TO    S138N1-SGNISSU
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *       MOVE     S138TMP-SGNISSU    TO    WRK-Z4
+      *       MOVE     WRK-Z4                TO    S138N1-SGNISSU
+             MOVE     S138TMP-SGNISSU    TO    WRK-Z52
+             MOVE     WRK-Z52                TO    S138N1-SGNISSU
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    ÀÁµá³Û
              MOVE     S138TMP-SGSEIKYU   TO    WRK-Z92
@@ -2951,8 +2969,12 @@
              MOVE     WRK-Z92               TO    S138N2-SYUEKI(IDX3)
       ***  ¿©»öÎÅÍÜ
       *    Æü¿ô
-             MOVE     S138TMP-HSNISSU(WRK-CNT3)    TO    WRK-Z4
-             MOVE     WRK-Z4                TO    S138N2-SNISSU(IDX3)
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *       MOVE     S138TMP-HSNISSU(WRK-CNT3)    TO    WRK-Z4
+      *       MOVE     WRK-Z4                TO    S138N2-SNISSU(IDX3)
+             MOVE     S138TMP-HSNISSU(WRK-CNT3)    TO    WRK-Z52
+             MOVE     WRK-Z52                TO    S138N2-SNISSU(IDX3)
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    ÀÁµá³Û
              MOVE     S138TMP-HSSEIKYU(WRK-CNT3)   TO    WRK-Z92
@@ -3030,8 +3052,12 @@
              MOVE     WRK-Z92               TO    S138N2-SYUEKI(IDX3)
       ***  ¿©»öÎÅÍÜ
       *    Æü¿ô
-             MOVE     S138TMP-K-HSNISSU(WRK-CNT4)    TO    WRK-Z4
-             MOVE     WRK-Z4                TO    S138N2-SNISSU(IDX3)
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *       MOVE     S138TMP-K-HSNISSU(WRK-CNT4)    TO    WRK-Z4
+      *       MOVE     WRK-Z4                TO    S138N2-SNISSU(IDX3)
+             MOVE     S138TMP-K-HSNISSU(WRK-CNT4)    TO    WRK-Z52
+             MOVE     WRK-Z52                TO    S138N2-SNISSU(IDX3)
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    ÀÁµá³Û
              MOVE     S138TMP-K-HSSEIKYU(WRK-CNT4)   TO    WRK-Z92

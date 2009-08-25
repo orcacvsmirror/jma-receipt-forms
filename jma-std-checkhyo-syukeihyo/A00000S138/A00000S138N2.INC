@@ -35,6 +35,9 @@
                       07  S138N2-HKNGK     PIC  X(09).
                       07  S138N2-KOHGK     PIC  X(09).
                       07  S138N2-SYUEKI    PIC  X(09).
-                      07  S138N2-SNISSU    PIC  X(04).
+      *--- 2009/08/20 ADD START ----------------------------------------
+      *                07  S138N2-SNISSU    PIC  X(04).
+                      07  S138N2-SNISSU    PIC  X(05).
+      *--- 2009/08/20 ADD END ------------------------------------------
                       07  S138N2-SSEIKYU   PIC  X(09).
                       07  S138N2-SFTNGK    PIC  X(09).

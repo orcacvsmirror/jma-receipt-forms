@@ -34,7 +34,10 @@
                05  S137TMP-HKNGK           PIC  9(09).
                05  S137TMP-KOHGK           PIC  9(09).
                05  S137TMP-SYUEKI          PIC  9(09).
-               05  S137TMP-SNISSU          PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         05  S137TMP-SNISSU          PIC  9(04).
+               05  S137TMP-SNISSU          PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                05  S137TMP-SSEIKYU         PIC  9(09).
                05  S137TMP-SFTNGK          PIC  9(09).
            03  S137TMP-KOH-MAX             PIC  9(02).
@@ -53,7 +56,10 @@
                05  S137TMP-KTHKNGK          PIC  9(09).
                05  S137TMP-KTKOHGK          PIC  9(09).
                05  S137TMP-KTSYUEKI         PIC  9(09).
-               05  S137TMP-SKTNISSU         PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         05  S137TMP-SKTNISSU         PIC  9(04).
+               05  S137TMP-SKTNISSU         PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                05  S137TMP-SKTSEIKYU        PIC  9(09).
                05  S137TMP-SKTFTNGK         PIC  9(09).
            03  S137TMP-KOH-TBL OCCURS 50.
@@ -75,6 +81,9 @@
                05  S137TMP-GHKNGK           PIC  9(09).
                05  S137TMP-GKOHGK           PIC  9(09).
                05  S137TMP-GSYUEKI          PIC  9(09).
-               05  S137TMP-SGNISSU          PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         05  S137TMP-SGNISSU          PIC  9(04).
+               05  S137TMP-SGNISSU          PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                05  S137TMP-SGSEIKYU         PIC  9(09).
                05  S137TMP-SGFTNGK          PIC  9(09).

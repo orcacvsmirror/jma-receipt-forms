@@ -36,7 +36,10 @@
                   05  S138TMP-HKNGK      PIC  9(09).
                   05  S138TMP-KOHGK      PIC  9(09).
                   05  S138TMP-SYUEKI     PIC  9(09).
-                  05  S138TMP-SNISSU     PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S138TMP-SNISSU     PIC  9(04).
+                  05  S138TMP-SNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S138TMP-SSEIKYU    PIC  9(09).
                   05  S138TMP-SFTNGK     PIC  9(09).
               03  S138TMP-KOH1-MAX       PIC  9(02).
@@ -68,7 +71,10 @@
                   05  S138TMP-HHKNGK      PIC  9(09).
                   05  S138TMP-HKOHGK      PIC  9(09).
                   05  S138TMP-HSYUEKI     PIC  9(09).
-                  05  S138TMP-HSNISSU     PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S138TMP-HSNISSU     PIC  9(04).
+                  05  S138TMP-HSNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S138TMP-HSSEIKYU    PIC  9(09).
                   05  S138TMP-HSFTNGK     PIC  9(09).
               03  S138TMP-KUMIAI-TBL OCCURS 11.
@@ -85,7 +91,10 @@
                   05  S138TMP-K-HKNGK      PIC  9(09).
                   05  S138TMP-K-KOHGK      PIC  9(09).
                   05  S138TMP-K-SYUEKI     PIC  9(09).
-                  05  S138TMP-K-SNISSU     PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S138TMP-K-SNISSU     PIC  9(04).
+                  05  S138TMP-K-SNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S138TMP-K-SSEIKYU    PIC  9(09).
                   05  S138TMP-K-SFTNGK     PIC  9(09).
               03  S138TMP-KOH2-MAX       PIC  9(02).
@@ -127,7 +136,10 @@
                   05  S138TMP-K-HHKNGK      PIC  9(09).
                   05  S138TMP-K-HKOHGK      PIC  9(09).
                   05  S138TMP-K-HSYUEKI     PIC  9(09).
-                  05  S138TMP-K-HSNISSU     PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S138TMP-K-HSNISSU     PIC  9(04).
+                  05  S138TMP-K-HSNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S138TMP-K-HSSEIKYU    PIC  9(09).
                   05  S138TMP-K-HSFTNGK     PIC  9(09).
               03  S138TMP-GOKEI-TBL.
@@ -144,6 +156,9 @@
                   05  S138TMP-GHKNGK      PIC  9(09).
                   05  S138TMP-GKOHGK      PIC  9(09).
                   05  S138TMP-GSYUEKI     PIC  9(09).
-                  05  S138TMP-SGNISSU     PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S138TMP-SGNISSU     PIC  9(04).
+                  05  S138TMP-SGNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S138TMP-SGSEIKYU    PIC  9(09).
                   05  S138TMP-SGFTNGK     PIC  9(09).

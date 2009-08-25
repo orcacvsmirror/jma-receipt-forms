@@ -58,6 +58,7 @@
       *  09/07/01    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *  09/07/29    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
       *  09/08/18    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
+      *  09/08/20    @@@@-ÅÄÃæ     ¿©»öÎÅÍÜÈñ¤Î²ó¿ô¤ò5·å¤ËÊÑ¹¹
       ******************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -251,7 +252,10 @@
       *         05  WRK-SYUEKI           PIC 9(09).
                05  WRK-SYUEKI           PIC S9(09).
       *--- 2008/12/18 CHANGE END ---------------------------------------
-               05  WRK-SNISSU           PIC 9(04).
+      *--- 2009/08/20 CHANGE START ----------------------------------------
+      *         05  WRK-SNISSU           PIC 9(04).
+               05  WRK-SNISSU           PIC 9(05).
+      *--- 2009/08/20 CHANGE END ------------------------------------------
                05  WRK-SSEIKYU          PIC 9(09).
                05  WRK-SFTNGK           PIC 9(09).
       *--- 2008/12/18 ADD START ----------------------------------------
@@ -274,7 +278,10 @@
                05  WRK-GKTHKNGK         PIC 9(09).
                05  WRK-GKTKOHGK         PIC 9(09).
                05  WRK-GKTSYUEKI        PIC 9(09).
-               05  WRK-SGKTNISSU        PIC 9(04).
+      *--- 2009/08/20 CHANGE START ----------------------------------------
+      *         05  WRK-SGKTNISSU        PIC 9(04).
+               05  WRK-SGKTNISSU        PIC 9(05).
+      *--- 2009/08/20 CHANGE START ----------------------------------------
                05  WRK-SGKTSEIKYU       PIC 9(09).
                05  WRK-SGKTFTNGK        PIC 9(09).
            03  WRK-FUKUKOHNUM           PIC X(03).
@@ -343,6 +350,9 @@
       *--- 2008/12/23  ADD START ---------------------------------------
            03  WRK-Z93                  PIC --------Z.
       *--- 2008/12/23  ADD END -----------------------------------------
+      *--- 2009/08/20 ADD START ----------------------------------------
+           03  WRK-Z52                  PIC ZZZZZ.
+      *--- 2009/08/20 ADD END ------------------------------------------
       *
       * 2004/03/18  ÄÉ²Ã
            03  WRK-SYS-BEDSU            PIC 9(04).
@@ -2300,8 +2310,12 @@
              MOVE     WRK-Z92                TO   S137N1-SYUEKI(IDX1)
       *    ¿©»öÎÅÍÜ
       *    Æü¿ô
-             MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z4
-             MOVE     WRK-Z4                 TO   S137N1-SNISSU(IDX1)
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *       MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z4
+      *       MOVE     WRK-Z4                 TO   S137N1-SNISSU(IDX6)
+             MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z52
+             MOVE     WRK-Z52                 TO   S137N1-SNISSU(IDX1)
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    ÀÁµá³Û
              MOVE     S137TMP-SSEIKYU(IDX1)  TO   WRK-Z92
@@ -2363,8 +2377,12 @@
              MOVE     WRK-Z92                TO   S137N2-SYUEKI(IDX6)
       *    ¿©»öÎÅÍÜ
       *    Æü¿ô
-             MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z4
-             MOVE     WRK-Z4                 TO   S137N2-SNISSU(IDX6)
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *       MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z4
+      *       MOVE     WRK-Z4                 TO   S137N2-SNISSU(IDX6)
+             MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z52
+             MOVE     WRK-Z52                TO   S137N2-SNISSU(IDX6)
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    ÀÁµá³Û
              MOVE     S137TMP-SSEIKYU(IDX1)  TO   WRK-Z92
@@ -2415,8 +2433,12 @@
            END-IF
       *    ¿©»öÎÅÍÜ
       *    Æü¿ô
-             MOVE     S137TMP-SGNISSU   TO   WRK-Z4
-             MOVE     WRK-Z4            TO   S137N2-SGNISSU
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *       MOVE     S137TMP-SGNISSU   TO   WRK-Z4
+      *       MOVE     WRK-Z4            TO   S137N2-SGNISSU
+             MOVE     S137TMP-SGNISSU   TO   WRK-Z52
+             MOVE     WRK-Z52           TO   S137N2-SGNISSU
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    ÀÁµá³Û
              MOVE     S137TMP-SGSEIKYU  TO   WRK-Z92
@@ -2516,8 +2538,12 @@
              MOVE   WRK-Z92                   TO   S137N2-KTSYUEKI(IDX3)
       *    ¿©»öÎÅÍÜ
       *    Æü¿ô
-             MOVE   S137TMP-SKTNISSU(WRK-CNT2)   TO    WRK-Z4
-             MOVE   WRK-Z4                    TO   S137N2-SKTNISSU(IDX3)
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *       MOVE   S137TMP-SKTNISSU(WRK-CNT2)   TO    WRK-Z4
+      *       MOVE   WRK-Z4                   TO   S137N2-SKTNISSU(IDX3)
+             MOVE   S137TMP-SKTNISSU(WRK-CNT2)   TO    WRK-Z52
+             MOVE   WRK-Z52                   TO   S137N2-SKTNISSU(IDX3)
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    ÀÁµá³Û
              MOVE   S137TMP-SKTSEIKYU(WRK-CNT2)  TO    WRK-Z92
@@ -2577,8 +2603,12 @@
              MOVE    WRK-GKTSYUEKI           TO   WRK-Z92
              MOVE    WRK-Z92                 TO   S137N2-GKTSYUEKI
       *
-             MOVE    WRK-SGKTNISSU           TO   WRK-Z4
-             MOVE    WRK-Z4                  TO   S137N2-SGKTNISSU
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *       MOVE    WRK-SGKTNISSU           TO   WRK-Z4
+      *       MOVE    WRK-Z4                  TO   S137N2-SGKTNISSU
+             MOVE    WRK-SGKTNISSU           TO   WRK-Z52
+             MOVE    WRK-Z52                  TO   S137N2-SGKTNISSU
+      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
              MOVE    WRK-SGKTSEIKYU          TO   WRK-Z92
              MOVE    WRK-Z92                 TO   S137N2-SGKTSEIKYU
