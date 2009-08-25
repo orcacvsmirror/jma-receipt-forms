@@ -32,6 +32,9 @@
                05  S137N1-HKNGK         PIC  X(09).
                05  S137N1-KOHGK         PIC  X(09).
                05  S137N1-SYUEKI        PIC  X(09).
-               05  S137N1-SNISSU        PIC  X(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         05  S137N1-SNISSU        PIC  X(04).
+               05  S137N1-SNISSU        PIC  X(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                05  S137N1-SSEIKYU       PIC  X(09).
                05  S137N1-SFTNGK        PIC  X(09).

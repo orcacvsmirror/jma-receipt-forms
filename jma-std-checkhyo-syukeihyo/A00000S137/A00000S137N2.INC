@@ -32,7 +32,10 @@
                05  S137N2-HKNGK         PIC  X(09).
                05  S137N2-KOHGK         PIC  X(09).
                05  S137N2-SYUEKI        PIC  X(09).
-               05  S137N2-SNISSU        PIC  X(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         05  S137N2-SNISSU        PIC  X(04).
+               05  S137N2-SNISSU        PIC  X(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                05  S137N2-SSEIKYU       PIC  X(09).
                05  S137N2-SFTNGK        PIC  X(09).
            03  S137N2-KOHTAN-TBL OCCURS 10.
@@ -46,7 +49,10 @@
                05  S137N2-KTHKNGK       PIC  X(09).
                05  S137N2-KTKOHGK       PIC  X(09).
                05  S137N2-KTSYUEKI      PIC  X(09).
-               05  S137N2-SKTNISSU      PIC  X(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         05  S137N2-SKTNISSU      PIC  X(04).
+               05  S137N2-SKTNISSU      PIC  X(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                05  S137N2-SKTSEIKYU     PIC  X(09).
                05  S137N2-SKTFTNGK      PIC  X(09).
                05  S137N2-KOHTNAME      PIC  X(24).
@@ -61,7 +67,10 @@
                05  S137N2-GKTHKNGK      PIC  X(09).
                05  S137N2-GKTKOHGK      PIC  X(09).
                05  S137N2-GKTSYUEKI     PIC  X(09).
-               05  S137N2-SGKTNISSU     PIC  X(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         05  S137N2-SGKTNISSU     PIC  X(04).
+               05  S137N2-SGKTNISSU     PIC  X(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                05  S137N2-SGKTSEIKYU    PIC  X(09).
                05  S137N2-SGKTFTNGK     PIC  X(09).
            03  S137N2-KOH-TBL OCCURS 30.
@@ -84,6 +93,9 @@
                05  S137N2-GHKNGK       PIC  X(09).
                05  S137N2-GKOHGK       PIC  X(09).
                05  S137N2-GSYUEKI      PIC  X(09).
-               05  S137N2-SGNISSU      PIC  X(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *         05  S137N2-SGNISSU      PIC  X(04).
+               05  S137N2-SGNISSU      PIC  X(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                05  S137N2-SGSEIKYU     PIC  X(09).
                05  S137N2-SGFTNGK      PIC  X(09).

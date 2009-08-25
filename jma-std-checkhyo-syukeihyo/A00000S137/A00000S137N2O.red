@@ -69,7 +69,7 @@
       </element>
       <element name="SNISSU" occurs="1">
         <appinfo>
-          <embed object="string" length="4"/>
+          <embed object="string" length="5"/>
         </appinfo>
       </element>
       <element name="SSEIKYU" occurs="1">
@@ -126,7 +126,7 @@
       </element>
       <element name="SKTNISSU" occurs="1">
         <appinfo>
-          <embed object="string" length="4"/>
+          <embed object="string" length="5"/>
         </appinfo>
       </element>
       <element name="SKTSEIKYU" occurs="1">
@@ -188,7 +188,7 @@
       </element>
       <element name="SGKTNISSU" occurs="1">
         <appinfo>
-          <embed object="string" length="4"/>
+          <embed object="string" length="5"/>
         </appinfo>
       </element>
       <element name="SGKTSEIKYU" occurs="1">
@@ -284,7 +284,7 @@
       </element>
       <element name="SGNISSU" occurs="1">
         <appinfo>
-          <embed object="string" length="4"/>
+          <embed object="string" length="5"/>
         </appinfo>
       </element>
       <element name="SGSEIKYU" occurs="1">
@@ -15480,10 +15480,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O413">
       <attribute name="obj_pos">
-        <point val="17.35,4.2"/>
+        <point val="17.45,4.2"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,4.00093;17.35,4.25093"/>
+        <rectangle val="16.6925,4.00093;17.45,4.25093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HKN-TBL[0].SNISSU#</string>
@@ -15494,7 +15494,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -15503,7 +15503,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,4.2"/>
+            <point val="17.45,4.2"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -15522,10 +15522,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O414">
       <attribute name="obj_pos">
-        <point val="17.35,4.55"/>
+        <point val="17.45,4.55"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,4.35093;17.35,4.60093"/>
+        <rectangle val="16.6925,4.35093;17.45,4.60093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HKN-TBL[1].SNISSU#</string>
@@ -15536,7 +15536,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -15545,7 +15545,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,4.55"/>
+            <point val="17.45,4.55"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -15564,10 +15564,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O415">
       <attribute name="obj_pos">
-        <point val="17.35,5.25"/>
+        <point val="17.45,5.25"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,5.05093;17.35,5.30093"/>
+        <rectangle val="16.6925,5.05093;17.45,5.30093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HKN-TBL[3].SNISSU#</string>
@@ -15578,7 +15578,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -15587,7 +15587,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,5.25"/>
+            <point val="17.45,5.25"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -15606,10 +15606,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O416">
       <attribute name="obj_pos">
-        <point val="17.35,5.6"/>
+        <point val="17.45,5.6"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,5.40093;17.35,5.65093"/>
+        <rectangle val="16.6925,5.40093;17.45,5.65093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HKN-TBL[4].SNISSU#</string>
@@ -15620,7 +15620,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -15629,7 +15629,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,5.6"/>
+            <point val="17.45,5.6"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -15648,10 +15648,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O417">
       <attribute name="obj_pos">
-        <point val="17.35,4.9"/>
+        <point val="17.45,4.9"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,4.70093;17.35,4.95093"/>
+        <rectangle val="16.6925,4.70093;17.45,4.95093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HKN-TBL[2].SNISSU#</string>
@@ -15662,7 +15662,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -15671,7 +15671,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,4.9"/>
+            <point val="17.45,4.9"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -15690,10 +15690,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O418">
       <attribute name="obj_pos">
-        <point val="17.35,5.95"/>
+        <point val="17.45,5.95"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,5.75093;17.35,6.00093"/>
+        <rectangle val="16.6925,5.75093;17.45,6.00093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HKN-TBL[5].SNISSU#</string>
@@ -15704,7 +15704,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -15713,7 +15713,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,5.95"/>
+            <point val="17.45,5.95"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -15732,10 +15732,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O419">
       <attribute name="obj_pos">
-        <point val="17.35,6.4"/>
+        <point val="17.45,6.4"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,6.20093;17.35,6.45093"/>
+        <rectangle val="16.6925,6.20093;17.45,6.45093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HKN-TBL[6].SNISSU#</string>
@@ -15746,7 +15746,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -15755,7 +15755,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,6.4"/>
+            <point val="17.45,6.4"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17370,10 +17370,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O458">
       <attribute name="obj_pos">
-        <point val="17.35,14.45"/>
+        <point val="17.45,14.45"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,14.2509;17.35,14.5009"/>
+        <rectangle val="16.6925,14.2509;17.45,14.5009"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#GOKEI-TBL.SGNISSU#</string>
@@ -17384,7 +17384,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -17393,7 +17393,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,14.45"/>
+            <point val="17.45,14.45"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17412,10 +17412,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O459">
       <attribute name="obj_pos">
-        <point val="17.35,12.2"/>
+        <point val="17.45,12.2"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,12.0009;17.35,12.2509"/>
+        <rectangle val="16.844,12.0009;17.45,12.2509"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#GKOHTAN-TBN.SGKTNISSU#</string>
@@ -17435,7 +17435,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,12.2"/>
+            <point val="17.45,12.2"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17454,10 +17454,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O460">
       <attribute name="obj_pos">
-        <point val="17.35,8.6"/>
+        <point val="17.45,8.6"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,8.40093;17.35,8.65093"/>
+        <rectangle val="16.6925,8.40093;17.45,8.65093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[0].SKTNISSU#</string>
@@ -17468,7 +17468,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -17477,7 +17477,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,8.6"/>
+            <point val="17.45,8.6"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17496,10 +17496,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O461">
       <attribute name="obj_pos">
-        <point val="17.35,8.95"/>
+        <point val="17.45,8.95"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,8.75093;17.35,9.00093"/>
+        <rectangle val="16.6925,8.75093;17.45,9.00093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[1].SKTNISSU#</string>
@@ -17510,7 +17510,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -17519,7 +17519,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,8.95"/>
+            <point val="17.45,8.95"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17538,10 +17538,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O462">
       <attribute name="obj_pos">
-        <point val="17.35,9.3"/>
+        <point val="17.45,9.3"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,9.10093;17.35,9.35093"/>
+        <rectangle val="16.6925,9.10093;17.45,9.35093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[2].SKTNISSU#</string>
@@ -17552,7 +17552,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#ZZZZ#</string>
+            <string>#ZZZZZ#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -17561,7 +17561,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,9.3"/>
+            <point val="17.45,9.3"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17580,10 +17580,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O463">
       <attribute name="obj_pos">
-        <point val="17.35,9.65"/>
+        <point val="17.45,9.65"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,9.45093;17.35,9.70093"/>
+        <rectangle val="16.844,9.45093;17.45,9.70093"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[3].SKTNISSU#</string>
@@ -17603,7 +17603,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,9.65"/>
+            <point val="17.45,9.65"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17622,10 +17622,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O464">
       <attribute name="obj_pos">
-        <point val="17.35,10"/>
+        <point val="17.45,10"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,9.80093;17.35,10.0509"/>
+        <rectangle val="16.844,9.80093;17.45,10.0509"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[4].SKTNISSU#</string>
@@ -17645,7 +17645,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,10"/>
+            <point val="17.45,10"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17664,10 +17664,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O465">
       <attribute name="obj_pos">
-        <point val="17.35,10.35"/>
+        <point val="17.45,10.35"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,10.1509;17.35,10.4009"/>
+        <rectangle val="16.844,10.1509;17.45,10.4009"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[5].SKTNISSU#</string>
@@ -17687,7 +17687,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,10.35"/>
+            <point val="17.45,10.35"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17706,10 +17706,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O466">
       <attribute name="obj_pos">
-        <point val="17.35,10.7"/>
+        <point val="17.45,10.7"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,10.5009;17.35,10.7509"/>
+        <rectangle val="16.844,10.5009;17.45,10.7509"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[6].SKTNISSU#</string>
@@ -17729,7 +17729,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,10.7"/>
+            <point val="17.45,10.7"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17748,10 +17748,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O467">
       <attribute name="obj_pos">
-        <point val="17.35,11.05"/>
+        <point val="17.45,11.05"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,10.8509;17.35,11.1009"/>
+        <rectangle val="16.844,10.8509;17.45,11.1009"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[7].SKTNISSU#</string>
@@ -17771,7 +17771,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,11.05"/>
+            <point val="17.45,11.05"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17790,10 +17790,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O468">
       <attribute name="obj_pos">
-        <point val="17.35,11.4"/>
+        <point val="17.45,11.4"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,11.2009;17.35,11.4509"/>
+        <rectangle val="16.844,11.2009;17.45,11.4509"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[8].SKTNISSU#</string>
@@ -17813,7 +17813,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,11.4"/>
+            <point val="17.45,11.4"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -17832,10 +17832,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O469">
       <attribute name="obj_pos">
-        <point val="17.35,11.75"/>
+        <point val="17.45,11.75"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="16.744,11.5509;17.35,11.8009"/>
+        <rectangle val="16.844,11.5509;17.45,11.8009"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#KOHTAN-TBL[9].SKTNISSU#</string>
@@ -17855,7 +17855,7 @@
             <real val="0.25"/>
           </attribute>
           <attribute name="pos">
-            <point val="17.35,11.75"/>
+            <point val="17.45,11.75"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>

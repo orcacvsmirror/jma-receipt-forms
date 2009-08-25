@@ -33,7 +33,10 @@
                   05  S140TMP-HKNGK      PIC  9(09).
                   05  S140TMP-KOHGK      PIC  9(09).
                   05  S140TMP-SYUEKI     PIC  9(09).
-                  05  S140TMP-SNISSU     PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S140TMP-SNISSU     PIC  9(04).
+                  05  S140TMP-SNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S140TMP-SSEIKYU    PIC  9(09).
                   05  S140TMP-SFTNGK     PIC  9(09).
               03  S140TMP-KOH1-MAX       PIC  9(02).
@@ -66,7 +69,10 @@
                   05  S140TMP-HHKNGK      PIC  9(09).
                   05  S140TMP-HKOHGK      PIC  9(09).
                   05  S140TMP-HSYUEKI     PIC  9(09).
-                  05  S140TMP-HSNISSU     PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S140TMP-HSNISSU     PIC  9(04).
+                  05  S140TMP-HSNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S140TMP-HSSEIKYU    PIC  9(09).
                   05  S140TMP-HSFTNGK     PIC  9(09).
               03  S140TMP-KUMIAI-TBL OCCURS 11.
@@ -83,7 +89,10 @@
                   05  S140TMP-K-HKNGK      PIC  9(09).
                   05  S140TMP-K-KOHGK      PIC  9(09).
                   05  S140TMP-K-SYUEKI     PIC  9(09).
-                  05  S140TMP-K-SNISSU     PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S140TMP-K-SNISSU     PIC  9(04).
+                  05  S140TMP-K-SNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S140TMP-K-SSEIKYU    PIC  9(09).
                   05  S140TMP-K-SFTNGK     PIC  9(09).
               03  S140TMP-KOH2-MAX       PIC  9(02).
@@ -126,7 +135,10 @@
                   05  S140TMP-K-HHKNGK      PIC  9(09).
                   05  S140TMP-K-HKOHGK      PIC  9(09).
                   05  S140TMP-K-HSYUEKI     PIC  9(09).
-                  05  S140TMP-K-HSNISSU     PIC  9(04).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S140TMP-K-HSNISSU     PIC  9(04).
+                  05  S140TMP-K-HSNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S140TMP-K-HSSEIKYU    PIC  9(09).
                   05  S140TMP-K-HSFTNGK     PIC  9(09).
               03  S140TMP-GOKEI-TBL.
@@ -143,6 +155,10 @@
                   05  S140TMP-GHKNGK      PIC  9(09).
                   05  S140TMP-GKOHGK      PIC  9(09).
                   05  S140TMP-GSYUEKI     PIC  9(09).
-                  05  S140TMP-SGNISSU     PIC  9(04).
+                  05  S140TMP-SGNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE START -------------------------------------
+      *            05  S140TMP-SGNISSU     PIC  9(04).
+                  05  S140TMP-SGNISSU     PIC  9(05).
+      *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S140TMP-SGSEIKYU    PIC  9(09).
                   05  S140TMP-SGFTNGK     PIC  9(09).
