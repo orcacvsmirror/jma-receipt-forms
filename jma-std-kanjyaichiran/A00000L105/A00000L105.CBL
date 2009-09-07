@@ -37,6 +37,7 @@
       *  08/04/03    @@@@-吉川     シス管の値が取得できない不具合を修正
       *                            後期高齢者対応(ver4.2.0)
       *                            記号・番号１６文字以上対応(ver4.2.0)
+      *  09/09/02    @@@@-田中     保険変更時に古い保健情報が印字される不具合を修正
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -2009,7 +2010,10 @@
       *                                     ORCMCPAREA
       *                                     MCPDATA-REC
            MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
-           MOVE    "key5"              TO  MCP-PATHNAME
+      *--- 2009/09/02 CHANGE START -------------------------------------
+      *     MOVE    "key5"              TO  MCP-PATHNAME
+           MOVE    "key4"              TO  MCP-PATHNAME
+      *--- 2009/09/02 CHANGE END ---------------------------------------
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
@@ -2042,7 +2046,10 @@
       *                                    ORCMCPAREA
       *                                    MCPDATA-REC
            MOVE    "tbl_ptnyuinrrk"   TO  MCP-TABLE
-           MOVE    "key5"             TO  MCP-PATHNAME
+      *--- 2009/09/02 CHANGE START -------------------------------------
+      *     MOVE    "key5"              TO  MCP-PATHNAME
+           MOVE    "key4"              TO  MCP-PATHNAME
+      *--- 2009/09/02 CHANGE END ---------------------------------------
            CALL    "ORCDBMAIN"        USING
                                       MCPAREA
                                       MCPDATA-REC
@@ -2078,7 +2085,10 @@
       *                                  ORCMCPAREA
       *                                  MCPDATA-REC
            MOVE  "tbl_ptnyuinrrk"   TO  MCP-TABLE
-           MOVE  "key5"             TO  MCP-PATHNAME
+      *--- 2009/09/02 CHANGE START -------------------------------------
+      *     MOVE    "key5"              TO  MCP-PATHNAME
+           MOVE    "key4"              TO  MCP-PATHNAME
+      *--- 2009/09/02 CHANGE END ---------------------------------------
            CALL  "ORCDBMAIN"        USING
                                     MCPAREA
                                     MCPDATA-REC
