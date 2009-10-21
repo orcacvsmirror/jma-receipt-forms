@@ -46,6 +46,7 @@
       *  08/08/13    @@@@-田中     診療行為画面から入院料を入力すると重複してしまう不具合を修正
       *  08/09/30    @@@@-田中     入院のみの患者が集計されない不具合を修正
       *  09/02/10    @@@@-田中     入院料・室料差額・食事の件数を修正
+      *  09/10/21    @@@@-田中     患者入院履歴情報取得時の不具合を修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -1242,11 +1243,15 @@
            MOVE     "0"                    TO WRK-BTU-INDEX
       ****2006/04/11 @@@@-BRAND END
            PERFORM  930-PTNYUINRRK-SELECT-SEC
-           PERFORM  UNTIL FLG-PTNYUINRRK  =  1
+      *--- 2009/10/21 DELETE START -------------------------------------
+      *     PERFORM  UNTIL FLG-PTNYUINRRK  =  1
+      *--- 2009/10/21 DELETE END ---------------------------------------
       *
-               MOVE   PTNYUINRRK-BTUNUM    TO WRK-BTU-INDEX
-               PERFORM 930-PTNYUINRRK-FETCH-SEC
-           END-PERFORM
+           MOVE   PTNYUINRRK-BTUNUM    TO WRK-BTU-INDEX
+      *--- 2009/10/21 DELETE START -------------------------------------
+      *         PERFORM 930-PTNYUINRRK-FETCH-SEC
+      *     END-PERFORM
+      *--- 2009/10/21 DELETE END ---------------------------------------
            PERFORM  930-PTNYUINRRK-CLOSE-SEC
       *
       *
