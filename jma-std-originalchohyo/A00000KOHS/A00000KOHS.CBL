@@ -50,6 +50,7 @@
       *  01.00.18      田中    09/01/29   食事療養費欄の追加
       *  01.00.18      田中    09/01/29   本人負担額に自費を含まないよう修正
       *  01.00.19      門間    09/04/16   プログラムオプション対応(INIファイル)
+      *  01.00.20      田中    09/10/22   患者番号の桁数を変更
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -1024,7 +1025,14 @@
       ***       MOVE   MF100-PTNUM            TO    KOHS-PTNUM(IDX1)
              MOVE   MF100-PTNUM            TO   WRK-MAE-INPUT
              PERFORM   2009-HENKAN-SEC
-             MOVE   WRK-OUT-INPUT          TO   KOHS-PTNUM(IDX1)
+      *--- 2009/10/22 CHANGE START -------------------------------------
+      *       MOVE   WRK-OUT-INPUT          TO   KOHS-PTNUM(IDX1)
+             IF    WRK-OUT-INPUT(21:)  =  SPACE
+               MOVE   WRK-OUT-INPUT          TO   KOHS-PTNUM(IDX1)
+             ELSE
+               MOVE   WRK-OUT-INPUT          TO   KOHS-PTNUM2(IDX1)
+             END-IF
+      *--- 2009/10/22 CHANGE END ---------------------------------------
       ***  20040914 MOTOHASI 全角変換
       *
       *    氏名
