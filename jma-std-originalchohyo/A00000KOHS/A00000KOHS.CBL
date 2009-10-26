@@ -165,7 +165,10 @@
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) end
       *
       *Ä¢É¼¥³¥Ô¡¼¶ç
-           COPY    "A00000KOHS.INC".
+      *--- 2009/10/26 CHANGE START -------------------------------------
+      *     COPY    "A00000KOHS.INC".
+           COPY    "A00000KOHSV02.INC".
+      *--- 2009/10/26 CHANGE END ---------------------------------------
       *
       *---- 2008/10/27  ADD  START -------------------------------------
       *    £Ã£Ó£Ö¥Õ¥¡¥¤¥ë½ÐÎÏÍÑ
@@ -1239,7 +1242,10 @@
       ***** 04/07/28 INS
       ***  20040914 MOTOHASI MONPE¤ËÊÑ¹¹
       ***     MOVE   "A00000KOHS"             TO  SPRT-PRTID
-           MOVE   "A00000KOHS.red"         TO    SPRT-PRTID
+      *--- 2009/10/26 CHANGE START -------------------------------------
+      *     MOVE   "A00000KOHS.red"         TO    SPRT-PRTID
+           MOVE   "A00000KOHSV02.red"         TO    SPRT-PRTID
+      *--- 2009/10/26 CHANGE END ---------------------------------------
       ***  20040914 MOTOHASI MONPE¤ËÊÑ¹¹
            MOVE    "½þ´ÔÊ§¸øÈñ´µ¼Ô°ìÍ÷É½"  TO    SPRT-TITLE
            MOVE    KOHS-DATA               TO    SPRT-PRTDATA
