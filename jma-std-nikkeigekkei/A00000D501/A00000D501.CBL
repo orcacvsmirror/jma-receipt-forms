@@ -68,6 +68,7 @@
       *                                     生活療養費・生活負担額が保険分金額・患者負担金額・
       *                                     医療収益に加算されていない不具合を修正
       *              @@@@-田中    09/06/04  初診件数判定の処理を修正
+      *              @@@@-田中    09/10/26  新患の件数処理を修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -148,6 +149,9 @@
       *         07  FLG-JIHI        PIC 9(01)  OCCURS  5.
                    07  FLG-JIHI    PIC 9(01)  OCCURS  10.
       *=== 自費追加対応 UPDATE By Takashima(2006/10/24) end
+      *--- 2009/10/26 ADD START ----------------------------------------
+           03  FLG-SRYKARRK        PIC 9(01).
+      *--- 2009/10/26 ADD END ------------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -265,6 +269,9 @@
       *--- 2009/02/06 ADD START ----------------------------------------
            03  WRK-COMPFTN           PIC S9(10).
       *--- 2009/02/06 ADD END ------------------------------------------
+      *--- 2009/10/26 ADD START ----------------------------------------
+           03  WRK-SYOSINYMD         PIC 9(08).
+      *--- 2009/10/26 ADD END ------------------------------------------
       *
       *** 01  SUM-AREA              VALUE   ZERO.
       ***     03  SUM-OCC               OCCURS  15.
@@ -537,6 +544,11 @@
       *    保険番号マスタ
        01  HKNNUM-REC.
            COPY    "CPHKNNUM.INC".
+      *
+      *--- 2009/10/26 ADD START ----------------------------------------
+       01  SRYKARRK-REC.
+           COPY    "CPSRYKARRK.INC".
+      *--- 2009/10/26 ADD END ------------------------------------------
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -2450,32 +2462,49 @@
                AND   ACCT-DAY(1 IDX7)   >   ZERO
                AND   JYURRK-RENNUM  =  1
       *    新患件数としてカウントする。
-      *    保険別件数カウント 
-             ADD    1   TO   SUM-SKEN(IDX)
-      *    自費分件数カウント 
-             PERFORM  VARYING IDX2  FROM 1  BY  1
-                      UNTIL   IDX2   >  10
-               IF  FLG-JIHI(IDX2)  = 1
-                 COMPUTE  JIHIIDX = IDX2 + 6 
-                 ADD   1       TO  SUM-SKEN(JIHIIDX)
-               END-IF  
+      *--- 2009/10/26 ADD START ----------------------------------------
+             INITIALIZE                 WRK-SYOSINYMD
+                                        FLG-SRYKARRK
+             MOVE    SYU-SRYYMD         TO   WRK-SYOSINYMD
+             PERFORM  900-SRYKARRKA-SELECT-SEC
+             PERFORM  UNTIL  FLG-SRYKARRK  =  1
+               IF   KARRK-SYOSINYMD1  <  WRK-SYOSINYMD
+                 MOVE    KARRK-SYOSINYMD1     TO   WRK-SYOSINYMD
+               END-IF
+               PERFORM  900-SRYKARRKA-FETCH-SEC
              END-PERFORM
+             PERFORM  900-SRYKARRKA-CLOSE-SEC
+             IF   WRK-SYOSINYMD  =  SYU-SRYYMD  
+      *--- 2009/10/26 ADD END ------------------------------------------
+      *    保険別件数カウント 
+               ADD    1   TO   SUM-SKEN(IDX)
+      *    自費分件数カウント 
+               PERFORM  VARYING  IDX2  FROM  1  BY  1
+                        UNTIL  IDX2  >  10
+                 IF  FLG-JIHI(IDX2)  =  1
+                   COMPUTE  JIHIIDX  =  IDX2  +  6 
+                   ADD   1       TO  SUM-SKEN(JIHIIDX)
+                 END-IF  
+               END-PERFORM
       *    保険点数件数カウント
-             IF  FLG-HKN = 1
-               ADD     1       TO   SUM-SHKNKEN
-             END-IF
+               IF   FLG-HKN  =  1
+                 ADD    1       TO   SUM-SHKNKEN
+               END-IF
       *    医療収益計件数カウント
-             IF  FLG-SYUEKI = 1
-               ADD     1       TO   SUM-SSYUEKIKEN
-             END-IF
+               IF   FLG-SYUEKI  =  1
+                 ADD    1       TO   SUM-SSYUEKIKEN
+               END-IF
       *    窓口請求金額件数カウント
-             IF  FLG-SEIKYU = 1
-               ADD     1       TO   SUM-SSEIKYUKEN
-             END-IF
+               IF   FLG-SEIKYU  =  1
+                 ADD    1       TO   SUM-SSEIKYUKEN
+               END-IF
       *    窓口領収金額件数カウント
-             IF  FLG-RYOSYU = 1
-               ADD     1       TO   SUM-SRYOSYUKEN
+               IF   FLG-RYOSYU  =  1
+                 ADD    1       TO   SUM-SRYOSYUKEN
+               END-IF
+      *--- 2009/10/26 ADD START ----------------------------------------
              END-IF
+      *--- 2009/10/26 ADD END ------------------------------------------
            END-IF
            INITIALIZE                SRYACCT-REC
            MOVE    ZERO                TO   FLG-SRYACCT
@@ -4903,6 +4932,77 @@
            EXIT.
       *
       *--- 2008/12/04 ADD END -----------------------------------------
+      *--- 2009/10/26 ADD START ----------------------------------------
+      *****************************************************************
+      *    診療科履歴情報検索処理
+      *****************************************************************
+       900-SRYKARRKA-SELECT-SEC            SECTION.
+      *
+           INITIALIZE               SRYKARRK-REC
+      *
+           MOVE    SYU-HOSPNUM      TO   KARRK-HOSPNUM
+           MOVE    SYU-PTID         TO   KARRK-PTID
+      *
+           MOVE    SRYKARRK-REC     TO   MCPDATA-REC
+           MOVE    "DBSELECT"       TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"  TO   MCP-TABLE
+           MOVE    "key2"           TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+           IF   MCP-RC   =   ZERO
+             PERFORM  900-SRYKARRKA-FETCH-SEC
+           ELSE
+             MOVE    1               TO   FLG-SRYKARRK
+           END-IF
+      *
+           .
+       900-SRYKARRKA-SELECT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療科履歴情報検索処理
+      *****************************************************************
+       900-SRYKARRKA-FETCH-SEC            SECTION.
+      *
+           MOVE    "DBFETCH"         TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"   TO   MCP-TABLE
+           MOVE    "key2"            TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    MCPDATA-REC     TO   SRYKARRK-REC 
+             MOVE    ZERO            TO   FLG-SRYKARRK
+           ELSE
+             MOVE    1               TO   FLG-SRYKARRK
+           END-IF
+      *
+           .
+       900-SRYKARRKA-FETCH-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療科履歴情報検索処理
+      *****************************************************************
+       900-SRYKARRKA-CLOSE-SEC            SECTION.
+      *
+           MOVE    SRYKARRK-REC     TO   MCPDATA-REC
+           MOVE    "DBCLOSECURSOR"  TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"  TO   MCP-TABLE
+           MOVE    "key2"           TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+      *
+           .
+       900-SRYKARRKA-CLOSE-EXT.
+           EXIT.
+      *
+      *--- 2009/10/26 ADD END ------------------------------------------
       *****************************************************************
       *    ＤＢ　オープン処理
       *****************************************************************
