@@ -2404,21 +2404,37 @@
                                        +  WRK-FTN
                    COMPUTE  WRK-JOSEI  =  WRK-MONEY
                                        -  SYU-DISCOUNT-MONEY
-                   EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
-                     WHEN  1
-                       COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI  /  10
-                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
-                     WHEN  2
-                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI
-                                                 /  10
-                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI
-                                                 *  10 
-                     WHEN  3
-                       IF   WRK-JOSEI(11:1)  NOT =  0
+                   IF   SYU-DISCOUNT-MONEY  =  ZERO
+                     EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2
+                       WHEN  1
+                         COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+                       WHEN  2
                          COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10  +  10
-                       END-IF
-                   END-EVALUATE
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
+                       WHEN  3
+                         IF   WRK-JOSEI(11:1)  NOT =  0
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
+                         END-IF
+                     END-EVALUATE
+                   ELSE
+                     EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
+                       WHEN  1
+                         COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+                       WHEN  2
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI
+                                                   /  10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI
+                                                   *  10 
+                       WHEN  3
+                         IF   WRK-JOSEI(11:1)  NOT =  0
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
+                         END-IF
+                     END-EVALUATE
+                   END-IF
       *
                    COMPUTE  WRK-JOSEI  =  WRK-JOSEI  -  SYU-SKYMONEY
                    ADD    WRK-JOSEI    TO   SUM-YOSO(I3 16) 
