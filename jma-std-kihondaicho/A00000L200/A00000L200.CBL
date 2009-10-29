@@ -35,6 +35,7 @@
       *  01.00.04       田中    08/07/01   処理速度向上の修正
       *  01.00.05       門間    09/02/23   SETTEI.TXTからINIへ拡張子の変更
       *  01.00.06       門間    09/05/13   プログラムオプション対応(INIファイル)
+      *  01.00.07       田中    09/10/26   負担額の桁数を変更
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -102,7 +103,7 @@
                                     BY         //L200TP//.
       ***07/09/21 nagaya 4.0対応 end
       *
-           COPY    "A00000L200.INC".
+           COPY    "A00000L200V02.INC".
       *    スパ領域
        01  STS-AREA.
            03  STS-PARA            PIC X(02).
@@ -1557,8 +1558,12 @@
       ***  20040914 MOTOHASI MONPEに変更
       ***       MOVE    L200TMP-ITBFTN   TO    WRK-Z6
       ***       MOVE    WRK-Z6           TO    L200-ITBFTN(CNT-LINE)
-             MOVE    L200TMP-ITBFTN   TO    WRK-Z6
-             MOVE    WRK-Z6           TO    WRK-MAE-INPUT
+      *--- 2009/10/26 CHANGE START -------------------------------------
+      *       MOVE    L200TMP-ITBFTN   TO    WRK-Z6
+      *       MOVE    WRK-Z6           TO    WRK-MAE-INPUT
+             MOVE    L200TMP-ITBFTN   TO    WRK-Z7
+             MOVE    WRK-Z7           TO    WRK-MAE-INPUT
+      *--- 2009/10/26 ADD CHANGE ---------------------------------------
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT    TO    L200-ITBFTN(CNT-LINE)
       ***  20040914 MOTOHASI MONPEに変更
@@ -1674,7 +1679,7 @@
                                        TO  SPRT-PRIORITY
       ***  20040914 MOTOHASI MONPEに変更
       ***     MOVE   "A00000L200"         TO  SPRT-PRTID
-           MOVE   "A00000L200.red"         TO  SPRT-PRTID
+           MOVE   "A00000L200V02.red"         TO  SPRT-PRTID
       ***  20040914 MOTOHASI MONPEに変更
            MOVE    "保険別患者台帳"
                                      TO  SPRT-TITLE
