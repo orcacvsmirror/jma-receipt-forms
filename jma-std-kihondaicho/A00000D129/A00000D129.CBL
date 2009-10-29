@@ -51,6 +51,8 @@
       *  09/02/25    @@@@-Ìç´Ö     ÍÂ¤ê¶â¤Î½ÅÊ£¤ò½¤Àµ
       *  09/03/04    @@@@-ÅÄÃæ     ºÆ¿Ç¡¢¤½¤ÎÂ¾¤Î·ï¿ô½èÍý¤ò½¤Àµ
       *  09/04/16    @@@@-Ìç´Ö     ¥×¥í¥°¥é¥à¥ª¥×¥·¥ç¥óÂÐ±þ(INI¥Õ¥¡¥¤¥ë)
+      *  09/10/28    @@@@-ÅÄÃæ     ½õÀ®¶â³Û¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
+      *                            ¿·´µ¤Î·ï¿ô½èÍý¤ò½¤Àµ
       *****************************************************************
       *
       *
@@ -166,6 +168,9 @@
            03  FLG-INVALID         PIC 9(01).
            03  FLG-820SYS          PIC X(04).
            03  INP-STS             PIC 9(04).
+      *--- 2009/10/28 ADD START ----------------------------------------
+           03  FLG-SRYKARRK        PIC 9(01).
+      *--- 2009/10/28 ADD END ----------------------------------------
       *
       *    ¥«¥¦¥ó¥ÈÎÎ°è
        01  CNT-AREA.
@@ -331,9 +336,17 @@
            03  WRK-SUM-SYOHI          PIC S9(07).
       ****2005/12/30  @@@@-BRAND END
       * 20071011ÄÉ²Ã T.Tanaka
-           03  WRK-GENMEN        PIC 9(09).
+      *--- 2009/10/28 DELETE START -------------------------------------
+      *     03  WRK-GENMEN        PIC 9(09).
+      *--- 2009/10/28 DELETE END ---------------------------------------
       * 20071011ÄÉ²Ã 
       */20040401 ÄÉ²Ã
+      *--- 2009/10/28 ADD START ----------------------------------------
+           03  WRK-SYOSINYMD     PIC 9(08).
+           03  WRK-HKNNAI        PIC 9(11).
+           03  WRK-JOSEI         PIC 9(11).
+      *--- 2009/10/28 ADD END ----------------------------------------
+      *
        01  SUM-AREA.
            03         SUM-AGEMAX        PIC  9(03).
            03         SUM-SRYKA-G.    
@@ -461,6 +474,11 @@
       *    ´µ¼ÔÆþ±¡ÍúÎò¾ðÊó
        01  PTNYUINRRK-REC.
            COPY    "CPPTNYUINRRK.INC".
+      *
+      *--- 2009/10/28 ADD START ----------------------------------------
+       01  SRYKARRK-REC.
+           COPY    "CPSRYKARRK.INC".
+      *--- 2009/10/28 ADD END ------------------------------------------
       *
       *    ÅÀ¿ô¥Þ¥¹¥¿¡Ý
       *01  TENSU-REC.
@@ -1458,29 +1476,31 @@
                             SUM-YOSO(I3 20)
       *=== ¼«Èñ¡¢´ðËÜ¿ÇÎÅ¹àÌÜÄÉ²ÃÂÐ±þ By Takashima(2006/11/14) end
                    END-EVALUATE
-      * ½õÀ®¶â³Û¤Î»»½Ð              
-                   COMPUTE WRK-MONEY =
-                           SUM-YOSO(I3 10) +
-                           SUM-YOSO(I3 11) +
-      * 20070913 ¾ÃÈñÀÇºï½üSTART t.tanaka
-      *                     SUM-YOSO(I3 14) +
-      * 20070913 ¾ÃÈñÀÇºï½üEND
-                           SUM-YOSO(I3 15) 
-      * 20071011 ¸ºÌÈ¶â³Û½¤ÀµSTART t.tanaka
-                   MOVE    SUM-YOSO(I3 12) TO WRK-GENMEN
-                   COMPUTE WRK-GENMEN = WRK-GENMEN / 10
-                   COMPUTE WRK-GENMEN = WRK-GENMEN * 10
-      * 20071011 ¸ºÌÈ¶â³Û½¤ÀµEND
-                          COMPUTE SUM-YOSO(I3 13) =
-                           WRK-MONEY -
-      * 20071011¸ºÌÈ¶â³Û½¤ÀµSTART t.tanaka
-      *                     SUM-YOSO(I3 12) -
-                           WRK-GENMEN -
-      * 20071011¸ºÌÈ¶â³Û½¤ÀµEND
-                           SUM-YOSO(I3 16) 
-                   COMPUTE SUM-YOSO(SUM-AGEMAX 13) =
-                           SUM-YOSO(SUM-AGEMAX 13) +
-                           SUM-YOSO(I3 13) 
+      *--- 2009/10/28 DELETE START -------------------------------------
+      ** ½õÀ®¶â³Û¤Î»»½Ð              
+      *             COMPUTE WRK-MONEY =
+      *                     SUM-YOSO(I3 10) +
+      *                     SUM-YOSO(I3 11) +
+      ** 20070913 ¾ÃÈñÀÇºï½üSTART t.tanaka
+      **                     SUM-YOSO(I3 14) +
+      ** 20070913 ¾ÃÈñÀÇºï½üEND
+      *                     SUM-YOSO(I3 15) 
+      ** 20071011 ¸ºÌÈ¶â³Û½¤ÀµSTART t.tanaka
+      *             MOVE    SUM-YOSO(I3 12) TO WRK-GENMEN
+      *             COMPUTE WRK-GENMEN = WRK-GENMEN / 10
+      *             COMPUTE WRK-GENMEN = WRK-GENMEN * 10
+      ** 20071011 ¸ºÌÈ¶â³Û½¤ÀµEND
+      *                    COMPUTE SUM-YOSO(I3 13) =
+      *                     WRK-MONEY -
+      ** 20071011¸ºÌÈ¶â³Û½¤ÀµSTART t.tanaka
+      **                     SUM-YOSO(I3 12) -
+      *                     WRK-GENMEN -
+      ** 20071011¸ºÌÈ¶â³Û½¤ÀµEND
+      *                    SUM-YOSO(I3 16) 
+      *             COMPUTE SUM-YOSO(SUM-AGEMAX 13) =
+      *                     SUM-YOSO(SUM-AGEMAX 13) +
+      *                     SUM-YOSO(I3 13) 
+      *--- 2009/10/28 DELETE END ---------------------------------------
            END-PERFORM
       *
       * ¿·´µÍè±¡Î¨(·×)
@@ -1539,8 +1559,26 @@
                  IF       FLG-JYURRK       =   ZERO
                    AND    JYURRK-SRYYMD    =   SYU-SRYYMD 
       * ¿·´µ·ï¿ô¤È¤·¤Æ¥«¥¦¥ó¥È¤¹¤ë¡£
-                   ADD  1  TO  SUM-YOSO(I3 6)
-                   ADD  1  TO  SUM-YOSO(SUM-AGEMAX 6)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                   INITIALIZE                 WRK-SYOSINYMD
+                                              FLG-SRYKARRK
+                   MOVE    SYU-SRYYMD         TO   WRK-SYOSINYMD
+                   PERFORM  900-SRYKARRKA-SELECT-SEC
+                   PERFORM  UNTIL  FLG-SRYKARRK  =  1
+                     IF   KARRK-SYOSINYMD1  <  WRK-SYOSINYMD
+                         AND  KARRK-SYOSINYMD1  NOT =  SPACE
+                       MOVE    KARRK-SYOSINYMD1    TO   WRK-SYOSINYMD
+                     END-IF
+                     PERFORM  900-SRYKARRKA-FETCH-SEC
+                   END-PERFORM
+                   PERFORM  900-SRYKARRKA-CLOSE-SEC
+                   IF   WRK-SYOSINYMD  =  SYU-SRYYMD  
+      *--- 2009/10/28 ADD END ------------------------------------------
+                       ADD    1        TO   SUM-YOSO(I3 6)
+                       ADD    1        TO   SUM-YOSO(SUM-AGEMAX 6)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                   END-IF
+      *--- 2009/10/28 ADD END ------------------------------------------
                  END-IF
                  PERFORM  900-JYURRK-CLOSE-SEC
             END-IF
@@ -1971,6 +2009,9 @@
                    ADD    SYU-TOTAL-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 8)
       *
+      *--- 2009/10/28 ADD START ----------------------------------------
+                   INITIALIZE     WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
       * ÊÝ¸±ÆâÉéÃ´¶â              
       *
       *            ¼çÊÝ¸±Ê¬ÉéÃ´¶â³Û
@@ -1980,26 +2021,41 @@
                                TO  SUM-YOSO(I3 10)
                            ADD SYU-SYUCOMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-SYUCOMPTOTAL    TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH1COMPTOTAL NOT = ZERO
                            ADD SYU-KOH1COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD SYU-KOH1COMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH1COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH2COMPTOTAL NOT = ZERO
                            ADD SYU-KOH2COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH2COMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH2COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH3COMPTOTAL NOT = ZERO
                            ADD     SYU-KOH3COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH3COMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH3COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH3COMPTOTAL NOT = ZERO
                            ADD     SYU-KOH4COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH4COMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH4COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    END-IF 
                    END-IF 
                    END-IF 
@@ -2018,24 +2074,36 @@
                                TO  SUM-YOSO(I3 10)
                         ADD  SYU-RSISHOSHIN-MONEY  
                                TO  SUM-YOSO(SUM-AGEMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                        ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
       *
       *            Ï«ºÒºÆ¿Ç¶â³Û¶â³Û
                         ADD  SYU-RSISAISHIN-MONEY
                                TO  SUM-YOSO(I3 10)
                         ADD  SYU-RSISAISHIN-MONEY
                                TO  SUM-YOSO(SUM-AGEMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                        ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
       *
       *            Ï«ºÒ»ØÆ³¶â³Û¶â³Û
                         ADD  SYU-RSISDO-MONEY
                                TO  SUM-YOSO(I3 10)
                         ADD  SYU-RSISDO-MONEY
                                TO  SUM-YOSO(SUM-AGEMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                        ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
       *
       *            Ï«ºÒ¤½¤ÎÂ¾¶â³Û¶â³Û
                         ADD  SYU-RSIETC-MONEY
                                TO  SUM-YOSO(I3 10)
                         ADD  SYU-RSIETC-MONEY
                                TO  SUM-YOSO(SUM-AGEMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                        ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    END-IF
       *
       * ÊÝ¸±³°¶â³Û
@@ -2055,7 +2123,30 @@
                    ADD SYU-DISCOUNT-MONEY
                           TO  SUM-YOSO(SUM-AGEMAX 12)
       * 20070913 ¸ºÌÈ¶â³ÛÄÉ²ÃEND
-
+      *--- 2009/10/28 ADD START ----------------------------------------
+      *    ½õÀ®¶â³Û¤Î»»½Ð
+                   COMPUTE  WRK-MONEY  =  WRK-HKNNAI  +  WRK-JIHI
+                                       +  SYU-CHOSEI
+                   COMPUTE  WRK-JOSEI  =  WRK-MONEY
+                                       -  SYU-DISCOUNT-MONEY
+                   EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
+                     WHEN  1
+                       COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI  /  10
+                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+                     WHEN  2
+                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
+                     WHEN  3
+                       IF   WRK-JOSEI(11:1)  NOT =  0
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10  +  10
+                       END-IF
+                   END-EVALUATE
+      *
+                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  -  SYU-SKYMONEY
+                   ADD    WRK-JOSEI    TO   SUM-YOSO(I3 13) 
+                   ADD    WRK-JOSEI    TO   SUM-YOSO(SUM-AGEMAX 13)
+      *--- 2009/10/28 ADD END ------------------------------------------
       ****2005/12/30  @@@@-BRAND START
       * ¾ÃÈñÀÇ              
       *             ADD    SYU-JIHI-TAX
@@ -4635,7 +4726,78 @@
            .
        900-SRYACCT-CLOSE-EXT.
            EXIT.
-      *      
+      *
+      *--- 2009/10/28 ADD START ----------------------------------------
+      *****************************************************************
+      *    ¿ÇÎÅ²ÊÍúÎò¾ðÊó¸¡º÷½èÍý
+      *****************************************************************
+       900-SRYKARRKA-SELECT-SEC            SECTION.
+      *
+           INITIALIZE               SRYKARRK-REC
+      *
+           MOVE    SYU-HOSPNUM      TO   KARRK-HOSPNUM
+           MOVE    SYU-PTID         TO   KARRK-PTID
+      *
+           MOVE    SRYKARRK-REC     TO   MCPDATA-REC
+           MOVE    "DBSELECT"       TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"  TO   MCP-TABLE
+           MOVE    "key2"           TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+           IF   MCP-RC   =   ZERO
+             PERFORM  900-SRYKARRKA-FETCH-SEC
+           ELSE
+             MOVE    1               TO   FLG-SRYKARRK
+           END-IF
+      *
+           .
+       900-SRYKARRKA-SELECT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    ¿ÇÎÅ²ÊÍúÎò¾ðÊó¸¡º÷½èÍý
+      *****************************************************************
+       900-SRYKARRKA-FETCH-SEC            SECTION.
+      *
+           MOVE    "DBFETCH"         TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"   TO   MCP-TABLE
+           MOVE    "key2"            TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    MCPDATA-REC     TO   SRYKARRK-REC 
+             MOVE    ZERO            TO   FLG-SRYKARRK
+           ELSE
+             MOVE    1               TO   FLG-SRYKARRK
+           END-IF
+      *
+           .
+       900-SRYKARRKA-FETCH-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    ¿ÇÎÅ²ÊÍúÎò¾ðÊó¸¡º÷½èÍý
+      *****************************************************************
+       900-SRYKARRKA-CLOSE-SEC            SECTION.
+      *
+           MOVE    SRYKARRK-REC     TO   MCPDATA-REC
+           MOVE    "DBCLOSECURSOR"  TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"  TO   MCP-TABLE
+           MOVE    "key2"           TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+      *
+           .
+       900-SRYKARRKA-CLOSE-EXT.
+           EXIT.
+      *
+      *--- 2009/10/28 ADD END ------------------------------------------
       *****************************************************************
       *    £Ä£Â¡¡¥ª¡¼¥×¥ó½èÍý
       *****************************************************************
