@@ -48,6 +48,7 @@
       *  08/04/01    @@@@-ÅÄÃæ     H20Ç¯4·î²þÀµÂÐ±þ    
       *  08/07/08    @@@@-ÅÄÃæ     ¼ýÇ¼ÌÀºÙ¤ò¹¹¿·¤·¤¿¾ì¹ç¤Ë¡¢Æþ¶â³Û¤¬É½¼¨¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤Î½¤Àµ
       *  09/05/13    @@@@-ÅÄÃæ     INI¥Õ¥¡¥¤¥ë¤Î¥×¥í¥°¥é¥à¥ª¥×¥·¥ç¥óÂÐ±þ
+      *  09/10/28    @@@@-ÅÄÃæ     ½õÀ®¶â³Û¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *****************************************************************
       *  ¥×¥í¥°¥é¥à½¤ÀµÍúÎò
       * [ORCA]ver      ÆüÉÕ        ÆâÍÆ
@@ -376,7 +377,11 @@
       ****2006/03/27 @@@@-BRAND END
       */20040406 ÄÉ²Ã
       * 20071011 ÄÉ²Ã T.Tanaka
-           03  WRK-GENMEN             PIC 9(09).
+      *--- 2009/10/28 ADD + DELETE START -------------------------------
+      *     03  WRK-GENMEN        PIC 9(09).
+           03  WRK-HKNNAI             PIC 9(11).
+           03  WRK-JOSEI              PIC 9(11).
+      *--- 2009/10/28 ADD + DELETE END ---------------------------------
       * 20071011 ÄÉ²Ã 
       * 20040406 ÊÔ½¸ Y.Takahashi 
       *--- 2009/05/13 ADD START ----------------------------------------
@@ -1955,31 +1960,33 @@
       *                          SUM-YOSO(I3 23)
       *             END-EVALUATE
       */20040401 ºï½ü
+      *--- 2009/10/28 DELETE START -------------------------------------
       * ½õÀ®¶â³Û¤Î»»½Ð              
-                   COMPUTE WRK-MONEY =
-                           SUM-YOSO(I3 10) +
-                           SUM-YOSO(I3 11) +
-                           SUM-YOSO(I3 13) +
-                           SUM-YOSO(I3 14) +
-      * 20070913 ¾ÃÈñÀÇºï½üSTART t.tanaka
-      *                     SUM-YOSO(I3 17) +
-      * 20070913 ¾ÃÈñÀÇºï½üEND
-                           SUM-YOSO(I3 18) 
-      * 20071011 ¸ºÌÈ¶â³Û½¤ÀµSTART t.tanaka
-                   MOVE    SUM-YOSO(I3 15) TO WRK-GENMEN
-                   COMPUTE WRK-GENMEN = WRK-GENMEN / 10
-                   COMPUTE WRK-GENMEN = WRK-GENMEN * 10
-      * 20071011 ¸ºÌÈ¶â³Û½¤ÀµEND
-                   COMPUTE SUM-YOSO(I3 16) =
-                           WRK-MONEY -
-      * 20071011 ¸ºÌÈ¶â³Û½¤ÀµSTART t.tanaka
-      *                     SUM-YOSO(I3 15) -
-                           WRK-GENMEN -
-      * 20071011 ¸ºÌÈ¶â³Û½¤ÀµEND
-                           SUM-YOSO(I3 19) 
-                   COMPUTE SUM-YOSO(SUM-TIKUMAX 16) =
-                           SUM-YOSO(SUM-TIKUMAX 16) +
-                           SUM-YOSO(I3 16) 
+      *             COMPUTE WRK-MONEY =
+      *                     SUM-YOSO(I3 10) +
+      *                     SUM-YOSO(I3 11) +
+      *                     SUM-YOSO(I3 13) +
+      *                     SUM-YOSO(I3 14) +
+      ** 20070913 ¾ÃÈñÀÇºï½üSTART t.tanaka
+      **                     SUM-YOSO(I3 17) +
+      ** 20070913 ¾ÃÈñÀÇºï½üEND
+      *                     SUM-YOSO(I3 18) 
+      ** 20071011 ¸ºÌÈ¶â³Û½¤ÀµSTART t.tanaka
+      *             MOVE    SUM-YOSO(I3 15) TO WRK-GENMEN
+      *             COMPUTE WRK-GENMEN = WRK-GENMEN / 10
+      *             COMPUTE WRK-GENMEN = WRK-GENMEN * 10
+      ** 20071011 ¸ºÌÈ¶â³Û½¤ÀµEND
+      *             COMPUTE SUM-YOSO(I3 16) =
+      *                     WRK-MONEY -
+      ** 20071011 ¸ºÌÈ¶â³Û½¤ÀµSTART t.tanaka
+      **                     SUM-YOSO(I3 15) -
+      *                     WRK-GENMEN -
+      ** 20071011 ¸ºÌÈ¶â³Û½¤ÀµEND
+      *                     SUM-YOSO(I3 19) 
+      *             COMPUTE SUM-YOSO(SUM-TIKUMAX 16) =
+      *                     SUM-YOSO(SUM-TIKUMAX 16) +
+      *                     SUM-YOSO(I3 16) 
+      *--- 2009/10/28 DELETE END ---------------------------------------
            END-PERFORM
       *
       * 20040329 ºï½ü Y.Takahashi
@@ -2453,6 +2460,9 @@
                    ADD    SYU-TOTAL-HKNTEN   
                           TO  SUM-YOSO(SUM-TIKUMAX 7)
       *
+      *--- 2009/10/28 ADD START ----------------------------------------
+                   INITIALIZE     WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
       * ÊÝ¸±ÆâÉéÃ´¶â              
       *
       *            ¼çÊÝ¸±Ê¬ÉéÃ´¶â³Û
@@ -2462,26 +2472,41 @@
                                TO  SUM-YOSO(I3 10)
                            ADD SYU-SYUCOMPTOTAL
                                TO  SUM-YOSO(SUM-TIKUMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-SYUCOMPTOTAL    TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH1COMPTOTAL NOT = ZERO
                            ADD SYU-KOH1COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD SYU-KOH1COMPTOTAL
                                TO  SUM-YOSO(SUM-TIKUMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH1COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH2COMPTOTAL NOT = ZERO
                            ADD SYU-KOH2COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH2COMPTOTAL
                                TO  SUM-YOSO(SUM-TIKUMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH2COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH3COMPTOTAL NOT = ZERO
                            ADD     SYU-KOH3COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH3COMPTOTAL
                                TO  SUM-YOSO(SUM-TIKUMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH3COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH3COMPTOTAL NOT = ZERO
                            ADD     SYU-KOH4COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH4COMPTOTAL
                                TO  SUM-YOSO(SUM-TIKUMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH4COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    END-IF 
                    END-IF 
                    END-IF 
@@ -2500,24 +2525,36 @@
                                TO  SUM-YOSO(I3 10)
                         ADD  SYU-RSISHOSHIN-MONEY  
                                TO  SUM-YOSO(SUM-TIKUMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                        ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
       *
       *            Ï«ºÒºÆ¿Ç¶â³Û¶â³Û
                         ADD  SYU-RSISAISHIN-MONEY
                                TO  SUM-YOSO(I3 10)
                         ADD  SYU-RSISAISHIN-MONEY
                                TO  SUM-YOSO(SUM-TIKUMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                        ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
       *
       *            Ï«ºÒ»ØÆ³¶â³Û¶â³Û
                         ADD  SYU-RSISDO-MONEY
                                TO  SUM-YOSO(I3 10)
                         ADD  SYU-RSISDO-MONEY
                                TO  SUM-YOSO(SUM-TIKUMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                        ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
       *
       *            Ï«ºÒ¤½¤ÎÂ¾¶â³Û¶â³Û
                         ADD  SYU-RSIETC-MONEY
                                TO  SUM-YOSO(I3 10)
                         ADD  SYU-RSIETC-MONEY
                                TO  SUM-YOSO(SUM-TIKUMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                        ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    END-IF
       *
       * ÊÝ¸±³°¶â³Û
@@ -2565,6 +2602,31 @@
                    ADD SYU-DISCOUNT-MONEY
                           TO  SUM-YOSO(SUM-TIKUMAX 15)
       * 20070913 ¸ºÌÈ¶â³ÛÄÉ²ÃEND
+      *--- 2009/10/28 ADD START ----------------------------------------
+      *    ½õÀ®¶â³Û¤Î»»½Ð
+                   COMPUTE  WRK-MONEY  =  WRK-HKNNAI  +  WRK-JIHI
+                                       +  SYU-CHOSEI  +  SYU-RMSAGAKU
+                                       +  WRK-FTN
+                   COMPUTE  WRK-JOSEI  =  WRK-MONEY
+                                       -  SYU-DISCOUNT-MONEY
+                   EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
+                     WHEN  1
+                       COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI  /  10
+                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+                     WHEN  2
+                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
+                     WHEN  3
+                       IF   WRK-JOSEI(11:1)  NOT =  0
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10  +  10
+                       END-IF
+                   END-EVALUATE
+      *
+                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  -  SYU-SKYMONEY
+                   ADD    WRK-JOSEI    TO   SUM-YOSO(I3 16) 
+                   ADD    WRK-JOSEI    TO   SUM-YOSO(SUM-TIKUMAX 16)
+      *--- 2009/10/28 ADD END ------------------------------------------
       ****2005/12/30  @@@@-BRAND START
       * ¾ÃÈñÀÇ              
       *             ADD    SYU-JIHI-TAX
