@@ -2469,6 +2469,7 @@
              PERFORM  900-SRYKARRKA-SELECT-SEC
              PERFORM  UNTIL  FLG-SRYKARRK  =  1
                IF   KARRK-SYOSINYMD1  <  WRK-SYOSINYMD
+                   AND   KARRK-SYOSINYMD1  NOT =  SPACE
                  MOVE    KARRK-SYOSINYMD1     TO   WRK-SYOSINYMD
                END-IF
                PERFORM  900-SRYKARRKA-FETCH-SEC
