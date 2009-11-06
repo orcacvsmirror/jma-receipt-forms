@@ -63,6 +63,9 @@
       *  09/07/29    @@@@-田中     保険請求額の計算式を修正
       *  09/08/18    @@@@-田中     公費請求額の計算式を修正
       *  09/08/20    @@@@-田中     食事療養費の回数を5桁に変更
+      *  09/11/06    @@@@-田中     公費単独の公費請求額計算処理を修正
+      *                            同保険者番号に変更時の不具合を修正
+      *                            入力パラメタの入外区分が無効を修正
       *********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -1226,14 +1229,20 @@
       *--- 2009/01/08 ADD START ----------------------------------------
              IF  RECE10-SHOKUJIFTN(IDX8)  NOT =  ZERO
       *    患者食事負担有り
-               COMPUTE   WRK-HKNGK  =  ((WRK-FUKUKOHTEN
+      *--- 2009/11/06 CHANGE START -------------------------------------
+      *         COMPUTE   WRK-HKNGK  =  ((WRK-FUKUKOHTEN
+                COMPUTE   WRK-KOHGK  =  ((WRK-FUKUKOHTEN
+      *--- 2009/11/06 CHANGE END ---------------------------------------
                                   +  RECE10-TOTALTEN(IDX8))  *  10)
                                   -  (WRK-MADOGK
                                   -  RECE10-SHOKUJIFTN(IDX8))
              ELSE
       *    患者食事負担無し
       *--- 2009/01/08 ADD END ------------------------------------------
-               COMPUTE   WRK-HKNGK  =  ((WRK-FUKUKOHTEN
+      *--- 2009/11/06 CHANGE START -------------------------------------
+      *         COMPUTE   WRK-HKNGK  =  ((WRK-FUKUKOHTEN
+                COMPUTE   WRK-KOHGK  =  ((WRK-FUKUKOHTEN
+      *--- 2009/11/06 CHANGE END ---------------------------------------
                                   +  RECE10-TOTALTEN(IDX8))  *  10)
                                   +  RECE10-SHOKUJIRYOYOHI(IDX8)
                                   -  RECE10-FTNMONEY(IDX8)
@@ -1244,7 +1253,9 @@
       * 20071114 公費単独の不具合を修正END
       ***  20040712  ここまで
       *
-             ADD     WRK-HKNGK           TO   WRK-KOHGK
+      *--- 2009/11/06 DELETE START -------------------------------------
+      *       ADD     WRK-HKNGK           TO   WRK-KOHGK
+      *--- 2009/11/06 DELETE END ---------------------------------------
              MOVE    ZERO                TO   WRK-HKNGK
       *
       ***  20040820  @@@@-MOTOHASI  食事療養追加
@@ -2263,7 +2274,10 @@
       ***  20040820  @@@@-MOTOHASI  追加
       *    入院フォーム
       *    見出し編集
-             IF    WRK-FLG-NYUGAIKBN     =  "1"
+      *--- 2009/11/06 CHANGE START -------------------------------------
+      *       IF    WRK-FLG-NYUGAIKBN     =  "1"
+             IF    WRK-PARA-NYUGAIKBN   =  "1"  OR  SPACE
+      *--- 2009/11/06 CHANGE END ---------------------------------------
                MOVE     1       TO   WRK-CNT1
                PERFORM  3104-HEAD-HEN-SEC
       *
@@ -4073,7 +4087,9 @@
       *--- 2009/06/26 ADD START ----------------------------------------
                  IF  RECE10-SRYYM  =  SYU-SRYYMD(1:6)
                      AND  SYU-DENPJTIKBN   NOT = "3"
-                     AND  RECE10-TEKSTYMD  <=  SYU-SRYYMD
+      *--- 2009/11/06 DELETE START -------------------------------------
+      *               AND  RECE10-TEKSTYMD  <=  SYU-SRYYMD
+      *--- 2009/11/06 DELETE END ---------------------------------------
       *
       ***  20050412  @@@@-MOTOHASI  
                      AND  SYU-SYUHKNNUM  =  RECE10-HKNNUM
