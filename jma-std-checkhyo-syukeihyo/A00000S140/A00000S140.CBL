@@ -39,6 +39,8 @@
       *  09/08/18    @@@@-田中     公費請求額の計算式を修正
       *  09/08/20    @@@@-田中     食事療養費の回数を5桁に変更
       *  09/11/06    @@@@-田中     同保険者番号に変更時の不具合を修正
+      *  09/11/19    @@@@-田中     保険者一覧に国保が印字される不具合を修正
+      *  09/11/19    @@@@-田中     保険者一覧を保険者番号順に印字する
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -318,6 +320,11 @@
       *--- 2009/01/08 DELETE END ---------------------------------------
            03  WRK-TYOKIFTN             PIC 9(09). 
       *--- 2009/07/29 ADD END ------------------------------------------
+      *--- 2009/11/19 ADD START ----------------------------------------
+           03  IDX-S                     PIC 9(03).
+           03  IDX-N                     PIC 9(03).
+           03  WRK-HKNJA-TBL             PIC X(100).
+      *--- 2009/11/19 ADD END ------------------------------------------
       *
       *    診療科名退避エリア
        01  SUM-AREA.
@@ -1286,6 +1293,29 @@
       *
            PERFORM  UNTIL  FLG-PRINT   =    1
       *
+      *--- 2009/11/19 ADD START ----------------------------------------
+      *    後期高齢者保険者並び替え処理
+             IF   S140TMP-HKNJANUM(1)  NOT =  SPACE
+               MOVE    1        TO   IDX-S
+               MOVE    2        TO   IDX-N
+               PERFORM  UNTIL  IDX-S  NOT <  300
+                        OR  S140TMP-HKNJANUM(IDX-S)  =  SPACE
+                 PERFORM  UNTIL  IDX-N  >  300
+                          OR  S140TMP-HKNJANUM(IDX-N)  =  SPACE
+                   IF  S140TMP-HKNJANUM(IDX-S) > S140TMP-HKNJANUM(IDX-N)
+                     MOVE   S140TMP-HKNJA-TBL(IDX-N)  TO   WRK-HKNJA-TBL
+                     MOVE   S140TMP-HKNJA-TBL(IDX-S)
+                                           TO   S140TMP-HKNJA-TBL(IDX-N)
+                     MOVE   WRK-HKNJA-TBL  TO   S140TMP-HKNJA-TBL(IDX-S)
+                   END-IF
+                   ADD    1      TO   IDX-N
+                 END-PERFORM
+      *    N番目の値を決定する為にインデックスの再設定
+                 ADD    1        TO   IDX-S
+                 COMPUTE  IDX-N  =  IDX-S  +  1
+               END-PERFORM
+             END-IF
+      *--- 2009/11/19 ADD END ------------------------------------------
       *
              IF    WRK-PARA-NYUGAIKBN   =  "1"  OR  SPACE
                IF    S140TMP-NYUGAIKBN   =   "1"
@@ -1298,7 +1328,9 @@
                  MOVE     ZERO    TO   FLG-PASS
                  PERFORM  UNTIL  FLG-PASS   =   1
                           AND    S140TMP-KOH1-KEY(WRK-CNT1)  =  SPACE
-                          AND    S140TMP-KOH2-KEY(WRK-CNT2)  =  SPACE
+      *--- 2009/11/19 DELETE START -------------------------------------
+      *                    AND    S140TMP-KOH2-KEY(WRK-CNT2)  =  SPACE
+      *--- 2009/11/19 DELETE END ---------------------------------------
       *
                    PERFORM  3104-HEAD-HEN-SEC
       *
@@ -1345,7 +1377,9 @@
                  MOVE     ZERO    TO   FLG-PASS
                  PERFORM  UNTIL  FLG-PASS   =   1
                           AND    S140TMP-KOH1-KEY(WRK-CNT1)  =  SPACE
-                          AND    S140TMP-KOH2-KEY(WRK-CNT2)  =  SPACE
+      *--- 2009/11/19 DELETE START -------------------------------------
+      *                    AND    S140TMP-KOH2-KEY(WRK-CNT2)  =  SPACE
+      *--- 2009/11/19 DELETE END ---------------------------------------
       *
                    PERFORM  3102-HEAD-HEN-SEC
       *
@@ -2570,10 +2604,18 @@
            INITIALIZE                      PTHKNINF-REC
            MOVE    SYU-HOSPNUM         TO  PTHKN-HOSPNUM
            MOVE    SYU-PTID            TO  PTHKN-PTID
+      *--- 2009/11/19 ADD START ----------------------------------------
+		   MOVE    SYU-SYUHKNNUM       TO  PTHKN-HKNNUM
+           MOVE    SYU-SRYYMD          TO  PTHKN-TEKSTYMD
+           MOVE    SYU-SRYYMD          TO  PTHKN-TEKEDYMD
+      *--- 2009/11/19 ADD END ------------------------------------------
            MOVE    PTHKNINF-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_pthkninf"      TO  MCP-TABLE
-           MOVE    "key6"              TO  MCP-PATHNAME
+      *--- 2009/11/19 CHANGE START -------------------------------------
+      *     MOVE    "key6"              TO  MCP-PATHNAME
+           MOVE    "key9"              TO  MCP-PATHNAME
+      *--- 2009/11/19 CHANGE END ---------------------------------------
            CALL    "ORCDBMAIN"             USING
                                            MCPAREA
                                            MCPDATA-REC
@@ -2581,7 +2623,10 @@
            IF      MCP-RC              =   ZERO
              MOVE    "DBFETCH"         TO  MCP-FUNC
              MOVE    "tbl_pthkninf"    TO  MCP-TABLE
-             MOVE    "key6"            TO  MCP-PATHNAME
+      *--- 2009/11/19 CHANGE START -------------------------------------
+      *     MOVE    "key6"              TO  MCP-PATHNAME
+           MOVE    "key9"              TO  MCP-PATHNAME
+      *--- 2009/11/19 CHANGE END ---------------------------------------
              CALL    "ORCDBMAIN"           USING
                                            MCPAREA
                                            MCPDATA-REC
@@ -2599,7 +2644,10 @@
            END-IF
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
            MOVE    "tbl_pthkninf"         TO  MCP-TABLE
-           MOVE    "key6"              TO  MCP-PATHNAME
+      *--- 2009/11/19 CHANGE START -------------------------------------
+      *     MOVE    "key6"              TO  MCP-PATHNAME
+           MOVE    "key9"              TO  MCP-PATHNAME
+      *--- 2009/11/19 CHANGE END ---------------------------------------
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC

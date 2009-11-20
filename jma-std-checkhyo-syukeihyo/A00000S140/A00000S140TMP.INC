@@ -52,9 +52,13 @@
                   05  S140TMP-KTENSU      PIC  9(09).
       * 20081014 市町村別の集計を追加START
       *        03  S140TMP-HKNJA1-TBL OCCURS 100.
-              03  S140TMP-HKNJA1-TBL OCCURS 300.
+              03  S140TMP-HKNJA-TBL OCCURS 300.
       *            05  S140TMP-HKNJANUM    PIC  X(06).
-                  05  S140TMP-HKNJANUM    PIC  X(08).
+      *--- 2009/11/19 CHANGE START ----------------------------------------
+      *            05  S140TMP-HKNJANUM    PIC  X(08).
+                  05  S140TMP-HKNJANUM-KEY.
+                      07  S140TMP-HKNJANUM    PIC  X(08).
+      *--- 2009/11/19 CHANGE END ------------------------------------------
       * 20081014 市町村別の集計を追加END
                   05  S140TMP-HKENSU      PIC  9(04).
                   05  S140TMP-HNISSU      PIC  9(04).
@@ -75,72 +79,74 @@
       *--- 2009/08/20 CHANGE END ---------------------------------------
                   05  S140TMP-HSSEIKYU    PIC  9(09).
                   05  S140TMP-HSFTNGK     PIC  9(09).
-              03  S140TMP-KUMIAI-TBL OCCURS 11.
-                  05  S140TMP-K-KENSU      PIC  9(04).
-                  05  S140TMP-K-NISSU      PIC  9(04).
-                  05  S140TMP-K-TENSU      PIC  9(09).
-      *+
-      *            05  S140TMP-K-MADOGK     PIC  9(09).
-                  05  S140TMP-K-MADOGK     PIC  S9(09).
-      *+
-      *--- (2008/12/12) line add start monma ---------------------------
-                  05  S140TMP-K-JIHIGK     PIC  9(09).
-      *--- (2008/12/12) line add end   monma ---------------------------
-                  05  S140TMP-K-HKNGK      PIC  9(09).
-                  05  S140TMP-K-KOHGK      PIC  9(09).
-                  05  S140TMP-K-SYUEKI     PIC  9(09).
-      *--- 2009/08/20 CHANGE START -------------------------------------
-      *            05  S140TMP-K-SNISSU     PIC  9(04).
-                  05  S140TMP-K-SNISSU     PIC  9(05).
-      *--- 2009/08/20 CHANGE END ---------------------------------------
-                  05  S140TMP-K-SSEIKYU    PIC  9(09).
-                  05  S140TMP-K-SFTNGK     PIC  9(09).
-              03  S140TMP-KOH2-MAX       PIC  9(02).
+      *--- 2009/11/19 DELETE START -------------------------------------
+      *        03  S140TMP-KUMIAI-TBL OCCURS 11.
+      *            05  S140TMP-K-KENSU      PIC  9(04).
+      *            05  S140TMP-K-NISSU      PIC  9(04).
+      *            05  S140TMP-K-TENSU      PIC  9(09).
+      **
+      **            05  S140TMP-K-MADOGK     PIC  9(09).
+      *            05  S140TMP-K-MADOGK     PIC  S9(09).
+      **
+      **--- (2008/12/12) line add start monma --------------------------
+      *            05  S140TMP-K-JIHIGK     PIC  9(09).
+      **--- (2008/12/12) line add end   monma --------------------------
+      *            05  S140TMP-K-HKNGK      PIC  9(09).
+      *            05  S140TMP-K-KOHGK      PIC  9(09).
+      *            05  S140TMP-K-SYUEKI     PIC  9(09).
+      **--- 2009/08/20 CHANGE START ------------------------------------
+      **            05  S140TMP-K-SNISSU     PIC  9(04).
+      *            05  S140TMP-K-SNISSU     PIC  9(05).
+      **--- 2009/08/20 CHANGE END --------------------------------------
+      *            05  S140TMP-K-SSEIKYU    PIC  9(09).
+      *            05  S140TMP-K-SFTNGK     PIC  9(09).
+      *        03  S140TMP-KOH2-MAX       PIC  9(02).
       * 20081014 市町村別の集計を追加START
       *        03  S140TMP-KOHI2-TBL OCCURS 100.
-              03  S140TMP-KOHI2-TBL OCCURS 300.
-      * 20081014 市町村別の集計を追加END
-                  05  S140TMP-KOH2-KEY.
-                      07  S140TMP-K-RJNKBN       PIC  X(03).
-                      07  S140TMP-K-KOHNUM       PIC  X(03).
-                  05  S140TMP-K-KKENSU      PIC  9(04).
-                  05  S140TMP-K-KNISSU      PIC  9(04).
-                  05  S140TMP-K-KTENSU      PIC  9(09).
-      *+
-      *            05  S140TMP-K-KMADOGK     PIC  9(09).
-                  05  S140TMP-K-KMADOGK     PIC S9(09).
-      *+
-      *--- (2008/12/12) line add start monma ---------------------------
-                  05  S140TMP-K-KJIHIGK     PIC  9(09).
-      *--- (2008/12/12) line add end   monma ---------------------------
-                  05  S140TMP-K-KHKNGK      PIC  9(09).
-                  05  S140TMP-K-KKOHGK      PIC  9(09).
-                  05  S140TMP-K-KSYUEKI     PIC  9(09).
+      *        03  S140TMP-KOHI2-TBL OCCURS 300.
+      ** 20081014 市町村別の集計を追加END
+      *            05  S140TMP-KOH2-KEY.
+      *                07  S140TMP-K-RJNKBN       PIC  X(03).
+      *                07  S140TMP-K-KOHNUM       PIC  X(03).
+      *            05  S140TMP-K-KKENSU      PIC  9(04).
+      *            05  S140TMP-K-KNISSU      PIC  9(04).
+      *            05  S140TMP-K-KTENSU      PIC  9(09).
+      **+
+      **            05  S140TMP-K-KMADOGK     PIC  9(09).
+      *            05  S140TMP-K-KMADOGK     PIC S9(09).
+      **+
+      **--- (2008/12/12) line add start monma ---------------------------
+      *            05  S140TMP-K-KJIHIGK     PIC  9(09).
+      **--- (2008/12/12) line add end   monma ---------------------------
+      *            05  S140TMP-K-KHKNGK      PIC  9(09).
+      *            05  S140TMP-K-KKOHGK      PIC  9(09).
+      *            05  S140TMP-K-KSYUEKI     PIC  9(09).
       * 20081014 市町村別の集計を追加START
       *        03  S140TMP-HKNJA2-TBL OCCURS 100.
-              03  S140TMP-HKNJA2-TBL OCCURS 300.
-      *            05  S140TMP-K-HKNJANUM    PIC  X(06).
-                  05  S140TMP-K-HKNJANUM    PIC  X(08).
-      * 20081014 市町村別の集計を追加END
-                  05  S140TMP-K-HKENSU      PIC  9(04).
-                  05  S140TMP-K-HNISSU      PIC  9(04).
-                  05  S140TMP-K-HTENSU      PIC  9(09).
-      *+
-      *            05  S140TMP-K-HMADOGK     PIC  9(09).
-                  05  S140TMP-K-HMADOGK     PIC S9(09).
-      *+
-      *--- (2008/12/12) line add start monma ---------------------------
-                  05  S140TMP-K-HJIHIGK     PIC  9(09).
-      *--- (2008/12/12) line add end   monma ---------------------------
-                  05  S140TMP-K-HHKNGK      PIC  9(09).
-                  05  S140TMP-K-HKOHGK      PIC  9(09).
-                  05  S140TMP-K-HSYUEKI     PIC  9(09).
-      *--- 2009/08/20 CHANGE START -------------------------------------
-      *            05  S140TMP-K-HSNISSU     PIC  9(04).
-                  05  S140TMP-K-HSNISSU     PIC  9(05).
-      *--- 2009/08/20 CHANGE END ---------------------------------------
-                  05  S140TMP-K-HSSEIKYU    PIC  9(09).
-                  05  S140TMP-K-HSFTNGK     PIC  9(09).
+      *        03  S140TMP-HKNJA2-TBL OCCURS 300.
+      **            05  S140TMP-K-HKNJANUM    PIC  X(06).
+      *            05  S140TMP-K-HKNJANUM    PIC  X(08).
+      ** 20081014 市町村別の集計を追加END
+      *            05  S140TMP-K-HKENSU      PIC  9(04).
+      *            05  S140TMP-K-HNISSU      PIC  9(04).
+      *            05  S140TMP-K-HTENSU      PIC  9(09).
+      **+
+      **            05  S140TMP-K-HMADOGK     PIC  9(09).
+      *            05  S140TMP-K-HMADOGK     PIC S9(09).
+      **+
+      **--- (2008/12/12) line add start monma ---------------------------
+      *            05  S140TMP-K-HJIHIGK     PIC  9(09).
+      **--- (2008/12/12) line add end   monma ---------------------------
+      *            05  S140TMP-K-HHKNGK      PIC  9(09).
+      *            05  S140TMP-K-HKOHGK      PIC  9(09).
+      *            05  S140TMP-K-HSYUEKI     PIC  9(09).
+      **--- 2009/08/20 CHANGE START -------------------------------------
+      **            05  S140TMP-K-HSNISSU     PIC  9(04).
+      *            05  S140TMP-K-HSNISSU     PIC  9(05).
+      **--- 2009/08/20 CHANGE END ---------------------------------------
+      *            05  S140TMP-K-HSSEIKYU    PIC  9(09).
+      *            05  S140TMP-K-HSFTNGK     PIC  9(09).
+      *--- 2009/11/19 DELETE START -------------------------------------
               03  S140TMP-GOKEI-TBL.
                   05  S140TMP-GKENSU      PIC  9(04).
                   05  S140TMP-GNISSU      PIC  9(04).
