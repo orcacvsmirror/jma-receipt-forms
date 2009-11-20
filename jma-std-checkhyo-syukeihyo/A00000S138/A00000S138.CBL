@@ -54,6 +54,7 @@
       *  09/08/18    @@@@-田中     公費請求額の計算式を修正
       *  09/08/20    @@@@-田中     食事療養費の回数を5桁に変更
       *  09/11/06    @@@@-田中     同保険者番号に変更時の不具合を修正
+      *  09/11/18    @@@@-田中     国保・国保組合の保険者の並び替え処理を追加
       ********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -188,7 +189,10 @@
            03  IDZ                       PIC 9(04).
            03  IDM                       PIC 9(04).
            03  IDX-MAX                   PIC 9(04).
-           
+      *--- 2009/11/18 ADD START ----------------------------------------
+           03  IDX-S                     PIC 9(03).
+           03  IDX-N                     PIC 9(03).
+      *--- 2009/11/18 ADD END ------------------------------------------
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -345,6 +349,9 @@
       *     03  WRK-MSKYMONEY            PIC 9(09). 
       *--- 2009/07/29 DELETE END ---------------------------------------
       *--- 2009/07/29 ADD END ------------------------------------------
+      *--- 2009/11/18 ADD START ----------------------------------------
+           03  WRK-HKNJA-TBL            PIC X(100).
+      *--- 2009/11/18 ADD END ------------------------------------------
       *
       *    診療科名退避エリア
        01  SUM-AREA.
@@ -1985,7 +1992,51 @@
       *
            PERFORM  UNTIL  FLG-PRINT   =    1
       *
-      *
+      *--- 2009/11/18 ADD START ----------------------------------------
+      *    国保保険者並び替え処理
+             IF   S138TMP-HKNJANUM(1)  NOT =  SPACE
+               MOVE    1        TO   IDX-S
+               MOVE    2        TO   IDX-N
+               PERFORM  UNTIL  IDX-S  NOT <  300
+                        OR  S138TMP-HKNJANUM(IDX-S)  =  SPACE
+                 PERFORM  UNTIL  IDX-N  >  300
+                          OR  S138TMP-HKNJANUM(IDX-N)  =  SPACE
+                   IF  S138TMP-HKNJANUM(IDX-S) > S138TMP-HKNJANUM(IDX-N)
+                     MOVE   S138TMP-HKNJA1-TBL(IDX-N)  TO  WRK-HKNJA-TBL
+                     MOVE   S138TMP-HKNJA1-TBL(IDX-S)
+                                           TO  S138TMP-HKNJA1-TBL(IDX-N)
+                     MOVE   WRK-HKNJA-TBL  TO  S138TMP-HKNJA1-TBL(IDX-S)
+                   END-IF
+                   ADD    1      TO   IDX-N
+                 END-PERFORM
+      *    N番目の値を決定する為にインデックスの再設定
+                 ADD    1        TO   IDX-S
+                 COMPUTE  IDX-N  =  IDX-S  +  1
+               END-PERFORM
+             END-IF
+      *    国保組合保険者並び替え処理
+             IF   S138TMP-K-HKNJANUM(1)  NOT =  SPACE
+               MOVE    1        TO   IDX-S
+               MOVE    2        TO   IDX-N
+               PERFORM  UNTIL  IDX-S  NOT <  300
+                        OR  S138TMP-K-HKNJANUM(IDX-S)  =  SPACE
+                 PERFORM  UNTIL  IDX-N  >  300
+                          OR  S138TMP-K-HKNJANUM(IDX-N)  =  SPACE
+                   IF   S138TMP-K-HKNJANUM(IDX-S)
+                                     >  S138TMP-K-HKNJANUM(IDX-N)
+                     MOVE   S138TMP-HKNJA2-TBL(IDX-N)  TO  WRK-HKNJA-TBL
+                     MOVE   S138TMP-HKNJA2-TBL(IDX-S)
+                                           TO  S138TMP-HKNJA2-TBL(IDX-N)
+                     MOVE   WRK-HKNJA-TBL  TO  S138TMP-HKNJA2-TBL(IDX-S)
+                   END-IF
+                   ADD    1      TO   IDX-N
+                 END-PERFORM
+      *    N番目の値を決定する為にインデックスの再設定
+                 ADD    1        TO   IDX-S
+                 COMPUTE  IDX-N  =  IDX-S  +  1
+               END-PERFORM
+             END-IF
+      *--- 2009/11/18 ADD END ------------------------------------------
       ***  20040820  @@@@-MOTOHASI  追加
              IF    WRK-PARA-NYUGAIKBN   =  "1"  OR  SPACE
                IF    S138TMP-NYUGAIKBN   =   "1"
@@ -4199,7 +4250,7 @@
       *--- 2009/07/29 ADD START ----------------------------------------
            IF   RECE10-FTNMONEY(1)  =  ZERO
                AND   RECE10-KYURATE  NOT =  ZERO
-             PERFORM  VARYING  IDX7  FROM  1  BY  1
+             PERFORM  VARYING  IDX7 FROM  1  BY  1
                       UNTIL  IDX7  >  4
                       OR  SYU-KOH-HKNNUM(IDX7)  =  SPACE
                IF   FLG-TYOKI  =  1

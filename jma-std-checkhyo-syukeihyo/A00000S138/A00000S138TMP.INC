@@ -57,7 +57,11 @@
       *        03  S138TMP-HKNJA1-TBL OCCURS 100.
               03  S138TMP-HKNJA1-TBL OCCURS 300.
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹END
-                  05  S138TMP-HKNJANUM    PIC  X(06).
+      *--- 2009/11/18 CHANGE START ----------------------------------------
+      *            05  S138TMP-HKNJANUM    PIC  X(06).
+                  05  S138TMP-HKNJANUM-KEY.
+                      07  S138TMP-HKNJANUM    PIC  X(06).
+      *--- 2009/11/18 CHANGE END ------------------------------------------
                   05  S138TMP-HKENSU      PIC  9(04).
                   05  S138TMP-HNISSU      PIC  9(04).
                   05  S138TMP-HTENSU      PIC  9(09).
@@ -122,7 +126,11 @@
       *        03  S138TMP-HKNJA2-TBL OCCURS 100.
               03  S138TMP-HKNJA2-TBL OCCURS 300.
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹END
-                  05  S138TMP-K-HKNJANUM    PIC  X(06).
+      *--- 2009/11/18 CHANGE START ----------------------------------------
+      *            05  S138TMP-K-HKNJANUM    PIC  X(06).
+                  05  S138TMP-K-HKNJANUM-KEY.
+                      07  S138TMP-K-HKNJANUM    PIC  X(06).
+      *--- 2009/11/18 CHANGE END ------------------------------------------
                   05  S138TMP-K-HKENSU      PIC  9(04).
                   05  S138TMP-K-HNISSU      PIC  9(04).
                   05  S138TMP-K-HTENSU      PIC  9(09).
