@@ -75,6 +75,7 @@
       *                                     医療収益に加算されていない不具合を修正
       *              @@@@-田中    09/06/04  初診件数判定の処理を修正
       *              @@@@-田中    09/10/26  新患の件数処理を修正
+      *              @@@@-田中    09/12/08   医療収益の端数処理を修正
       *****************************************************************
       *
       *
@@ -1919,38 +1920,40 @@
       ***                      +  SYU-RSISDO-MONEY 
       ***                      +  SYU-RSIETC-MONEY 
       ***                      +  SYU-CHOSEI 
+      *--- 2009/12/08 DELETE START -------------------------------------
       *--- 2009/02/06 ADD START ----------------------------------------
       *--- 2009/02/17 CHANGE START -------------------------------------
       *--- 医療収益の計算式を修正 2009/04/08 CHANGE START --------------
       ***  2009/05/26 CHANGE START -------------------------------------
-           IF  SYU-KOH4HKNNUM  NOT =  SPACE
-             MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
-      *       MOVE   SYU-KOH4HKNFTNMONEY    TO   WRK-COMPFTN
-           ELSE
-             IF  SYU-KOH3HKNNUM  NOT =  SPACE
-               MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
-      *         MOVE   SYU-KOH3HKNFTNMONEY    TO   WRK-COMPFTN
-             ELSE
-               IF  SYU-KOH2HKNNUM  NOT =  SPACE
-                 MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
-      *           MOVE   SYU-KOH2HKNFTNMONEY    TO   WRK-COMPFTN
-               ELSE
-                 IF  SYU-KOH1HKNNUM  NOT =  SPACE
-                   MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
-      *             MOVE   SYU-KOH1HKNFTNMONEY    TO   WRK-COMPFTN
-                 ELSE
-                   IF  SYU-SYUHKNNUM  NOT =  SPACE
-                     MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
-      *               MOVE   SYU-SYUHKNFTNMONEY    TO   WRK-COMPFTN
-      ***  2009/05/26 CHANGE END   -------------------------------------
-      *--- 医療収益の計算式を修正 2009/04/08 CHANGE END   --------------
-                   END-IF
-                 END-IF
-               END-IF
-             END-IF
-           END-IF
+      *     IF  SYU-KOH4HKNNUM  NOT =  SPACE
+      *       MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+      **       MOVE   SYU-KOH4HKNFTNMONEY    TO   WRK-COMPFTN
+      *     ELSE
+      *       IF  SYU-KOH3HKNNUM  NOT =  SPACE
+      *         MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+      **         MOVE   SYU-KOH3HKNFTNMONEY    TO   WRK-COMPFTN
+      *       ELSE
+      *         IF  SYU-KOH2HKNNUM  NOT =  SPACE
+      *           MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+      **           MOVE   SYU-KOH2HKNFTNMONEY    TO   WRK-COMPFTN
+      *         ELSE
+      *           IF  SYU-KOH1HKNNUM  NOT =  SPACE
+      *             MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+      **             MOVE   SYU-KOH1HKNFTNMONEY    TO   WRK-COMPFTN
+      *           ELSE
+      *             IF  SYU-SYUHKNNUM  NOT =  SPACE
+      *               MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+      **               MOVE   SYU-SYUHKNFTNMONEY    TO   WRK-COMPFTN
+      ****  2009/05/26 CHANGE END   -------------------------------------
+      **--- 医療収益の計算式を修正 2009/04/08 CHANGE END   --------------
+      *             END-IF
+      *           END-IF
+      *         END-IF
+      *       END-IF
+      *     END-IF
       *--- 2009/02/17 CHANGE END ---------------------------------------
       *--- 2009/02/06 ADD END ------------------------------------------
+      *--- 2009/12/08 DELETE END ---------------------------------------
            EVALUATE IDX 
       *=== 自費追加対応 By Takashima(2006/11/05) start
       *              WHEN 12 
@@ -2067,16 +2070,33 @@
       ***  2009/05/26 ADD START ----------------------------------------
                IF  SYU-DISCOUNT-MONEY  >  0
       ***  2009/05/26 ADD END   ----------------------------------------
-               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
-                                    -  (WRK-COMPFTN
-                                    +  SYU-SKYMONEY-SKJ-KEI
-                                    +  SYU-SKYMONEY-SKJ-JIHI-KEI
-                                    +  SYU-SKYMONEY-LIFE-KEI
-                                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
-                                    +  SYU-RMSAGAKU
-                                    +  SYU-CHOSEI 
-                                    +  WRK-JIHI
-                                    -  SYU-SKYMONEY)
+      *--- 2009/12/08 ADD + CHANGE START -------------------------------
+      *         COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
+      *                              -  (WRK-COMPFTN
+      *                              +  SYU-SKYMONEY-SKJ-KEI
+      *                              +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      *                              +  SYU-SKYMONEY-LIFE-KEI
+      *                              +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      *                              +  SYU-RMSAGAKU
+      *                              +  SYU-CHOSEI 
+      *                              +  WRK-JIHI
+      *                              -  SYU-SKYMONEY)
+                 COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
+                                      -  SYU-DISCOUNT-MONEY
+                 EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
+                   WHEN  1
+                     COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-SYUEKI  /  10
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
+                   WHEN  2
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10 
+                   WHEN  3
+                     IF   WRK-SYUEKI(8:1)  NOT =  0
+                       COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
+                       COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10  +  10
+                     END-IF
+                 END-EVALUATE
+      *--- 2009/12/08 ADD + CHANGE END ---------------------------------
       ***  2009/05/26 ADD START ----------------------------------------
                END-IF
       ***  2009/05/26 ADD END   ----------------------------------------
@@ -2223,53 +2243,57 @@
            END-IF
       *
       *    医療収益計
+      *--- 2009/12/08 DELETE START -------------------------------------
       *--- 2009/02/06 ADD START ----------------------------------------
       *--- 2009/02/17 CHANGE START -------------------------------------
       *--- 医療収益の計算式を修正 2009/04/08 CHANGE START --------------
       ***  2009/05/26 CHANGE START --------------------------------------
-           IF  SYU-KOH4HKNNUM  NOT =  SPACE
-             MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
-      *       MOVE   SYU-KOH4HKNFTNMONEY    TO   WRK-COMPFTN
-           ELSE
-             IF  SYU-KOH3HKNNUM  NOT =  SPACE
-               MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
-      *         MOVE   SYU-KOH3HKNFTNMONEY    TO   WRK-COMPFTN
-             ELSE
-               IF  SYU-KOH2HKNNUM  NOT =  SPACE
-                 MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
-      *           MOVE   SYU-KOH2HKNFTNMONEY    TO   WRK-COMPFTN
-               ELSE
-                 IF  SYU-KOH1HKNNUM  NOT =  SPACE
-                   MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
-      *             MOVE   SYU-KOH1HKNFTNMONEY    TO   WRK-COMPFTN
-                 ELSE
-                   IF  SYU-SYUHKNNUM  NOT =  SPACE
-                     MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
-      *               MOVE   SYU-SYUHKNFTNMONEY    TO   WRK-COMPFTN
-      ***  2009/05/26 CHANGE END   -------------------------------------
-      *--- 医療収益の計算式を修正 2009/04/08 CHANGE END   --------------
-                   END-IF
-                 END-IF
-               END-IF
-             END-IF
-           END-IF
+      *     IF  SYU-KOH4HKNNUM  NOT =  SPACE
+      *       MOVE   SYU-KOH4COMPFTN    TO   WRK-COMPFTN
+      **       MOVE   SYU-KOH4HKNFTNMONEY    TO   WRK-COMPFTN
+      *     ELSE
+      *       IF  SYU-KOH3HKNNUM  NOT =  SPACE
+      *         MOVE   SYU-KOH3COMPFTN    TO   WRK-COMPFTN
+      **         MOVE   SYU-KOH3HKNFTNMONEY    TO   WRK-COMPFTN
+      *       ELSE
+      *         IF  SYU-KOH2HKNNUM  NOT =  SPACE
+      *           MOVE   SYU-KOH2COMPFTN    TO   WRK-COMPFTN
+      **           MOVE   SYU-KOH2HKNFTNMONEY    TO   WRK-COMPFTN
+      *         ELSE
+      *           IF  SYU-KOH1HKNNUM  NOT =  SPACE
+      *             MOVE   SYU-KOH1COMPFTN    TO   WRK-COMPFTN
+      **             MOVE   SYU-KOH1HKNFTNMONEY    TO   WRK-COMPFTN
+      *           ELSE
+      *             IF  SYU-SYUHKNNUM  NOT =  SPACE
+      *               MOVE   SYU-SYUCOMPFTN     TO   WRK-COMPFTN
+      **               MOVE   SYU-SYUHKNFTNMONEY    TO   WRK-COMPFTN
+      ****  2009/05/26 CHANGE END   -------------------------------------
+      **--- 医療収益の計算式を修正 2009/04/08 CHANGE END   --------------
+      *             END-IF
+      *           END-IF
+      *         END-IF
+      *       END-IF
+      *     END-IF
       *--- 2009/02/17 CHANGE END ---------------------------------------
       *--- 2009/02/06 ADD END ------------------------------------------
+      *--- 2009/12/08 DELETE END ---------------------------------------
            EVALUATE IDX 
              WHEN 17 
       ***  自費の場合
                MOVE  SYU-SKYMONEY    TO   WRK-SYUEKI
       *--- 2009/02/06 ADD START ----------------------------------------
-               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
-                                    -  (WRK-COMPFTN
-                                    +  SYU-SKYMONEY-SKJ-KEI
-                                    +  SYU-SKYMONEY-SKJ-JIHI-KEI
-                                    +  SYU-SKYMONEY-LIFE-KEI
-                                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
-                                    +  SYU-RMSAGAKU
-                                    +  SYU-CHOSEI 
-                                    +  WRK-JIHI
-                                    -  SYU-SKYMONEY)
+      *--- 2009/12/08 DELETE START -------------------------------------
+      *         COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
+      *                              -  (WRK-COMPFTN
+      *                              +  SYU-SKYMONEY-SKJ-KEI
+      *                              +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      *                              +  SYU-SKYMONEY-LIFE-KEI
+      *                              +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      *                              +  SYU-RMSAGAKU
+      *                              +  SYU-CHOSEI 
+      *                              +  WRK-JIHI
+      *                              -  SYU-SKYMONEY)
+      *--- 2009/12/08 DELETE END ---------------------------------------
       *--- 2009/02/06 ADD END ------------------------------------------
              WHEN 18 
       ***  労災の場合
@@ -2333,16 +2357,35 @@
       ***  2009/05/26 ADD START ----------------------------------------
                IF  SYU-DISCOUNT-MONEY  >  0
       ***  2009/05/26 ADD END   ----------------------------------------
-               COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
-                                    -  (WRK-COMPFTN
-                                    +  SYU-SKYMONEY-SKJ-KEI
-                                    +  SYU-SKYMONEY-SKJ-JIHI-KEI
-                                    +  SYU-SKYMONEY-LIFE-KEI
-                                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
-                                    +  SYU-RMSAGAKU
-                                    +  SYU-CHOSEI 
-                                    +  WRK-JIHI
-                                    -  SYU-SKYMONEY)
+           DISPLAY "SYUPTID  =  "SYU-PTID
+           DISPLAY "AAA"
+      *--- 2009/12/08 ADD + CHANGE START -------------------------------
+      *         COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
+      *                              -  (WRK-COMPFTN
+      *                              +  SYU-SKYMONEY-SKJ-KEI
+      *                              +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      *                              +  SYU-SKYMONEY-LIFE-KEI
+      *                              +  SYU-SKYMONEY-LIFE-JIHI-KEI
+      *                              +  SYU-RMSAGAKU
+      *                              +  SYU-CHOSEI 
+      *                              +  WRK-JIHI
+      *                              -  SYU-SKYMONEY)
+                 COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI
+                                      -  SYU-DISCOUNT-MONEY
+                 EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
+                   WHEN  1
+                     COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-SYUEKI  /  10
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
+                   WHEN  2
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10 
+                   WHEN  3
+                     IF   WRK-SYUEKI(8:1)  NOT =  0
+                       COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
+                       COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10  +  10
+                     END-IF
+                 END-EVALUATE
+      *--- 2009/12/08 ADD + CHANGE END ---------------------------------
       ***  2009/05/26 ADD START ----------------------------------------
                END-IF
       ***  2009/05/26 ADD END   ----------------------------------------
