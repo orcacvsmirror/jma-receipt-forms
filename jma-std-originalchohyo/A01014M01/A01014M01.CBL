@@ -44,6 +44,8 @@
       *  01.00.06  @@@@-田中  08/08/14  検査と在宅の点数と回数の計算式を修正
       *  01.00.07  @@@@-田中  08/08/25  診療行為画面から入院料を入力すると重複してしまう不具合を修正
       *  01.00.08  @@@@-田中  09/02/12  入院料・室料差額・食事の件数・日数を修正
+      *  01.00.09  @@@@-田中  09/12/14  病理診断の欄を追加
+      *                                 病理診断の集計先をその他欄から病理診断欄へ
       ********************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -91,7 +93,11 @@
                                    REPLACING  //RECE01PARA//
                                    BY         //M01TP//.
       *
-           COPY    "A01014M01.INC".
+      *--- 2009/12/15 CHANGE START -------------------------------------
+      *     COPY    "A01014M01.INC".
+           COPY    "A01014M01V02.INC".
+      *--- 2009/12/15 CHANGE END ---------------------------------------
+      *
       *    スパ領域
        01  STS-AREA.
            03  STS-PARA            PIC X(02).
@@ -1208,6 +1214,9 @@
       *    診療行為情報読み込み
       *    検査在宅は診療コード毎に分類する
            IF    ACCT-SRYKBN  =  "60" OR "14"
+      *--- 2009/12/15 ADD START ----------------------------------------
+                                 OR  "64"
+      *--- 2009/12/15 ADD END ------------------------------------------
                PERFORM  200121-KENZAI-SEC
            ELSE
                PERFORM  200122-ETC-SEC
@@ -1353,12 +1362,15 @@
       *****************************************************************
        200121-KENSA-SET-SEC                SECTION.
       *
+      *--- 2009/12/15 ADD START ----------------------------------------
+           IF   SRY-SRYKBN  =  "60"
+      *--- 2009/12/15 ADD END ------------------------------------------
       *    採血チェック
-           MOVE    2               TO     WRK-KNSBUNRUI
-           PERFORM  900-KENSA-READ-SEC
-           IF  FLG-KENSASORT       =      ZERO
+             MOVE    2               TO     WRK-KNSBUNRUI
+             PERFORM  900-KENSA-READ-SEC
+             IF  FLG-KENSASORT       =      ZERO
                MOVE    33          TO     IDX1
-           ELSE
+             ELSE
       *    判断料チェック
                MOVE    99              TO     WRK-KNSBUNRUI
                PERFORM  900-KENSA-READ-SEC
@@ -1367,7 +1379,12 @@
                ELSE
                    MOVE    32          TO     IDX1
                END-IF
+             END-IF
+      *--- 2009/12/15 ADD START ----------------------------------------
+           ELSE
+             MOVE    47          TO   IDX1
            END-IF
+      *--- 2009/12/15 ADD END ------------------------------------------
       *
       *    点数取得
            PERFORM  900-TENSU-READ-SEC
@@ -1614,7 +1631,9 @@
                WHEN "70"
                    MOVE     35      TO    IDX1
       * 20080317 H20年4月改正対応START tanaka
-               WHEN "64"
+      *--- 2009/12/15 DELETE START -------------------------------------
+      *         WHEN "64"
+      *--- 2009/12/15 DELETE END ---------------------------------------
       * 20080317 H20年4月改正対応END
                WHEN "80"
                    MOVE     36      TO    IDX2
@@ -1625,12 +1644,14 @@
                        WHEN  "810"
                            MOVE   38      TO    IDX1
       * 20080317 H20年4月改正対応START tanaka
-                       WHEN "640"
+      *--- 2009/12/15 DELETE START -------------------------------------
+      *                 WHEN "640"
+      *--- 2009/12/15 DELETE END ---------------------------------------
       * 20080317 H20年4月改正対応END
-                       WHEN "830"
-                       WHEN "840"
-                       WHEN "850"
-                       WHEN "890"
+                       WHEN  "830"
+                       WHEN  "840"
+                       WHEN  "850"
+                       WHEN  "890"
                            MOVE   39      TO    IDX1
                    END-EVALUATE
                WHEN "90"
@@ -1891,11 +1912,13 @@
       *    帳票編集<明細>処理
       *****************************************************************
        320-BODY-HEN-SEC               SECTION.
-      *
            PERFORM    VARYING    IDX1    FROM  1  BY  1
       ***** 03/10/27 UPD
       *                UNTIL      IDX1    >     45
-                      UNTIL      IDX1    >     46
+      *                UNTIL      IDX1    >     46
+      *--- 2009/12/15 CHANGE START -------------------------------------
+                    UNTIL  IDX1  >  47
+      *--- 2009/12/15 ACHANGE END ---------------------------------------
       *****
       *
       ***** 03/10/27 UPD 件数の桁数変更
@@ -1925,31 +1948,29 @@
        330-PRINT-OUT-SEC         SECTION.
       *
       * 
-           INITIALIZE                  ORCSPRTAREA
-           MOVE    "INS"               TO  SPRT-MODE
-           MOVE    LNK-PRTKANRI-RENNUM TO  SPRT-RENNUM
-           MOVE    LNK-PRTKANRI-TBL-KEY
-                                       TO  SPRT-TBL-KEY
-           MOVE    LNK-PRTKANRI-TBL-GROUP
-                                       TO  SPRT-TBL-GROUP
-           MOVE    LNK-PRTKANRI-SRYYM  TO  SPRT-SRYYM
-           MOVE    LNK-PRTKANRI-SKYYMD TO  SPRT-SKYYMD
-           MOVE    LNK-PRTKANRI-SHELLID 
-                                       TO  SPRT-SHELLID
+           INITIALIZE                       ORCSPRTAREA
+           MOVE    "INS"                    TO   SPRT-MODE
+           MOVE    LNK-PRTKANRI-RENNUM      TO   SPRT-RENNUM
+           MOVE    LNK-PRTKANRI-TBL-KEY     TO   SPRT-TBL-KEY
+           MOVE    LNK-PRTKANRI-TBL-GROUP   TO   SPRT-TBL-GROUP
+           MOVE    LNK-PRTKANRI-SRYYM       TO   SPRT-SRYYM
+           MOVE    LNK-PRTKANRI-SKYYMD      TO   SPRT-SKYYMD
+           MOVE    LNK-PRTKANRI-SHELLID     TO   SPRT-SHELLID
            MOVE    LNK-PRTKANRI-SHORI-RENNUM
-                                       TO  SPRT-SHORI-RENNUM
-           MOVE    LNK-PRTKANRI-PRIORITY
-                                       TO  SPRT-PRIORITY
+                                            TO   SPRT-SHORI-RENNUM
+           MOVE    LNK-PRTKANRI-PRIORITY    TO   SPRT-PRIORITY
       ***  20040909 MOTOHASI MONPEに変更
       ***     MOVE   "A01014M01"             TO  SPRT-PRTID
-           MOVE   "A01014M01.red"             TO  SPRT-PRTID
+      *--- 2009/12/15 CHANGE START -------------------------------------
+      *     MOVE   "A01014M01.red"             TO  SPRT-PRTID
+           MOVE    "A01014M01V02.red"        TO   SPRT-PRTID
+      *--- 2009/12/15 ACHANGE END ---------------------------------------
       ***  20040909 MOTOHASI MONPEに変更
-           MOVE    "診療行為別月計表"
-                                     TO  SPRT-TITLE
-           MOVE    M01              TO  SPRT-PRTDATA
-           MOVE    LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-           MOVE    LNK-PRTKANRI-OPID   TO  SPRT-OPID
-           MOVE    LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
+           MOVE    "診療行為別月計表"       TO   SPRT-TITLE
+           MOVE    M01                      TO   SPRT-PRTDATA
+           MOVE    LNK-PRTKANRI-TERMID      TO   SPRT-TERMID
+           MOVE    LNK-PRTKANRI-OPID        TO   SPRT-OPID
+           MOVE    LNK-PRTKANRI-PRTNM       TO   SPRT-PRTNM
       ***** site-libで動かすためにコメントアウト
       ***     MOVE    "1"          TO  SPRT-SITEKBN
       *****
