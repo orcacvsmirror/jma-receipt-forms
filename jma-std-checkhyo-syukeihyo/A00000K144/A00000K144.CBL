@@ -49,6 +49,9 @@
       *  08/09/30    @@@@-田中     H20年10月改正対応(協会けんぽ)
       *  08/09/30    @@@@-田中     入院のみの患者が集計されない不具合を修正END
       *  09/02/10    @@@@-田中     入院料・室料差額・食事の件数を修正
+      *  09/12/14    @@@@-田中     病理診断をその他欄から病理診断欄に変更
+      *                            放射線治療をその他欄に集計
+      *                            その他（リハビリ）の診療をリハビリに集計
       *****************************************************************
 
       *  プログラム修正履歴
@@ -1794,12 +1797,18 @@
       *    診療コード毎に分類する
            IF    ACCT-SRYKBN  =  "14"
              OR   ACCT-SRYKBN  =  "60"
+      *--- 2009/12/14 ADD START ----------------------------------------
+             OR   ACCT-SRYKBN  =  "64"
+      *--- 2009/12/14 ADD END ------------------------------------------
              OR   ACCT-SRYKBN  =  "95"
              OR   ACCT-SRYKBN  =  "96"
                PERFORM  200121-SRYCD-CHK-SEC
       ***** 04/05/17 INS
       *    検査・在宅の合計点数集計方法修正
                IF     ACCT-SRYKBN  =  "14" OR "60"
+      *--- 2009/12/14 ADD START ----------------------------------------
+                                           OR "64"
+      *--- 2009/12/14 ADD END ------------------------------------------
                    PERFORM  2001211-SYUKEI-SEC
                END-IF
       *****
@@ -1840,6 +1849,9 @@
                        WHEN   "14"
                            PERFORM  200121-ZAITAKU-SET-SEC
                        WHEN   "60"
+      *--- 2009/12/14 ADD START ----------------------------------------
+                       WHEN   "64"
+      *--- 2009/12/14 ADD END ------------------------------------------
                            PERFORM  200121-KENSA-SET-SEC
                        WHEN   "95"
                        WHEN   "96"
@@ -1899,20 +1911,28 @@
        200121-KENSA-SET-SEC                SECTION.
       *
       *    採血チェック
-           MOVE    2               TO     WRK-KNSBUNRUI
-           PERFORM  900-KENSA-READ-SEC
-           IF  FLG-KENSASORT       =      ZERO
-               MOVE    33          TO     IDX1
-           ELSE
+      *--- 2009/12/14 ADD START ----------------------------------------
+           IF   SRY-SRYKBN  =  "60"
+      *--- 2009/12/14 ADD END ------------------------------------------
+             MOVE    2            TO   WRK-KNSBUNRUI
+             PERFORM  900-KENSA-READ-SEC
+             IF  FLG-KENSASORT  =  ZERO
+               MOVE    33         TO   IDX1
+             ELSE
       *    判断料チェック
-               MOVE      99          TO     WRK-KNSBUNRUI
+               MOVE    99         TO   WRK-KNSBUNRUI
                PERFORM  900-KENSA-READ-SEC
-               IF    FLG-KENSASORT   =      ZERO
-                   MOVE    34          TO     IDX1
+               IF    FLG-KENSASORT  =  ZERO
+                 MOVE    34       TO   IDX1
                ELSE
-                   MOVE    32          TO     IDX1
+                 MOVE    32       TO   IDX1
                END-IF
+             END-IF
+      *--- 2009/12/14 ADD START ----------------------------------------
+           ELSE
+             MOVE    54           TO   IDX1
            END-IF
+      *--- 2009/12/14 ADD END ------------------------------------------
       *
       * 20080801 検査と在宅の点数と回数の計算式を修正START
       *    点数取得
@@ -2300,17 +2320,25 @@
                    MOVE     36      TO    IDX1
                WHEN "80"
       * 20080417 H20年4月改正対応START tanaka
-               WHEN "64"
+      *--- 2009/12/14 DELETE START -------------------------------------
+      *         WHEN "64"
+      *--- 2009/12/14 DELETE END ---------------------------------------
       * 20080417 H20年4月改正対応END
                    EVALUATE  SRY-SRYSYUKBN
                        WHEN "820"
                            MOVE   37      TO    IDX1
+      *--- 2009/12/14 ADD START ----------------------------------------
+                       WHEN "800"
+      *--- 2009/12/14 ADD END ------------------------------------------
                        WHEN "810"
                            MOVE   38      TO    IDX1
       * 20080417 H20年4月改正対応START tanaka
-                       WHEN "640"
+      *--- 2009/12/14 ADD + DELETE START -------------------------------
+      *                 WHEN "640"
+                       WHEN "840"
       * 20080417 H20年4月改正対応END
-                       WHEN "800"
+      *                 WHEN "800"
+      *--- 2009/12/14 ADD + DELETE END ---------------------------------
       * 20080303 精神科専門療法をその他に集計するよう修正START tanaka
                        WHEN "830"
       * 20080303 精神科専門療法をその他に集計するよう修正END
@@ -2637,17 +2665,25 @@
                    MOVE     36      TO    IDX1
                WHEN "80"
       * 20080417 H20年4月改正対応START tanaka
-               WHEN "64"
+      *--- 2009/12/14 DELETE START -------------------------------------
+      *         WHEN "64"
+      *--- 2009/12/14 DELETE END ---------------------------------------
       * 20080417 H20年4月改正対応END
                    EVALUATE  TNS-SRYSYUKBN
                        WHEN "820"
                            MOVE   37      TO    IDX1
+      *--- 2009/12/14 ADD START ----------------------------------------
+                       WHEN "800"
+      *--- 2009/12/14 ADD END ------------------------------------------
                        WHEN "810"
                            MOVE   38      TO    IDX1
       * 20080417 H20年4月改正対応START tanaka
-                     WHEN "640"
+      *--- 2009/12/14 ADD + DELETE START -------------------------------
+      *                 WHEN "640"
+                       WHEN "840"
       * 200  80417 H20年4月改正対応END
-                       WHEN "800"
+      *                 WHEN "800"
+      *--- 2009/12/14 ADD + DELETE END ---------------------------------
       * 20080303 精神科専門療法をその他に集計するよう修正START tanaka
                        WHEN "830"
       * 20080303 精神科専門療法をその他に集計するよう修正END
@@ -3155,7 +3191,9 @@
                              +     K144TMP-TENSU(52)
       *=== 自費10項目修正 Satoh (2007/06/28) START
                              +     K144TMP-TENSU(53)
-                             +     K144TMP-TENSU(54)
+      *--- 2009/12/14 DELETE START -------------------------------------
+      *                       +     K144TMP-TENSU(54)
+      *--- 2009/12/14 DELETE END ---------------------------------------
       *=== 自費10項目修正 Satoh (2007/06/28) END
                        COMPUTE     K144TMP-KAISU(55)    =
                                    K144TMP-KAISU(43)
@@ -3170,7 +3208,9 @@
                              +     K144TMP-KAISU(52)
       *=== 自費10項目修正 Satoh (2007/06/28) START
                              +     K144TMP-KAISU(53)
-                             +     K144TMP-KAISU(54)
+      *--- 2009/12/14 DELETE START -------------------------------------
+      *                       +     K144TMP-TENSU(54)
+      *--- 2009/12/14 DELETE END ---------------------------------------
       *=== 自費10項目修正 Satoh (2007/06/28) END
                    WHEN 56
                        COMPUTE     K144TMP-TENSU(56)    =
@@ -3265,7 +3305,10 @@
                                            TO  SPRT-PRIORITY
       ***  20040915 MOTOHASI MONPEに変更
       ***     MOVE   "A00000K100"             TO  SPRT-PRTID
-           MOVE   "A00000K100.red"             TO  SPRT-PRTID
+      *--- 2009/12/14 CHANGE START -------------------------------------
+      *     MOVE   "A00000K100.red"             TO  SPRT-PRTID
+           MOVE   "A00000K100V02.red"             TO  SPRT-PRTID
+      *--- 2009/12/14 CHANGE END ---------------------------------------
       ***  20040915 MOTOHASI MONPEに変更
            MOVE    "(保険別)診療行為区分別集計表"
                                            TO  SPRT-TITLE
