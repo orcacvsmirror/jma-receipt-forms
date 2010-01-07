@@ -53,6 +53,7 @@
       *  09/04/16    @@@@-門間    プログラムオプション対応(INIファイル)
       *  09/10/28    @@@@-田中    助成金額の端数処理を修正
       *                           新患の件数処理を修正
+      *  09/12/02    @@@@-田中    社保退職の振り分けを変更
       ****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2633,7 +2634,6 @@
       *****************************************************************
        320-AZUKARI-GET-SEC      SECTION.
       *
-           DISPLAY "2"
            INITIALIZE                      SRYACT-REC
            MOVE   SYU-HOSPNUM          TO  SRY-HOSPNUM  
            MOVE   SYU-NYUGAIKBN        TO  SRY-NYUGAIKBN 
@@ -2647,23 +2647,15 @@
       *
            MOVE   SYU-SRYYMD(1:6)      TO  SRY-SRYYM
            MOVE   SYU-SRYYMD(7:2)      TO  WRK-ACCT-SDAY
-           DISPLAY "SYU-HOSPNUM        " SYU-HOSPNUM
-           DISPLAY "SYU-NYUGAIKBN      " SYU-NYUGAIKBN
-           DISPLAY "SYU-PTID           " SYU-PTID
-           DISPLAY "WRK-INI-AZUKARICD  " WRK-INI-AZUKARICD
-           DISPLAY "SYU-SRYYMD         " SYU-SRYYMD(7:2)
       *
            PERFORM  911-SRY-SELECT-SEC
            PERFORM  UNTIL      FLG-SRYACT  = 1
-           DISPLAY "3"
              IF    FLG-SRYACT     =   ZERO
               AND  SRY-NYUGAIKBN  =   "2"
               AND (SUM-SRYKACD    =   SRY-SRYKA
               OR   SUM-SRYKACD    =   "99")
-           DISPLAY "4"
                PERFORM VARYING IDX3  FROM  1 BY 1
                        UNTIL   IDX3  >  5
-           DISPLAY "5"
                  IF   SRY-SRYCD(IDX3)    = WRK-INI-AZUKARICD
                   AND SRY-JIHIMONEY(IDX3) > ZERO
                    MOVE SRY-JIHIMONEY(IDX3)  TO  WRK-JIHIMONEY
@@ -2678,7 +2670,6 @@
                    PERFORM 900-SRYACCT-SELECT-SEC
                    PERFORM 900-SRYACCT-FETCH-SEC
                    PERFORM  UNTIL FLG-SRYACCT    =  1
-           DISPLAY "6"
                        PERFORM 320-AZUKARI-GET-SUB-SEC
                        PERFORM 900-SRYACCT-FETCH-SEC
                    END-PERFORM
@@ -2699,7 +2690,6 @@
       *****************************************************************
        320-AZUKARI-GET-SUB-SEC      SECTION.
       *
-           DISPLAY "7"
            IF  ( D100LNK-DRCD  =  SPACE
                OR ( D100LNK-DRCD NOT =  SPACE
                AND  D100LNK-DRCD  =  JYURRK-DRCD))
@@ -2812,6 +2802,13 @@
            WHEN "032"
            WHEN "033"
            WHEN "034"
+      *--- 2009/12/02 ADD START ----------------------------------------
+           WHEN "063"
+           WHEN "072"
+           WHEN "073"
+           WHEN "074"
+           WHEN "075"
+      *--- 2009/12/02 ADD START ----------------------------------------
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
                    COMB-KOHHKNNUM(3)    =   "027"  OR
@@ -2843,12 +2840,14 @@
                END-IF
              END-IF
       *
-           WHEN "063"
+      *--- 2009/12/02 DELETE START -------------------------------------
+      *     WHEN "063"
+      *     WHEN "072"
+      *     WHEN "073"
+      *     WHEN "074"
+      *     WHEN "075"
+      *--- 2009/12/02 DELETE START -------------------------------------
            WHEN "067"
-           WHEN "072"
-           WHEN "073"
-           WHEN "074"
-           WHEN "075"
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
                    COMB-KOHHKNNUM(3)    =   "027"  OR
@@ -2926,6 +2925,13 @@
            WHEN "032"
            WHEN "033"
            WHEN "034"
+      *--- 2009/12/02 ADD START ----------------------------------------
+           WHEN "063"
+           WHEN "072"
+           WHEN "073"
+           WHEN "074"
+           WHEN "075"
+      *--- 2009/12/02 ADD START ----------------------------------------
       *    社保
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
@@ -2959,12 +2965,14 @@
                END-IF
              END-IF
       *
-           WHEN "063"
+      *--- 2009/12/02 DELETE START -------------------------------------
+      *     WHEN "063"
+      *     WHEN "072"
+      *     WHEN "073"
+      *     WHEN "074"
+      *     WHEN "075"
+      *--- 2009/12/02 DELETE START -------------------------------------
            WHEN "067"
-           WHEN "072"
-           WHEN "073"
-           WHEN "074"
-           WHEN "075"
       *    退職
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
