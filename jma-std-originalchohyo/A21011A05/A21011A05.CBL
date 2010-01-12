@@ -34,6 +34,7 @@
       *  08/10/28    @@@@-田中     CSV出力処理を追加
       *  09/02/02    @@@@-門間     ２つの単独公費を使用した場合、点数が合算されず,
       *                            高い点数のみ印字されていた不具合の修正
+      *  10/01/07    @@@@-田中     患者番号の桁数を8桁から20桁に変更
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -97,7 +98,11 @@
                                     BY         //RECEERR//.
       *=== 4.0対応 By Otake(2007/09/21) end
       *
-           COPY    "A21011A05.INC".
+      *--- 2010/01/07 START --------------------------------------------
+      *     COPY    "A21011A05.INC".
+           COPY    "A21011A05V02.INC".
+      *--- 2010/01/07 START --------------------------------------------
+      *
       *    スパ領域
        01  STS-AREA.
            03  STS-PARA            PIC X(02).
@@ -945,7 +950,14 @@
                     OR       KEY-NEW    NOT   =   KEY-OLD
       *
       *    患者番号
-             MOVE    A05TMP-PTNUM       TO      A05-PTNUM(IDX1)
+      *--- 2010/01/07 CHANGE START -------------------------------------
+      *       MOVE    A05TMP-PTNUM       TO      A05-PTNUM(IDX1)
+             IF  A05TMP-PTNUM(11:)  =  SPACE
+               MOVE    A05TMP-PTNUM     TO   A05-PTNUM(IDX1)
+             ELSE
+               MOVE    A05TMP-PTNUM     TO   A05-PTNUM2(IDX1)
+             END-IF
+      *--- 2010/01/07 CHANGE END ---------------------------------------
       *
       *    患者氏名
              MOVE    A05TMP-PTNAME      TO      A05-NAME(IDX1)
@@ -1235,7 +1247,10 @@
                                        TO  SPRT-PRIORITY
       ***  20040914 MOTOHASI MONPEに変更
       ***     MOVE   "A21011A05"             TO  SPRT-PRTID
-           MOVE   "A21011A05.red"             TO  SPRT-PRTID
+      *--- 2010/01/07 START --------------------------------------------
+      *     MOVE   "A21011A05.red"             TO  SPRT-PRTID
+           MOVE   "A21011A05V02.red"             TO  SPRT-PRTID
+      *--- 2010/01/07 END ----------------------------------------------
       ***  20040914 MOTOHASI MONPEに変更
            MOVE    "保留・再請求・月遅れリスト"        
                                          TO  SPRT-TITLE
