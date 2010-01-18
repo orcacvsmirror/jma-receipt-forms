@@ -31,7 +31,10 @@
                   05  S140TMP-JIHIGK     PIC  9(09).
       *--- (2008/12/12) line add end   monma ---------------------------
                   05  S140TMP-HKNGK      PIC  9(09).
-                  05  S140TMP-KOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *            05  S140TMP-KOHGK      PIC  9(09).
+                  05  S140TMP-KOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                   05  S140TMP-SYUEKI     PIC  9(09).
       *--- 2009/08/20 CHANGE START -------------------------------------
       *            05  S140TMP-SNISSU     PIC  9(04).
@@ -71,7 +74,10 @@
                   05  S140TMP-HJIHIGK     PIC  9(09).
       *--- (2008/12/12) line add end   monma ---------------------------
                   05  S140TMP-HHKNGK      PIC  9(09).
-                  05  S140TMP-HKOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *            05  S140TMP-HKOHGK      PIC  9(09).
+                  05  S140TMP-HKOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                   05  S140TMP-HSYUEKI     PIC  9(09).
       *--- 2009/08/20 CHANGE START -------------------------------------
       *            05  S140TMP-HSNISSU     PIC  9(04).
@@ -159,7 +165,10 @@
                   05  S140TMP-GJIHIGK     PIC  9(09).
       *--- (2008/12/12) line add end   monma ---------------------------
                   05  S140TMP-GHKNGK      PIC  9(09).
-                  05  S140TMP-GKOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *            05  S140TMP-GKOHGK      PIC  9(09).
+                  05  S140TMP-GKOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                   05  S140TMP-GSYUEKI     PIC  9(09).
                   05  S140TMP-SGNISSU     PIC  9(05).
       *--- 2009/08/20 CHANGE START -------------------------------------

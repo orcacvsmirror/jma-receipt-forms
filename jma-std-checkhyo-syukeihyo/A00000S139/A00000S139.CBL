@@ -65,6 +65,7 @@
       *  09/08/20    @@@@-ÅÄÃæ     ¿©»öÎÅÍÜÈñ¤Î²ó¿ô¤ò5·å¤ËÊÑ¹¹
       *  09/11/06    @@@@-ÅÄÃæ     ¸øÈñÃ±ÆÈ¤Î¸øÈñÀÁµá³Û·×»»½èÍý¤ò½¤Àµ
       *                            Æ±ÊÝ¸±¼ÔÈÖ¹æ¤ËÊÑ¹¹»þ¤ÎÉÔ¶ñ¹ç¤ò½¤Àµ
+      *  10/01/13    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
       *********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -252,7 +253,10 @@
                05  WRK-JIHIGK           PIC 9(09).
       *--- (2008/12/18) line add end   monma ---------------------------
                05  WRK-HKNGK            PIC 9(09).
-               05  WRK-KOHGK            PIC 9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *         05  WRK-KOHGK            PIC 9(09).
+               05  WRK-KOHGK            PIC S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                05  WRK-SYUEKI           PIC 9(09).
       *===¿©»ö²ó¿ô£µ·åÂÐ±þ Otake 2007/08/24 Strart
       *         05  WRK-SNISSU            PIC 9(04).
@@ -278,7 +282,10 @@
       *     03  WRK-KOHSEIKYUGK          PIC 9(09).
            03  WRK-KOHSEIKYUGK          PIC S9(09).
       *--- 2009/08/18 CHANGE END ---------------------------------------
-           03  WRK-KOHSEIKYUGK-G        PIC 9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *     03  WRK-KOHSEIKYUGK-G        PIC 9(09).
+           03  WRK-KOHSEIKYUGK-G        PIC S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
            03  WRK-ZENCOMPFTN           PIC 9(09).
            03  WRK-KOHSKJSEIKYUGK       PIC 9(09).
            03  WRK-PATH                 PIC X(64).
@@ -3998,27 +4005,29 @@
       *     COMPUTE   WRK-MSKYMONEY   =  WRK-MADOSEIKYUGK-G
       *                               -  RECE10-SHOKUJIFTN(1)
       *--- 2009/08/18 DELETE END ---------------------------------------
-           IF   FLG-TYOKI  =  1
-             IF   WRK-TYOKIFTN  =  ZERO
-                 AND  RECE10-TEISYUTUSAKI  =  6
-               MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
-      *--- 2009/08/18 DELETE START -------------------------------------
-      *       ELSE
-      *         COMPUTE  WRK-KOHSEIKYUGK-G  =  10000 - WRK-MSKYMONEY
-      *--- 2009/08/18 DELETE END ---------------------------------------
-             END-IF
-           END-IF
-           IF   FLG-TYOKI  =  2
-             IF   WRK-TYOKIFTN  =  ZERO
-                 AND  RECE10-TEISYUTUSAKI  =  6
-               MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
-      *--- 2009/08/18 DELETE START -------------------------------------
-      *       ELSE
-      *         COMPUTE  WRK-KOHSEIKYUGK-G  =  20000 - WRK-MSKYMONEY
-      *--- 2009/08/18 DELETE END ---------------------------------------
-             END-IF
-           END-IF
+      *--- 2010/01/08 DELETE START -------------------------------------
+      *     IF   FLG-TYOKI  =  1
+      *       IF   WRK-TYOKIFTN  =  ZERO
+      *           AND  RECE10-TEISYUTUSAKI  =  6
+      *         MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
+      **--- 2009/08/18 DELETE START -------------------------------------
+      **       ELSE
+      **         COMPUTE  WRK-KOHSEIKYUGK-G  =  10000 - WRK-MSKYMONEY
+      **--- 2009/08/18 DELETE END ---------------------------------------
+      *       END-IF
+      *     END-IF
+      *     IF   FLG-TYOKI  =  2
+      *       IF   WRK-TYOKIFTN  =  ZERO
+      *           AND  RECE10-TEISYUTUSAKI  =  6
+      *         MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
+      **--- 2009/08/18 DELETE START -------------------------------------
+      **       ELSE
+      **         COMPUTE  WRK-KOHSEIKYUGK-G  =  20000 - WRK-MSKYMONEY
+      **--- 2009/08/18 DELETE END ---------------------------------------
+      *       END-IF
+      *     END-IF
       *--- 2009/07/29 ADD END ------------------------------------------
+      *--- 2010/01/08 DELETE END ---------------------------------------
       *
            .
        800-SEIKYU-SEC-EXT.

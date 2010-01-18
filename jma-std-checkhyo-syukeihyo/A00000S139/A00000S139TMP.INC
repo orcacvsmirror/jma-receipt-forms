@@ -38,7 +38,10 @@
                           09  S139TMP-JIHIGK     PIC  9(09).
       *--- (2008/12/18) line add end   monma ----------------------------
                           09  S139TMP-HKNGK      PIC  9(09).
-                          09  S139TMP-KOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *                    09  S139TMP-KOHGK      PIC  9(09).
+                          09  S139TMP-KOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                           09  S139TMP-SYUEKI     PIC  9(09).
                           09  S139TMP-SNISSU     PIC  9(05).
                           09  S139TMP-SSEIKYU    PIC  9(09).
@@ -59,7 +62,10 @@
                           09  S139TMP-S-JIHIGK     PIC  9(09).
       *--- (2008/12/18) line add end   monma ----------------------------
                           09  S139TMP-S-HKNGK      PIC  9(09).
-                          09  S139TMP-S-KOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *                    09  S139TMP-S-KOHGK      PIC  9(09).
+                          09  S139TMP-S-KOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                           09  S139TMP-S-SYUEKI     PIC  9(09).
                           09  S139TMP-S-SNISSU     PIC  9(05).
                           09  S139TMP-S-SSEIKYU    PIC  9(09).
@@ -100,7 +106,10 @@
                       07  S139TMP-GJIHIGK     PIC  9(09).
       *--- (2008/12/18) line add end   monma ----------------------------
                       07  S139TMP-GHKNGK      PIC  9(09).
-                      07  S139TMP-GKOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *                07  S139TMP-GKOHGK      PIC  9(09).
+                      07  S139TMP-GKOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                       07  S139TMP-GSYUEKI     PIC  9(09).
                       07  S139TMP-SGNISSU     PIC  9(05).
                       07  S139TMP-SGSEIKYU    PIC  9(09).

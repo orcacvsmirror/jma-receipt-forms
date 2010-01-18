@@ -41,6 +41,7 @@
       *  09/11/06    @@@@-田中     同保険者番号に変更時の不具合を修正
       *  09/11/19    @@@@-田中     保険者一覧に国保が印字される不具合を修正
       *  09/11/19    @@@@-田中     保険者一覧を保険者番号順に印字する
+      *  10/01/13    @@@@-田中     公費請求額の計算式を修正
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -226,7 +227,10 @@
                05  WRK-JIHIGK            PIC 9(09).
       *--- (2008/12/12) line add end   monma ---------------------------
                05  WRK-HKNGK             PIC 9(09).
-               05  WRK-KOHGK             PIC 9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *         05  WRK-KOHGK             PIC 9(09).
+               05  WRK-KOHGK             PIC S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                05  WRK-SYUEKI            PIC 9(09).
       *--- 2009/08/20 CHANGE START -------------------------------------
       *         05  WRK-SNISSU            PIC 9(04).
@@ -252,7 +256,10 @@
       *     03  WRK-KOHSEIKYUGK          PIC 9(09).
            03  WRK-KOHSEIKYUGK           PIC S9(09).
       *--- 2009/08/18 CHANGE END ---------------------------------------
-           03  WRK-KOHSEIKYUGK-G         PIC 9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *     03  WRK-KOHSEIKYUGK-G         PIC 9(09).
+           03  WRK-KOHSEIKYUGK-G         PIC S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
            03  WRK-ZENCOMPFTN            PIC 9(09).
            03  WRK-KOHSKJSEIKYUGK        PIC 9(09).
            03  WRK-PATH                  PIC X(64).
@@ -2793,7 +2800,9 @@
                  MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)
                                               TO   SYU-SYUCOMPFTN-ENTANI
                  MOVE    SYU-KOH-COMPFTN(IDX7)  TO   SYU-SYUCOMPFTN
-                 MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
+      *--- 2010/01/08 ADD START ----------------------------------------
+      *           MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
+      *--- 2010/01/08 ADD END ------------------------------------------
                END-IF
                IF   FLG-TYOKI  =  2
                    AND  SYU-KOH-HKNNUM(IDX7)  =  "974"
@@ -2803,7 +2812,9 @@
                  MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)
                                               TO   SYU-SYUCOMPFTN-ENTANI
                  MOVE    SYU-KOH-COMPFTN(IDX7)  TO   SYU-SYUCOMPFTN
-                 MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
+      *--- 2010/01/08 ADD START ----------------------------------------
+      *           MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
+      *--- 2010/01/08 ADD END ------------------------------------------
                END-IF
              END-PERFORM
            END-IF
@@ -2911,25 +2922,27 @@
       *     COMPUTE   WRK-MSKYMONEY   =  WRK-MADOSEIKYUGK-G
       *                               -  RECE10-SHOKUJIFTN(1)
       *--- 2009/08/18 DELETE END ---------------------------------------
-           IF   FLG-TYOKI  =  1
-             IF   WRK-TYOKIFTN  =  ZERO
-               MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
-      *--- 2009/08/18 DELETE START -------------------------------------
-      *       ELSE
-      *         COMPUTE  WRK-KOHSEIKYUGK-G  =  10000 - WRK-MSKYMONEY
-      *--- 2009/08/18 DELETE END ---------------------------------------
-             END-IF
-           END-IF
-           IF   FLG-TYOKI  =  2
-             IF   WRK-TYOKIFTN  =  ZERO
-               MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
-      *--- 2009/08/18 DELETE START -------------------------------------
-      *       ELSE
-      *         COMPUTE  WRK-KOHSEIKYUGK-G  =  20000 - WRK-MSKYMONEY
-      *--- 2009/08/18 DELETE END ---------------------------------------
-             END-IF
-           END-IF
+      *--- 2010/01/08 ADD START ----------------------------------------
+      *     IF   FLG-TYOKI  =  1
+      *       IF   WRK-TYOKIFTN  =  ZERO
+      *         MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
+      **--- 2009/08/18 DELETE START -------------------------------------
+      **       ELSE
+      **         COMPUTE  WRK-KOHSEIKYUGK-G  =  10000 - WRK-MSKYMONEY
+      **--- 2009/08/18 DELETE END ---------------------------------------
+      *       END-IF
+      *     END-IF
+      *     IF   FLG-TYOKI  =  2
+      *       IF   WRK-TYOKIFTN  =  ZERO
+      *         MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
+      **--- 2009/08/18 DELETE START -------------------------------------
+      **       ELSE
+      **         COMPUTE  WRK-KOHSEIKYUGK-G  =  20000 - WRK-MSKYMONEY
+      **--- 2009/08/18 DELETE END ---------------------------------------
+      *       END-IF
+      *     END-IF
       *--- 2009/07/29 ADD END ------------------------------------------
+      *--- 2010/01/08 ADD END ------------------------------------------
       *
            .
        800-SEIKYU-SEC-EXT.

@@ -34,7 +34,10 @@
                   05  S138TMP-JIHIGK     PIC  9(09).
       *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-HKNGK      PIC  9(09).
-                  05  S138TMP-KOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *            05  S138TMP-KOHGK      PIC  9(09).
+                  05  S138TMP-KOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                   05  S138TMP-SYUEKI     PIC  9(09).
       *--- 2009/08/20 CHANGE START -------------------------------------
       *            05  S138TMP-SNISSU     PIC  9(05).
@@ -73,7 +76,10 @@
                   05  S138TMP-HJIHIGK     PIC  9(09).
       *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-HHKNGK      PIC  9(09).
-                  05  S138TMP-HKOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *            05  S138TMP-HKOHGK      PIC  9(09).
+                  05  S138TMP-HKOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                   05  S138TMP-HSYUEKI     PIC  9(09).
       *--- 2009/08/20 CHANGE START -------------------------------------
       *            05  S138TMP-HSNISSU     PIC  9(04).
@@ -93,7 +99,10 @@
                   05  S138TMP-K-JIHIGK     PIC  9(09).
       *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-K-HKNGK      PIC  9(09).
-                  05  S138TMP-K-KOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *            05  S138TMP-K-KOHGK      PIC  9(09).
+                  05  S138TMP-K-KOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                   05  S138TMP-K-SYUEKI     PIC  9(09).
       *--- 2009/08/20 CHANGE START -------------------------------------
       *            05  S138TMP-K-SNISSU     PIC  9(04).
@@ -120,7 +129,10 @@
                   05  S138TMP-K-KJIHIGK     PIC  9(09).
       *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-K-KHKNGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
                   05  S138TMP-K-KKOHGK      PIC  9(09).
+                  05  S138TMP-K-KKOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                   05  S138TMP-K-KSYUEKI     PIC  9(09).
       * 20080625 ÊÝ¸±¼Ô¡¢¸øÈñ¾ðÊóÎÎ°è100 ¢ª 300¤ËÊÑ¹¹START tanaka
       *        03  S138TMP-HKNJA2-TBL OCCURS 100.
@@ -142,7 +154,10 @@
                   05  S138TMP-K-HJIHIGK     PIC  9(09).
       *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-K-HHKNGK      PIC  9(09).
-                  05  S138TMP-K-HKOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *            05  S138TMP-K-HKOHGK      PIC  9(09).
+                  05  S138TMP-K-HKOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                   05  S138TMP-K-HSYUEKI     PIC  9(09).
       *--- 2009/08/20 CHANGE START -------------------------------------
       *            05  S138TMP-K-HSNISSU     PIC  9(04).
@@ -162,7 +177,10 @@
                   05  S138TMP-GJIHIGK     PIC  9(09).
       *--- (2008/12/11) line add end   monma ---------------------------
                   05  S138TMP-GHKNGK      PIC  9(09).
-                  05  S138TMP-GKOHGK      PIC  9(09).
+      *--- 2010/01/13 CHANGE START -------------------------------------
+      *            05  S138TMP-GKOHGK      PIC  9(09).
+                  05  S138TMP-GKOHGK      PIC  S9(09).
+      *--- 2010/01/13 CHANGE END ---------------------------------------
                   05  S138TMP-GSYUEKI     PIC  9(09).
       *--- 2009/08/20 CHANGE START -------------------------------------
       *            05  S138TMP-SGNISSU     PIC  9(04).
