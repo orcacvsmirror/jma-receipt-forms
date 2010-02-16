@@ -38,6 +38,9 @@
       *  08/04/03    @@@@-吉川     シス管の値が取得できない不具合を修正
       *                            後期高齢者対応(ver4.2.0)
       *                            記号・番号１６文字以上対応(ver4.2.0)
+      *  10/02/08    @@@@-田中     シス管の値が取得できない不具合を修正
+      *                            DBOPEN・DBCOMMITの処理が2重になっていた不具合を修正
+      *                            処理時間を短縮
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -491,7 +494,9 @@
       *                             TO  RECEERR-TERMID
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
       *
-           PERFORM 100-DBOPEN-SEC
+      *--- 2010/02/08 DELETE START -------------------------------------
+      *     PERFORM 100-DBOPEN-SEC
+      *--- 2010/02/08 DELETE END ---------------------------------------
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -539,8 +544,12 @@
       *                                     SYS-1001-EDYUKYMD(1:6)
       *     MOVE    "01"                TO  SYS-1001-STYUKYMD(7:2)
       *                                     SYS-1001-EDYUKYMD(7:2)
-           MOVE    L100LNK-YMD1        TO  SYS-1001-STYUKYMD
-           MOVE    L100LNK-YMD2        TO  SYS-1001-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *     MOVE    L100LNK-YMD1        TO  SYS-1001-STYUKYMD
+      *     MOVE    L100LNK-YMD2        TO  SYS-1001-EDYUKYMD
+           MOVE     L100LNK-PRTKANRI-SKYYMD   TO   SYS-1001-STYUKYMD
+                                                   SYS-1001-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
@@ -576,8 +585,12 @@
       *                                        SYS-1005-EDYUKYMD(1:6)
       *        MOVE    "01"                TO  SYS-1005-STYUKYMD(7:2)
       *                                        SYS-1005-EDYUKYMD(7:2)
-              MOVE    L100LNK-YMD1        TO  SYS-1005-STYUKYMD
-              MOVE    L100LNK-YMD2        TO  SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *       MOVE    L100LNK-YMD1        TO  SYS-1005-STYUKYMD
+      *       MOVE    L100LNK-YMD2        TO  SYS-1005-EDYUKYMD
+             MOVE    L100LNK-YMD2        TO   SYS-1005-STYUKYMD
+             MOVE    L100LNK-YMD1        TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
               MOVE    SPA-HOSPNUM         TO  SYS-1005-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
@@ -612,8 +625,12 @@
       *                                        SYS-1010-EDYUKYMD(1:6)
       *        MOVE    "01"                TO  SYS-1010-STYUKYMD(7:2)
       *                                        SYS-1010-EDYUKYMD(7:2)
-              MOVE    L100LNK-YMD1        TO  SYS-1010-STYUKYMD
-              MOVE    L100LNK-YMD2        TO  SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *        MOVE    L100LNK-YMD1        TO  SYS-1010-STYUKYMD
+      *        MOVE    L100LNK-YMD2        TO  SYS-1010-EDYUKYMD
+              MOVE    L100LNK-YMD2        TO   SYS-1010-STYUKYMD
+              MOVE    L100LNK-YMD1        TO   SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
               MOVE    SPA-HOSPNUM         TO  SYS-1010-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
@@ -713,24 +730,28 @@
       *         IF      SYU-HOSPID              =   L100LNK-HOSPID
                IF      SYU-HOSPNUM             =   L100LNK-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
-                  AND  SYU-SRYYMD             >=   L100LNK-YMD1
-                  AND  SYU-SRYYMD             <=   L100LNK-YMD2
-                  AND  SYU-CREATEKBN       NOT =  "3"
-                  AND  SYU-DENPJTIKBN      NOT =  "3"
+      *--- 2010/02/08 DELETE START -------------------------------------
+      *            AND  SYU-SRYYMD             >=   L100LNK-YMD1
+      *            AND  SYU-SRYYMD             <=   L100LNK-YMD2
+      *            AND  SYU-CREATEKBN       NOT =  "3"
+      *            AND  SYU-DENPJTIKBN      NOT =  "3"
+      *--- 2010/02/08 DELETE END ---------------------------------------
                   AND ( FLG-SRYKA-ALL       =  1
                    OR ( FLG-SRYKA-ALL   NOT =  1
                     AND L100LNK-SRYKA       =  SYU-SRYKA ) )
                   AND SYU-NYUKIN-TOTAL <    SYU-SKYMONEY
+      *--- 2010/02/08 DELETE START -------------------------------------
       *    TEST患者チェック
-                    INITIALIZE         PTINF-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/14) start
-      *              MOVE WRK-PARA-HOSPID TO     PTINF-HOSPID
-                    MOVE WRK-PARA-HOSPNUM TO    PTINF-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
-                    MOVE SYU-PTID        TO     PTINF-PTID
-                    PERFORM 900-PTINF-READ-SEC
-                    IF    FLG-PTINF           =      ZERO
-                      AND  PTINF-TSTPTNUMKBN   NOT =  "1"
+      *              INITIALIZE         PTINF-REC
+      **=== Ver4.0対応 By Yoshikawa(2007/09/14) start
+      **              MOVE WRK-PARA-HOSPID TO     PTINF-HOSPID
+      *              MOVE WRK-PARA-HOSPNUM TO    PTINF-HOSPNUM
+      **=== Ver4.0対応 By Yoshikawa(2007/09/14) end
+      *              MOVE SYU-PTID        TO     PTINF-PTID
+      *              PERFORM 900-PTINF-READ-SEC
+      *              IF    FLG-PTINF           =      ZERO
+      *                AND  PTINF-TSTPTNUMKBN   NOT =  "1"
+      *--- 2010/02/08 DELETE END ---------------------------------------
                         MOVE    1        TO   FLG-GET
       *    DR チェック
                         INITIALIZE           JYURRK-DENP-REC
@@ -747,7 +768,9 @@
                           AND JYURRK-DENP-DRCD  =  L100LNK-DRCD ))
                             PERFORM 320-WRITE-TEMP-SEC
                         END-IF
-                    END-IF
+      *--- 2010/02/08 DELETE START -------------------------------------
+      *              END-IF
+      *--- 2010/02/08 DELETE END ---------------------------------------
                END-IF 
                PERFORM 910-DBFETCH-SEC
            END-PERFORM
@@ -1262,10 +1285,14 @@
       *                                        SYS-1005-EDYUKYMD(1:6)
       *          MOVE    "01"              TO  SYS-1005-STYUKYMD(7:2)
       *                                        SYS-1005-EDYUKYMD(7:2)
-                MOVE    L100LNK-YMD1      TO  SYS-1005-STYUKYMD
-                MOVE    L100LNK-YMD2      TO  SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *         MOVE    L100LNK-YMD1      TO  SYS-1005-STYUKYMD
+      *         MOVE    L100LNK-YMD2      TO  SYS-1005-EDYUKYMD
+               MOVE    L100LNK-YMD2      TO   SYS-1005-STYUKYMD
+               MOVE    L100LNK-YMD1      TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
-                MOVE    SPA-HOSPNUM       TO  SYS-1005-HOSPNUM
+               MOVE    SPA-HOSPNUM       TO  SYS-1005-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
                MOVE    SYS-1005-REC      TO   MCPDATA-REC
                PERFORM 800-SYSKANRI-READ-SEC
@@ -1298,10 +1325,14 @@
       *                                        SYS-1010-EDYUKYMD(1:6)
       *          MOVE    "01"              TO  SYS-1010-STYUKYMD(7:2)
       *                                        SYS-1010-EDYUKYMD(7:2)
-                MOVE    L100LNK-YMD1      TO  SYS-1010-STYUKYMD
-                MOVE    L100LNK-YMD2      TO  SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *          MOVE    L100LNK-YMD1      TO  SYS-1010-STYUKYMD
+      *          MOVE    L100LNK-YMD2      TO  SYS-1010-EDYUKYMD
+                MOVE    L100LNK-YMD2      TO   SYS-1010-STYUKYMD
+                MOVE    L100LNK-YMD1      TO   SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
-                MOVE    SPA-HOSPNUM       TO  SYS-1010-HOSPNUM
+                MOVE    SPA-HOSPNUM       TO   SYS-1010-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
                 MOVE    SYS-1010-REC      TO   MCPDATA-REC
                 PERFORM 800-SYSKANRI-READ-SEC
@@ -1423,7 +1454,9 @@
                                    SPA-AREA
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
       *
-           PERFORM 900-DBDISCONNECT-SEC
+      *--- 2010/02/08 DELETE START -------------------------------------
+      *     PERFORM 900-DBDISCONNECT-SEC
+      *--- 2010/02/08 DELETE END ---------------------------------------
       *
            .
        300-END-EXT.
@@ -1846,8 +1879,13 @@
            INITIALIZE                  SYUNOU-REC
       *
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) start
-           MOVE    SPA-HOSPNUM     TO  SYU-HOSPNUM
+           MOVE    SPA-HOSPNUM     TO   SYU-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) end
+      *--- 2010/02/08 ADD START ----------------------------------------
+           MOVE    "%"             TO   SYU-NYUGAIKBN
+           MOVE    L100LNK-YMD1    TO   SYU-SRYYMD
+           MOVE    L100LNK-YMD2    TO   SYU-UPSRYYMD
+      *--- 2010/02/08 ADD END ------------------------------------------
            MOVE    SYUNOU-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"      TO  MCP-FUNC
       *=== Ver4.0対応 By Yoshikawa(2007/09/14) start
@@ -1857,7 +1895,10 @@
       *                                 ORCMCPAREA
       *                                 MCPDATA-REC
            MOVE    "tbl_syunou"    TO  MCP-TABLE
-           MOVE    "all"           TO  MCP-PATHNAME
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *     MOVE    "all"           TO  MCP-PATHNAME
+           MOVE    "st_key1"           TO  MCP-PATHNAME
+      *--- 2010/02/08 CHANGE END ---------------------------------------
            CALL    "ORCDBMAIN"     USING
                                    MCPAREA
                                    MCPDATA-REC
@@ -1886,7 +1927,10 @@
       *                                  ORCMCPAREA
       *                                  MCPDATA-REC
            MOVE    "tbl_syunou"    TO  MCP-TABLE
-           MOVE    "all"           TO  MCP-PATHNAME
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *     MOVE    "all"           TO  MCP-PATHNAME
+           MOVE    "st_key1"       TO  MCP-PATHNAME
+      *--- 2010/02/08 CHANGE END ---------------------------------------
            CALL    "ORCDBMAIN"     USING
                                    MCPAREA
                                    MCPDATA-REC
@@ -1919,7 +1963,10 @@
       *                                 ORCMCPAREA
       *                                 MCPDATA-REC
            MOVE    "tbl_syunou"    TO  MCP-TABLE
-           MOVE    "all"           TO  MCP-PATHNAME
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *     MOVE    "all"           TO  MCP-PATHNAME
+           MOVE    "st_key1"           TO  MCP-PATHNAME
+      *--- 2010/02/08 CHANGE END ---------------------------------------
            CALL    "ORCDBMAIN"     USING
                                    MCPAREA
                                    MCPDATA-REC
