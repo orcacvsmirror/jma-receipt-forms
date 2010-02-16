@@ -42,6 +42,8 @@
       *                            後期高齢者対応(ver4.2.0)
       *                            記号・番号１６文字以上対応(ver4.2.0)
       *  08/07/31    @@@@-田中     複数医師で診療し処理を行うと、後の診療した医師で印字されない 
+      *  10/02/08    @@@@-田中     シス管の値が取得できない不具合を修正
+      *                            DBOPEN・DBCOMMITの処理が2重になっていた不具合を修正
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -87,9 +89,9 @@
            COPY    "A00000L101.INC".
       *
        01  L101TPARA.
-           03  FILLER              PIC  X(05)    VALUE "/tmp/".
-           03  L101TPARA-FILENAME  PIC  X(10) VALUE "A00000L101".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+           03  FILLER              PIC X(05)  VALUE "/tmp/".
+           03  L101TPARA-FILENAME  PIC X(10)  VALUE "A00000L101".
+           03  FILLER              PIC X(04)  VALUE ".TMP".
       *
       *    ステータス領域
        01  STS-AREA.
@@ -174,10 +176,7 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID    PIC 9(07).
            03  WRK-PARA-SHELLID  PIC X(08).
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     03  WRK-PARA-HOSPID   PIC X(24).
            03  WRK-PARA-HOSPNUM  PIC 9(02).
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            03  WRK-PARA-PRTYM    PIC X(06).
            03  WRK-PARA-PRTLYMD  PIC X(08).
            03  WRK-PARA-PRTSYMD  PIC X(08).
@@ -212,60 +211,60 @@
            03  WRK-JIHI              PIC 9(08).
            03  WRK-SYUEKI            PIC 9(08).
       *
-           03  WRK-JIHI2            PIC 9(08).
-           03  WRK-TJIHI-G       OCCURS  5.
-               05  WRK-TJIHI        PIC X(08).
-               05  WRK-TJIHI-FLG    PIC 9(01).
-           03  WRK-TJIHIN-G       OCCURS  5.
-               05  WRK-TJIHIN       PIC X(08).
-               05  WRK-TJIHIN-FLG   PIC 9(01).
+           03  WRK-JIHI2             PIC 9(08).
+           03  WRK-TJIHI-G           OCCURS 5.
+               05  WRK-TJIHI         PIC X(08).
+               05  WRK-TJIHI-FLG     PIC 9(01).
+           03  WRK-TJIHIN-G          OCCURS  5.
+               05  WRK-TJIHIN        PIC X(08).
+               05  WRK-TJIHIN-FLG    PIC 9(01).
       *
-           03  WRK-4001-TENTANKA PIC 9(02)V9(01).
+           03  WRK-4001-TENTANKA     PIC 9(02)V9(01).
       *
-           03  WRK-RENNUM-X         PIC ZZ9.
-           03  WRK-PAGE             PIC ZZ9.
-           03  WRK-Z3               PIC ZZ9.
-           03  WRK-Z5               PIC ZZZZ9.
-           03  WRK-S9-3             PIC --9.
-           03  WRK-Z9-5             PIC ZZ,ZZ9.
-           03  WRK-Z9               PIC ZZZZZZZZZZZ9.
-           03  WRK-ZZ               PIC ZZZZZZZZZZZZ.
-           03  WRK-S9               PIC -----------9.
-           03  WRK-SZ               PIC -----------Z.
-           03  WRK-NYUGAIKBN        PIC X(01).
-           03  WRK-SRYKA            PIC X(02).
-           03  WRK-SRYKANM          PIC X(30).
-           03  WRK-PRSRYKA          PIC X(02).
-           03  WRK-PRDRCD           PIC X(05).
-           03  WRK-L100LNK-YMD1     PIC X(22).
-           03  WRK-L100LNK-YMD2     PIC X(22).
-           03  WRK-KOH1FTNNUM       PIC X(30).
-           03  WRK-KOH2FTNNUM       PIC X(30).
-           03  WRK-KOH3FTNNUM       PIC X(30).
-           03  WRK-KIGONUM          PIC X(80).
-           03  WRK-NUM              PIC X(80).
-           03  WRK-HEN-KIGONUM      PIC X(80).
+           03  WRK-RENNUM-X          PIC ZZ9.
+           03  WRK-PAGE              PIC ZZ9.
+           03  WRK-Z3                PIC ZZ9.
+           03  WRK-Z5                PIC ZZZZ9.
+           03  WRK-S9-3              PIC --9.
+           03  WRK-Z9-5              PIC ZZ,ZZ9.
+           03  WRK-Z9                PIC ZZZZZZZZZZZ9.
+           03  WRK-ZZ                PIC ZZZZZZZZZZZZ.
+           03  WRK-S9                PIC -----------9.
+           03  WRK-SZ                PIC -----------Z.
+           03  WRK-NYUGAIKBN         PIC X(01).
+           03  WRK-SRYKA             PIC X(02).
+           03  WRK-SRYKANM           PIC X(30).
+           03  WRK-PRSRYKA           PIC X(02).
+           03  WRK-PRDRCD            PIC X(05).
+           03  WRK-L100LNK-YMD1      PIC X(22).
+           03  WRK-L100LNK-YMD2      PIC X(22).
+           03  WRK-KOH1FTNNUM        PIC X(30).
+           03  WRK-KOH2FTNNUM        PIC X(30).
+           03  WRK-KOH3FTNNUM        PIC X(30).
+           03  WRK-KIGONUM           PIC X(80).
+           03  WRK-NUM               PIC X(80).
+           03  WRK-HEN-KIGONUM       PIC X(80).
            03  WRK-BIRTHDAY.
-            05 WRK-BIRTHY           PIC 9(04).
-            05 WRK-BIRTHM           PIC 9(02).
-            05 WRK-BIRTHD           PIC 9(02).
-           03  WRK-F-SRYYMD         PIC X(08).
-           03  WRK-FG-SRYYMD        PIC X(08).
-           03  WRK-FN-SRYYMD        PIC X(08).
-           03  WRK-NENREI           PIC 9(03).
-           03  WRK-JPTID            PIC X(10).
-           03  WRK-JDRCD            PIC X(08).
-           03  WRK-JSRYKA           PIC X(02).
-           03  WRK-SRYYMDDMY        PIC 9(10).
+            05 WRK-BIRTHY            PIC 9(04).
+            05 WRK-BIRTHM            PIC 9(02).
+            05 WRK-BIRTHD            PIC 9(02).
+           03  WRK-F-SRYYMD          PIC X(08).
+           03  WRK-FG-SRYYMD         PIC X(08).
+           03  WRK-FN-SRYYMD         PIC X(08).
+           03  WRK-NENREI            PIC 9(03).
+           03  WRK-JPTID             PIC X(10).
+           03  WRK-JDRCD             PIC X(08).
+           03  WRK-JSRYKA            PIC X(02).
+           03  WRK-SRYYMDDMY         PIC 9(10).
       *    文字変換
            03  WRK-ZENKAKU-G.
-               05  WRK-ZENKAKU      PIC X(02)   OCCURS   10.
-           03  WRK-MOJI             PIC X(10).
-           03  WRK-MOJISU           PIC 9(02).
-           03  WRK-MAE-INPUT        PIC X(200).
-           03  WRK-OUT-INPUT        PIC X(200).
-           03  WRK-PTID             PIC 9(10).
-           03  DEBUG-CNT            PIC 9(03).
+               05  WRK-ZENKAKU       PIC X(02)   OCCURS   10.
+           03  WRK-MOJI              PIC X(10).
+           03  WRK-MOJISU            PIC 9(02).
+           03  WRK-MAE-INPUT         PIC X(200).
+           03  WRK-OUT-INPUT         PIC X(200).
+           03  WRK-PTID              PIC 9(10).
+           03  DEBUG-CNT             PIC 9(03).
       *
       * 2003/06/24  追加
            03  WRK-SYS-BEDSU     PIC 9(04).
@@ -481,7 +480,9 @@
       *                             TO  RECEERR-TERMID
       *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
       *
-           PERFORM 100-DBOPEN-SEC
+      *--- 2010/02/08 DELETE START -------------------------------------
+      *     PERFORM 100-DBOPEN-SEC
+      *--- 2010/02/08 DELETE END ---------------------------------------
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -529,8 +530,12 @@
       *                                     SYS-1001-EDYUKYMD(1:6)
       *     MOVE    "01"                TO  SYS-1001-STYUKYMD(7:2)
       *                                     SYS-1001-EDYUKYMD(7:2)
-           MOVE    L100LNK-YMD1        TO  SYS-1001-STYUKYMD
-           MOVE    L100LNK-YMD2        TO  SYS-1001-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *     MOVE    L100LNK-YMD1        TO  SYS-1001-STYUKYMD
+      *     MOVE    L100LNK-YMD2        TO  SYS-1001-EDYUKYMD
+           MOVE     L100LNK-PRTKANRI-SKYYMD   TO   SYS-1001-STYUKYMD
+                                                   SYS-1001-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
@@ -565,8 +570,12 @@
       *                                        SYS-1005-EDYUKYMD(1:6)
       *        MOVE    "01"                TO  SYS-1005-STYUKYMD(7:2)
       *                                        SYS-1005-EDYUKYMD(7:2)
-             MOVE    L100LNK-YMD1        TO  SYS-1005-STYUKYMD
-             MOVE    L100LNK-YMD2        TO  SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *       MOVE    L100LNK-YMD1        TO  SYS-1005-STYUKYMD
+      *       MOVE    L100LNK-YMD2        TO  SYS-1005-EDYUKYMD
+             MOVE    L100LNK-YMD2        TO   SYS-1005-STYUKYMD
+             MOVE    L100LNK-YMD1        TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
              MOVE    SPA-HOSPNUM         TO  SYS-1005-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
@@ -602,8 +611,12 @@
       *                                        SYS-1010-EDYUKYMD(1:6)
       *        MOVE    "01"                TO  SYS-1010-STYUKYMD(7:2)
       *                                        SYS-1010-EDYUKYMD(7:2)
-             MOVE    L100LNK-YMD1        TO  SYS-1010-STYUKYMD
-             MOVE    L100LNK-YMD2        TO  SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *       MOVE    L100LNK-YMD1        TO  SYS-1010-STYUKYMD
+      *       MOVE    L100LNK-YMD2        TO  SYS-1010-EDYUKYMD
+             MOVE    L100LNK-YMD2        TO   SYS-1010-STYUKYMD
+             MOVE    L100LNK-YMD1        TO   SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
              MOVE    SPA-HOSPNUM         TO  SYS-1010-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
@@ -1485,8 +1498,12 @@
       *                                          SYS-1005-EDYUKYMD(1:6)
       *          MOVE    "01"                TO  SYS-1005-STYUKYMD(7:2)
       *                                          SYS-1005-EDYUKYMD(7:2)
-             MOVE    L100LNK-YMD1      TO  SYS-1005-STYUKYMD
-             MOVE    L100LNK-YMD2      TO  SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *       MOVE    L100LNK-YMD1      TO  SYS-1005-STYUKYMD
+      *       MOVE    L100LNK-YMD2      TO  SYS-1005-EDYUKYMD
+             MOVE    L100LNK-YMD2      TO   SYS-1005-STYUKYMD
+             MOVE    L100LNK-YMD1      TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
              MOVE    SPA-HOSPNUM         TO  SYS-1005-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
@@ -1517,8 +1534,12 @@
       *                                          SYS-1010-EDYUKYMD(1:6)
       *          MOVE    "01"                TO  SYS-1010-STYUKYMD(7:2)
       *                                          SYS-1010-EDYUKYMD(7:2)
-             MOVE    L100LNK-YMD1        TO  SYS-1010-STYUKYMD
-             MOVE    L100LNK-YMD2        TO  SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *       MOVE    L100LNK-YMD1      TO  SYS-1010-STYUKYMD
+      *       MOVE    L100LNK-YMD2      TO  SYS-1010-EDYUKYMD
+             MOVE    L100LNK-YMD2      TO   SYS-1010-STYUKYMD
+             MOVE    L100LNK-YMD1      TO   SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
              MOVE    SPA-HOSPNUM         TO  SYS-1010-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
@@ -1643,7 +1664,9 @@
                                    SPA-AREA
       *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
       *
-           PERFORM 900-DBDISCONNECT-SEC
+      *--- 2010/02/08 DELETE START -------------------------------------
+      *     PERFORM 900-DBDISCONNECT-SEC
+      *--- 2010/02/08 DELETE END ---------------------------------------
       *
            .
        300-END-EXT.

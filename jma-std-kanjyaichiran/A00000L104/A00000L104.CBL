@@ -38,6 +38,8 @@
       *                            後期高齢者対応(ver4.2.0)
       *                            記号・番号１６文字以上対応(ver4.2.0)
       *  09/09/02    @@@@-田中     保険変更時に古い保健情報が印字される不具合を修正
+      *  10/02/08    @@@@-田中     シス管の値が取得できない不具合を修正
+      *                            DBOPEN・DBCOMMITの処理が2重になっていた不具合を修正
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -490,7 +492,9 @@
       *                             TO  RECEERR-TERMID
       *=== Ver4.0対応 By Yoshikawa(2007/09/11) end
       *
-           PERFORM 100-DBOPEN-SEC
+      *--- 2010/02/08 DELETE START -------------------------------------
+      *     PERFORM 100-DBOPEN-SEC
+      *--- 2010/02/08 DELETE END ---------------------------------------
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -538,8 +542,12 @@
       *                                     SYS-1001-EDYUKYMD(1:6)
       *     MOVE    "01"                TO  SYS-1001-STYUKYMD(7:2)
       *                                     SYS-1001-EDYUKYMD(7:2)
-           MOVE    L100LNK-YMD1        TO  SYS-1001-STYUKYMD
-           MOVE    L100LNK-YMD2        TO  SYS-1001-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *     MOVE    L100LNK-YMD1        TO  SYS-1001-STYUKYMD
+      *     MOVE    L100LNK-YMD2        TO  SYS-1001-EDYUKYMD
+           MOVE     L100LNK-PRTKANRI-SKYYMD   TO   SYS-1001-STYUKYMD
+                                                   SYS-1001-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/11) end
@@ -575,8 +583,12 @@
       *                                        SYS-1005-EDYUKYMD(1:6)
       *        MOVE    "01"                TO  SYS-1005-STYUKYMD(7:2)
       *                                        SYS-1005-EDYUKYMD(7:2)
-              MOVE    L100LNK-YMD1        TO  SYS-1005-STYUKYMD
-              MOVE    L100LNK-YMD2        TO  SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *        MOVE    L100LNK-YMD1        TO  SYS-1005-STYUKYMD
+      *        MOVE    L100LNK-YMD2        TO  SYS-1005-EDYUKYMD
+              MOVE    L100LNK-YMD2        TO   SYS-1005-STYUKYMD
+              MOVE    L100LNK-YMD1        TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
               MOVE    SPA-HOSPNUM         TO  SYS-1005-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/11) end
@@ -611,8 +623,12 @@
       *                                        SYS-1010-EDYUKYMD(1:6)
       *        MOVE    "01"                TO  SYS-1010-STYUKYMD(7:2)
       *                                        SYS-1010-EDYUKYMD(7:2)
-              MOVE    L100LNK-YMD1        TO  SYS-1010-STYUKYMD
-              MOVE    L100LNK-YMD2        TO  SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *        MOVE    L100LNK-YMD1        TO  SYS-1010-STYUKYMD
+      *        MOVE    L100LNK-YMD2        TO  SYS-1010-EDYUKYMD
+              MOVE    L100LNK-YMD2        TO   SYS-1010-STYUKYMD
+              MOVE    L100LNK-YMD1        TO   SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
               MOVE    SPA-HOSPNUM         TO  SYS-1010-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/11) end
@@ -1290,8 +1306,12 @@
       *                                        SYS-1005-EDYUKYMD(1:6)
       *          MOVE    "01"              TO  SYS-1005-STYUKYMD(7:2)
       *                                        SYS-1005-EDYUKYMD(7:2)
-                MOVE    L100LNK-YMD1      TO  SYS-1005-STYUKYMD
-                MOVE    L100LNK-YMD2      TO  SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *          MOVE    L100LNK-YMD1      TO  SYS-1005-STYUKYMD
+      *          MOVE    L100LNK-YMD2      TO  SYS-1005-EDYUKYMD
+                MOVE    L100LNK-YMD2      TO   SYS-1005-STYUKYMD
+                MOVE    L100LNK-YMD1      TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
                 MOVE    SPA-HOSPNUM       TO  SYS-1005-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/11) end
@@ -1325,8 +1345,12 @@
       *                                        SYS-1010-EDYUKYMD(1:6)
       *          MOVE    "01"              TO  SYS-1010-STYUKYMD(7:2)
       *                                        SYS-1010-EDYUKYMD(7:2)
-                MOVE    L100LNK-YMD1      TO  SYS-1010-STYUKYMD
-                MOVE    L100LNK-YMD2      TO  SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *          MOVE    L100LNK-YMD1      TO  SYS-1010-STYUKYMD
+      *          MOVE    L100LNK-YMD2      TO  SYS-1010-EDYUKYMD
+                MOVE    L100LNK-YMD2      TO   SYS-1010-STYUKYMD
+                MOVE    L100LNK-YMD1      TO   SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE END ---------------------------------------
       *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
                 MOVE    SPA-HOSPNUM       TO  SYS-1010-HOSPNUM
       *=== Ver4.0対応 By Yoshikawa(2007/09/11) end
@@ -1451,7 +1475,9 @@
                                    SPA-AREA
       *=== Ver4.0対応 By Yoshikawa(2007/09/11) end
       *
-           PERFORM 900-DBDISCONNECT-SEC
+      *--- 2010/02/08 DELETE START -------------------------------------
+      *     PERFORM 900-DBDISCONNECT-SEC
+      *--- 2010/02/08 DELETE END ---------------------------------------
       *
            .
        300-END-EXT.
