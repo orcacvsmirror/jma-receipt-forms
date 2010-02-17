@@ -41,6 +41,8 @@
       *  09/07/09    @@@@-門間     再診、その他の振分け修正
       *                            該当医師がいない場合、合計に2重に集計
       *                            されていた不具合を修正
+      *  10/02/08    @@@@-田中     配列の不足を修正
+      *                            シス管の値が取得できない不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -221,7 +223,10 @@
            03  SUM-SRYYMDIMAX      PIC    9(05).
            03  SUM-SRYYMD-TBL      OCCURS 1000.    
                05  SUM-SRYYMD      PIC    X(08).
-           03  SUM-SRYKA-TBL       OCCURS 100.    
+      *--- 2010/02/08 CHANGE START -------------------------------------
+      *     03  SUM-SRYKA-TBL       OCCURS 100.
+           03  SUM-SRYKA-TBL       OCCURS 1000.
+      *--- 2010/02/08 CHANGE END ---------------------------------------
                05  SUM-DRCD        PIC    X(05).
                05  SUM-DRNAME      PIC    X(20).
                05  SUM-SRYKA-ZAN   PIC   S9(05).
@@ -521,8 +526,12 @@
       ***     MOVE    C100LNK-YMD2      TO   WRK-SYMD
       *****07/09/12  4.0対応  Satoh  START*****
       *     MOVE    C100LNK-YMD2      TO   WRK-SYSYMD
-           MOVE    C100LNK-YMD1      TO   SYS-1010-STYUKYMD
-           MOVE    C100LNK-YMD2      TO   SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE START ------------------------------------
+      *     MOVE    C100LNK-YMD1      TO   SYS-1010-STYUKYMD
+      *     MOVE    C100LNK-YMD2      TO   SYS-1010-EDYUKYMD
+           MOVE    C100LNK-YMD2      TO   SYS-1010-STYUKYMD
+           MOVE    C100LNK-YMD1      TO   SYS-1010-EDYUKYMD
+      *--- 2010/02/08 CHANGE END --------------------------------------
       *****07/09/12  4.0対応  Satoh  END*******
            PERFORM 820-SYSKANRI-DBSELECT-SEC
            MOVE   1        TO     IDX1 
