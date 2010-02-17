@@ -39,6 +39,7 @@
       *  07/09/10    @@@@-佐藤     4.0対応
       *  09/03/13    @@@@-田中     再診、その他の件数処理を修正
       *  09/07/09    @@@@-門間     再診、その他の振分け修正
+      *  10/02/08    @@@@-田中     シス管の値が取得できない不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -525,8 +526,12 @@
       ***     MOVE    C100LNK-YMD2      TO   WRK-SYMD
       *****07/09/10  4.0対応  Satoh  START*****
       *     MOVE    C100LNK-YMD2      TO   WRK-SYSYMD
-           MOVE    C100LNK-YMD1      TO   SYS-1005-STYUKYMD
-           MOVE    C100LNK-YMD2      TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE START ------------------------------------
+      *     MOVE    C100LNK-YMD1      TO   SYS-1005-STYUKYMD
+      *     MOVE    C100LNK-YMD2      TO   SYS-1005-EDYUKYMD
+           MOVE    C100LNK-YMD2      TO   SYS-1005-STYUKYMD
+           MOVE    C100LNK-YMD1      TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE END --------------------------------------
       *****07/09/10  4.0対応  Satoh  END*******
            PERFORM 820-SYSKANRI-DBSELECT-SEC
            MOVE   1        TO     IDX1 

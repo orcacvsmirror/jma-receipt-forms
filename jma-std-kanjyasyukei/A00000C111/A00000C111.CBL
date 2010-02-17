@@ -35,6 +35,7 @@
       *                            在院数の縦の加算合計を対応
       *  08/10/20    @@@@-田中     在院数の集計条件の不具合を修正
       *  09/04/20    @@@@-田中     複数月分まとめて出力した時、在院数の不具合を修正
+      *  10/02/08    @@@@-田中     シス管の値が取得できない不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -533,8 +534,12 @@
       ***     MOVE    C100LNK-YMD2      TO   WRK-SYMD
       *****07/09/11  4.0対応  Satoh  START*****
       *     MOVE    C100LNK-YMD2      TO   WRK-SYSYMD
-           MOVE    C100LNK-YMD1      TO   SYS-1005-STYUKYMD
-           MOVE    C100LNK-YMD2      TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE START ------------------------------------
+      *     MOVE    C100LNK-YMD1      TO   SYS-1005-STYUKYMD
+      *     MOVE    C100LNK-YMD2      TO   SYS-1005-EDYUKYMD
+           MOVE    C100LNK-YMD2      TO   SYS-1005-STYUKYMD
+           MOVE    C100LNK-YMD1      TO   SYS-1005-EDYUKYMD
+      *--- 2010/02/08 CHANGE END --------------------------------------
       *****07/09/11  4.0対応  Satoh  END*******
            PERFORM 820-SYSKANRI-DBSELECT-SEC
            MOVE   1        TO     IDX1 
