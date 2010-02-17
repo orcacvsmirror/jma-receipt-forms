@@ -62,6 +62,7 @@
       *                              生活療養費・生活負担額が保険分金額・患者負担金額・
       *                              医療収益に加算されていない不具合を修正
       *    09/12/08    @@@@-田中     医療収益の端数処理を修正
+      *    10/02/09    @@@@-田中     治験対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2736,6 +2737,9 @@
              WHEN    WRK-CONS-ROUSAI-HKNNUM    
                MOVE    8               TO   IDX
              WHEN    WRK-CONS-JIHI-HKNNUM
+      *--- 2010/02/09 ADD START ----------------------------------------
+             WHEN    "900"  THRU  "919"
+      *--- 2010/02/09 ADD END ------------------------------------------
                MOVE    7               TO   IDX
       * 20080326 H20年4月改正対応START tanaka
              WHEN    WRK-CONS-KOGAI-HKNNUM
@@ -2792,6 +2796,9 @@
              WHEN    WRK-CONS-ROUSAI-HKNNUM    
                MOVE    8               TO   IDX
              WHEN    WRK-CONS-JIHI-HKNNUM
+      *--- 2010/02/09 ADD START ----------------------------------------
+             WHEN    "900"  THRU  "919"
+      *--- 2010/02/09 ADD END ------------------------------------------
                MOVE    7               TO   IDX
       * 20080326 H20年4月改正対応START tanaka
              WHEN    WRK-CONS-KOGAI-HKNNUM
@@ -2848,6 +2855,9 @@
              WHEN    WRK-CONS-ROUSAI-HKNNUM
                MOVE    8               TO   IDX
              WHEN    WRK-CONS-JIHI-HKNNUM
+      *--- 2010/02/09 ADD START ----------------------------------------
+             WHEN    "900"  THRU  "919"
+      *--- 2010/02/09 ADD END ------------------------------------------
                MOVE    7               TO   IDX
       * 20080326 H20年4月改正対応START tanaka
              WHEN    WRK-CONS-KOGAI-HKNNUM
@@ -2902,6 +2912,9 @@
              WHEN    WRK-CONS-ROUSAI-HKNNUM
                MOVE    8                   TO   IDX
              WHEN    WRK-CONS-JIHI-HKNNUM
+      *--- 2010/02/09 ADD START ----------------------------------------
+             WHEN    "900"  THRU  "919"
+      *--- 2010/02/09 ADD END ------------------------------------------
                MOVE    7                   TO   IDX
              WHEN    WRK-CONS-KOGAI-HKNNUM
                MOVE    11                  TO   IDX
