@@ -45,6 +45,7 @@
       *  08/03/28    @@@@−田中  後期高齢者変更対応
       *  08/06/20    @@@@−田中  中途終了の場合最後の1行が印字されない不具合を修正
       *  08/10/23    @@@@−田中  ver4.3対応(退院時院外処方箋)
+      *  10/02/10    @@@@−田中  治験対応
       **********************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -3305,6 +3306,10 @@
       *
       *            診療会計より、点数チェック
                    PERFORM 20021-SRYACCT-SYORI-SEC
+      *--- 2010/02/10 ADD START ----------------------------------------
+               END-IF
+               IF   FLG-TAIGAI  =  ZERO
+      *--- 2010/02/10 ADD END ------------------------------------------
       *            点数がゼロのものを院外処方分とする
       *---(01.00.16) LINE UPD START ------------------------------------
       **********   IF    ((ORCHC19-KBN     NOT =   "3"  ) AND
@@ -3587,12 +3592,20 @@
       *                                  MCPDATA-REC
       *=== 4.0対応 By Otake(2007/09/21) end
       *
+      *--- 2010/02/10 CHANGE START -------------------------------------
       *---(06/08/02) LINE ADD START -----------------------------------
       *     MOVE    SPA-SRYYMD(7:2)     TO  IDX-ACT
-           MOVE    JYURRK-SRYYMD(7:2)  TO  IDX-ACT
-      *---(06/08/02) LINE ADD END -----------------------------------
-           MOVE    ACCT-DAY (IDX-REN IDX-ACT)
-                                       TO  WRK-KAISU
+      *     MOVE    JYURRK-SRYYMD(7:2)  TO  IDX-ACT
+      **---(06/08/02) LINE ADD END -----------------------------------
+      *     MOVE    ACCT-DAY (IDX-REN IDX-ACT)
+      *                                 TO  WRK-KAISU
+           IF   ACCT-ZAIKBN  =  1
+             MOVE    1                   TO   FLG-TAIGAI
+           ELSE
+             MOVE    JYURRK-SRYYMD(7:2)  TO   IDX-ACT
+             MOVE    ACCT-DAY (IDX-REN IDX-ACT)   TO   WRK-KAISU
+           END-IF
+      *--- 2010/02/10 CHANGE END ---------------------------------------
       *
            .
        20021-SRYACCT-SYORI-EXT.
@@ -4470,6 +4483,11 @@
       *           包括保険分は対象外
                   AND (WRK-HKNCOMBINUM NOT =   "9999" )
       *---(03.04.02) LINE ADD END   -----------------------------------
+      *--- 2010/02/10 ADD START ----------------------------------------
+      *                薬評分対象外
+                  AND  ( WKSRY-ZAIKBN  NOT =  1 )
+      *--- 2010/02/10 ADD END ------------------------------------------
+      *
                    MOVE    WRK-SRYKA           TO  WKSRY-SRYKA
                    MOVE    WRK-HKNCOMBINUM     TO  WKSRY-HKNCOMBI
                    ADD     1                   TO  LNK-WKSRYACT-MAX

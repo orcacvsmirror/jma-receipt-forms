@@ -50,6 +50,7 @@
       *  09/06/01    @@@@ー門間    後発医薬品不可署名が印字されない不具合を修正
       *  09/08/04    @@@@ー門間    自賠責保険(0%)の負担割合を0に修正
       *  09/08/20    @@@@ー門間    労災保険・自賠責保険の処理を修正
+      *  10/02/10    @@@@−田中    治験対応
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -2206,8 +2207,7 @@
       *---(03.04.00) LINE ADD START ------------------------------------
            MOVE    ZERO                TO  FLG-SOURYOHEN
       *---(03.04.00) LINE ADD END   ------------------------------------
-           PERFORM
-                   UNTIL   FLG-SRYACT      =   1
+           PERFORM   UNTIL   FLG-SRYACT      =   1
       *
                MOVE    SRY-SRYSYUKBN       TO  WRK-SRYSYUKBN
                MOVE    SRY-SRYKBN          TO  WRK-SRYKBN
@@ -2292,6 +2292,10 @@
       *
       *            診療会計より、点数チェック
                    PERFORM 20021-SRYACCT-SYORI-SEC
+      *--- 2010/02/10 ADD START ----------------------------------------
+               END-IF
+               IF   FLG-TAIGAI  =  ZERO
+      *--- 2010/02/10 ADD END ------------------------------------------
       *            点数がゼロのものを院外処方分とする
       *---(01.00.16) LINE UPD START ------------------------------------
       **********   IF    ((ORCHC19-KBN     NOT =   "3"  ) AND
@@ -2539,12 +2543,21 @@
            MOVE    "key"               TO  MCP-PATHNAME
            PERFORM 990-DBCLOSE-SEC
       *
+      *--- 2010/02/10 CHANGE START -------------------------------------
       *---(06/08/02) LINE ADD START -----------------------------------
       *     MOVE    SPA-SRYYMD(7:2)     TO  IDX-ACT
-           MOVE    JYURRK-SRYYMD(7:2)  TO  IDX-ACT
-      *---(06/08/02) LINE ADD END -----------------------------------
-           MOVE    ACCT-DAY (IDX-REN IDX-ACT)
-                                       TO  WRK-KAISU
+      *     MOVE    JYURRK-SRYYMD(7:2)  TO  IDX-ACT
+      **---(06/08/02) LINE ADD END -----------------------------------
+      *     MOVE    ACCT-DAY (IDX-REN IDX-ACT)
+      *                                 TO  WRK-KAISU
+           IF   ACCT-ZAIKBN  =  1
+             MOVE    1                   TO   FLG-TAIGAI
+           ELSE
+             MOVE    JYURRK-SRYYMD(7:2)  TO   IDX-ACT
+             MOVE    ACCT-DAY (IDX-REN IDX-ACT)
+                                         TO   WRK-KAISU
+           END-IF
+      *--- 2010/02/10 CHANGE END ---------------------------------------
       *
            .
        20021-SRYACCT-SYORI-EXT.
@@ -3256,6 +3269,11 @@
       *           包括保険分は対象外
                   AND (WRK-HKNCOMBINUM NOT =   "9999" )
       *---(03.04.02) LINE ADD END   -----------------------------------
+      *--- 2010/02/10 ADD START ----------------------------------------
+      *    薬評分対象外
+                  AND  ( WKSRY-ZAIKBN  NOT = 1 )
+      *--- 2010/02/10 ADD END ------------------------------------------
+      *
                    MOVE    WRK-SRYKA           TO  WKSRY-SRYKA
                    MOVE    WRK-HKNCOMBINUM     TO  WKSRY-HKNCOMBI
                    ADD     1                   TO  LNK-WKSRYACT-MAX
