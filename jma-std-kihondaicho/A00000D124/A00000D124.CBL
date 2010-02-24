@@ -52,6 +52,7 @@
       *                            12ヶ月分を処理した場合、計欄が次頁に印字されていた不具合の修正
       *  09/04/16    @@@@-門間     プログラムオプション対応(INIファイル)
       *  09/10/28    @@@@-田中     助成金額の端数処理を修正
+      *  10/02/22    @@@@-門間     自賠責保険(100%)の計算式を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2445,6 +2446,46 @@
       *--- 2009/10/28 ADD END ------------------------------------------
       * 保険内負担金              
       *
+      *--- 2010/02/22 ADD START ----------------------------------------
+                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+                     AND PTRSI-JIBAISEIKBN    NOT  =  2
+      *            労災初診金額金額
+                        ADD  SYU-RSISHOSHIN-MONEY  
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSISHOSHIN-MONEY  
+                               TO  SUM-YOSO(SUM-MONTHMAX 10)
+                        ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
+      *
+      *            労災再診金額金額
+                        ADD  SYU-RSISAISHIN-MONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSISAISHIN-MONEY
+                               TO  SUM-YOSO(SUM-MONTHMAX 10)
+                        ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
+      *
+      *            労災指導金額金額
+                        ADD  SYU-RSISDO-MONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSISDO-MONEY
+                               TO  SUM-YOSO(SUM-MONTHMAX 10)
+                        ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
+      *
+      *            労災その他金額金額
+                        ADD  SYU-RSIETC-MONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSIETC-MONEY
+                               TO  SUM-YOSO(SUM-MONTHMAX 10)
+                        ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
+      *
+                        ADD  SYU-HKNTEKMONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-HKNTEKMONEY
+                               TO  SUM-YOSO(SUM-MONTHMAX 10)
+                        ADD    SYU-HKNTEKMONEY   TO   WRK-HKNNAI
+                   ELSE
+      *--- 2010/02/22 ADD END   ----------------------------------------
       *            主保険分負担金額
       *
                    IF      SYU-SYUCOMPTOTAL  NOT = ZERO 
@@ -2493,48 +2534,50 @@
                    END-IF 
                    END-IF
       *
-                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
-      * 20080328 H20年4月改正対応START tanaka
-      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM )
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
-      * 20080328 H20年4月改正対応END
-                    AND PTRSI-JIBAISEIKBN    NOT  =  2
+      *--- 2010/02/22 DELETE START -------------------------------------
+      *             IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+      ** 20080328 H20年4月改正対応START tanaka
+      **               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM )
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+      ** 20080328 H20年4月改正対応END
+      *               AND PTRSI-JIBAISEIKBN    NOT  =  2
       *            労災初診金額金額
-                        ADD  SYU-RSISHOSHIN-MONEY  
-                               TO  SUM-YOSO(I3 10)
-                        ADD  SYU-RSISHOSHIN-MONEY  
-                               TO  SUM-YOSO(SUM-MONTHMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
-                        ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
-      *
-      *            労災再診金額金額
-                        ADD  SYU-RSISAISHIN-MONEY
-                               TO  SUM-YOSO(I3 10)
-                        ADD  SYU-RSISAISHIN-MONEY
-                               TO  SUM-YOSO(SUM-MONTHMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
-                        ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
-      *
-      *            労災指導金額金額
-                        ADD  SYU-RSISDO-MONEY
-                               TO  SUM-YOSO(I3 10)
-                        ADD  SYU-RSISDO-MONEY
-                               TO  SUM-YOSO(SUM-MONTHMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
-                        ADD  SYU-RSISDO-MONEY    TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
-      *
-      *            労災その他金額金額
-                        ADD  SYU-RSIETC-MONEY
-                               TO  SUM-YOSO(I3 10)
-                        ADD  SYU-RSIETC-MONEY
-                               TO  SUM-YOSO(SUM-MONTHMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
-                        ADD  SYU-RSIETC-MONEY    TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
+      *                  ADD  SYU-RSISHOSHIN-MONEY  
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSISHOSHIN-MONEY  
+      *                         TO  SUM-YOSO(SUM-MONTHMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      **
+      **            労災再診金額金額
+      *                  ADD  SYU-RSISAISHIN-MONEY
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSISAISHIN-MONEY
+      *                         TO  SUM-YOSO(SUM-MONTHMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      **
+      **            労災指導金額金額
+      *                  ADD  SYU-RSISDO-MONEY
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSISDO-MONEY
+      *                         TO  SUM-YOSO(SUM-MONTHMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      **
+      **            労災その他金額金額
+      *                  ADD  SYU-RSIETC-MONEY
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSIETC-MONEY
+      *                         TO  SUM-YOSO(SUM-MONTHMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      *--- 2010/02/22 DELETE END   -------------------------------------
                    END-IF
       *
       * 保険外金額

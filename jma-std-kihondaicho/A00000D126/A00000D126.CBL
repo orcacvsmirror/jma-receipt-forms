@@ -51,6 +51,7 @@
       *  09/04/16    @@@@-Ìç´Ö     ¥×¥í¥°¥é¥à¥ª¥×¥·¥ç¥óÂÐ±þ(INI¥Õ¥¡¥¤¥ë)
       *  09/10/28    @@@@-ÅÄÃæ     ½õÀ®¶â³Û¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *  09/12/24    @@@@-Ìç´Ö     ¼ýÇ¼¾ðÊó¤Î¸¡º÷ÈÏ°Ï¤ò½¤Àµ
+      *  10/02/22    @@@@-Ìç´Ö     ¼«ÇåÀÕÊÝ¸±(100%)¤Î·×»»¼°¤ò½¤Àµ
       *****************************************************************
       *  ¥×¥í¥°¥é¥à½¤ÀµÍúÎò
       * [ORCA]ver      ÆüÉÕ        ÆâÍÆ
@@ -2245,6 +2246,46 @@
       *--- 2009/10/28 ADD END ------------------------------------------
       * ÊÝ¸±ÆâÉéÃ´¶â              
       *
+      *--- 2010/02/22 ADD START ----------------------------------------
+                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+                     AND PTRSI-JIBAISEIKBN    NOT  =  2
+      *            Ï«ºÒ½é¿Ç¶â³Û¶â³Û
+                        ADD  SYU-RSISHOSHIN-MONEY  
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSISHOSHIN-MONEY  
+                               TO  SUM-YOSO(SUM-SRYKAMAX 10)
+                        ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
+      *
+      *            Ï«ºÒºÆ¿Ç¶â³Û¶â³Û
+                        ADD  SYU-RSISAISHIN-MONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSISAISHIN-MONEY
+                               TO  SUM-YOSO(SUM-SRYKAMAX 10)
+                        ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
+      *
+      *            Ï«ºÒ»ØÆ³¶â³Û¶â³Û
+                        ADD  SYU-RSISDO-MONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSISDO-MONEY
+                               TO  SUM-YOSO(SUM-SRYKAMAX 10)
+                        ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
+      *
+      *            Ï«ºÒ¤½¤ÎÂ¾¶â³Û¶â³Û
+                        ADD  SYU-RSIETC-MONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSIETC-MONEY
+                               TO  SUM-YOSO(SUM-SRYKAMAX 10)
+                        ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
+      *
+                        ADD  SYU-HKNTEKMONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-HKNTEKMONEY
+                               TO  SUM-YOSO(SUM-SRYKAMAX 10)
+                        ADD    SYU-HKNTEKMONEY   TO   WRK-HKNNAI
+                   ELSE
+      *--- 2010/02/22 ADD END   ----------------------------------------
       *            ¼çÊÝ¸±Ê¬ÉéÃ´¶â³Û
       *
                    IF      SYU-SYUCOMPTOTAL  NOT = ZERO 
@@ -2293,48 +2334,50 @@
                    END-IF 
                    END-IF
       *
-                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
-      * 20080331 H20Ç¯4·î²þÀµÂÐ±þSTART tanaka
-      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM )
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
-      * 20080331 H20Ç¯4·î²þÀµÂÐ±þEND
-                     AND PTRSI-JIBAISEIKBN    NOT  =  2
+      *--- 2010/02/22 DELETE START -------------------------------------
+      *             IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+      ** 20080328 H20Ç¯4·î²þÀµÂÐ±þSTART tanaka
+      **               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM )
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+      ** 20080328 H20Ç¯4·î²þÀµÂÐ±þEND
+      *               AND PTRSI-JIBAISEIKBN    NOT  =  2
       *            Ï«ºÒ½é¿Ç¶â³Û¶â³Û
-                        ADD  SYU-RSISHOSHIN-MONEY  
-                               TO  SUM-YOSO(I3 10)
-                        ADD  SYU-RSISHOSHIN-MONEY  
-                               TO  SUM-YOSO(SUM-SRYKAMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
-                        ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
-      *
-      *            Ï«ºÒºÆ¿Ç¶â³Û¶â³Û
-                        ADD  SYU-RSISAISHIN-MONEY
-                               TO  SUM-YOSO(I3 10)
-                        ADD  SYU-RSISAISHIN-MONEY
-                               TO  SUM-YOSO(SUM-SRYKAMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
-                        ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
-      *
-      *            Ï«ºÒ»ØÆ³¶â³Û¶â³Û
-                        ADD  SYU-RSISDO-MONEY
-                               TO  SUM-YOSO(I3 10)
-                        ADD  SYU-RSISDO-MONEY
-                               TO  SUM-YOSO(SUM-SRYKAMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
-                        ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
-      *
-      *            Ï«ºÒ¤½¤ÎÂ¾¶â³Û¶â³Û
-                        ADD  SYU-RSIETC-MONEY
-                               TO  SUM-YOSO(I3 10)
-                        ADD  SYU-RSIETC-MONEY
-                               TO  SUM-YOSO(SUM-SRYKAMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
-                        ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
+      *                  ADD  SYU-RSISHOSHIN-MONEY  
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSISHOSHIN-MONEY  
+      *                         TO  SUM-YOSO(SUM-SRYKAMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      **
+      **            Ï«ºÒºÆ¿Ç¶â³Û¶â³Û
+      *                  ADD  SYU-RSISAISHIN-MONEY
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSISAISHIN-MONEY
+      *                         TO  SUM-YOSO(SUM-SRYKAMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      **
+      **            Ï«ºÒ»ØÆ³¶â³Û¶â³Û
+      *                  ADD  SYU-RSISDO-MONEY
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSISDO-MONEY
+      *                         TO  SUM-YOSO(SUM-SRYKAMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      **
+      **            Ï«ºÒ¤½¤ÎÂ¾¶â³Û¶â³Û
+      *                  ADD  SYU-RSIETC-MONEY
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSIETC-MONEY
+      *                         TO  SUM-YOSO(SUM-SRYKAMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      *--- 2010/02/22 DELETE END   -------------------------------------
                    END-IF
       *
       * ÊÝ¸±³°¶â³Û
