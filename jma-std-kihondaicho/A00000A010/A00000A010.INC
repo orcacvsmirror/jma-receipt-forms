@@ -19,10 +19,14 @@
            03  A010-JOBMSG        PIC  X(60).
            03  A010-SYSYMD        PIC  X(22).
            03  A010-PAGE          PIC  X(05).
-           03  A010-SRYYM         PIC  X(18).
+      *--- 2010/02/19 CHANGE START -------------------------------------
+      *     03  A010-SRYYM         PIC  X(18).
       *--- 2009/05/01 ADD START ----------------------------------------
-           03  A010-SRYYMD        PIC  X(22).
+      *     03  A010-SRYYMD        PIC  X(22).
       *--- 2009/05/01 ADD END ------------------------------------------
+           03  A010-SRYSTYMD        PIC  X(22).
+           03  A010-SRYEDYMD        PIC  X(22).
+      *--- 2010/02/19 CHANGE END ---------------------------------------
            03  A010-OUTTYPE       PIC  X(40).
            03  A010-NYUGAIKBN     PIC  X(20).
            03  A010-SRYKA         PIC  X(30).
