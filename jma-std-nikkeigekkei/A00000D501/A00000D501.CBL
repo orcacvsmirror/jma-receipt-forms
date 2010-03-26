@@ -71,6 +71,7 @@
       *              @@@@-田中    09/10/26  新患の件数処理を修正
       *              @@@@-田中    09/12/07  医療収益の端数処理を修正
       *              @@@@-田中    10/02/09  治験対応
+      *              @@@@-田中    10/03/09  初診・新患判定条件追加
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -2507,6 +2508,12 @@
                AND   SYU-SRYYMD  =  JYURRK2-SRYYMD
                AND   ACCT-DAY(1 IDX7)   >   ZERO
                AND   JYURRK-RENNUM  =  1
+      *--- 2010/03/09 ADD START ----------------------------------------
+               AND   (JYURRK-DOUJI-RENNUM  =  1  
+               OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
+               AND   (JYURRK-GRP-RENNUM  =  1  
+               OR   JYURRK-GRP-RENNUM  =  ZERO)  
+      *--- 2010/03/09 ADD START ----------------------------------------
       *    新患件数としてカウントする。
       *--- 2009/10/26 ADD START ----------------------------------------
              INITIALIZE                 WRK-SYOSINYMD
@@ -2746,6 +2753,11 @@
            IF   FLG-SRYACCT  =  ZERO
                AND   ACCT-DAY(1 IDX7)   >   ZERO
                AND   JYURRK-RENNUM  =  1
+      *--- 2010/03/09 ADD START ----------------------------------------
+               AND   JYURRK-SRYKBN(1)  >  "00"
+               AND   (JYURRK-DOUJI-RENNUM  =  1  
+               OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
+      *--- 2010/03/09 ADD END ------------------------------------------
       *--- 2008/12/04 CHANGE END ---------------------------------------
       *    初診件数としてカウントする。
       ***  保険別件数カウント 
