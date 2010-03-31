@@ -57,6 +57,7 @@
       *  09/10/28    @@@@-田中     助成金額の端数処理を修正
       *                            新患の件数処理を修正
       *  10/02/22    @@@@-門間     自賠責保険(100%)の計算式を修正
+      *  10/03/15    @@@@-門間     初診判定条件追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1518,7 +1519,10 @@
       * 新患件数
                  PERFORM  900-JYURRK-SELECT-SEC
                  IF       FLG-JYURRK       =   ZERO
-                   AND    JYURRK-SRYYMD    =   SYU-SRYYMD 
+                   AND    JYURRK-SRYYMD    =   SYU-SRYYMD
+      *--- 2010/03/15 ADD START ----------------------------------------
+                   AND    JYURRK-SRYKA     =   D125P-SRYKA
+      *--- 2010/03/15 ADD END   ----------------------------------------
       * 新患件数としてカウントする。
       *--- 2009/10/28 ADD START ----------------------------------------
                    INITIALIZE                 WRK-SYOSINYMD
@@ -2457,6 +2461,11 @@
       *             AND   ACCT-DAY(1 IDX7) >   ZERO
                    AND   JYURRK-RENNUM       =  1
       *=== 初診、再診、その他振分け修正 ADD By Yoshikawa(2007/06/27) end 
+      *--- 2010/03/15 ADD START ----------------------------------------
+                   AND   JYURRK-SRYKBN(1)     >  "00"
+                   AND  (JYURRK-DOUJI-RENNUM  =  0  OR
+                         JYURRK-DOUJI-RENNUM  =  1)
+      *--- 2010/03/15 ADD END   ----------------------------------------
       *  初診の件数としてカウントする。
                          ADD  1  TO  SUM-YOSO(I3 2)
                          ADD  1  TO  SUM-YOSO(SUM-SRYKAMAX 2)
