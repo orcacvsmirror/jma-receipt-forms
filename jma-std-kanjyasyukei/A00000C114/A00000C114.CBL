@@ -37,6 +37,7 @@
       *  07/09/12    @@@@-佐藤     4.0対応
       *  09/03/13    @@@@-田中     再診、その他の件数処理を修正
       *  09/07/09    @@@@-門間     再診、その他の振分け修正
+      *  10/03/09    @@@@-田中     初診判定条件追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -827,7 +828,12 @@
       *=== 初診、再診、その他振分け修正 DEL By Yoshikawa(2007/06/22) start
       *                     AND   ACCT-DAY(1 IDX7)    >  ZERO
       *=== 初診、再診、その他振分け修正 DEL By Yoshikawa(2007/06/22) end
-                           AND   JYURRK-RENNUM       =  1
+                             AND   JYURRK-RENNUM       =  1
+      *--- 2010/03/09 ADD START ----------------------------------------
+                             AND   JYURRK-SRYKBN(1)  >  "00"
+                             AND   (JYURRK-DOUJI-RENNUM  =  1  
+                             OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
+      *--- 2010/03/09 ADD END ------------------------------------------
       ***                 集計場所設定
                               PERFORM 320-SRYKA-GET-IDX-SEC
                               MOVE JYURRK-SRYYMD  TO  WRK-SRYYMD
@@ -1221,7 +1227,12 @@
       *=== 初診、再診、その他振分け修正 DEL By Yoshikawa(2007/06/22) start
       *                     AND   ACCT-DAY(1 IDX7)    >  ZERO
       *=== 初診、再診、その他振分け修正 DEL By Yoshikawa(2007/06/22) end
-                           AND   JYURRK-RENNUM       =  1
+                             AND   JYURRK-RENNUM       =  1
+      *--- 2010/03/09 ADD START ----------------------------------------
+                             AND   JYURRK-SRYKBN(1)  >  "00"
+                             AND   (JYURRK-DOUJI-RENNUM  =  1  
+                             OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
+      *--- 2010/03/09 ADD END ------------------------------------------
       ***                 集計場所設定
                               PERFORM 320-SRYKA-GET-IDX-SEC
                               MOVE JYURRK-SRYYMD(1:6)   TO WRK-SRYYM
