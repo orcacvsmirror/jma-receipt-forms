@@ -118,12 +118,12 @@
     </element>
     <element name="HOSPADRS" occurs="1">
       <appinfo>
-        <embed object="string" length="80"/>
+        <embed object="string" length="72"/>
       </appinfo>
     </element>
     <element name="HOSPNAME" occurs="1">
       <appinfo>
-        <embed object="string" length="80"/>
+        <embed object="string" length="72"/>
       </appinfo>
     </element>
     <element name="HOSPTEL" occurs="1">
@@ -317,12 +317,12 @@
     </element>
     <element name="B-HOSPADRS" occurs="1">
       <appinfo>
-        <embed object="string" length="80"/>
+        <embed object="string" length="72"/>
       </appinfo>
     </element>
     <element name="B-HOSPNAME" occurs="1">
       <appinfo>
-        <embed object="string" length="80"/>
+        <embed object="string" length="72"/>
       </appinfo>
     </element>
     <element name="B-HOSPTEL" occurs="1">
@@ -15063,13 +15063,13 @@
         <point val="9.125,4"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="9.125,3.785;14.579,4.325"/>
+        <rectangle val="9.125,3.785;14.0336,4.325"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HOSPADRS#</string>
       </attribute>
       <attribute name="embed_text_column">
-        <int val="40"/>
+        <int val="36"/>
       </attribute>
       <attribute name="embed_text_string">
         <enum val="0"/>
@@ -15077,7 +15077,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;
+            <string>#&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;
 &#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;#</string>
           </attribute>
           <attribute name="font">
@@ -15109,13 +15109,13 @@
         <point val="9.125,4.65"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="9.125,4.435;14.579,4.975"/>
+        <rectangle val="9.125,4.435;14.0336,4.975"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HOSPNAME#</string>
       </attribute>
       <attribute name="embed_text_column">
-        <int val="40"/>
+        <int val="36"/>
       </attribute>
       <attribute name="embed_text_string">
         <enum val="0"/>
@@ -15123,7 +15123,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;
+            <string>#&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;
 &#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;#</string>
           </attribute>
           <attribute name="font">
@@ -18229,13 +18229,13 @@
         <point val="24.2233,4"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="24.2233,3.785;29.6773,4.325"/>
+        <rectangle val="24.2233,3.785;29.1319,4.325"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#B-HOSPADRS#</string>
       </attribute>
       <attribute name="embed_text_column">
-        <int val="40"/>
+        <int val="36"/>
       </attribute>
       <attribute name="embed_text_string">
         <enum val="0"/>
@@ -18243,7 +18243,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#182;&#163;&#183;&#163;&#184;&#163;&#185;&#163;&#176;&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#182;&#163;&#183;&#163;&#184;&#163;&#185;&#163;&#176;
+            <string>#&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#182;&#163;&#183;&#163;&#184;&#163;&#185;&#163;&#176;&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#184;&#163;&#185;&#163;&#176;
 &#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#182;&#163;&#183;&#163;&#184;&#163;&#185;&#163;&#176;&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;#</string>
           </attribute>
           <attribute name="font">
@@ -18275,13 +18275,13 @@
         <point val="24.2232,4.65"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="24.2232,4.435;29.6772,4.975"/>
+        <rectangle val="24.2232,4.435;29.1318,4.975"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#B-HOSPNAME#</string>
       </attribute>
       <attribute name="embed_text_column">
-        <int val="40"/>
+        <int val="36"/>
       </attribute>
       <attribute name="embed_text_string">
         <enum val="0"/>
@@ -18289,7 +18289,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#182;&#163;&#183;&#163;&#184;&#163;&#185;&#163;&#176;&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#182;&#163;&#183;&#163;&#184;&#163;&#185;&#163;&#176;
+            <string>#&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#182;&#163;&#183;&#163;&#184;&#163;&#185;&#163;&#176;&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#184;&#163;&#185;&#163;&#176;
 &#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;&#163;&#182;&#163;&#183;&#163;&#184;&#163;&#185;&#163;&#176;&#163;&#177;&#163;&#178;&#163;&#179;&#163;&#180;&#163;&#181;#</string>
           </attribute>
           <attribute name="font">
