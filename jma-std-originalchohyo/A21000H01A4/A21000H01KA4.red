@@ -1462,16 +1462,16 @@
     </object>
     <object type="Embed - Text" version="0" id="O27">
       <attribute name="obj_pos">
-        <point val="14.6275,7.9664"/>
+        <point val="14.25,8"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="14.6275,7.64788;19.4755,8.44788"/>
+        <rectangle val="14.25,7.68148;19.502,8.48148"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HKNJANAME#</string>
       </attribute>
       <attribute name="embed_text_column">
-        <int val="24"/>
+        <int val="26"/>
       </attribute>
       <attribute name="embed_text_string">
         <enum val="1"/>
@@ -1479,8 +1479,8 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#&#196;&#180;&#201;&#219;&#187;&#212;&#176;&#203;&#205;&#253;&#180;&#214;&#196;&#174;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;
-&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;#</string>
+            <string>#&#196;&#180;&#201;&#219;&#187;&#212;&#176;&#203;&#205;&#253;&#180;&#214;&#196;&#174;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;
+&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -1489,7 +1489,7 @@
             <real val="0.4"/>
           </attribute>
           <attribute name="pos">
-            <point val="14.6275,7.9664"/>
+            <point val="14.25,8"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -10190,16 +10190,16 @@
     </object>
     <object type="Embed - Text" version="0" id="O233">
       <attribute name="obj_pos">
-        <point val="14.6375,8.7"/>
+        <point val="14.26,8.7336"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="14.6375,8.44519;19.4855,9.08519"/>
+        <rectangle val="14.26,8.47879;19.4312,9.11879"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#HKNJAADR#</string>
       </attribute>
       <attribute name="embed_text_column">
-        <int val="35"/>
+        <int val="36"/>
       </attribute>
       <attribute name="embed_text_string">
         <enum val="0"/>
@@ -10207,8 +10207,8 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;
-&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;#</string>
+            <string>#&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;
+&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;&#164;&#162;#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -10217,7 +10217,7 @@
             <real val="0.32"/>
           </attribute>
           <attribute name="pos">
-            <point val="14.6375,8.7"/>
+            <point val="14.26,8.7336"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
