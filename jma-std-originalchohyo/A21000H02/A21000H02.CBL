@@ -45,6 +45,7 @@
       *  08/03/28    @@@@−田中  後期高齢者変更対応
       *  08/06/20    @@@@−田中  中途終了の場合最後の1行が印字されない不具合を修正
       *  08/10/23    @@@@−田中  ver4.3対応(退院時院外処方箋)
+      *  10/04/05    @@@@−田中  H22年4月改正対応
       **********************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -327,6 +328,11 @@
            03  WRK-SYS-TIME            PIC 9(08).
            03  WRK-FILE-CNT2           PIC 9(02).
       *--- 2008/10/23 ADD END ------------------------------------
+      *--- 2010/04/05 ADD START ----------------------------------------
+           03  WRK-PREFNUM             PIC X(04).
+           03  WRK-TENHYOKBN           PIC X(02).
+           03  WRK-HOSPCD              PIC X(14).
+      *--- 2010/04/05 ADD END ------------------------------------------
       *
       *    剤毎の内容
        01  WRK-NAIYOU-AREA.
@@ -359,6 +365,10 @@
       *
            03  WRK-KOU-NAME            PIC X(100).
            03  WRK-KOU-KETA            PIC 9(03).
+      *--- 2010/04/05 ADD START ----------------------------------------
+           03  WRK-KOU-KETA2             PIC 9(03).
+           03  WRK-KOU-SRYCD             PIC 9(09).
+      *--- 2010/04/05 ADD END ------------------------------------------
       *
       *    処方内容
        01  WRK-SYOHOU-AREA.
@@ -667,7 +677,14 @@
             MOVE   "HC01.sh"           TO  MKPRT-ID
       ***  20030331 MONPE変更
       ***      MOVE   "HCM19.red"         TO  MKPRT-DIA
-            MOVE   "A21000H02.red"     TO  MKPRT-DIA
+      *--- 2010/04/05 CHANGE START -------------------------------------
+      *     MOVE   "A21000H02.red"     TO  MKPRT-DIA
+           IF    SPA-SRYYMD  <  "20100401"
+             MOVE   "A21000H02.red"     TO  MKPRT-DIA
+           ELSE
+             MOVE   "A21000H02V02.red"     TO  MKPRT-DIA
+           END-IF
+      *--- 2010/04/05 CHANGE END ---------------------------------------
       ***  20030331 MONPE変更
             MOVE   SPACE               TO  MKPRT-DEF
             MOVE   HC01PARA            TO  MKPRT-DAT
@@ -998,6 +1015,23 @@
            MOVE    SYS-1001-HOSPNAME   TO  WRK-HOSPNAME
            MOVE    SYS-1002-ADRS       TO  WRK-HOSPADRS
            MOVE    SYS-1002-TEL        TO  WRK-HOSPTEL
+      *--- 2010/04/05 ADD START ----------------------------------------
+      *    県番号
+           MOVE    SYS-1001-PREFNUM    TO  WRK-MOJI
+           MOVE    2                   TO  WRK-MOJISU
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-ZENKAKU-G(1:4)  TO  WRK-PREFNUM
+      *    点数表区分
+           MOVE    SYS-1001-TENHYOKBN  TO  WRK-MOJI
+           MOVE    1                   TO  WRK-MOJISU
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-ZENKAKU-G(1:2)  TO  WRK-TENHYOKBN
+      *    医療機関コード
+           MOVE    SYS-1001-HOSPCD     TO  WRK-MOJI
+           MOVE    7                   TO  WRK-MOJISU
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-ZENKAKU-G(1:14) TO  WRK-HOSPCD
+      *--- 2010/04/05 ADD END ------------------------------------------
       *    医療機関編集情報
            PERFORM 900-SYS1900-SYORI-SEC
       *---(03.04.01) LINE ADD END   -----------------------------------
@@ -2868,6 +2902,14 @@
            MOVE    WRK-HOSPNAME        TO  HCM19-HOSPNAME
       *    医療機関ＴＥＬ
            MOVE    WRK-HOSPTEL         TO  HCM19-HOSPTEL
+      *--- 2010/04/05 ADD START ----------------------------------------
+      *    県番号
+           MOVE    WRK-PREFNUM         TO  HCM19-PREFNUM
+      *    点数表区分
+           MOVE    WRK-TENHYOKBN       TO  HCM19-TENHYOKBN
+      *    医療機関コード
+           MOVE    WRK-HOSPCD          TO  HCM19-HOSPCD
+      *--- 2010/04/05 ADD END ------------------------------------------
       *---(03.04.01) LINE UPD END   -----------------------------------
       *
       *    ドクター
@@ -3020,7 +3062,37 @@
       *         MOVE    SYS-1010-NAME       TO  HCM19-HKNINAME
       *     END-IF
       *---(01.00.19) LINE ADD END   -----------------------------------
-
+      *--- 2010/04/05 ADD START ----------------------------------------
+           IF   SPA-SRYYMD  <  "20080401"
+      *    後発医薬品変更可
+             IF   ((FLG-KOUHATU-HEN  =  1 )
+                 OR  (SYS-1030-KOUHATUKA  =  "1"  OR  "2"))
+                 AND  (FLG-KOUHATU-CHK  =  1 )
+      *    ドクター
+               MOVE    SYS-1010-NAME       TO   HCM19-HKNINAME
+             END-IF
+      *    後発医薬品の後発医薬品への変更可
+             IF  ( ( FLG-KOUHATU-HEN  =   1)
+                 OR   ( SYS-1030-KOUHATUKA  =  "2" ) )
+                 AND  ( FLG-KOUHATU-1-CHK  =  1 )
+      *    ドクター
+               MOVE    SYS-1010-NAME       TO   HCM19-HKNINAME
+             END-IF
+           ELSE
+      *    変更可の署名あり、変更不可の入力がある時
+             IF  (FLG-KOUHATU-HEN  =  1 )
+                 OR  (FLG-KOUHATUFUKA-ARI  =  1 )
+               CONTINUE
+             ELSE
+      *    変更不可の署名
+               IF  ( FLG-KOUHATUFUKA-IN  =  1 )
+                   OR  ( SYS-1030-KOUHATUKA  =  "0" )
+                 MOVE    SYS-1010-NAME     TO   HCM19-HKNINAME
+               END-IF
+             END-IF
+           END-IF
+      *--- 2010/04/05 ADD END
+      *+
            .
        300-HCM19-HEN-EXT.
            EXIT.
@@ -3067,15 +3139,15 @@
       *****************************************************************
        3009-COMMENT-HEN-SEC     SECTION.
       *
-        PERFORM  VARYING  IDX-BIKOU  FROM 1 BY 1
-	        UNTIL  (IDX-BIKOU  > 18 ) OR
-		    (IDX-B  >= 4)
-	  IF  WRK-BIKOU-NAME2(IDX-BIKOU)  NOT  =  SPACE
-	    ADD   1                    TO  IDX-B
-	    MOVE  WRK-BIKOU-NAME2(IDX-BIKOU)
-	                       TO  HCM19-BIKOH(IDX-B)
-	  END-IF
-	END-PERFORM
+           PERFORM  VARYING  IDX-BIKOU  FROM 1 BY 1
+	                UNTIL  (IDX-BIKOU  > 18 ) OR
+		                    (IDX-B  >= 4)
+             IF  WRK-BIKOU-NAME2(IDX-BIKOU)  NOT  =  SPACE
+               ADD   1                    TO  IDX-B
+               MOVE  WRK-BIKOU-NAME2(IDX-BIKOU)
+                                 TO  HCM19-BIKOH(IDX-B)
+             END-IF
+	       END-PERFORM
       *
         .
        3009-COMMENT-HEN-EXT.
@@ -3648,6 +3720,9 @@
        3103-SRYACT-HEN-SEC         SECTION.
       *
            IF      SRY-SRYCD (IDXA)    =   "099209903"
+      *--- 2010/04/05 ADD START ----------------------------------------
+                               OR  "099209905"  OR  "099209906"
+      *--- 2010/04/05 ADD END ------------------------------------------
       *        後発医薬品へ変更不可
                PERFORM 31039-KOUHATU-NAME-SEC
            ELSE
@@ -3661,6 +3736,10 @@
                MOVE    1                   TO  FLG-HENSYU
            END-IF
       *
+      *--- 2010/04/05 ADD START ----------------------------------------
+           MOVE    SRY-SRYCD(IDXA)      TO   WRK-KOU-SRYCD
+      *--- 2010/04/05 ADD END ------------------------------------------
+      *
            .
        3103-SRYACT-HEN-EXT.
            EXIT.
@@ -3669,16 +3748,35 @@
       *****************************************************************
        31039-KOUHATU-NAME-SEC         SECTION.
       *
+      *--- 2010/04/05 ADD START ----------------------------------------
+           IF  WRK-KOU-SRYCD  =  "099209905"  OR  "099209906"
+             COMPUTE    WRK-KOU-KETA2  =  WRK-KOU-KETA  +  1
+           ELSE
+             MOVE    1                TO   WRK-KOU-KETA2  
+           END-IF
+      *--- 2010/04/05 ADD END ------------------------------------------
            MOVE    SRY-SRYCD (IDXA)    TO  TNS-SRYCD
            PERFORM 910-TENSU-READ-SEC
            IF      FLG-TENSU           =   ZERO
                STRING  "【"            DELIMITED  BY  SIZE
                        TNS-NAME        DELIMITED  BY  SPACE
                        "】"            DELIMITED  BY  SIZE
-                                       INTO    WRK-KOU-NAME
+      *--- 2010/04/05 CHANGE START -------------------------------------
+      *                                 INTO    WRK-KOU-NAME
+                                    INTO    WRK-KOU-NAME(WRK-KOU-KETA2:)
+      *--- 2010/04/05 CHANGE END ---------------------------------------
                END-STRING
-               COMPUTE WRK-KOU-KETA        =  (TNS-YUKOKETA  * 2)
-                                           +   4
+      *--- 2010/04/05 CHANGE START -------------------------------------
+      *           COMPUTE  WRK-KOU-KETA  =  (TNS-YUKOKETA  *  2)  +  4
+               IF  WRK-KOU-SRYCD  =  "099209905"  OR  "099209906"
+                 COMPUTE  WRK-KOU-KETA  =  (TNS-YUKOKETA  *  2)  +  4
+                                        +  WRK-KOU-KETA
+                                            
+               ELSE
+                 COMPUTE  WRK-KOU-KETA  =  (TNS-YUKOKETA  *  2)  +  4
+               END-IF
+      *
+      *--- 2010/04/05 CHANGE END ---------------------------------------
            END-IF
            MOVE    ZERO               TO  FLG-KOUHATU
       *---(01.00.19) LINE ADD START ------------------------------------
