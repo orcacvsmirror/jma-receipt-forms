@@ -40,3 +40,11 @@
       ****20030616 追加
             02  HCM19-JKYSNUMB    PIC X(20)   OCCURS  2 TIMES.
       ****20030616 追加
+      *--- 2010/04/06 ADD START ----------------------------------------
+            02  HCM19-HKNINAME       PIC X(16).
+            02  HCM19-PREFNUM.
+              05  HCM19-PREFNUM-G    PIC X(02)   OCCURS  2 TIMES.
+            02  HCM19-TENHYOKBN      PIC X(02).
+            02  HCM19-HOSPCD.
+              05  HCM19-HOSPCD-G     PIC X(02)   OCCURS  7 TIMES.
+      *--- 2010/04/06 ADD END ------------------------------------------
