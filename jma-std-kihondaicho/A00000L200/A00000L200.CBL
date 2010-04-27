@@ -36,6 +36,7 @@
       *  01.00.05       門間    09/02/23   SETTEI.TXTからINIへ拡張子の変更
       *  01.00.06       門間    09/05/13   プログラムオプション対応(INIファイル)
       *  01.00.07       田中    09/10/26   負担額の桁数を変更
+      *  01.00.08       田中    10/04/26   負担額の桁数を変更
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -103,7 +104,11 @@
                                     BY         //L200TP//.
       ***07/09/21 nagaya 4.0対応 end
       *
-           COPY    "A00000L200V02.INC".
+      *--- 2010/04/26 CHANGE START -------------------------------------
+      *     COPY    "A00000L200V02.INC".
+           COPY    "A00000L200V03.INC".
+      *--- 2010/04/26 CHANGE END ---------------------------------------
+      *
       *    スパ領域
        01  STS-AREA.
            03  STS-PARA            PIC X(02).
@@ -1636,8 +1641,12 @@
            MOVE    WRK-Z10           TO    L200-GTENSU
       *
       *    一部負担金
-           MOVE    WRK-GITBFTN       TO    WRK-Z9
-           MOVE    WRK-Z9            TO    L200-GITBFTN
+      *--- 2010/04/26 CHANGE START -------------------------------------
+      *     MOVE    WRK-GITBFTN       TO    WRK-Z9
+      *     MOVE    WRK-Z9            TO    L200-GITBFTN
+           MOVE    WRK-GITBFTN       TO    WRK-Z10
+           MOVE    WRK-Z10           TO    L200-GITBFTN
+      *--- 2010/04/26 CHANGE END ---------------------------------------
       *
       *    食事日数
            MOVE    WRK-GSNISSU       TO    WRK-Z4
@@ -1679,7 +1688,10 @@
                                        TO  SPRT-PRIORITY
       ***  20040914 MOTOHASI MONPEに変更
       ***     MOVE   "A00000L200"         TO  SPRT-PRTID
-           MOVE   "A00000L200V02.red"         TO  SPRT-PRTID
+      *--- 2010/04/26 CHANGE START -------------------------------------
+      *     MOVE   "A00000L200V02.red"         TO  SPRT-PRTID
+           MOVE   "A00000L200V03.red"         TO  SPRT-PRTID
+      *--- 2010/04/26 CHANGE END ---------------------------------------
       ***  20040914 MOTOHASI MONPEに変更
            MOVE    "保険別患者台帳"
                                      TO  SPRT-TITLE
