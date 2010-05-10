@@ -4988,7 +4988,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#&#190;&#174;&#183;&#215;(&#163;&#179;&#186;&#208;)#</string>
+            <string>#&#190;&#174;&#183;&#215;(&#163;&#182;&#186;&#208;)#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
