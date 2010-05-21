@@ -53,6 +53,7 @@
       *  09/04/16    @@@@-Ìç´Ö     ¥×¥í¥°¥é¥à¥ª¥×¥·¥ç¥óÂÐ±þ(INI¥Õ¥¡¥¤¥ë)
       *  09/10/28    @@@@-ÅÄÃæ     ½õÀ®¶â³Û¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *  10/02/22    @@@@-Ìç´Ö     ¼«ÇåÀÕÊÝ¸±(100%)¤Î·×»»¼°¤ò½¤Àµ
+      *  10/05/19    @@@@-ÅÄÃæ     ²ÔÆ¯Î¨·×»»¼°¤ò½¤Àµ
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1779,61 +1780,91 @@
       */20040329 ºï½ü
       *
       * ÉÂ¾²¿ô
-                    MOVE    SUM-BEDSUIPN  TO  SUM-YOSO (I3 5)
-                    COMPUTE SUM-YOSO(SUM-MONTHMAX 5) =
-                            SUM-YOSO(SUM-MONTHMAX 5) +
-                            SUM-YOSO(I3 5)
+             MOVE    SUM-BEDSUIPN  TO  SUM-YOSO (I3 5)
+             COMPUTE SUM-YOSO(SUM-MONTHMAX 5) =
+                     SUM-YOSO(SUM-MONTHMAX 5) +
+                     SUM-YOSO(I3 5)
       *=== ²ÔÆ¯Î¨·×»»¼°¤ÎÊÑ¹¹ ADD By Takashima(2007/04/24) start
       *
       * ÁíÆü¿ô
-                    MOVE  D100LNK-YMD1          TO  WRK-TMP-YMD
-                    MOVE  D100LNK-YMD2          TO  WRK-TMP-LYMD
-                    COMPUTE  WRK-SONISU   =
-                               WRK-TMP-LDD - WRK-TMP-DD + 1
-      * Áí¾²¿ô
-                    COMPUTE  WRK-SOBYOSYO =
+             MOVE  D100LNK-YMD1          TO  WRK-TMP-YMD
+             MOVE  D100LNK-YMD2          TO  WRK-TMP-LYMD
+      *--- 2010/05/19 CHANGE START -------------------------------------
+      *       MOVE    D100LNK-YMD1       TO   WRK-TMP-YMD
+             MOVE    D100LNK-YMD2       TO   WRK-TMP-LYMD
+      *       COMPUTE  WRK-SONISU  =  WRK-TMP-LDD  -  WRK-TMP-LDD  +  1
+             MOVE    D100LNK-YMD1       TO   WRK-TMP-YMD
+             IF   D100LNK-YMD1(1:6)  =  D100LNK-YMD2(1:6)
+               COMPUTE  WRK-SONISU  =  WRK-TMP-LDD  -  WRK-TMP-DD  +  1
+             ELSE
+               COMPUTE  WRK-TMP-MM  =  WRK-TMP-MM  +  I3  -  1
+               IF  WRK-TMP-MM  >  12
+                 ADD    1     TO   WRK-TMP-YY
+                 COMPUTE  WRK-TMP-MM  =  WRK-TMP-MM  -  12
+               END-IF
+      *    ÂÐ¾ÝÇ¯·îºÇ½ªÆü¼èÆÀ
+               INITIALIZE                    WRK-SYMD1
+               MOVE    WRK-TMP-YMD(1:6)      TO   WRK-SYMD1(1:6)
+               PERFORM   31012-LASTDAY-GET-SEC
+               MOVE    WRK-SYMD1             TO   WRK-TMP-LYMD
+      *
+               IF   I3  =  1
+                 COMPUTE  WRK-SONISU  =  WRK-TMP-LDD  -  WRK-TMP-DD
+                                      +  1
+               ELSE
+                 IF   WRK-TMP-LYMD(1:6)  =  D100LNK-YMD2(1:6)
+                   MOVE    D100LNK-YMD2(7:2)   TO   WRK-SONISU
+                 ELSE
+                   MOVE    WRK-TMP-LDD         TO   WRK-SONISU
+                 END-IF
+               END-IF
+             END-IF
+      *
+      *--- 2010/05/19 CHANGE START -------------------------------------
+      *    Áí¾²¿ô
+             COMPUTE  WRK-SOBYOSYO =
                              SUM-YOSO (I3 5) * WRK-SONISU
       *=== ²ÔÆ¯Î¨·×»»¼°¤ÎÊÑ¹¹ ADD By Takashima(2007/04/24) end
       *
-      * ²ÔÆ¯Î¨
-                    INITIALIZE                WRK-RATE
-                                              WRK-RATE2
-                    COMPUTE  WRK-RATE =
-                             SUM-YOSO (I3 4) /
+      *    ²ÔÆ¯Î¨
+             INITIALIZE                WRK-RATE
+                                       WRK-RATE2
+             COMPUTE  WRK-RATE =
+                      SUM-YOSO (I3 4) /
       *=== ²ÔÆ¯Î¨·×»»¼°¤ÎÊÑ¹¹ ADD By Takashima(2007/04/24) start
       *                       SUM-YOSO (I3 5)
                              WRK-SOBYOSYO
       *=== ²ÔÆ¯Î¨·×»»¼°¤ÎÊÑ¹¹ ADD By Takashima(2007/04/24) end
-                    COMPUTE  WRK-RATE2 ROUNDED     =
-                             WRK-RATE  *  100
-                    MOVE     WRK-RATE2    TO  WRK-RATE-Z9
-                    MOVE     WRK-RATE-Z9  TO  SUM-YOSO(I3 6)
+             COMPUTE  WRK-RATE2 ROUNDED     =
+                      WRK-RATE  *  100
+             MOVE     WRK-RATE2    TO  WRK-RATE-Z9
+             MOVE     WRK-RATE-Z9  TO  SUM-YOSO(I3 6)
       *
-      * ÀÁµá¿ô
-                    MOVE SUM-SYUNOU-CNT(I3) 
-                         TO  SUM-YOSO (I3 8)
-                    ADD  SUM-SYUNOU-CNT(I3)
-                         TO  SUM-YOSO (SUM-MONTHMAX 8)
+      *    ÀÁµá¿ô
+             MOVE SUM-SYUNOU-CNT(I3) 
+                  TO  SUM-YOSO (I3 8)
+             ADD  SUM-SYUNOU-CNT(I3)
+                  TO  SUM-YOSO (SUM-MONTHMAX 8)
       *
-      * Ê¿¶ÑÅÀ
-                    INITIALIZE                WRK-TEN
-                    COMPUTE  WRK-TEN  ROUNDED      =
-                             SUM-YOSO (I3 7) / 
-                             SUM-YOSO (I3 8)
-                    MOVE     WRK-TEN  TO  SUM-YOSO (I3 9)
+      *    Ê¿¶ÑÅÀ
+             INITIALIZE                WRK-TEN
+             COMPUTE  WRK-TEN  ROUNDED      =
+                      SUM-YOSO (I3 7) / 
+                      SUM-YOSO (I3 8)
+             MOVE     WRK-TEN  TO  SUM-YOSO (I3 9)
       *
-      * ²áÆüÌ¤¼ý¶â»Ä³Û
-                   COMPUTE  I4  =  I3   -  1
-                   IF    I3     =  1
-                         MOVE      SUM-BF-MISYU
-                                   TO  WRK-MONEY   
-                   ELSE
-                         COMPUTE   WRK-MONEY   = 
-                                       SUM-YOSO (I4 20)
-                                   +   SUM-YOSO (I4 22)
-                   END-IF
-                   MOVE  WRK-MONEY 
-                         TO  SUM-YOSO (I3 20)
+      *    ²áÆüÌ¤¼ý¶â»Ä³Û
+             COMPUTE  I4  =  I3   -  1
+             IF    I3     =  1
+                   MOVE      SUM-BF-MISYU
+                             TO  WRK-MONEY   
+             ELSE
+                   COMPUTE   WRK-MONEY   = 
+                                 SUM-YOSO (I4 20)
+                             +   SUM-YOSO (I4 22)
+             END-IF
+             MOVE  WRK-MONEY 
+                   TO  SUM-YOSO (I3 20)
       * 20040401 ºï½ü Y.Takahashi
       * Æþ¶â³Û
       * Æþ¶â³Û¤«¤éÅöÆüÍÂ¤ê¶â¤ò°ú¤­µî¤ë              
@@ -1846,7 +1877,7 @@
       */20040401 ºï½ü 
       *
       * 20040401 ÄÉ²Ã Y.Takahashi
-                   EVALUATE WRK-NYUTENTTLKBN
+             EVALUATE WRK-NYUTENTTLKBN
       *=== ¼«Èñ¡¢´ðËÜ¿ÇÎÅ¹àÌÜÄÉ²ÃÂÐ±þ By Takashima(2006/11/13) start
       *                WHEN  1
       *                     MOVE 0   TO  SUM-YOSO(I3 36)
@@ -1864,38 +1895,38 @@
       *                     MOVE 0   TO  SUM-YOSO(I3 40)
       *                     MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 40)
       *-------------------------------------------------------------------
-                      WHEN  1
-                           MOVE 0   TO  SUM-YOSO(I3 40)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 40)
-                      WHEN  2                
-                           MOVE 0   TO  SUM-YOSO(I3 41)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 41)
-                      WHEN  3                
-                           MOVE 0   TO  SUM-YOSO(I3 42)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 42)
-                      WHEN  4                
-                           MOVE 0   TO  SUM-YOSO(I3 43)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 43)
-                      WHEN  5                
-                           MOVE 0   TO  SUM-YOSO(I3 44)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 44)
-                      WHEN  6                
-                           MOVE 0   TO  SUM-YOSO(I3 45)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 45)
-                      WHEN  7                
-                           MOVE 0   TO  SUM-YOSO(I3 46)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 46)
-                      WHEN  8                
-                           MOVE 0   TO  SUM-YOSO(I3 47)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 47)
-                      WHEN  9                
-                           MOVE 0   TO  SUM-YOSO(I3 48)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 48)
-                      WHEN  10                
-                           MOVE 0   TO  SUM-YOSO(I3 49)
-                           MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 49)
+               WHEN  1
+                    MOVE 0   TO  SUM-YOSO(I3 40)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 40)
+               WHEN  2                
+                    MOVE 0   TO  SUM-YOSO(I3 41)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 41)
+               WHEN  3                
+                    MOVE 0   TO  SUM-YOSO(I3 42)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 42)
+               WHEN  4                
+                    MOVE 0   TO  SUM-YOSO(I3 43)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 43)
+               WHEN  5                
+                    MOVE 0   TO  SUM-YOSO(I3 44)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 44)
+               WHEN  6                
+                    MOVE 0   TO  SUM-YOSO(I3 45)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 45)
+               WHEN  7                
+                    MOVE 0   TO  SUM-YOSO(I3 46)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 46)
+               WHEN  8                
+                    MOVE 0   TO  SUM-YOSO(I3 47)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 47)
+               WHEN  9                
+                    MOVE 0   TO  SUM-YOSO(I3 48)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 48)
+               WHEN  10                
+                    MOVE 0   TO  SUM-YOSO(I3 49)
+                    MOVE 0   TO  SUM-YOSO(SUM-MONTHMAX 49)
       *=== ¼«Èñ¡¢´ðËÜ¿ÇÎÅ¹àÌÜÄÉ²ÃÂÐ±þ By Takashima(2006/11/13) end
-                   END-EVALUATE
+             END-EVALUATE
       */20040401 ÄÉ²Ã
       * 20040401 ºï½ü Y.Takahashi
       * ¼«Èñ¶â³Û¤«¤éÅöÆüÍÂ¤ê¶â¤ò°ú¤­µî¤ë
@@ -3797,13 +3828,14 @@
       *****************************************************************
        31012-LASTDAY-GET-SEC        SECTION.
       *
-           INITIALIZE                    STS-AREA-DAY
-           INITIALIZE                    LNK-DAY7-AREA
-           MOVE    "71"          TO      LNK-DAY7-IRAI
-           MOVE    WRK-SYMD1      TO      LNK-DAY7-YM
-           CALL    "ORCSDAY"     USING   STS-AREA-DAY
-                                         LNK-DAY7-AREA
-           MOVE LNK-DAY7-KOYOMI  TO      WRK-SYMD1
+           INITIALIZE                  STS-AREA-DAY
+           INITIALIZE                  LNK-DAY7-AREA
+           MOVE    "71"                TO   LNK-DAY7-IRAI
+           MOVE    WRK-SYMD1           TO   LNK-DAY7-YM
+           CALL    "ORCSDAY"           USING
+                                       STS-AREA-DAY
+                                       LNK-DAY7-AREA
+           MOVE    LNK-DAY7-KOYOMI     TO   WRK-SYMD1
            .
        31012-LASTDAY-GET-EXT.
            EXIT.
