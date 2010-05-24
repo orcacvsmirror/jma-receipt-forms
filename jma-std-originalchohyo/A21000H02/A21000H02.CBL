@@ -46,6 +46,7 @@
       *  08/06/20    @@@@−田中  中途終了の場合最後の1行が印字されない不具合を修正
       *  08/10/23    @@@@−田中  ver4.3対応(退院時院外処方箋)
       *  10/04/05    @@@@−田中  H22年4月改正対応
+      *  10/05/19    @@@@ー門間  医療機関名等が印字されない不具合の修正
       **********************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -724,8 +725,12 @@
            MOVE    SPACE               TO  SYS-1001-REC
            MOVE    "1001"              TO  SYS-1001-KANRICD
            MOVE    "*"                 TO  SYS-1001-KBNCD
-           MOVE    ZERO                TO  SYS-1001-STYUKYMD
-           MOVE    ALL "9"             TO  SYS-1001-EDYUKYMD
+      *--- 2010/05/19 CHANGE START -------------------------------------
+      *     MOVE    ZERO                TO  SYS-1001-STYUKYMD
+      *     MOVE    ALL "9"             TO  SYS-1001-EDYUKYMD
+           MOVE    SPA-SRYYMD          TO  SYS-1001-STYUKYMD
+           MOVE    SPA-SRYYMD          TO  SYS-1001-EDYUKYMD
+      *--- 2010/05/19 CHANGE END   -------------------------------------
       *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
       *=== 4.0対応 By Otake(2007/09/21) end
@@ -777,8 +782,12 @@
            MOVE    SPACE               TO  SYS-1002-REC
            MOVE    "1002"              TO  SYS-1002-KANRICD
            MOVE    "*"                 TO  SYS-1002-KBNCD
-           MOVE    ZERO                TO  SYS-1002-STYUKYMD
-           MOVE    ALL "9"             TO  SYS-1002-EDYUKYMD
+      *--- 2010/05/19 CHANGE START -------------------------------------
+      *     MOVE    ZERO                TO  SYS-1002-STYUKYMD
+      *     MOVE    ALL "9"             TO  SYS-1002-EDYUKYMD
+           MOVE    SPA-SRYYMD          TO  SYS-1002-STYUKYMD
+           MOVE    SPA-SRYYMD          TO  SYS-1002-EDYUKYMD
+      *--- 2010/05/19 CHANGE END   -------------------------------------
       *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM         TO  SYS-1002-HOSPNUM
       *=== 4.0対応 By Otake(2007/09/21) end
@@ -2178,8 +2187,12 @@
            MOVE    SPACE               TO  SYS-1010-REC
            MOVE    "1010"              TO  SYS-1010-KANRICD
            MOVE    WRK-DRCD            TO  SYS-1010-KBNCD
-           MOVE    ZERO                TO  SYS-1010-STYUKYMD
-           MOVE    ALL "9"             TO  SYS-1010-EDYUKYMD
+      *--- 2010/05/19 CHANGE START -------------------------------------
+      *     MOVE    ZERO                TO  SYS-1010-STYUKYMD
+      *     MOVE    ALL "9"             TO  SYS-1010-EDYUKYMD
+           MOVE    SPA-SRYYMD          TO  SYS-1010-STYUKYMD
+           MOVE    SPA-SRYYMD          TO  SYS-1010-EDYUKYMD
+      *--- 2010/05/19 CHANGE END   -------------------------------------
       *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM         TO  SYS-1010-HOSPNUM
       *=== 4.0対応 By Otake(2007/09/21) end
@@ -2230,8 +2243,12 @@
            MOVE    SPACE               TO  SYS-1005-REC
            MOVE    "1005"              TO  SYS-1005-KANRICD
            MOVE    WRK-SRYKA           TO  SYS-1005-KBNCD
-           MOVE    ZERO                TO  SYS-1005-STYUKYMD
-           MOVE    ALL "9"             TO  SYS-1005-EDYUKYMD
+      *--- 2010/05/19 CHANGE START -------------------------------------
+      *     MOVE    ZERO                TO  SYS-1005-STYUKYMD
+      *     MOVE    ALL "9"             TO  SYS-1005-EDYUKYMD
+           MOVE    SPA-SRYYMD          TO  SYS-1005-STYUKYMD
+           MOVE    SPA-SRYYMD          TO  SYS-1005-EDYUKYMD
+      *--- 2010/05/19 CHANGE END   -------------------------------------
       *=== 4.0対応 By Otake(2007/09/21) start
       *20071120 診療科名取得時の不具合を修正START t.tanaka
       *     MOVE    SPA-HOSPNUM         TO  SYS-1010-HOSPNUM
