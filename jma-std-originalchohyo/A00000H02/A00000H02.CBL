@@ -52,6 +52,7 @@
       *  09/08/20    @@@@ー門間    労災保険・自賠責保険の処理を修正
       *  10/02/10    @@@@−田中    治験対応
       *  10/03/23    @@@@ー田中    H22年4月改正対応
+      *  10/04/23    @@@@ー田中    小数点以下５桁対応
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -250,10 +251,16 @@
       **** 20060401 onuki  負担割合用編集項目の追加
            03  WRK-FTNRATE          PIC 9(02)V9(01).
       ****
-           03  WRK-SURYO           PIC 9(05)V9(03).
+      *--- 2010/04/23 CHANGE START -------------------------------------
+      *     03  WRK-SURYO           PIC 9(05)V9(03).
+      *     03  WRK-SURYO-R         REDEFINES   WRK-SURYO.
+      *         05  WRK-SURYO-S1    PIC 9(05).
+      *         05  WRK-SURYO-S2    PIC 9(03).
+           03  WRK-SURYO           PIC 9(05)V9(05).
            03  WRK-SURYO-R         REDEFINES   WRK-SURYO.
                05  WRK-SURYO-S1    PIC 9(05).
-               05  WRK-SURYO-S2    PIC 9(03).
+               05  WRK-SURYO-S2    PIC 9(05).
+      *--- 2010/04/23 CHANGE END ---------------------------------------
       *
            03  WRK-SURYO-X.
       *********05  WRK-SURYO-Z1    PIC ZZZZZ.
@@ -261,16 +268,26 @@
                05  WRK-SURYO-Z2    PIC X(01).
                05  WRK-SURYO-Z3    PIC ZZZ.
            03  WRK-SURYO-N         PIC X(18).
-      *
+      *--- 2010/04/23 ADD START ----------------------------------------
+           03  WRK-SURYO-N22       PIC X(22).
+      *--- 2010/04/23 ADD END ------------------------------------------
       *---(03.04.00) LINE ADD START ------------------------------------
            03  WRK-SURYO2          PIC 9(05)V9(05).
            03  WRK-SURYO2-R         REDEFINES   WRK-SURYO2.
                05  WRK-SURYO2-S1    PIC 9(05).
                05  WRK-SURYO2-S2    PIC 9(05).
            03  WRK-SURYO-X2.
-               05  WRK-SURYO2-Z1   PIC ZZ9.
+      *--- 2010/04/23 CHANGE START -------------------------------------
+      *         05  WRK-SURYO2-Z1   PIC ZZ9.
+               05  WRK-SURYO2-Z1   PIC ZZZZ9.
+      *--- 2010/04/23 CHANGE END ---------------------------------------
                05  WRK-SURYO2-Z2   PIC X(01).
                05  WRK-SURYO2-Z3   PIC ZZZZZ.
+      *--- 2010/04/23 ADD START ----------------------------------------
+           03  WRK-SURYO-X2-R      REDEFINES   WRK-SURYO-X2.
+               05  WRK-SURYO2-X21  PIC X(02).
+               05  WRK-SURYO2-X29  PIC X(09).
+      *--- 2010/04/23 ADD END ------------------------------------------
            03  WRK-KANZANCHI       PIC 9(05)V9(5).
       *---(03.04.00) LINE ADD END   ------------------------------------
            03  WRK-TANINAME        PIC X(04).
@@ -366,6 +383,13 @@
                05  WRK-NAIYOU-R3           REDEFINES   WRK-NAIYOU-Z.
                    07  WRK-FIL23           PIC X(06).
                    07  WRK-MEISYOU3        PIC X(80).
+      *--- 2010/04/23 ADD START ----------------------------------------
+               05  WRK-NAIYOU-R4           REDEFINES   WRK-NAIYOU-Z.
+                   07  WRK-FIL41           PIC X(46).
+                   07  WRK-SURYOU4         PIC X(22).
+                   07  WRK-TANI4           PIC X(12).
+                   07  WRK-FIL42           PIC X(06).
+      *--- 2010/04/23 ADD END ------------------------------------------
       *    薬剤編集
        01  WRK-MEISAI-AREA.
            03  WRK-M-SRYCD               PIC X(09).
@@ -434,11 +458,11 @@
       *    出力先プリンタ名割り当て情報
            COPY  "CPSK1031.INC".
       *
-      *--- 2008/10/23 ADD START ------------------------------------
+      *--- 2008/10/23 ADD START ----------------------------------------
       *    出力先プリンタ名割り当て情報（入院）
            COPY    "CPSK1034.INC".
-      *--- 2008/10/23 ADD END ------------------------------------
-      *---(03.04.01) LINE ADD START -----------------------------------
+      *--- 2008/10/23 ADD END ------------------------------------------
+      *---(03.04.01) LINE ADD START ------------------------------------
       *    医療機関編集情報
            COPY    "CPSK1900.INC".
       *    医療機関名称編集情報
@@ -2010,16 +2034,6 @@
            PERFORM VARYING     IDX2    FROM    1   BY  1
                    UNTIL       IDX2    >   LINE-MAX
                MOVE    WRK-NAIYOU (IDX IDX2)   TO  HCM19-NAIYO (IDX2)
-      *====デバッグ
-      *     MOVE       SPACE     TO  WRK-MSG
-      *     STRING   WRK-NAIYOU(IDX IDX2)
-      *                             DELIMITED  BY  SIZE
-      *              LOW-VALUE      DELIMITED  BY  SIZE
-      *     INTO       WRK-MSG
-      *     END-STRING
-      *
-      *     CALL       "coblog" USING WRK-MSG
-      *====デバッグ
            END-PERFORM
       *
       **** 免除編集
@@ -2511,6 +2525,34 @@
                   (FLG-SOURYOHEN       =   1     )
                MOVE    "23"                TO  WRK-SRYKBN
            END-IF
+      *
+      *--- 2010/04/23 ADD START ----------------------------------------
+           EVALUATE    WRK-SRYKBN
+             WHEN    "21"
+             WHEN    "22"
+      *    内服・頓服
+      *        最後の行に回数を編集
+               IF      WRK-SRYCD (1:1)     =   "6"
+                   ADD     1                   TO  IDX-S
+               ELSE
+      *            名称が回数表示まで編集されている時、行追加
+                   IF      WRK-M-KETA      >   66    AND
+                                           <=  80
+                       ADD     1                   TO  IDX-S
+                   END-IF
+               END-IF
+           END-EVALUATE
+      *
+      *    回数行で２０行以上の時
+           IF      IDX-S               >=  LINE-MAX
+               COMPUTE IDX-S           =   LINE-MAX   -   1
+      *        帳票編集処理
+               PERFORM 20022-PRINT-HEN-SEC
+               MOVE    SPACE               TO  WRK-NAIYOU-AREA
+               MOVE    1                   TO  IDX-S
+           END-IF
+      *--- 2010/04/23 ADD END ------------------------------------------
+      *
       *---(03.04.00) LINE ADD END   ------------------------------------
       *    最後の行に回数を編集
            IF      ORCHC19-KBN         =   "1"
@@ -2518,6 +2560,9 @@
                                        OR  "B"
                                        OR  "C"
       *---(01.00.16) LINE ADD END   -----------------------------------
+      *--- 2010/04/23 ADD START ----------------------------------------
+                                       OR  "D"
+      *--- 2010/04/23 ADD END ------------------------------------------
       *        回数編集なし
                CONTINUE
            ELSE
@@ -2771,15 +2816,36 @@
            IF     (WRK-M-SRYCD(1:1)     =   "6"  OR  "7" )  OR
                   (WRK-M-SRYCD(1:3)     =   "059"        )
       *    数量
-               IF      WRK-SURYOU (IDX-S)  NOT =   SPACE
-                   ADD     1               TO  IDX-S
-                   MOVE    ALL "　"        TO  WRK-NO     (IDX-S)
-                   MOVE    ALL "　"        TO  WRK-K2     (IDX-S)
+      *--- 2010/04/23 CHANGE START -------------------------------------
+      *         IF      WRK-SURYOU (IDX-S)  NOT =   SPACE
+      *             ADD     1               TO  IDX-S
+      *             MOVE    ALL "　"        TO  WRK-NO     (IDX-S)
+      *             MOVE    ALL "　"        TO  WRK-K2     (IDX-S)
+               IF   WRK-SURYO-N22   =   SPACE
+      *            １８文字まで
+                   IF    WRK-SURYOU (IDX-S)  NOT =  SPACE
+                       ADD     1               TO   IDX-S
+                       MOVE    ALL "　"        TO   WRK-NO(IDX-S)
+                       MOVE    ALL "　"        TO   WRK-K2(IDX-S)
+                   END-IF
+                   MOVE    WRK-SURYO-N         TO   WRK-SURYOU(IDX-S)
+                   MOVE    WRK-M-TANI          TO   WRK-TANI(IDX-S)
+               ELSE
+      *    ２２文字まで
+                   IF      WRK-SURYOU4(IDX-S)  NOT =   SPACE
+                       ADD     1               TO   IDX-S
+                       MOVE    ALL "　"        TO   WRK-NO(IDX-S)
+                       MOVE    ALL "　"        TO   WRK-K2(IDX-S)
+                   END-IF
+                   MOVE    WRK-SURYO-N22       TO   WRK-SURYOU4 (IDX-S)
+                   MOVE    WRK-M-TANI          TO   WRK-TANI4 (IDX-S)
+      *--- 2010/04/23 CHANGE END ---------------------------------------
                END-IF
-               MOVE    WRK-M-SURYOU        TO  WRK-SURYOU (IDX-S)
-               MOVE    WRK-M-TANI          TO  WRK-TANI (IDX-S)
+      *--- 2010/04/23 DELETE START -------------------------------------
+      *         MOVE    WRK-M-SURYOU        TO  WRK-SURYOU (IDX-S)
+      *         MOVE    WRK-M-TANI          TO  WRK-TANI (IDX-S)
+      *--- 2010/04/23 DELETE END ---------------------------------------
            END-IF
-      *
            INSPECT WRK-MEISYOU1 (IDX-S)  REPLACING  ALL "  "  BY  "　"
            INSPECT WRK-SURYOU (IDX-S)    REPLACING  ALL "  "  BY  "　"
            INSPECT WRK-TANI   (IDX-S)    REPLACING  ALL "  "  BY  "　"
@@ -2932,6 +2998,9 @@
                MOVE    SRY-SRYSURYO (IDXA)     TO  WRK-SURYO
                IF      WRK-SURYO           =   ZERO
                    MOVE    SPACE               TO  WRK-SURYO-N
+      *--- 2010/04/23 ADD START ----------------------------------------
+                   MOVE    SPACE               TO  WRK-SURYO-N22
+      *--- 2010/04/23 ADD END ------------------------------------------
                ELSE
                    PERFORM 10011-SURYO-HEN-SEC
                END-IF
@@ -3156,6 +3225,11 @@
       *    MOVE    WRK-ZENKAKU-G(1:18) TO  WRK-SURYO-N
       *---(03.04.00) LINE DEL END   ------------------------------------
       *---(03.04.00) LINE ADD START ------------------------------------
+      *--- 2010/04/23 ADD START ----------------------------------------
+           MOVE    SPACE               TO  WRK-SURYO-N
+           MOVE    SPACE               TO  WRK-SURYO-N22
+      *--- 2010/04/23 ADD END ------------------------------------------
+      *
       *    換算値により数量変更
            IF      WRK-KANZANCHI       =   ZERO
                MOVE    1               TO  WRK-KANZANCHI
@@ -3231,14 +3305,29 @@
                MOVE    "."                 TO  WRK-SURYO2-Z2
            END-IF
       *
-           MOVE    WRK-SURYO-X2        TO  WRK-MOJI
-           MOVE    9                   TO  WRK-MOJISU
-           PERFORM 2009-HENKAN-SEC
-           MOVE    WRK-ZENKAKU-G(1:18) TO  WRK-SURYO-N
-      *    整数が３桁以上の場合、表示なしとする
-           IF      WRK-SURYO2-S1(1:2)  NOT =   ZERO
-               MOVE    SPACE               TO  WRK-SURYO-N
+      *--- 2010/04/23 CHANGE START -------------------------------------
+      *     MOVE    WRK-SURYO-X2        TO  WRK-MOJI
+      *     MOVE    9                   TO  WRK-MOJISU
+      *     PERFORM 2009-HENKAN-SEC
+      *     MOVE    WRK-ZENKAKU-G(1:18) TO  WRK-SURYO-N
+      **    整数が３桁以上の場合、表示なしとする
+      *     IF      WRK-SURYO2-S1(1:2)  NOT =   ZERO
+      *         MOVE    SPACE               TO  WRK-SURYO-N
+      *     END-IF
+           IF   WRK-SURYO2-X21  =  SPACE
+      *    整数３桁・小数部５桁まで
+             MOVE    WRK-SURYO2-X29      TO   WRK-MOJI
+             MOVE    9                   TO   WRK-MOJISU
+             PERFORM  2009-HENKAN-SEC
+             MOVE    WRK-ZENKAKU-G(1:18) TO   WRK-SURYO-N
+           ELSE
+      *    整数３桁以上・小数部５桁
+             MOVE    WRK-SURYO-X2        TO   WRK-MOJI
+             MOVE    11                  TO   WRK-MOJISU
+             PERFORM  2009-HENKAN-SEC
+             MOVE    WRK-ZENKAKU-G(1:22) TO   WRK-SURYO-N22
            END-IF
+      *--- 2010/04/23 CHANGE END ---------------------------------------
            .
        100112-SURYO-HEN05-EXT.
            EXIT.
