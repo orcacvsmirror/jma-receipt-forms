@@ -51,6 +51,7 @@
       *  09/08/04    @@@@ー門間    自賠責保険(0%)の負担割合を0に修正
       *  09/08/20    @@@@ー門間    労災保険・自賠責保険の処理を修正
       *  10/03/23    @@@@ー田中    H22年4月改正対応
+      *  10/05/25    @@@@ー門間    前回処方及び中途終了時に保険医署名が出力されない不具合の修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -3552,7 +3553,15 @@
                               (WKSRY-SRYCD (IDXA) =   SPACE)
       *        後発医薬品への変更
                IF      WKSRY-SRYCD (IDXA)      =   "099209902"
+      *--- 2010/05/25 CHANGE START -------------------------------------
+      *         MOVE    1                   TO  FLG-KOUHATU-HEN
+                                               OR  "099209904"
+                 IF  ORCHC19-SRYCD (IDX-L IDX-L2)   =   "099209902"
                    MOVE    1                   TO  FLG-KOUHATU-HEN
+                 ELSE
+                   MOVE    1                   TO  FLG-KOUHATUFUKA-IN
+                 END-IF
+      *--- 2010/05/25 CHANGE END   -------------------------------------
                ELSE
       *
                MOVE    WKSRY-SRYCD (IDXA)  TO  TNS-SRYCD
@@ -3843,7 +3852,15 @@
       *
       *    後発医薬品への変更
            IF      ORCHC19-SRYCD (IDX-L IDX-L2)    =   "099209902"
+      *--- 2010/05/25 CHANGE START -------------------------------------
+      *         MOVE    1                   TO  FLG-KOUHATU-HEN
+                                                   OR  "099209904"
+             IF  ORCHC19-SRYCD (IDX-L IDX-L2)   =   "099209902"
                MOVE    1                   TO  FLG-KOUHATU-HEN
+             ELSE
+               MOVE    1                   TO  FLG-KOUHATUFUKA-IN
+             END-IF
+      *--- 2010/05/25 CHANGE END   -------------------------------------
            ELSE
       *
            MOVE    ORCHC19-SRYCD (IDX-L IDX-L2)

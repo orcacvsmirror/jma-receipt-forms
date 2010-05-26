@@ -47,6 +47,7 @@
       *  08/10/23    @@@@−田中  ver4.3対応(退院時院外処方箋)
       *  10/04/05    @@@@−田中  H22年4月改正対応
       *  10/05/19    @@@@ー門間  医療機関名等が印字されない不具合の修正
+      *  10/05/25    @@@@ー門間  前回処方及び中途終了時に保険医署名が出力されない不具合の修正
       **********************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -4824,7 +4825,15 @@
                               (WKSRY-SRYCD (IDXA) =   SPACE)
       *        後発医薬品への変更
                IF      WKSRY-SRYCD (IDXA)      =   "099209902"
+      *--- 2010/05/25 CHANGE START -------------------------------------
+      *         MOVE    1                   TO  FLG-KOUHATU-HEN
+                                               OR  "099209904"
+                 IF  ORCHC19-SRYCD (IDX-L IDX-L2)   =   "099209902"
                    MOVE    1                   TO  FLG-KOUHATU-HEN
+                 ELSE
+                   MOVE    1                   TO  FLG-KOUHATUFUKA-IN
+                 END-IF
+      *--- 2010/05/25 CHANGE END   -------------------------------------
                ELSE
       *
                MOVE    WKSRY-SRYCD (IDXA)  TO  TNS-SRYCD
@@ -5123,7 +5132,15 @@
       *
       *    後発医薬品への変更
            IF      ORCHC19-SRYCD (IDX-L IDX-L2)    =   "099209902"
+      *--- 2010/05/25 CHANGE START -------------------------------------
+      *         MOVE    1                   TO  FLG-KOUHATU-HEN
+                                                   OR  "099209904"
+             IF  ORCHC19-SRYCD (IDX-L IDX-L2)    =   "099209902"
                MOVE    1                   TO  FLG-KOUHATU-HEN
+             ELSE
+               MOVE    1                   TO  FLG-KOUHATUFUKA-IN
+             END-IF
+      *--- 2010/05/25 CHANGE END   -------------------------------------
            ELSE
       *
            MOVE    ORCHC19-SRYCD (IDX-L IDX-L2)
