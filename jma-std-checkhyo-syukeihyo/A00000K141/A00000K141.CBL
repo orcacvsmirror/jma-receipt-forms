@@ -52,6 +52,7 @@
       *  09/12/14    @@@@-田中     病理診断をその他欄から病理診断欄に変更
       *                            放射線治療をその他欄に集計
       *                            その他（リハビリ）の診療をリハビリに集計
+      *  10/05/31    @@@@-田中     逓減の集計を修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -247,7 +248,11 @@
                05  WRK-HENKAN-2      PIC X(02).
            03  WRK-KAISU             PIC 9(09).
            03  WRK-NISSU             PIC 9(03).
-           03  WRK-TENSU             PIC 9(09).
+      *--- 2010/05/31 ADD + CHANGE START -------------------------------
+      *     03  WRK-TENSU             PIC 9(09).
+           03  WRK-TENSU             PIC S9(09).
+           03  WRK-PTID2             PIC 9(10).
+      *--- 2010/05/31 ADD + CHANGE END ---------------------------------
            03  WRK-TENSU2            PIC 9(09).
            03  WRK-SYUEKI            PIC 9(09).
            03  WRK-SYUEKI2           PIC 9(09).
@@ -1854,14 +1859,18 @@
            END-IF
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするEND
       *
-           IF   K141TMP-TENSU(IDX1)  NOT = ZERO    
-             AND K141TMP-KAISU(IDX1)  NOT = ZERO    
-               IF  FLG-M01TMP   =  1
-                   WRITE    K141TMP-REC
-               ELSE
-                   REWRITE  K141TMP-REC
-               END-IF
+      *--- 2010/05/31 DELETE START -------------------------------------
+      *     IF   K141TMP-TENSU(IDX1)  NOT = ZERO
+      *       AND K141TMP-KAISU(IDX1)  NOT = ZERO
+      *--- 2010/05/31 DELETE END ---------------------------------------
+           IF  FLG-M01TMP   =  1
+               WRITE    K141TMP-REC
+           ELSE
+               REWRITE  K141TMP-REC
            END-IF
+      *--- 2010/05/31 DELETE START -------------------------------------
+      *     END-IF
+      *--- 2010/05/31 DELETE END ---------------------------------------
       *
            .
        20012-SRY-EXT.
@@ -1893,14 +1902,16 @@
                        WHEN   OTHER
                            PERFORM  200122-ETC-SEC
                    END-EVALUATE
+      *--- 2010/05/31 DELETE START -------------------------------------
       ***** 04/05/17 INS
       *    検査・在宅の合計点数集計方法修正
-                   IF     ACCT-SRYKBN  =  "14" OR "60"
-      *--- 2009/12/14 ADD START ----------------------------------------
-                                          OR "64"
-      *--- 2009/12/14 ADD END ------------------------------------------
-                       PERFORM  2001211-SYUKEI-SEC
-                   END-IF
+      *             IF     ACCT-SRYKBN  =  "14" OR "60"
+      **--- 2009/12/14 ADD START ----------------------------------------
+      *                                    OR "64"
+      **--- 2009/12/14 ADD END ------------------------------------------
+      *                 PERFORM  2001211-SYUKEI-SEC
+      *             END-IF
+      *--- 2010/05/31 DELETE END ---------------------------------------
       *****
                END-PERFORM
       *
@@ -2034,22 +2045,33 @@
       *    COMPUTE   WRK-TENSU  =
       *               TNS-TEN    *      WRK-KAISU
       *    ADD      WRK-TENSU      TO     K141TMP-TENSU(IDX1)
-           IF  ACCT-ZAINUM NOT =  WRK-ZAINUM
-               COMPUTE  WRK-TENSU  =  
-                        ACCT-ZAITEN  * WRK-KAISU
-               ADD    WRK-TENSU        TO     K141TMP-TENSU(IDX1)
+      *--- 2010/05/31 CHANGE + CHANGE START ----------------------------
+      *     IF ACCT-ZAINUM NOT =  WRK-ZAINUM
+           IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM
+               OR  ( ACCT-ZAINUM  NOT =  WRK-ZAINUM
+               AND   ACCT-PTID  NOT =  WRK-PTID2 )
+             COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  WRK-KAISU
+             IF   TNS-TENSIKIBETU  =  7  OR  8
+               COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
+             END-IF
+             ADD    WRK-TENSU      TO   K141TMP-TENSU(IDX1)
+                                        K141TMP-TENSU(14)
       *
       *    回数加算
-               ADD    WRK-KAISU        TO     K141TMP-KAISU(IDX1)
+             ADD    WRK-KAISU      TO   K141TMP-KAISU(IDX1)
+                                        K141TMP-KAISU(14)
            END-IF
-           MOVE   ACCT-ZAINUM TO  WRK-ZAINUM
+           MOVE    ACCT-ZAINUM     TO   WRK-ZAINUM
       * 20080801 検査と在宅の点数と回数の計算式を修正END
+      *--- 2010/05/31 ADD + CHANGE START -------------------------------
+           MOVE    ACCT-PTID       TO   WRK-PTID2
+      *--- 2010/05/31 ADD END ------------------------------------------
       *
            .
        200121-ZAITAKU-SET-EXT.
            EXIT.
       *
-      *****************************************************************
+      ***************************************************************** 
       *    検査点数設定処理
       *****************************************************************
        200121-KENSA-SET-SEC                SECTION.
@@ -2185,15 +2207,28 @@
       *     COMPUTE   WRK-TENSU  =
       *               TNS-TEN    *      WRK-KAISU
       *     ADD      WRK-TENSU      TO     K141TMP-TENSU(IDX1)
-           IF ACCT-ZAINUM NOT =  WRK-ZAINUM
-               COMPUTE  WRK-TENSU  =  
-                        ACCT-ZAITEN  * WRK-KAISU
-               ADD      WRK-TENSU      TO     K141TMP-TENSU(IDX1)
+      *--- 2010/05/31 CHANGE SATRT -------------------------------------
+      *     IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM 
+           IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM 
+               OR  ( ACCT-ZAINUM  =  WRK-ZAINUM 
+               AND  ACCT-PTID  NOT =  WRK-PTID2 )
       *
+             COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  WRK-KAISU
+             IF   TNS-TENSIKIBETU  =  7  OR  8
+               COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
+             END-IF
+      *
+             ADD    WRK-TENSU        TO   K141TMP-TENSU(IDX1)
+                                          K141TMP-TENSU(35)
       *    回数加算
-               ADD      WRK-KAISU      TO     K141TMP-KAISU(IDX1)
+             ADD    WRK-KAISU        TO   K141TMP-KAISU(IDX1)
+                                          K141TMP-KAISU(35)
+      *--- 2010/05/31 CHANGE END ---------------------------------------
            END-IF
-           MOVE   ACCT-ZAINUM  TO  WRK-ZAINUM
+           MOVE    ACCT-ZAINUM       TO   WRK-ZAINUM
+      *--- 2010/05/31 ADD SATRT ----------------------------------------
+           MOVE    ACCT-PTID         TO   WRK-PTID2
+      *--- 2010/05/31 ADD END ------------------------------------------
       * 20080801 検査と在宅の点数と回数の計算式を修正END
       *
       *
@@ -2201,147 +2236,146 @@
        200121-KENSA-SET-EXT.
            EXIT.
       *
+      *--- 2010/05/31 DELETE SATRT -------------------------------------
       *****************************************************************
       *    検査・在宅合計点数設定処理
       *****************************************************************
-       2001211-SYUKEI-SEC                SECTION.
-      *
-           IF    ACCT-ZAITEN  =        ZERO
-      ***        点数、金額がゼロの場合は加算設定処理は行わない。
-               GO           TO       2001211-SYUKEI-EXT
-           END-IF
-      *
-      *    集計インデックス設定
-           IF     ACCT-SRYKBN       =     "14"
-               MOVE     14            TO    IDX1
-           ELSE
-               MOVE     35            TO    IDX1
-           END-IF
-      *
-           IF   WRK-CZ-SRYYMD    NOT =   JYURRK-SRYYMD
-             OR  WRK-CZ-PTID      NOT =   ACCT-PTID
-             OR  WRK-CZ-SRYKBN    NOT =   ACCT-SRYKBN
-             OR  WRK-CZ-ZAINUM    NOT =   ACCT-ZAINUM
-      *
-      *    回数加算
-               COMPUTE  IDX6  =
-                        JYURRK-RENNUM      +     1
-               INITIALIZE      WRK-KAISU
-               EVALUATE  JYURRK-SRYYMD(7:2)
-               WHEN  "01"
-                   MOVE      ACCT-DAY-1(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "02"
-                   MOVE      ACCT-DAY-2(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "03"
-                   MOVE      ACCT-DAY-3(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "04"
-                   MOVE      ACCT-DAY-4(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "05"
-                   MOVE      ACCT-DAY-5(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "06"
-                   MOVE      ACCT-DAY-6(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "07"
-                   MOVE      ACCT-DAY-7(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "08"
-                   MOVE      ACCT-DAY-8(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "09"
-                   MOVE      ACCT-DAY-9(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "10"
-                   MOVE      ACCT-DAY-10(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "11"
-                   MOVE      ACCT-DAY-11(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "12"
-                   MOVE      ACCT-DAY-12(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "13"
-                   MOVE      ACCT-DAY-13(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "14"
-                   MOVE      ACCT-DAY-14(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "15"
-                   MOVE      ACCT-DAY-15(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "16"
-                   MOVE      ACCT-DAY-16(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "17"
-                   MOVE      ACCT-DAY-17(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "18"
-                   MOVE      ACCT-DAY-18(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "19"
-                   MOVE      ACCT-DAY-19(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "20"
-                   MOVE      ACCT-DAY-20(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "21"
-                   MOVE      ACCT-DAY-21(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "22"
-                   MOVE      ACCT-DAY-22(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "23"
-                   MOVE      ACCT-DAY-23(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "24"
-                   MOVE      ACCT-DAY-24(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "25"
-                   MOVE      ACCT-DAY-25(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "26"
-                   MOVE      ACCT-DAY-26(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "27"
-                   MOVE      ACCT-DAY-27(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "28"
-                   MOVE      ACCT-DAY-28(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "29"
-                   MOVE      ACCT-DAY-29(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "30"
-                   MOVE      ACCT-DAY-30(IDX6)    TO
-                             WRK-KAISU
-               WHEN  "31"
-                   MOVE      ACCT-DAY-31(IDX6)    TO
-                             WRK-KAISU
-               END-EVALUATE
-               ADD   WRK-KAISU      TO  K141TMP-KAISU(IDX1)
-      *
-      *    点数加算
-           COMPUTE   WRK-TENSU  =
-                     ACCT-ZAITEN    *   WRK-KAISU
-           ADD       WRK-TENSU      TO  K141TMP-TENSU(IDX1)
-      *
-      *    剤番号ブレイクキーセット 
-               MOVE   JYURRK-SRYYMD TO  WRK-CZ-SRYYMD
-               MOVE   ACCT-PTID     TO  WRK-CZ-PTID
-               MOVE   ACCT-SRYKBN   TO  WRK-CZ-SRYKBN
-               MOVE   ACCT-ZAINUM   TO  WRK-CZ-ZAINUM
-           END-IF
-      *
-      *
-      *
-           .
-       2001211-SYUKEI-EXT.
-           EXIT.
-      *
+      * 2001211-SYUKEI-SEC                SECTION.
+      **
+      *     IF    ACCT-ZAITEN  =        ZERO
+      ****        点数、金額がゼロの場合は加算設定処理は行わない。
+      *         GO           TO       2001211-SYUKEI-EXT
+      *     END-IF
+      **
+      **    集計インデックス設定
+      *     IF     ACCT-SRYKBN       =     "14"
+      *         MOVE     14            TO    IDX1
+      *     ELSE
+      *         MOVE     35            TO    IDX1
+      *     END-IF
+      **
+      *     IF   WRK-CZ-SRYYMD    NOT =   JYURRK-SRYYMD
+      *       OR  WRK-CZ-PTID      NOT =   ACCT-PTID
+      *       OR  WRK-CZ-SRYKBN    NOT =   ACCT-SRYKBN
+      *       OR  WRK-CZ-ZAINUM    NOT =   ACCT-ZAINUM
+      **
+      **    回数加算
+      *         COMPUTE  IDX6  =
+      *                  JYURRK-RENNUM      +     1
+      *         INITIALIZE      WRK-KAISU
+      *         EVALUATE  JYURRK-SRYYMD(7:2)
+      *         WHEN  "01"
+      *             MOVE      ACCT-DAY-1(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "02"
+      *             MOVE      ACCT-DAY-2(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "03"
+      *             MOVE      ACCT-DAY-3(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "04"
+      *             MOVE      ACCT-DAY-4(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "05"
+      *             MOVE      ACCT-DAY-5(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "06"
+      *             MOVE      ACCT-DAY-6(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "07"
+      *             MOVE      ACCT-DAY-7(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "08"
+      *             MOVE      ACCT-DAY-8(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "09"
+      *             MOVE      ACCT-DAY-9(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "10"
+      *             MOVE      ACCT-DAY-10(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "11"
+      *             MOVE      ACCT-DAY-11(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "12"
+      *             MOVE      ACCT-DAY-12(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "13"
+      *             MOVE      ACCT-DAY-13(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "14"
+      *             MOVE      ACCT-DAY-14(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "15"
+      *             MOVE      ACCT-DAY-15(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "16"
+      *             MOVE      ACCT-DAY-16(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "17"
+      *             MOVE      ACCT-DAY-17(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "18"
+      *             MOVE      ACCT-DAY-18(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "19"
+      *             MOVE      ACCT-DAY-19(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "20"
+      *             MOVE      ACCT-DAY-20(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "21"
+      *             MOVE      ACCT-DAY-21(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "22"
+      *             MOVE      ACCT-DAY-22(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "23"
+      *             MOVE      ACCT-DAY-23(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "24"
+      *             MOVE      ACCT-DAY-24(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "25"
+      *             MOVE      ACCT-DAY-25(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "26"
+      *             MOVE      ACCT-DAY-26(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "27"
+      *             MOVE      ACCT-DAY-27(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "28"
+      *             MOVE      ACCT-DAY-28(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "29"
+      *             MOVE      ACCT-DAY-29(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "30"
+      *             MOVE      ACCT-DAY-30(IDX6)    TO
+      *                       WRK-KAISU
+      *         WHEN  "31"
+      *             MOVE      ACCT-DAY-31(IDX6)    TO
+      *                       WRK-KAISU
+      *         END-EVALUATE
+      *         ADD   WRK-KAISU      TO  K141TMP-KAISU(IDX1)
+      **
+      **    点数加算
+      *     COMPUTE   WRK-TENSU  =
+      *               ACCT-ZAITEN    *   WRK-KAISU
+      *     ADD       WRK-TENSU      TO  K141TMP-TENSU(IDX1)
+      **
+      **    剤番号ブレイクキーセット 
+      *         MOVE   JYURRK-SRYYMD TO  WRK-CZ-SRYYMD
+      *         MOVE   ACCT-PTID     TO  WRK-CZ-PTID
+      *         MOVE   ACCT-SRYKBN   TO  WRK-CZ-SRYKBN
+      *         MOVE   ACCT-ZAINUM   TO  WRK-CZ-ZAINUM
+      *     END-IF
+      * 
+      *     .
+      * 2001211-SYUKEI-EXT.
+      *     EXIT.
+      *--- 2010/05/31 DELETE SATRT -------------------------------------
       *****************************************************************
       *    保険適用外点数、自費項目金額設定処理
       *****************************************************************
@@ -2619,10 +2653,21 @@
       *    集計インデックス設定
            PERFORM  20013-IDXSET-SEC
       *
+      *
+           IF  ACCT-PTID  =  4371 OR 4377
+           DISPLAY  ACCT-ZAINUM  " = "WRK-CZ-ZAINUM
+           DISPLAY  ACCT-PTID " NOT = " WRK-CZ-PTID 
+           DISPLAY "ACCT-ZAITEN  = " ACCT-ZAITEN
+           DISPLAY  "------------------------------"
+           END-IF
            IF   WRK-CZ-SRYYMD    NOT =   JYURRK-SRYYMD
              OR  WRK-CZ-PTID      NOT =   ACCT-PTID
              OR  WRK-CZ-SRYKBN    NOT =   ACCT-SRYKBN
-             OR  WRK-CZ-ZAINUM    NOT =   ACCT-ZAINUM
+             OR   WRK-CZ-ZAINUM    NOT =   ACCT-ZAINUM
+      *--- 2010/05/31 ADD START ----------------------------------------
+             OR  ( WRK-CZ-ZAINUM  =  ACCT-ZAINUM
+             AND  ACCT-PTID  NOT =  WRK-CZ-PTID )
+      *--- 2010/05/31 ADD END ------------------------------------------
       *
       *    回数加算
                COMPUTE  IDX6  =
@@ -2729,14 +2774,20 @@
                  ADD   WRK-KAISU      TO  K141TMP-KAISU(IDX1)
       *
       *    点数加算
-                 COMPUTE   WRK-TENSU  =  ACCT-ZAITEN   *   WRK-KAISU
-                 ADD       WRK-TENSU      TO  K141TMP-TENSU(IDX1)
-      *
+      *--- 2010/05/31 CHANGE SATRT -------------------------------------
+                 COMPUTE   WRK-TENSU  =  ACCT-ZAITEN  *  WRK-KAISU
+                 IF   SRY-SRYCD(1)  =  "630010002"
+                     OR  TNS-TENSIKIBETU  =  7  OR  8
+                   COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
+                 END-IF
+      *--- 2010/05/31 CHANGE END ---------------------------------------
+                 ADD    WRK-TENSU     TO   K141TMP-TENSU(IDX1)
+           
       *    剤番号ブレイクキーセット 
                  MOVE   JYURRK-SRYYMD TO  WRK-CZ-SRYYMD
                  MOVE   ACCT-PTID     TO  WRK-CZ-PTID
                  MOVE   ACCT-SRYKBN   TO  WRK-CZ-SRYKBN
-                 MOVE   ACCT-ZAINUM   TO  WRK-CZ-ZAINUM
+                 MOVE   ACCT-ZAINUM   TO  WRK-CZ-ZAINUM 
       *--- 2009/02/10 ADD START ----------------------------------------
                END-IF
       *--- 2009/02/10 ADD END ------------------------------------------

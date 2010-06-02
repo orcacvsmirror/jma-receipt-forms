@@ -46,6 +46,7 @@
       *  09/12/14    @@@@-田中     病理診断をその他欄から病理診断欄に変更
       *                            放射線治療をその他欄に集計
       *                            その他（リハビリ）の診療をリハビリに集計
+      *  10/05/31    @@@@-田中     逓減の集計を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -236,7 +237,11 @@
                05  WRK-HENKAN-2      PIC X(02).
            03  WRK-KAISU             PIC 9(09).
            03  WRK-NISSU             PIC 9(03).
-           03  WRK-TENSU             PIC 9(09).
+      *--- 2010/05/31 ADD + CHANGE START -------------------------------
+      *     03  WRK-TENSU             PIC 9(09).
+           03  WRK-TENSU             PIC S9(09).
+           03  WRK-PTID2             PIC 9(10).
+      *--- 2010/05/31 ADD + CHANGE END ---------------------------------
            03  WRK-TENSU2            PIC 9(09).
            03  WRK-SYUEKI            PIC 9(09).
            03  WRK-SYUEKI2           PIC 9(09).
@@ -1469,45 +1474,51 @@
       * 20071113 老人の値が前期高齢者に集計される不具合を修正END
       *
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするSTART t.tanaka
-           IF ACCT-HKNCOMBI NOT = "9999"
+           IF   ACCT-HKNCOMBI NOT = "9999"
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするEND
       *
       *    診療行為情報読み込み
       *    (14)往診・在宅,(60)検査,(95)非課税自費,(96)課税自費は
       *    診療コード毎に分類する
-               IF    ACCT-SRYKBN  =  "14"
-                  OR   ACCT-SRYKBN  =  "60"
+             IF    ACCT-SRYKBN  =  "14"
+                 OR   ACCT-SRYKBN  =  "60"
       *--- 2009/12/14 ADD START ----------------------------------------
-                  OR   ACCT-SRYKBN  =  "64"
+                 OR   ACCT-SRYKBN  =  "64"
       *--- 2009/12/14 ADD END ------------------------------------------
-                  OR   ACCT-SRYKBN  =  "95"
-                  OR   ACCT-SRYKBN  =  "96"
-                   PERFORM  200121-SRYCD-CHK-SEC
+                 OR   ACCT-SRYKBN  =  "95"
+                 OR   ACCT-SRYKBN  =  "96"
+               PERFORM  200121-SRYCD-CHK-SEC
+      *--- 2010/05/31 DELETE START -------------------------------------
       ***** 04/05/17 INS
       *    検査・在宅の合計点数集計方法修正
-                   IF     ACCT-SRYKBN  =  "14" OR "60"
-      *--- 2009/12/14 ADD START ----------------------------------------
-                                           OR  "64"
-      *--- 2009/12/14 ADD END ------------------------------------------
-                       PERFORM  2001211-SYUKEI-SEC
-                   END-IF
-      *****
-               ELSE
-                       PERFORM  200122-ETC-SEC
-               END-IF
+      *             IF     ACCT-SRYKBN  =  "14" OR "60"
+      **--- 2009/12/14 ADD START ----------------------------------------
+      *                                     OR  "64"
+      **--- 2009/12/14 ADD END ------------------------------------------
+      *                 PERFORM  2001211-SYUKEI-SEC
+      *             END-IF
+      ******
+      *--- 2010/05/31 DELETE END ---------------------------------------
+             ELSE
+               PERFORM  200122-ETC-SEC
+             END-IF
       *    
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするSTART t.tanaka
            END-IF
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするEND
       *
-           IF   K140TMP-TENSU(IDX1)  NOT = ZERO
-               AND K140TMP-KAISU(IDX1)  NOT = ZERO
-               IF  FLG-M01TMP   =  1
-                   WRITE    K140TMP-REC
-               ELSE
-                   REWRITE  K140TMP-REC
-               END-IF
+      *--- 2010/05/31 DELETE START -------------------------------------
+      *     IF   K140TMP-TENSU(IDX1)  NOT = ZERO
+      *         AND K140TMP-KAISU(IDX1)  NOT = ZERO
+      *--- 2010/05/31 DELETE END ---------------------------------------
+           IF   FLG-M01TMP  =  1
+             WRITE  K140TMP-REC
+           ELSE
+             REWRITE  K140TMP-REC
            END-IF
+      *--- 2010/05/31 DELETE START -------------------------------------
+      *     END-IF
+      *--- 2010/05/31 DELETE END ---------------------------------------
       *
            .
        20012-SRY-EXT.
@@ -1565,22 +1576,36 @@
       *
       *    点数加算
       * 20080801 検査と在宅の点数と回数の計算式を修正START
-      *    COMPUTE   WRK-TENSU  =
-      *               TNS-TEN    *      ACCT-ZAIKAISU
-      *    ADD      WRK-TENSU      TO     K140TMP-TENSU(IDX1)
-           IF ACCT-ZAINUM NOT =  WRK-ZAINUM
-               COMPUTE  WRK-TENSU  =  
-                        ACCT-ZAITEN  * ACCT-ZAIKAISU
-               ADD      WRK-TENSU        TO     K140TMP-TENSU(IDX1)
+      *     IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM
+      *       COMPUTE   WRK-TENSU  =
+      *                  TNS-TEN    *      ACCT-ZAIKAISU
+      *       ADD      WRK-TENSU      TO     K140TMP-TENSU(IDX1)
+      *--- 2010/05/31 ADD START ----------------------------------------
+           IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM
+               OR  ( ACCT-ZAINUM  NOT =  WRK-ZAINUM
+               AND   ACCT-PTID  NOT =  WRK-PTID2 )
+      *
+             COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             IF   TNS-TENSIKIBETU  =  7  OR  8
+               COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
+             END-IF
+      *
+             ADD    WRK-TENSU        TO   K140TMP-TENSU(IDX1)
+                                          K140TMP-TENSU(14)
       * 
       *    回数加算
-               ADD      ACCT-ZAIKAISU    TO     K140TMP-KAISU(IDX1)
+             ADD    ACCT-ZAIKAISU    TO   K140TMP-KAISU(IDX1)
+                                          K140TMP-KAISU(14)
+      *--- 2010/05/31 ADD END ------------------------------------------
            END-IF
-           MOVE   ACCT-ZAINUM TO  WRK-ZAINUM
+           MOVE    ACCT-ZAINUM      TO   WRK-ZAINUM
+      *--- 2010/05/31 ADD START ----------------------------------------
+           MOVE    ACCT-PTID        TO   WRK-PTID2
+      *--- 2010/05/31 ADD END ------------------------------------------
       * 20080801 検査と在宅の点数と回数の計算式を修正END
       *
            .
-       200121-ZAITAKU-SET-EXT.
+       200121-ZAITKU-SET-EXT.
            EXIT.
       *
       *****************************************************************
@@ -1614,52 +1639,69 @@
       *
       * 20080801 検査と在宅の点数と回数の計算式を修正START
       *    点数取得
-      *     PERFORM  900-TENSU-READ-SEC
+      *--- 2010/05/31 ADD SATRT ----------------------------------------
+           PERFORM  900-TENSU-READ-SEC
+      *--- 2010/05/31 ADD END ------------------------------------------
       *
       *    点数加算
       *     COMPUTE   WRK-TENSU  =
       *               TNS-TEN    *      ACCT-ZAIKAISU
       *     ADD      WRK-TENSU      TO     K140TMP-TENSU(IDX1)
-           IF ACCT-ZAINUM NOT =  WRK-ZAINUM
-               COMPUTE  WRK-TENSU  =  
-                        ACCT-ZAITEN  * ACCT-ZAIKAISU
-               ADD      WRK-TENSU      TO    K140TMP-TENSU(IDX1)
+      *--- 2010/05/31 CHANGE SATRT -------------------------------------
+           IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM 
+               OR  ( ACCT-ZAINUM  =  WRK-ZAINUM 
+               AND  ACCT-PTID  NOT =  WRK-PTID2 )
+      *
+             COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             IF   TNS-TENSIKIBETU  =  7  OR  8
+               COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
+             END-IF
+      *
+             ADD    WRK-TENSU        TO   K140TMP-TENSU(IDX1)
+                                          K140TMP-TENSU(35)
       *
       *    回数加算
-               ADD      ACCT-ZAIKAISU  TO    K140TMP-KAISU(IDX1)
+             ADD    ACCT-ZAIKAISU    TO   K140TMP-KAISU(IDX1)
+                                          K140TMP-KAISU(35)
+      *--- 2010/05/31 CHANGE END ---------------------------------------
            END-IF
-           MOVE   ACCT-ZAINUM TO  WRK-ZAINUM
+           MOVE    ACCT-ZAINUM       TO   WRK-ZAINUM
+      *--- 2010/05/31 ADD SATRT ----------------------------------------
+           MOVE    ACCT-PTID         TO   WRK-PTID2
+      *--- 2010/05/31 ADD END ------------------------------------------
       * 20080801 検査と在宅の点数と回数の計算式を修正END
       *
            .
        200121-KENSA-SET-EXT.
            EXIT.
       *
+      *--- 2010/05/31 DELETE SATRT -------------------------------------
       *****************************************************************
       *    検査・在宅合計点数設定処理
       *****************************************************************
        2001211-SYUKEI-SEC                SECTION.
       *
-           IF     ACCT-SRYKBN       =     "14"
-               MOVE     14            TO    IDX1
-           ELSE
-               MOVE     35            TO    IDX1
-           END-IF
+      *     IF     ACCT-SRYKBN       =     "14"
+      *         MOVE     14            TO    IDX1
+      *     ELSE
+      *         MOVE     35            TO    IDX1
+      *     END-IF
+      **
+      **
+      **    点数加算
+      *     COMPUTE  WRK-TENSU       =
+      *              ACCT-ZAITEN     *      ACCT-ZAIKAISU
+      *     ADD      WRK-TENSU       TO     K140TMP-TENSU(IDX1)
+      **
+      **    回数加算
+      *     ADD    ACCT-ZAIKAISU  TO     K140TMP-KAISU(IDX1)
+      **
+      **
+      *     .
+      * 2001211-SYUKEI-EXT.
+      *     EXIT.
       *
-      *
-      *    点数加算
-           COMPUTE  WRK-TENSU       =
-                    ACCT-ZAITEN     *      ACCT-ZAIKAISU
-           ADD      WRK-TENSU       TO     K140TMP-TENSU(IDX1)
-      *
-      *    回数加算
-           ADD    ACCT-ZAIKAISU  TO     K140TMP-KAISU(IDX1)
-      *
-      *
-           .
-       2001211-SYUKEI-EXT.
-           EXIT.
-      *
+      *--- 2010/05/31 DELETE END ---------------------------------------
       *****************************************************************
       *    保険適用外点数、自費項目金額設定処理
       *****************************************************************
@@ -1848,12 +1890,19 @@
            IF  IDX1  NOT =  42 
       *--- 2009/02/10 ADD END ------------------------------------------
       *    点数加算
-             COMPUTE  WRK-TENSU       =
-                      ACCT-ZAITEN     *      ACCT-ZAIKAISU
-             ADD      WRK-TENSU       TO     K140TMP-TENSU(IDX1)
+      *--- 2010/05/31 CHANGE SATRT -------------------------------------
+             PERFORM  900-TENSU-READ-SEC
+      *
+             COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU   
+             IF   SRY-SRYCD(1)  =  "630010002"
+                 OR  TNS-TENSIKIBETU  =  7  OR  8
+               COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
+             END-IF
+      *--- 2010/05/31 CHANGE END ---------------------------------------
+             ADD    WRK-TENSU       TO   K140TMP-TENSU(IDX1)
       *
       *    回数加算
-             ADD    ACCT-ZAIKAISU  TO     K140TMP-KAISU(IDX1)
+             ADD    ACCT-ZAIKAISU   TO   K140TMP-KAISU(IDX1)
       *--- 2009/02/10 ADD START ----------------------------------------
            END-IF
       *--- 2009/02/10 ADD END ------------------------------------------
