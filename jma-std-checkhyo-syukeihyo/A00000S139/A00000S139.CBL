@@ -67,6 +67,7 @@
       *                            Æ±ÊÝ¸±¼ÔÈÖ¹æ¤ËÊÑ¹¹»þ¤ÎÉÔ¶ñ¹ç¤ò½¤Àµ
       *  10/01/13    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
       *  10/04/06    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
+      *  10/05/31    @@@@-Ìç´Ö     ¿©»öÎÅÍÜÈñ(¼«Èñ¡¦Ï«ºÒ¡¦¼«Çå¡¦¸ø³²)2½Å²Ã»»¤Î½¤Àµ
       *********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -2247,9 +2248,20 @@
       *
       *--- (2008/12/18) line add start monma ---------------------------
       *    °åÎÅ¼ý±× ¿©»ö¼ý±×²Ã»»
-           COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-                                +  WRK-KOHGK  +  WRK-JIHIGK
-                                +  (WRK-SSEIKYU - WRK-SFTNGK)
+      *--- 2010/05/31 CHANGE START -------------------------------------
+      *     COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+      *                          +  WRK-KOHGK  +  WRK-JIHIGK
+      *                          +  (WRK-SSEIKYU - WRK-SFTNGK)
+           IF  SYU-SYUHKNNUM(1:2)  NOT =  "98"  AND
+               WRK-SFTNGK              =  0
+             COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+                                  +  WRK-KOHGK  +  WRK-JIHIGK
+           ELSE
+             COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+                                  +  WRK-KOHGK  +  WRK-JIHIGK
+                                  +  (WRK-SSEIKYU - WRK-SFTNGK)
+           END-IF
+      *--- 2010/05/31 CHANGE END   -------------------------------------
       *--- (2008/12/18) line add end   monma ---------------------------
       *
            .
