@@ -31,6 +31,7 @@
       *  06/09/04    @@@@-吉川     sarge対応
       *  07/09/21    @@@@-大竹     Ver4.0対応
       *  09/04/16    @@@@-門間     プログラムオプション対応(INIファイル)
+      *  10/06/17    @@@@-田中     入外区分の指定を追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -467,6 +468,9 @@
       *=== 4.0対応 By Otake(2007/09/21) end
                                                WRK-PARA-SRYYM
                                                WRK-PARA-SRYKA
+      *--- 2010/06/17 ADD START ----------------------------------------
+                                               WRK-PARA-NYUGAIKBN
+      *--- 2010/06/17 ADD END ------------------------------------------
       *=== 4.0対応 By Otake(2007/09/21) start
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
@@ -589,9 +593,16 @@
               PERFORM 320-SRYKA-GROUPING-SEC
               IF     IDX2  NOT  =      ZERO 
       ***            診療科入力値エラーの場合
-                     MOVE  1           TO      INP-STS
+                MOVE  1           TO      INP-STS
               END-IF
            END-IF
+      *
+      *--- 2010/06/17 ADD START ----------------------------------------
+           IF   WRK-PARA-NYUGAIKBN  NOT =  SPACE  AND  "1"  AND  "2"
+                                                  AND  "3"
+             MOVE    2         TO   INP-STS
+           END-IF
+      *--- 2010/06/17 ADD END ------------------------------------------
       *
       *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE START
       *    預り金対象CD定義用INIファイル情報抽出
@@ -621,7 +632,6 @@
            END-IF
       *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE START
       *
-           DISPLAY "aaa"
            .
        110-PARA-HENSYU-EXT.
            EXIT.
@@ -833,9 +843,9 @@
       *
            INITIALIZE                  L300T
            INITIALIZE                  FLG-INVALID
-           MOVE SYU-NYUGAIKBN    TO    L300T-NYUGAIKBN
-           MOVE SYU-SRYKA        TO    L300T-SRYKA
-           MOVE PTNUM-PTNUM      TO    L300T-PTNUM
+           MOVE    SYU-NYUGAIKBN    TO    L300T-NYUGAIKBN
+           MOVE    SYU-SRYKA        TO    L300T-SRYKA
+           MOVE    PTNUM-PTNUM      TO    L300T-PTNUM
            READ L300T-FILE
                 KEY      IS      L300T-KEY  
                 INVALID  KEY     MOVE  1  TO FLG-INVALID
@@ -843,47 +853,61 @@
       *
            PERFORM  320-MISYU-GET-SUB2-SEC
       *
-           IF   FLG-INVALID      =    ZERO 
-             INITIALIZE       FLG-INVALID     
-             REWRITE L300T
-                     INVALID  KEY  
-                     MOVE  1  TO FLG-INVALID
-             END-REWRITE
-           ELSE
-             INITIALIZE       FLG-INVALID     
-             WRITE   L300T
-                     INVALID  KEY  
-                     MOVE  1  TO FLG-INVALID
-             END-WRITE
+      *--- 2010/06/17 ADD START ----------------------------------------
+           IF   WRK-PARA-NYUGAIKBN  NOT =  "3"
+              AND  ( WRK-PARA-NYUGAIKBN  =  L300T-NYUGAIKBN
+              OR  WRK-PARA-NYUGAIKBN  =  SPACE )
+      *--- 2010/06/17 ADD END ------------------------------------------
+             IF   FLG-INVALID      =    ZERO 
+               INITIALIZE       FLG-INVALID     
+               REWRITE L300T
+                       INVALID  KEY  
+                       MOVE  1  TO FLG-INVALID
+               END-REWRITE
+             ELSE
+               INITIALIZE       FLG-INVALID     
+               WRITE   L300T
+                       INVALID  KEY  
+                       MOVE  1  TO FLG-INVALID
+               END-WRITE
+             END-IF
+      *--- 2010/06/17 ADD START ----------------------------------------
            END-IF
+      *--- 2010/06/17 ADD END ------------------------------------------
       *
-      * 入院／外来レコード
+      *--- 2010/06/17 ADD START ----------------------------------------
+           IF   WRK-PARA-NYUGAIKBN  =  "3"  OR  SPACE
+      *--- 2010/06/17 ADD END ------------------------------------------
+      *    入院／外来レコード
       *
-           INITIALIZE                  L300T     
-           INITIALIZE                  FLG-INVALID
-           MOVE "9"              TO    L300T-NYUGAIKBN 
-           MOVE SYU-SRYKA        TO    L300T-SRYKA
-           MOVE PTNUM-PTNUM      TO    L300T-PTNUM
-           READ L300T-FILE
-                KEY      IS      L300T-KEY  
-                INVALID  KEY     MOVE  1  TO FLG-INVALID
-           END-READ
+             INITIALIZE                 L300T     
+             INITIALIZE                 FLG-INVALID
+             MOVE    "9"                TO   L300T-NYUGAIKBN 
+             MOVE    SYU-SRYKA          TO   L300T-SRYKA
+             MOVE    PTNUM-PTNUM        TO   L300T-PTNUM
+             READ  L300T-FILE
+                  KEY      IS      L300T-KEY  
+                  INVALID  KEY     MOVE  1  TO FLG-INVALID
+             END-READ
       *
-           PERFORM  320-MISYU-GET-SUB2-SEC
+             PERFORM  320-MISYU-GET-SUB2-SEC
       *
-           IF   FLG-INVALID      =    ZERO
+             IF   FLG-INVALID      =    ZERO
                INITIALIZE       FLG-INVALID     
                REWRITE L300T
                      INVALID  KEY  
                      MOVE  1  TO FLG-INVALID
                END-REWRITE
-           ELSE 
+             ELSE 
                INITIALIZE       FLG-INVALID     
                WRITE L300T
                      INVALID  KEY  
                      MOVE  1  TO FLG-INVALID
                END-WRITE
+             END-IF
+      *--- 2010/06/17 ADD START ----------------------------------------
            END-IF
+      *--- 2010/06/17 ADD END ------------------------------------------
       *
            .
        320-MISYU-GET-SUB-EXT.
@@ -994,9 +1018,9 @@
       *
            INITIALIZE                  L300T
            INITIALIZE                  FLG-INVALID
-           MOVE SRY-NYUGAIKBN    TO    L300T-NYUGAIKBN
-           MOVE SRY-SRYKA        TO    L300T-SRYKA
-           MOVE PTNUM-PTNUM      TO    L300T-PTNUM
+           MOVE    SRY-NYUGAIKBN       TO   L300T-NYUGAIKBN
+           MOVE    SRY-SRYKA           TO   L300T-SRYKA
+           MOVE    PTNUM-PTNUM         TO   L300T-PTNUM
            READ L300T-FILE
                 KEY      IS      L300T-KEY  
                 INVALID  KEY     MOVE  1  TO FLG-INVALID
@@ -1004,47 +1028,61 @@
       *
            PERFORM  320-AZUKARI-GET-SUB2-SEC 
       *
-           IF   FLG-INVALID      =    ZERO 
-             INITIALIZE       FLG-INVALID     
-             REWRITE L300T
-                    INVALID  KEY  
-                    MOVE  1  TO FLG-INVALID
-             END-REWRITE
-           ELSE
-             INITIALIZE       FLG-INVALID     
-             WRITE   L300T
-                     INVALID  KEY  
-                     MOVE  1  TO FLG-INVALID
-             END-WRITE
+      *--- 2010/06/17 ADD START ----------------------------------------
+           IF   WRK-PARA-NYUGAIKBN  NOT =  "3"
+               AND  ( WRK-PARA-NYUGAIKBN  =  L300T-NYUGAIKBN
+               OR  WRK-PARA-NYUGAIKBN  =  SPACE )
+      *--- 2010/06/17 ADD END ------------------------------------------
+             IF   FLG-INVALID      =    ZERO 
+               INITIALIZE       FLG-INVALID     
+               REWRITE L300T
+                      INVALID  KEY  
+                      MOVE  1  TO FLG-INVALID
+               END-REWRITE
+             ELSE
+               INITIALIZE       FLG-INVALID     
+               WRITE   L300T
+                       INVALID  KEY  
+                       MOVE  1  TO FLG-INVALID
+               END-WRITE
+             END-IF
+      *--- 2010/06/17 ADD START ----------------------------------------
            END-IF
+      *--- 2010/06/17 ADD END ------------------------------------------
       *
       * 入院／外来レコード
       *
            INITIALIZE                  L300T     
            INITIALIZE                  FLG-INVALID
-           MOVE "9"              TO    L300T-NYUGAIKBN
-           MOVE SRY-SRYKA        TO    L300T-SRYKA
-           MOVE PTNUM-PTNUM      TO    L300T-PTNUM
-           READ L300T-FILE
+           MOVE    "9"                 TO   L300T-NYUGAIKBN
+           MOVE    SRY-SRYKA           TO   L300T-SRYKA
+           MOVE    PTNUM-PTNUM         TO   L300T-PTNUM
+           READ   L300T-FILE
                 KEY      IS      L300T-KEY  
                 INVALID  KEY     MOVE  1  TO FLG-INVALID
            END-READ
       *
            PERFORM  320-AZUKARI-GET-SUB2-SEC 
       *
-           IF   FLG-INVALID      =    ZERO
-             INITIALIZE       FLG-INVALID     
-             REWRITE L300T
+      *--- 2010/06/17 ADD START ----------------------------------------
+           IF   WRK-PARA-NYUGAIKBN  =  "3"  OR  SPACE
+      *--- 2010/06/17 ADD END ------------------------------------------
+             IF   FLG-INVALID  =  ZERO
+               INITIALIZE       FLG-INVALID     
+               REWRITE L300T
+                       INVALID  KEY  
+                       MOVE  1  TO FLG-INVALID
+               END-REWRITE
+             ELSE 
+               INITIALIZE       FLG-INVALID     
+               WRITE L300T
                      INVALID  KEY  
                      MOVE  1  TO FLG-INVALID
-             END-REWRITE
-           ELSE 
-             INITIALIZE       FLG-INVALID     
-             WRITE L300T
-                   INVALID  KEY  
-                   MOVE  1  TO FLG-INVALID
-             END-WRITE
+               END-WRITE
+             END-IF
+      *--  - 2010/06/17 ADD START ----------------------------------------
            END-IF
+      *--- 2010/06/17 ADD END ------------------------------------------
       *
            .
        320-AZUKARI-GET-SUB-EXT.
@@ -1381,16 +1419,22 @@
            MOVE    WRK-PAGE                TO  L300-PAGE
       *    メッセージ
       * 
-           IF      INP-STS  NOT =  ZERO
-            EVALUATE  INP-STS
+           IF   INP-STS  NOT =  ZERO
+             EVALUATE  INP-STS
                 WHEN  1
-            MOVE "入力された診療科コードに誤りがあります" 
-                 TO       L300-JOBMSG
-            END-EVALUATE
-           ELSE    IF  WRK-PRDTLCNT =      ZERO
-            MOVE "＊＊＊  対象データが存在しません  ＊＊＊" 
-                 TO       L300-JOBMSG
-                   END-IF
+                  MOVE    "入力された診療科コードに誤りがあります" 
+                                     TO   L300-JOBMSG
+      *--- 2010/06/17 ADD START ----------------------------------------
+                WHEN  2
+                  MOVE    "入力された入外区分に誤りがあります" 
+                                     TO   L300-JOBMSG
+      *--- 2010/06/17 ADD END ------------------------------------------
+             END-EVALUATE
+           ELSE
+             IF  WRK-PRDTLCNT =      ZERO
+               MOVE "＊＊＊  対象データが存在しません  ＊＊＊" 
+                                     TO   L300-JOBMSG
+             END-IF
            END-IF
       * 
       *    入外区分
