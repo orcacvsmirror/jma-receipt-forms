@@ -53,6 +53,8 @@
       *                            放射線治療をその他欄に集計
       *                            その他（リハビリ）の診療をリハビリに集計
       *  10/05/31    @@@@-田中     逓減の集計を修正
+      *  10/06/02    @@@@-田中     検査・在宅の集計条件を修正
+      *  10/06/24    @@@@-門間     包括修正・パラメタの追加
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -252,6 +254,7 @@
       *     03  WRK-TENSU             PIC 9(09).
            03  WRK-TENSU             PIC S9(09).
            03  WRK-PTID2             PIC 9(10).
+           03  WRK-ZENJYUYMD         PIC X(08).
       *--- 2010/05/31 ADD + CHANGE END ---------------------------------
            03  WRK-TENSU2            PIC 9(09).
            03  WRK-SYUEKI            PIC 9(09).
@@ -1847,17 +1850,28 @@
            PERFORM 930-HKNCOMBI-SET-SEC
       * 20071113 老人の値が前期高齢者に集計される不具合を修正END
       *
+      *--- 2010/06/24 ADD START ---------------------------------------
+           IF  K100LNK-HOUKATU  NOT =  "0"
+      *--- 2010/06/24 ADD END   ---------------------------------------
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするSTART t.tanaka
-           IF ACCT-HKNCOMBI NOT = "9999"
+             IF ACCT-HKNCOMBI NOT = "9999"
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするEND
+      *--- 2010/06/24 ADD START ---------------------------------------
+               AND  ACCT-JIHOKBN  NOT =  "1"
+      *--- 2010/06/24 ADD END   ---------------------------------------
       *
       *    診療行為情報読み込み
       *    
                PERFORM  200121-SRYCD-CHK-SEC
       *    
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするSTART t.tanaka
-           END-IF
+             END-IF
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするEND
+      *--- 2010/06/24 ADD START ---------------------------------------
+           ELSE
+             PERFORM  200121-SRYCD-CHK-SEC
+           END-IF
+      *--- 2010/06/24 ADD END   ---------------------------------------
       *
       *--- 2010/05/31 DELETE START -------------------------------------
       *     IF   K141TMP-TENSU(IDX1)  NOT = ZERO
@@ -2045,11 +2059,12 @@
       *    COMPUTE   WRK-TENSU  =
       *               TNS-TEN    *      WRK-KAISU
       *    ADD      WRK-TENSU      TO     K141TMP-TENSU(IDX1)
-      *--- 2010/05/31 CHANGE + CHANGE START ----------------------------
+      *--- 2010/05/31 CHANGE START -------------------------------------
       *     IF ACCT-ZAINUM NOT =  WRK-ZAINUM
            IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM
                OR  ( ACCT-ZAINUM  NOT =  WRK-ZAINUM
                AND   ACCT-PTID  NOT =  WRK-PTID2 )
+               OR  (JYURRK-SRYYMD  NOT =  WRK-ZENJYUYMD)
              COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  WRK-KAISU
              IF   TNS-TENSIKIBETU  =  7  OR  8
                COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
@@ -2065,6 +2080,7 @@
       * 20080801 検査と在宅の点数と回数の計算式を修正END
       *--- 2010/05/31 ADD + CHANGE START -------------------------------
            MOVE    ACCT-PTID       TO   WRK-PTID2
+           MOVE    JYURRK-SRYYMD   TO   WRK-ZENJYUYMD
       *--- 2010/05/31 ADD END ------------------------------------------
       *
            .
@@ -2212,6 +2228,7 @@
            IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM 
                OR  ( ACCT-ZAINUM  =  WRK-ZAINUM 
                AND  ACCT-PTID  NOT =  WRK-PTID2 )
+               OR  (JYURRK-SRYYMD  NOT =  WRK-ZENJYUYMD)
       *
              COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  WRK-KAISU
              IF   TNS-TENSIKIBETU  =  7  OR  8
@@ -2228,6 +2245,7 @@
            MOVE    ACCT-ZAINUM       TO   WRK-ZAINUM
       *--- 2010/05/31 ADD SATRT ----------------------------------------
            MOVE    ACCT-PTID         TO   WRK-PTID2
+           MOVE    JYURRK-SRYYMD     TO   WRK-ZENJYUYMD
       *--- 2010/05/31 ADD END ------------------------------------------
       * 20080801 検査と在宅の点数と回数の計算式を修正END
       *
@@ -2375,7 +2393,7 @@
       *     .
       * 2001211-SYUKEI-EXT.
       *     EXIT.
-      *--- 2010/05/31 DELETE SATRT -------------------------------------
+      *--- 2010/05/31 DELETE END ---------------------------------------
       *****************************************************************
       *    保険適用外点数、自費項目金額設定処理
       *****************************************************************
@@ -2654,12 +2672,6 @@
            PERFORM  20013-IDXSET-SEC
       *
       *
-           IF  ACCT-PTID  =  4371 OR 4377
-           DISPLAY  ACCT-ZAINUM  " = "WRK-CZ-ZAINUM
-           DISPLAY  ACCT-PTID " NOT = " WRK-CZ-PTID 
-           DISPLAY "ACCT-ZAITEN  = " ACCT-ZAITEN
-           DISPLAY  "------------------------------"
-           END-IF
            IF   WRK-CZ-SRYYMD    NOT =   JYURRK-SRYYMD
              OR  WRK-CZ-PTID      NOT =   ACCT-PTID
              OR  WRK-CZ-SRYKBN    NOT =   ACCT-SRYKBN

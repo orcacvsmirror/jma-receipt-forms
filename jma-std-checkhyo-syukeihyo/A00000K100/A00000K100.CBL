@@ -27,6 +27,7 @@
       *  04/07/07    @@@@-本橋     入院基本料・特定基本料項目欄を削除
       *  04/09/15    @@@@-本橋     MONPE化
       *  07/09/18    @@@@-長屋     4.0対応
+      *  10/06/24    @@@@-門間     包括修正・パラメタの追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -125,6 +126,9 @@
            03  WRK-PARA-YM           PIC X(06).
            03  WRK-PARA-NYUGAIKBN    PIC X(01).
            03  WRK-PARA-HKNTG        PIC X(01).
+      *--- 2010/06/24 ADD START ---------------------------------------
+           03  WRK-PARA-HOUKATU      PIC X(01).
+      *--- 2010/06/24 ADD END   ---------------------------------------
       *
       *    一時領域
        01  WRK-AREA.
@@ -284,6 +288,9 @@
                                                WRK-PARA-YM
                                                WRK-PARA-NYUGAIKBN
                                                WRK-PARA-HKNTG
+      *--- 2010/06/24 ADD START ---------------------------------------
+                                               WRK-PARA-HOUKATU
+      *--- 2010/06/24 ADD END   ---------------------------------------
       ***07/09/18 nagaya 4.0対応 start
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
@@ -329,6 +336,9 @@
            MOVE  WRK-PARA-YM            TO    K100LNK-SRYYM
            MOVE  WRK-PARA-NYUGAIKBN     TO    K100LNK-NYUGAIKBN
            MOVE  WRK-PARA-HKNTG         TO    K100LNK-HKNTG
+      *--- 2010/06/24 ADD START ---------------------------------------
+           MOVE  WRK-PARA-HOUKATU       TO    K100LNK-HOUKATU
+      *--- 2010/06/24 ADD END   ---------------------------------------
       *
       *    帳票別サブプログラムCALL
            EVALUATE  WRK-PARA-PRTYPE

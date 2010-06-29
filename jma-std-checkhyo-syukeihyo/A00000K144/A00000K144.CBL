@@ -53,6 +53,7 @@
       *                            放射線治療をその他欄に集計
       *                            その他（リハビリ）の診療をリハビリに集計
       *  10/05/31    @@@@-田中     逓減の集計を修正
+      *  10/06/24    @@@@-門間     包括修正・パラメタの追加
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -1124,6 +1125,9 @@
                MOVE   "公費単独"        TO  WRK-HKNNAME(6)
                MOVE   "自費"            TO  WRK-HKNNAME(7)
                MOVE   "労災・自賠責"    TO  WRK-HKNNAME(8)
+      *--- 2010/06/24 ADD START ---------------------------------------
+               MOVE   "包括"            TO  WRK-HKNNAME(9)
+      *--- 2010/06/24 ADD END   ---------------------------------------
            ELSE
                MOVE   "社保本人"        TO  WRK-HKNNAME(1)
                MOVE   "社保家族"        TO  WRK-HKNNAME(2)
@@ -1133,8 +1137,14 @@
                MOVE   "自費"            TO  WRK-HKNNAME(6)
                MOVE   "労災・自賠責"    TO  WRK-HKNNAME(7)
                MOVE   "公害"            TO  WRK-HKNNAME(8)
+      *--- 2010/06/24 ADD START ---------------------------------------
+               MOVE   "包括"            TO  WRK-HKNNAME(9)
+      *--- 2010/06/24 ADD END   ---------------------------------------
            END-IF
-           MOVE     9               TO  WRK-HKNMAX
+      *--- 2010/06/24 CHANGE START ------------------------------------
+      *     MOVE     9               TO  WRK-HKNMAX
+           MOVE     10               TO  WRK-HKNMAX
+      *--- 2010/06/24 CHANGE END   ------------------------------------
       *
       *
            .
@@ -1342,7 +1352,15 @@
       *    
                WHEN SPACE
       *             MOVE           12          TO  IDX3
-                   MOVE           6           TO  IDX3
+      *--- 2010/06/24 ADD START ---------------------------------------
+                   IF  WRK-HKNCOMBI  =  "9999"
+                       MOVE        9          TO  IDX3
+                   ELSE
+      *--- 2010/06/24 ADD END   ---------------------------------------
+                       MOVE        6          TO  IDX3
+      *--- 2010/06/24 ADD START ---------------------------------------
+                   END-IF
+      *--- 2010/06/24 ADD END   ---------------------------------------
       *    
                WHEN OTHER
       *             MOVE           13          TO  IDX3
@@ -1451,9 +1469,17 @@
                    MOVE           4          TO  IDX3
       *
                WHEN SPACE
+      *--- 2010/06/24 ADD START ---------------------------------------
+                   IF  WRK-HKNCOMBI  =  "9999"
+                       MOVE       9          TO  IDX3
+                   ELSE
+      *--- 2010/06/24 ADD END   ---------------------------------------
       * 20080502 公費単独と自費の値が逆になっている不具合を修正START tanaka
       *       MOVE           6          TO  IDX3
-                   MOVE           5          TO  IDX3
+                       MOVE       5          TO  IDX3
+      *--- 2010/06/24 ADD START ---------------------------------------
+                   END-IF
+      *--- 2010/06/24 ADD END   ---------------------------------------
       * 20080502 公費単独と自費の値が逆になっている不具合を修正END
       *
                WHEN OTHER
@@ -1463,7 +1489,7 @@
       * 20080502 公費単独と自費の値が逆になっている不具合を修正END
            END-EVALUATE
       *
-           MOVE   IDX3                 TO WRK-HKN-INDEX
+           MOVE   IDX3                 TO   WRK-HKN-INDEX
       *
            .
        220-HKN-GROUPING-EXT.
@@ -1517,7 +1543,20 @@
       */20040413 追加 Y.Takahashi
       *
       *      診療行為情報集計
-               PERFORM  20012-SRY-SET
+      *--- 2010/06/24 ADD START ---------------------------------------
+               IF  K100LNK-HOUKATU  NOT =  "0"
+                 IF ACCT-HKNCOMBI NOT = "9999"
+                   AND  ACCT-JIHOKBN  NOT =  "1"
+                   PERFORM  20012-SRY-SET
+                 END-IF
+               ELSE
+                 IF  ACCT-JIHOKBN  =  "1"
+                   MOVE   9   TO   WRK-HKN-INDEX
+                 END-IF
+                 PERFORM  20012-SRY-SET
+               END-IF
+      *--- 2010/06/24 ADD START ---------------------------------------
+           
                PERFORM  900-SRYACCT-FETCH-SEC
            END-PERFORM
       *
@@ -1793,7 +1832,9 @@
            PERFORM  800-SKTTMP-READ-SEC
       *
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするSTART t.tanaka
-           IF ACCT-HKNCOMBI NOT = "9999"
+      *--- 2010/06/24 DELETE START ------------------------------------
+      *     IF ACCT-HKNCOMBI NOT = "9999"
+      *--- 2010/06/24 DELETE END   ------------------------------------
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするEND
       *
       *    診療行為情報読み込み
@@ -1823,9 +1864,10 @@
            END-IF
       *
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするSTART t.tanaka
-           END-IF
+      *--- 2010/06/24 DELETE START ------------------------------------
+      *     END-IF
+      *--- 2010/06/24 DELETE END   ------------------------------------
       * 20080128 保険組合せ番号９９９９(包括分)は対象外にするEND
-      *
       *--- 2010/05/31 DELETE START -------------------------------------
       *     IF   K144TMP-TENSU(IDX1)  NOT = ZERO    
       *       AND K144TMP-KAISU(IDX1)  NOT = ZERO    
