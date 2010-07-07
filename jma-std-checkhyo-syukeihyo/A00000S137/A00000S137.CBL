@@ -62,6 +62,7 @@
       *  09/11/06    @@@@-ÅÄÃæ     Æ±ÊÝ¸±¼ÔÈÖ¹æ¤ËÊÑ¹¹»þ¤ÎÉÔ¶ñ¹ç¤ò½¤Àµ
       *  10/01/13    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ   
       *  10/04/06    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
+      *  10/07/02    @@@@-ÅÄÃæ     É½¼¨¤·¤Ê¤¤¹àÌÜ¤òºï½ü
       ******************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -2354,62 +2355,64 @@
        3203-BODY-HEN-SEC               SECTION.
       *
       *
-           PERFORM    VARYING IDX1   FROM 47   BY 1
-                      UNTIL   IDX1  >  53
-                      OR       FLG-PASS  = 1
-             ADD      1         TO    IDX6
-      *
+      *--- 2010/07/02 DELETE START -------------------------------------
+      *     PERFORM    VARYING IDX1   FROM 47   BY 1
+      *                UNTIL   IDX1  >  53
+      *                OR       FLG-PASS  = 1
+      *       ADD      1         TO    IDX6
+      **
       *    ·ï¿ô
-             MOVE     S137TMP-KENSU(IDX1)    TO   WRK-Z4
-             MOVE     WRK-Z4                 TO   S137N2-KENSU(IDX6)
-      *
-      *    Æü¿ô
-             MOVE     S137TMP-NISSU(IDX1)    TO   WRK-Z4
-             MOVE     WRK-Z4                 TO   S137N2-NISSU(IDX6)
-      *
-      *    ÅÀ¿ô
-             MOVE     S137TMP-TENSU(IDX1)    TO   WRK-Z92
-             MOVE     WRK-Z92                TO   S137N2-TENSU(IDX6)
-      *
-      *--- 2008/12/18 CHANGE + ADD START -------------------------------
-      *    Áë¸ýÀÁµá³Û
-      *       MOVE     S137TMP-MADOGK(IDX1)   TO   WRK-Z92
-      *       MOVE     WRK-Z92                TO   S137N2-MADOGK(IDX6)
-             MOVE     S137TMP-MADOGK(IDX1)   TO   WRK-Z93
-             MOVE     WRK-Z93                TO   S137N2-MADOGK(IDX6)
-      *
-      *    ¼«Èñ¶â³Û
-             MOVE     S137TMP-JIHIGK(IDX1)   TO   WRK-Z92
-             MOVE     WRK-Z92                TO   S137N2-JIHIGK(IDX6)
-      *--- 2008/12/18 CHANGE + ADD END ---------------------------------
-      *    ÊÝ¸±ÀÁµá³Û
-             MOVE     S137TMP-HKNGK(IDX1)    TO   WRK-Z92
-             MOVE     WRK-Z92                TO   S137N2-HKNGK(IDX6)
-      *
-      *    ¸øÈñÀÁµá³Û
-             MOVE     S137TMP-KOHGK(IDX1)    TO   WRK-Z92
-             MOVE     WRK-Z92                TO   S137N2-KOHGK(IDX6)
-      *
-      *    °åÎÅ¼ý±×
-             MOVE     S137TMP-SYUEKI(IDX1)   TO   WRK-Z92
-             MOVE     WRK-Z92                TO   S137N2-SYUEKI(IDX6)
-      *    ¿©»öÎÅÍÜ
-      *    Æü¿ô
-      *--- 2009/08/20 CHANGE START -------------------------------------
-      *       MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z4
-      *       MOVE     WRK-Z4                 TO   S137N2-SNISSU(IDX6)
-             MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z52
-             MOVE     WRK-Z52                 TO   S137N2-SNISSU(IDX6)
-      *--- 2009/08/20 CHANGE END ---------------------------------------
-      *
-      *    ÀÁµá³Û
-             MOVE     S137TMP-SSEIKYU(IDX1)  TO   WRK-Z92
-             MOVE     WRK-Z92                TO   S137N2-SSEIKYU(IDX6)
-      *
-      *    É¸½àÉéÃ´³Û
-             MOVE     S137TMP-SFTNGK(IDX1)   TO   WRK-Z92
-             MOVE     WRK-Z92                TO   S137N2-SFTNGK(IDX6)
-           END-PERFORM
+      *       MOVE     S137TMP-KENSU(IDX1)    TO   WRK-Z4
+      *       MOVE     WRK-Z4                 TO   S137N2-KENSU(IDX6)
+      **
+      **    Æü¿ô
+      *       MOVE     S137TMP-NISSU(IDX1)    TO   WRK-Z4
+      *       MOVE     WRK-Z4                 TO   S137N2-NISSU(IDX6)
+      **
+      **    ÅÀ¿ô
+      *       MOVE     S137TMP-TENSU(IDX1)    TO   WRK-Z92
+      *       MOVE     WRK-Z92                TO   S137N2-TENSU(IDX6)
+      **
+      **--- 2008/12/18 CHANGE + ADD START -------------------------------
+      **    Áë¸ýÀÁµá³Û
+      **       MOVE     S137TMP-MADOGK(IDX1)   TO   WRK-Z92
+      **       MOVE     WRK-Z92                TO   S137N2-MADOGK(IDX6)
+      *       MOVE     S137TMP-MADOGK(IDX1)   TO   WRK-Z93
+      *       MOVE     WRK-Z93                TO   S137N2-MADOGK(IDX6)
+      **
+      **    ¼«Èñ¶â³Û
+      *       MOVE     S137TMP-JIHIGK(IDX1)   TO   WRK-Z92
+      *       MOVE     WRK-Z92                TO   S137N2-JIHIGK(IDX6)
+      **--- 2008/12/18 CHANGE + ADD END ---------------------------------
+      **    ÊÝ¸±ÀÁµá³Û
+      *       MOVE     S137TMP-HKNGK(IDX1)    TO   WRK-Z92
+      *       MOVE     WRK-Z92                TO   S137N2-HKNGK(IDX6)
+      **
+      **    ¸øÈñÀÁµá³Û
+      *       MOVE     S137TMP-KOHGK(IDX1)    TO   WRK-Z92
+      *       MOVE     WRK-Z92                TO   S137N2-KOHGK(IDX6)
+      **
+      **    °åÎÅ¼ý±×
+      *       MOVE     S137TMP-SYUEKI(IDX1)   TO   WRK-Z92
+      *       MOVE     WRK-Z92                TO   S137N2-SYUEKI(IDX6)
+      **    ¿©»öÎÅÍÜ
+      **    Æü¿ô
+      **--- 2009/08/20 CHANGE START -------------------------------------
+      **       MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z4
+      **       MOVE     WRK-Z4                 TO   S137N2-SNISSU(IDX6)
+      *       MOVE     S137TMP-SNISSU(IDX1)   TO   WRK-Z52
+      *       MOVE     WRK-Z52                 TO   S137N2-SNISSU(IDX6)
+      **--- 2009/08/20 CHANGE END ---------------------------------------
+      **
+      **    ÀÁµá³Û
+      *       MOVE     S137TMP-SSEIKYU(IDX1)  TO   WRK-Z92
+      *       MOVE     WRK-Z92                TO   S137N2-SSEIKYU(IDX6)
+      **
+      **    É¸½àÉéÃ´³Û
+      *       MOVE     S137TMP-SFTNGK(IDX1)   TO   WRK-Z92
+      *       MOVE     WRK-Z92                TO   S137N2-SFTNGK(IDX6)
+      *     END-PERFORM
+      *--- 2010/07/02 DELETE END ---------------------------------------
       *
       *    ¹ç·×
            IF   FLG-PASS   =   ZERO
@@ -2589,6 +2592,29 @@
              ADD    1          TO    WRK-CNT2
            END-PERFORM
       *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
+      *
       *    ¸øÈñ¾®·×°õ»ú
            IF   FLG-PASS   =   ZERO
              MOVE    WRK-GKTKENSU            TO   WRK-Z4
@@ -2635,7 +2661,6 @@
              MOVE    WRK-Z92                 TO   S137N2-SGKTFTNGK
       *
            END-IF
-      ***  20040819  @@@@-MOTOHASI  ¤³¤³¤Þ¤Ç
       *
            .
        3203-BODY-HEN-EXT.
