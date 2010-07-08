@@ -56,6 +56,7 @@
       *  09/05/01    @@@@-田中     全診療区分で出力時に区分ごとの合計を印字
       *  09/06/18    @@@@-田中     日報出力の回数計算を修正
       *  10/03/08    @@@@-田中     集計対象範囲の指定を追加
+      *  10/07/02    @@@@-門間     食堂加算算定時の不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -777,14 +778,16 @@
              END-IF
       *
       *    食事療養費(食堂加算)の算定判定
-             IF  SYS-5000-SHOKUKBN(2)  =  "2"
-               MOVE  SYS-5000-SHOKUCD(2) TO    TNS-SRYCD
-               PERFORM   910-TENSU-READ-SEC
-               ADD   TNS-TEN  TO   WRK-SYOKUJITEN1
-                                   WRK-SYOKUJITEN2
-                                   WRK-SYOKUJITEN3
-                                   WRK-SYOKUJITEN4
-             END-IF
+      *--- 2010/07/02 DELETE START ------------------------------------
+      *       IF  SYS-5000-SHOKUKBN(2)  =  "2"
+      *         MOVE  SYS-5000-SHOKUCD(2) TO    TNS-SRYCD
+      *         PERFORM   910-TENSU-READ-SEC
+      *         ADD   TNS-TEN  TO   WRK-SYOKUJITEN1
+      *                             WRK-SYOKUJITEN2
+      *                             WRK-SYOKUJITEN3
+      *                             WRK-SYOKUJITEN4
+      *       END-IF
+      *--- 2010/07/02 DELETE START ------------------------------------
              PERFORM 820-SYSKANRI-DBCLOSE-SEC
            END-IF
       *    1:食事療養費のみ(WRK-SYOKUJITEN1)
