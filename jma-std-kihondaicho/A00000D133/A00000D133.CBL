@@ -57,6 +57,7 @@
       *  10/01/15    @@@@-門間    特療費(068,069)が自費に集計されてしまう不具合を修正
       *  10/02/22    @@@@-門間    自賠責保険(100%)の計算式を修正
       *  10/03/15    @@@@-門間    初診判定条件追加
+      *  10/06/29    @@@@-門間    労災・自賠責・公害保険の端数処理を修正
       ****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -174,6 +175,9 @@
       *--- 2009/10/28 ADD START ----------------------------------------
            03  FLG-SRYKARRK        PIC 9(01).
       *--- 2009/10/28 ADD END ----------------------------------------
+      *--- 2010/06/29 ADD START ----------------------------------------
+           03  FLG-JIHI            PIC 9(01).
+      *--- 2010/06/29 ADD END   ----------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -1217,14 +1221,14 @@
       ***  20030704 収納情報抽出条件変更
       *
       *         MOVE  SYU-DRCD     TO   WRK-DRCD
-      *+
+      *
       *         PERFORM  320-DR-GROUPING-SEC
                IF D100LNK-YMD1  <  "20080401"
                    PERFORM  320-DR-GROUPING-SEC
                ELSE
                    PERFORM  330-DR-GROUPING-SEC
                END-IF
-      *+
+      *
                IF I3  <     SUM-DRMAX
                   IF  FLG-GET = ZERO
                        MOVE   1   TO   FLG-GET
@@ -1250,14 +1254,14 @@
                 AND   PTINF-TSTPTNUMKBN   NOT =  "1"   
       ***        範囲指定期間前未収金の集計
       *           MOVE     SYU-DRCD     TO   WRK-DRCD
-      *+
+      *
       *           PERFORM  320-DR-GROUPING-SEC
                  IF D100LNK-YMD1  <  "20080401"
                      PERFORM  320-DR-GROUPING-SEC
                  ELSE
                      PERFORM  330-DR-GROUPING-SEC
                  END-IF
-      *+
+      *
                  IF I3    <   SUM-DRMAX
                     COMPUTE  WRK-MONEY    =
                              SYU-SKYMONEY -  SYU-NYUKIN-TOTAL
@@ -2118,42 +2122,169 @@
       * 20070913 減免金額追加END
       *--- 2009/10/28 ADD START ----------------------------------------
       *    助成金額の算出
-                   COMPUTE  WRK-MONEY  =  WRK-HKNNAI  +  WRK-JIHI
+      *--- 2010/06/29 CHANGE START -------------------------------------
+      *             COMPUTE  WRK-MONEY  =  WRK-HKNNAI  +  WRK-JIHI
+                   COMPUTE  WRK-MONEY  =  WRK-HKNNAI
+      *--- 2010/06/29 CHANGE END   -------------------------------------
                                        +  SYU-CHOSEI
                    COMPUTE  WRK-JOSEI  =  WRK-MONEY
                                        -  SYU-DISCOUNT-MONEY
                    IF   SYU-DISCOUNT-MONEY  =  ZERO
-                     EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2
+      *--- 2010/06/29 CHANGE START -------------------------------------
+      *               EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2
+      *                 WHEN  1
+      *                   COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
+      *                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+      *                 WHEN  2
+      *                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+      *                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
+      *                 WHEN  3
+      *                   IF   WRK-JOSEI(11:1)  NOT =  0
+      *                     COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+      *                     COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
+      *                   END-IF
+      *               END-EVALUATE
+                     INITIALIZE  FLG-JIHI
+                     EVALUATE  SYU-SYUHKNNUM
+      *    労災
+                     WHEN  WRK-CONS-ROUSAI-HKNNUM
+      *    労災（自費分）
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN3J
                        WHEN  1
-                         COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+                         COMPUTE  WRK-JIHI ROUNDED  =  WRK-JIHI  /  10
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
                        WHEN  2
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
+                       WHEN  3
+                         IF   WRK-JIHI(11:1)  NOT =  0
+                           COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
+                           COMPUTE  WRK-JIHI =  WRK-JIHI  *  10  +  10
+                         END-IF
+                       WHEN  0
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  +  WRK-JIHI
+                         MOVE     1         TO  FLG-JIHI
+                       END-EVALUATE
+      *    労災（保険分）
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN3
+                       WHEN  1
+                         COMPUTE  WRK-JOSEI ROUNDED  =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10
+                       WHEN  2
+                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10
                        WHEN  3
                          IF   WRK-JOSEI(11:1)  NOT =  0
-                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
+                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
+                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10  +  10
                          END-IF
+                       END-EVALUATE
+      *    自賠責
+                     WHEN  WRK-CONS-JIBAI-HKNNUM
+      *    自賠責（自費分）
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN4J
+                       WHEN  1
+                         COMPUTE  WRK-JIHI ROUNDED  =  WRK-JIHI  /  10
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
+                       WHEN  2
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10 
+                       WHEN  3
+                         IF   WRK-JIHI(11:1)  NOT =  0
+                           COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
+                           COMPUTE  WRK-JIHI =  WRK-JIHI  *  10  +  10
+                         END-IF
+                       WHEN  0
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  +  WRK-JIHI
+                         MOVE     1         TO  FLG-JIHI
+                       END-EVALUATE
+      *    自賠責（保険分）
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN4
+                       WHEN  1
+                         COMPUTE  WRK-JOSEI ROUNDED  =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10
+                       WHEN  2
+                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10 
+                       WHEN  3
+                         IF   WRK-JOSEI(11:1)  NOT =  0
+                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
+                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10  +  10
+                         END-IF
+                       END-EVALUATE
+      *    公害（自費分）
+                     WHEN  WRK-CONS-KOGAI-HKNNUM
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN5J
+                       WHEN  1
+                         COMPUTE  WRK-JIHI ROUNDED  =  WRK-JIHI  /  10
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
+                       WHEN  2
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10 
+                       WHEN  3
+                         IF   WRK-JIHI(11:1)  NOT =  0
+                           COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
+                           COMPUTE  WRK-JIHI =  WRK-JIHI  *  10  +  10
+                         END-IF
+                       END-EVALUATE
+      *    医保
+                     WHEN  OTHER
+      *    医保（自費分）
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2J
+                       WHEN  1
+                         COMPUTE  WRK-JIHI ROUNDED  =  WRK-JIHI  /  10
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
+                       WHEN  2
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
+                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10 
+                       WHEN  3
+                         IF   WRK-JIHI(11:1)  NOT =  0
+                           COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
+                           COMPUTE  WRK-JIHI =  WRK-JIHI  *  10  +  10
+                         END-IF
+                       WHEN  0
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  +  WRK-JIHI
+                         MOVE     1         TO  FLG-JIHI
+                       END-EVALUATE
+      *    医保（保険分）
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2
+                       WHEN  1
+                         COMPUTE  WRK-JOSEI ROUNDED  =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10
+                       WHEN  2
+                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10 
+                       WHEN  3
+                         IF   WRK-JOSEI(11:1)  NOT =  0
+                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
+                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10  +  10
+                         END-IF
+                       END-EVALUATE
                      END-EVALUATE
+      *    減免有り
+      *--- 2010/06/29 CHANGE END   -------------------------------------
                    ELSE
                      EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
-                       WHEN  1
-                         COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
-                       WHEN  2
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI
-                                                   /  10
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI
-                                                   *  10 
-                       WHEN  3
-                         IF   WRK-JOSEI(11:1)  NOT =  0
-                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
-                         END-IF
+                     WHEN  1
+                       COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI  /  10
+                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+                     WHEN  2
+                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
+                     WHEN  3
+                       IF   WRK-JOSEI(11:1)  NOT =  0
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10  +  10
+                       END-IF
                      END-EVALUATE
                    END-IF
       *
+      *--- 2010/06/29 ADD START ----------------------------------------
+                   IF  FLG-JIHI  NOT  =  1
+                     COMPUTE  WRK-JOSEI  =  WRK-JOSEI  +  WRK-JIHI
+                   END-IF
+      *--- 2010/06/29 ADD END   ----------------------------------------
+      *    助成金額
                    COMPUTE  WRK-JOSEI  =  WRK-JOSEI  -  SYU-SKYMONEY
                    ADD    WRK-JOSEI    TO   SUM-YOSO(I3 13) 
                    ADD    WRK-JOSEI    TO   SUM-YOSO(SUM-DRMAX 13)
