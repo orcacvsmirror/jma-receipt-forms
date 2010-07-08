@@ -50,7 +50,15 @@
       *  08/09/29    @@@@-田中    H20年10月改正対応(協会けんぽ)
       *  09/02/25    @@@@-門間    預り金の重複を修正
       *  09/03/04    @@@@-田中    再診、その他の件数処理を修正
-      *****************************************************************
+      *  09/04/16    @@@@-門間    プログラムオプション対応(INIファイル)
+      *  09/10/28    @@@@-田中    助成金額の端数処理を修正
+      *                           新患の件数処理を修正
+      *  09/12/02    @@@@-田中    社保退職の振り分けを変更
+      *  10/01/15    @@@@-門間    特療費(068,069)が自費に集計されてしまう不具合を修正
+      *  10/02/22    @@@@-門間    自賠責保険(100%)の計算式を修正
+      *  10/03/15    @@@@-門間    初診判定条件追加
+      *  10/06/29    @@@@-門間    労災・自賠責・公害保険の端数処理を修正
+      ****************************************************************
       *
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -59,11 +67,13 @@
       *    エラーファイル
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
-      *    基本台帳用INIファイル
-           SELECT  D100I-FILE      ASSIGN  D100IPARA
-                                   ORGANIZATION    SEQUENTIAL
-                                   ACCESS  MODE    SEQUENTIAL
-                                   FILE    STATUS  IS  STS-PARA.
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      **    基本台帳用INIファイル
+      *     SELECT  D100I-FILE      ASSIGN  D100IPARA
+      *                             ORGANIZATION    SEQUENTIAL
+      *                             ACCESS  MODE    SEQUENTIAL
+      *                             FILE    STATUS  IS  STS-PARA.
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    基本台帳(外来・保険別)用対象患者ファイル
            SELECT  D133PT-FILE     ASSIGN  D133PPARA
@@ -79,11 +89,13 @@
        FD  RECEERR-FILE.
        01  RECEERR-REC             PIC X(200). 
       *
-      *    基本台帳用INIファイル
-       FD  D100I-FILE.
-       01  D100I. 
-           03  D100I-SRYCD         PIC X(09).
-           03  FILLER              PIC X(81).
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      **    基本台帳用INIファイル
+      * FD  D100I-FILE.
+      * 01  D100I. 
+      *     03  D100I-SRYCD         PIC X(09).
+      *     03  FILLER              PIC X(81).
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    基本台帳(外来・保険別)用対象患者ファイル
        FD  D133PT-FILE.
@@ -109,10 +121,12 @@
        01  D100IPARA.
            03  FILLER              PIC X(256) VALUE  SPACE.
 
-       01  D100INAME.
-           03  FILLER              PIC  X(05) VALUE  "data/".
-           03  FILLER              PIC  X(10) VALUE  "A00000D100".
-           03  FILLER              PIC  X(04) VALUE  ".INI".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
+      * 01  D100INAME.
+      *     03  FILLER              PIC  X(05) VALUE  "data/".
+      *     03  FILLER              PIC  X(10) VALUE  "A00000D100".
+      *     03  FILLER              PIC  X(04) VALUE  ".INI".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    診療日別受信患者ファイル
        01  D133PPARA.
@@ -158,6 +172,9 @@
            03  FLG-INVALID         PIC 9(01).
            03  FLG-820SYS          PIC X(04).
            03  INP-STS             PIC 9(04).
+      *--- 2009/10/28 ADD START ----------------------------------------
+           03  FLG-SRYKARRK        PIC 9(01).
+      *--- 2009/10/28 ADD END ----------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -299,19 +316,21 @@
            03  WRK-KYFRATE          PIC 9(01)V9(02).
       *
            03  WRK-TMP-YMD.
-            05 WRK-TMP-YY        PIC 9(04).
-            05 WRK-TMP-MM        PIC 9(02).
-            05 WRK-TMP-DD        PIC 9(02).
+            05  WRK-TMP-YY        PIC 9(04).
+            05  WRK-TMP-MM        PIC 9(02).
+            05  WRK-TMP-DD        PIC 9(02).
            03  WRK-TMP-LYMD.
-            05 WRK-TMP-LYY       PIC 9(04).
-            05 WRK-TMP-LMM       PIC 9(02).
-            05 WRK-TMP-LDD       PIC 9(02).
+            05  WRK-TMP-LYY       PIC 9(04).
+            05  WRK-TMP-LMM       PIC 9(02).
+            05  WRK-TMP-LDD       PIC 9(02).
       ****2005/12/30  @@@@-BRAND START
            03  WRK-SMEI-NYUHEN-MONEY  PIC S9(07).
            03  WRK-SUM-SYOHI          PIC S9(07).
       ****2005/12/30  @@@@-BRAND END
       * 20071011追加 T.Tanaka
-           03  WRK-GENMEN        PIC 9(09).
+      *--- 2009/10/28 DELETE START -------------------------------------
+      *     03  WRK-GENMEN        PIC 9(09).
+      *--- 2009/10/28 DELETE END ---------------------------------------
       * 20071011追加
       *--- 預り金の重複を修正 By Monma (2009/02/25) start
            03  WRK-ACCT-SDAY     PIC 9(02).
@@ -319,6 +338,11 @@
            03  WRK-JIHIMONEY     PIC 9(10).
            03  WRK-AZUKARI       PIC 9(10).
       *--- 預り金の重複を修正 By Monma (2009/02/25) end
+      *--- 2009/10/28 ADD START ----------------------------------------
+           03  WRK-SYOSINYMD     PIC 9(08).
+           03  WRK-HKNNAI        PIC 9(11).
+           03  WRK-JOSEI         PIC 9(11).
+      *--- 2009/10/28 ADD END ----------------------------------------
       *
        01  SUM-AREA.
            03         SUM-DRMAX         PIC  9(03).
@@ -443,6 +467,11 @@
        01  PTNYUINRRK-REC.
            COPY    "CPPTNYUINRRK.INC".
       *
+      *--- 2009/10/28 ADD START ----------------------------------------
+       01  SRYKARRK-REC.
+           COPY    "CPSRYKARRK.INC".
+      *--- 2009/10/28 ADD END ------------------------------------------
+      *
       *    点数マスタ−
       *01  TENSU-REC.
            COPY    "CPTENSU.INC".
@@ -479,6 +508,10 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD START
+      *    プログラムオプション編集パラメタ
+           COPY    "CPORCSPRGOPTION.INC".
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD END
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -963,20 +996,33 @@
       *
            PERFORM  110-DR-PARA-HENSYU-SEC
       *
-      *    基本台帳用INIファイル情報抽出
-           INITIALIZE              ORCSMKPASSAREA
-           MOVE  D100INAME     TO  MKPASS-IN-01
-           CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
-           MOVE  MKPASS-OT-01  TO  D100IPARA
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE START
+      **    基本台帳用INIファイル情報抽出
+      *     INITIALIZE              ORCSMKPASSAREA
+      *     MOVE  D100INAME     TO  MKPASS-IN-01
+      *     CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
+      *     MOVE  MKPASS-OT-01  TO  D100IPARA
+      **
+      *     OPEN  INPUT D100I-FILE
+      *     INITIALIZE  D100I
+      *     READ  D100I-FILE
+      *     END-READ
+      *     CLOSE       D100I-FILE
+      *     IF     D100I-SRYCD   NOT =  SPACE
+      *       MOVE D100I-SRYCD       TO     WRK-INI-AZUKARICD
+      *     END-IF
       *
-           OPEN  INPUT D100I-FILE
-           INITIALIZE  D100I
-           READ  D100I-FILE
-           END-READ
-           CLOSE       D100I-FILE
-           IF     D100I-SRYCD   NOT =  SPACE
-             MOVE D100I-SRYCD       TO     WRK-INI-AZUKARICD
+      *    プログラムオプション取込み（預り金コード）
+           INITIALIZE                      ORCSPRGOPTIONAREA
+           MOVE    "A00000D100"        TO  ORCSPRGOPTION-PRGID
+           MOVE    "AZUKARICD"         TO  ORCSPRGOPTION-IN-DATA
+           CALL    "ORCSPRGOPTION"     USING   SPA-AREA
+                                               ORCSPRGOPTIONAREA
+           IF  ORCSPRGOPTION-OT-PARA(1:9)  NOT =  SPACE
+             MOVE  ORCSPRGOPTION-OT-PARA(1:9)  TO  WRK-INI-AZUKARICD
            END-IF
+      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE END
+      *
       *    点数マスタ読込み
            MOVE   WRK-INI-AZUKARICD TO     TNS-SRYCD
       * 20080226 4.0対応漏れ修正START t.tanaka
@@ -987,7 +1033,7 @@
       *
       *    基本台帳(外来保険別)用対象患者ファイル初期化
            OPEN  OUTPUT D133PT-FILE
-           CLOSE        D133PT-FILE  
+           CLOSE        D133PT-FILE
       *
            .
        110-PARA-HENSYU-EXT.
@@ -1172,14 +1218,14 @@
       ***  20030704 収納情報抽出条件変更
       *
       *         MOVE  SYU-DRCD     TO   WRK-DRCD
-      *+
+      *
       *         PERFORM  320-DR-GROUPING-SEC
                IF D100LNK-YMD1  <  "20080401"
                    PERFORM  320-DR-GROUPING-SEC
                ELSE
                    PERFORM  330-DR-GROUPING-SEC
                END-IF
-      *+
+      *
                IF I3  <     SUM-DRMAX
                   IF  FLG-GET = ZERO
                        MOVE   1   TO   FLG-GET
@@ -1205,14 +1251,14 @@
                 AND   PTINF-TSTPTNUMKBN   NOT =  "1"   
       ***        範囲指定期間前未収金の集計
       *           MOVE     SYU-DRCD     TO   WRK-DRCD
-      *+
+      *
       *           PERFORM  320-DR-GROUPING-SEC
                  IF D100LNK-YMD1  <  "20080401"
                      PERFORM  320-DR-GROUPING-SEC
                  ELSE
                      PERFORM  330-DR-GROUPING-SEC
                  END-IF
-      *+
+      *
                  IF I3    <   SUM-DRMAX
                     COMPUTE  WRK-MONEY    =
                              SYU-SKYMONEY -  SYU-NYUKIN-TOTAL
@@ -1386,29 +1432,30 @@
                             SUM-YOSO(I3 20)
       *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
                    END-EVALUATE
+      *--- 2009/10/28 DELETE START -------------------------------------
       * 助成金額の算出              
-                   COMPUTE WRK-MONEY =
-                           SUM-YOSO(I3 10) +
-                           SUM-YOSO(I3 11) +
-      * 20070913 消費税削除START t.tanaka
-      *                     SUM-YOSO(I3 14) +
-      * 20070913 消費税削除END
-                           SUM-YOSO(I3 15) 
-      * 20071011 減免金額修正START t.tanaka
-                   MOVE    SUM-YOSO(I3 12) TO WRK-GENMEN
-                   COMPUTE WRK-GENMEN = WRK-GENMEN / 10
-                   COMPUTE WRK-GENMEN = WRK-GENMEN * 10
-      * 20071011 減免金額修正END
-                   COMPUTE SUM-YOSO(I3 13) =
-                           WRK-MONEY -
-      * 20071011減免金額修正START t.tanaka
-      *                     SUM-YOSO(I3 12) -
-                           WRK-GENMEN -
-      * 20071011減免金額修正END
-                           SUM-YOSO(I3 16) 
-                   COMPUTE SUM-YOSO(SUM-DRMAX 13) =
-                           SUM-YOSO(SUM-DRMAX 13) +
-                           SUM-YOSO(I3 13)
+      *             COMPUTE WRK-MONEY =
+      *                     SUM-YOSO(I3 10) +
+      *                     SUM-YOSO(I3 11) +
+      ** 20070913 消費税削除START t.tanaka
+      **                     SUM-YOSO(I3 14) +
+      ** 20070913 消費税削除END
+      *                     SUM-YOSO(I3 15) 
+      ** 20071011 減免金額修正START t.tanaka
+      *             MOVE    SUM-YOSO(I3 12) TO WRK-GENMEN
+      **             COMPUTE WRK-GENMEN = WRK-GENMEN / 10
+      **             COMPUTE WRK-GENMEN = WRK-GENMEN * 10
+      ** 20071011 減免金額修正END
+      *             COMPUTE SUM-YOSO(I3 13) =
+      *                     WRK-MONEY -
+      ** 20071011減免金額修正START t.tanaka
+      **                     SUM-YOSO(I3 12) -
+      *                     WRK-GENMEN -
+      *                    SUM-YOSO(I3 16) 
+      *             COMPUTE SUM-YOSO(SUM-DRMAX 13) =
+      *                     SUM-YOSO(SUM-DRMAX 13) +
+      *                     SUM-YOSO(I3 13)
+      *--- 2009/10/28 DELETE END ---------------------------------------
            END-PERFORM
       *
       * 新患来院率(計)
@@ -1464,8 +1511,26 @@
                  IF       FLG-JYURRK       =   ZERO
                    AND    JYURRK-SRYYMD    =   SYU-SRYYMD 
       * 新患件数としてカウントする。
-                   ADD  1  TO  SUM-YOSO(I3 6)
-                   ADD  1  TO  SUM-YOSO(SUM-DRMAX 6)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                   INITIALIZE                 WRK-SYOSINYMD
+                                              FLG-SRYKARRK
+                   MOVE    SYU-SRYYMD         TO   WRK-SYOSINYMD
+                   PERFORM  900-SRYKARRKA-SELECT-SEC
+                   PERFORM  UNTIL  FLG-SRYKARRK  =  1
+                     IF   KARRK-SYOSINYMD1  <  WRK-SYOSINYMD
+                         AND  KARRK-SYOSINYMD1  NOT =  SPACE
+                       MOVE    KARRK-SYOSINYMD1    TO   WRK-SYOSINYMD
+                     END-IF
+                     PERFORM  900-SRYKARRKA-FETCH-SEC
+                   END-PERFORM
+                   PERFORM  900-SRYKARRKA-CLOSE-SEC
+                   IF   WRK-SYOSINYMD  =  SYU-SRYYMD  
+      *--- 2009/10/28 ADD END ------------------------------------------
+                       ADD     1       TO   SUM-YOSO(I3 6)
+                       ADD     1       TO   SUM-YOSO(SUM-DRMAX 6)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                   END-IF
+      *--- 2009/10/28 ADD END ------------------------------------------
                  END-IF
                  PERFORM  900-JYURRK-CLOSE-SEC
             END-IF
@@ -1896,8 +1961,51 @@
                    ADD    SYU-TOTAL-HKNTEN   
                           TO  SUM-YOSO(SUM-DRMAX 8)
       *
+      *--- 2009/10/28 ADD START ----------------------------------------
+                   INITIALIZE     WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
       * 保険内負担金              
       *
+      *--- 2010/02/22 ADD START ----------------------------------------
+                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+                     AND PTRSI-JIBAISEIKBN    NOT  =  2
+      *            労災初診金額金額
+                        ADD  SYU-RSISHOSHIN-MONEY  
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSISHOSHIN-MONEY  
+                               TO  SUM-YOSO(SUM-DRMAX 10)
+                        ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
+      *
+      *            労災再診金額金額
+                        ADD  SYU-RSISAISHIN-MONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSISAISHIN-MONEY
+                               TO  SUM-YOSO(SUM-DRMAX 10)
+                        ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
+      *
+      *            労災指導金額金額
+                        ADD  SYU-RSISDO-MONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSISDO-MONEY
+                               TO  SUM-YOSO(SUM-DRMAX 10)
+                        ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
+      *
+      *            労災その他金額金額
+                        ADD  SYU-RSIETC-MONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-RSIETC-MONEY
+                               TO  SUM-YOSO(SUM-DRMAX 10)
+                        ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
+      *
+                        ADD  SYU-HKNTEKMONEY
+                               TO  SUM-YOSO(I3 10)
+                        ADD  SYU-HKNTEKMONEY
+                               TO  SUM-YOSO(SUM-DRMAX 10)
+                        ADD    SYU-HKNTEKMONEY   TO   WRK-HKNNAI
+                   ELSE
+      *--- 2010/02/22 ADD END   ----------------------------------------
       *            主保険分負担金額
       *
                    IF      SYU-SYUCOMPTOTAL  NOT = ZERO 
@@ -1905,62 +2013,91 @@
                                TO  SUM-YOSO(I3 10)
                            ADD SYU-SYUCOMPTOTAL
                                TO  SUM-YOSO(SUM-DRMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-SYUCOMPTOTAL    TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH1COMPTOTAL NOT = ZERO
                            ADD SYU-KOH1COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD SYU-KOH1COMPTOTAL
                                TO  SUM-YOSO(SUM-DRMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH1COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH2COMPTOTAL NOT = ZERO
                            ADD SYU-KOH2COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH2COMPTOTAL
                                TO  SUM-YOSO(SUM-DRMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH2COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH3COMPTOTAL NOT = ZERO
                            ADD     SYU-KOH3COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH3COMPTOTAL
                                TO  SUM-YOSO(SUM-DRMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH3COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH3COMPTOTAL NOT = ZERO
                            ADD     SYU-KOH4COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH4COMPTOTAL
                                TO  SUM-YOSO(SUM-DRMAX 10)
+      *--- 2009/10/28 ADD START ----------------------------------------
+                           MOVE    SYU-KOH4COMPTOTAL   TO   WRK-HKNNAI
+      *--- 2009/10/28 ADD END ------------------------------------------
                    END-IF 
                    END-IF 
                    END-IF 
                    END-IF 
                    END-IF
       *
-                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
-      * 20080401 H20年4月改正対応START tanaka
-      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM )
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
-      * 20080401 H20年4月改正対応END
-                    AND PTRSI-JIBAISEIKBN    NOT  =  2
+      *--- 2010/02/22 DELETE START -------------------------------------
+      *             IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+      ** 20080328 H20年4月改正対応START tanaka
+      **               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM )
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+      ** 20080328 H20年4月改正対応END
+      *               AND PTRSI-JIBAISEIKBN    NOT  =  2
       *            労災初診金額金額
-                         ADD  SYU-RSISHOSHIN-MONEY  
-                               TO  SUM-YOSO(I3 10)
-                         ADD  SYU-RSISHOSHIN-MONEY  
-                               TO  SUM-YOSO(SUM-DRMAX 10)
-      *
-      *            労災再診金額金額
-                         ADD  SYU-RSISAISHIN-MONEY
-                               TO  SUM-YOSO(I3 10)
-                         ADD  SYU-RSISAISHIN-MONEY
-                               TO  SUM-YOSO(SUM-DRMAX 10)
-      *
-      *            労災指導金額金額
-                         ADD  SYU-RSISDO-MONEY
-                               TO  SUM-YOSO(I3 10)
-                         ADD  SYU-RSISDO-MONEY
-                               TO  SUM-YOSO(SUM-DRMAX 10)
-      *
-      *            労災その他金額金額
-                         ADD  SYU-RSIETC-MONEY
-                               TO  SUM-YOSO(I3 10)
-                         ADD  SYU-RSIETC-MONEY
-                               TO  SUM-YOSO(SUM-DRMAX 10)
+      *                  ADD  SYU-RSISHOSHIN-MONEY  
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSISHOSHIN-MONEY  
+      *                         TO  SUM-YOSO(SUM-DRMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      **
+      **            労災再診金額金額
+      *                  ADD  SYU-RSISAISHIN-MONEY
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSISAISHIN-MONEY
+      *                         TO  SUM-YOSO(SUM-DRMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      **
+      **            労災指導金額金額
+      *                  ADD  SYU-RSISDO-MONEY
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSISDO-MONEY
+      *                         TO  SUM-YOSO(SUM-DRMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      **
+      **            労災その他金額金額
+      *                  ADD  SYU-RSIETC-MONEY
+      *                         TO  SUM-YOSO(I3 10)
+      *                  ADD  SYU-RSIETC-MONEY
+      *                         TO  SUM-YOSO(SUM-DRMAX 10)
+      **--- 2009/10/28 ADD START ----------------------------------------
+      *                  ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
+      **--- 2009/10/28 ADD END ------------------------------------------
+      *--- 2010/02/22 DELETE END   -------------------------------------
                    END-IF
       *
       * 保険外金額
@@ -1980,6 +2117,57 @@
                    ADD SYU-DISCOUNT-MONEY
                           TO  SUM-YOSO(SUM-DRMAX 12)
       * 20070913 減免金額追加END
+      *--- 2009/10/28 ADD START ----------------------------------------
+      *    助成金額の算出
+                   COMPUTE  WRK-MONEY  =  WRK-HKNNAI  +  WRK-JIHI
+                                       +  SYU-CHOSEI
+                   COMPUTE  WRK-JOSEI  =  WRK-MONEY
+                                       -  SYU-DISCOUNT-MONEY
+      *--- 2010/06/29 ADD START ----------------------------------------
+                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+                     AND PTRSI-JIBAISEIKBN    NOT  =  2
+                     CONTINUE
+                   ELSE
+      *--- 2010/06/29 ADD END   ----------------------------------------
+                     IF   SYU-DISCOUNT-MONEY  =  ZERO
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2
+                       WHEN  1
+                         COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+                       WHEN  2
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
+                       WHEN  3
+                         IF   WRK-JOSEI(11:1)  NOT =  0
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
+                         END-IF
+                       END-EVALUATE
+                     ELSE
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
+                       WHEN  1
+                         COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+                       WHEN  2
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
+                       WHEN  3
+                         IF   WRK-JOSEI(11:1)  NOT =  0
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
+                         END-IF
+                       END-EVALUATE
+                     END-IF
+      *--- 2010/06/29 ADD START ----------------------------------------
+                   END-IF
+      *--- 2010/06/29 ADD END   ----------------------------------------
+      *
+                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  -  SYU-SKYMONEY
+                   ADD    WRK-JOSEI    TO   SUM-YOSO(I3 13) 
+                   ADD    WRK-JOSEI    TO   SUM-YOSO(SUM-DRMAX 13)
+      *--- 2009/10/28 ADD END ------------------------------------------
       ****2005/12/30  @@@@-BRAND START
       * 消費税              
       *            ADD    SYU-JIHI-TAX 
@@ -2272,6 +2460,11 @@
       *             AND   ACCT-DAY(1 IDX7) >   ZERO
                    AND   JYURRK-RENNUM       =  1
       *=== 初診、再診、その他振分け修正 ADD By Yoshikawa(2007/06/27) end
+      *--- 2010/03/15 ADD START ----------------------------------------
+                   AND   JYURRK-SRYKBN(1)     >  "00"
+                   AND  (JYURRK-DOUJI-RENNUM  =  0  OR
+                         JYURRK-DOUJI-RENNUM  =  1)
+      *--- 2010/03/15 ADD END   ----------------------------------------
       *  初診の件数としてカウントする。
                          ADD  1  TO  SUM-YOSO(I3 2)
                          ADD  1  TO  SUM-YOSO(SUM-DRMAX 2)
@@ -2501,7 +2694,6 @@
       *****************************************************************
        320-AZUKARI-GET-SEC      SECTION.
       *
-           DISPLAY "2"
            INITIALIZE                      SRYACT-REC
            MOVE   SYU-HOSPNUM          TO  SRY-HOSPNUM  
            MOVE   SYU-NYUGAIKBN        TO  SRY-NYUGAIKBN 
@@ -2515,23 +2707,15 @@
       *
            MOVE   SYU-SRYYMD(1:6)      TO  SRY-SRYYM
            MOVE   SYU-SRYYMD(7:2)      TO  WRK-ACCT-SDAY
-           DISPLAY "SYU-HOSPNUM        " SYU-HOSPNUM
-           DISPLAY "SYU-NYUGAIKBN      " SYU-NYUGAIKBN
-           DISPLAY "SYU-PTID           " SYU-PTID
-           DISPLAY "WRK-INI-AZUKARICD  " WRK-INI-AZUKARICD
-           DISPLAY "SYU-SRYYMD         " SYU-SRYYMD(7:2)
       *
            PERFORM  911-SRY-SELECT-SEC
            PERFORM  UNTIL      FLG-SRYACT  = 1
-           DISPLAY "3"
              IF    FLG-SRYACT     =   ZERO
               AND  SRY-NYUGAIKBN  =   "2"
               AND (SUM-SRYKACD    =   SRY-SRYKA
               OR   SUM-SRYKACD    =   "99")
-           DISPLAY "4"
                PERFORM VARYING IDX3  FROM  1 BY 1
                        UNTIL   IDX3  >  5
-           DISPLAY "5"
                  IF   SRY-SRYCD(IDX3)    = WRK-INI-AZUKARICD
                   AND SRY-JIHIMONEY(IDX3) > ZERO
                    MOVE SRY-JIHIMONEY(IDX3)  TO  WRK-JIHIMONEY
@@ -2546,7 +2730,6 @@
                    PERFORM 900-SRYACCT-SELECT-SEC
                    PERFORM 900-SRYACCT-FETCH-SEC
                    PERFORM  UNTIL FLG-SRYACCT    =  1
-           DISPLAY "6"
                        PERFORM 320-AZUKARI-GET-SUB-SEC
                        PERFORM 900-SRYACCT-FETCH-SEC
                    END-PERFORM
@@ -2567,7 +2750,6 @@
       *****************************************************************
        320-AZUKARI-GET-SUB-SEC      SECTION.
       *
-           DISPLAY "7"
            IF  ( D100LNK-DRCD  =  SPACE
                OR ( D100LNK-DRCD NOT =  SPACE
                AND  D100LNK-DRCD  =  JYURRK-DRCD))
@@ -2680,6 +2862,13 @@
            WHEN "032"
            WHEN "033"
            WHEN "034"
+      *--- 2009/12/02 ADD START ----------------------------------------
+           WHEN "063"
+           WHEN "072"
+           WHEN "073"
+           WHEN "074"
+           WHEN "075"
+      *--- 2009/12/02 ADD START ----------------------------------------
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
                    COMB-KOHHKNNUM(3)    =   "027"  OR
@@ -2698,6 +2887,9 @@
              END-IF
       *
            WHEN "060"
+      *--- 2010/01/15 ADD START ----------------------------------------
+           WHEN "068"
+      *--- 2010/01/15 ADD END   ----------------------------------------
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
                    COMB-KOHHKNNUM(3)    =   "027"  OR
@@ -2711,12 +2903,17 @@
                END-IF
              END-IF
       *
-           WHEN "063"
+      *--- 2009/12/02 DELETE START -------------------------------------
+      *     WHEN "063"
+      *     WHEN "072"
+      *     WHEN "073"
+      *     WHEN "074"
+      *     WHEN "075"
+      *--- 2009/12/02 DELETE START -------------------------------------
            WHEN "067"
-           WHEN "072"
-           WHEN "073"
-           WHEN "074"
-           WHEN "075"
+      *--- 2010/01/15 ADD START ----------------------------------------
+           WHEN "069"
+      *--- 2010/01/15 ADD END   ----------------------------------------
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
                    COMB-KOHHKNNUM(3)    =   "027"  OR
@@ -2794,6 +2991,13 @@
            WHEN "032"
            WHEN "033"
            WHEN "034"
+      *--- 2009/12/02 ADD START ----------------------------------------
+           WHEN "063"
+           WHEN "072"
+           WHEN "073"
+           WHEN "074"
+           WHEN "075"
+      *--- 2009/12/02 ADD START ----------------------------------------
       *    社保
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
@@ -2813,6 +3017,9 @@
              END-IF
       *
            WHEN "060"
+      *--- 2010/01/15 ADD START ----------------------------------------
+           WHEN "068"
+      *--- 2010/01/15 ADD END   ----------------------------------------
       *    国保
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
@@ -2827,12 +3034,17 @@
                END-IF
              END-IF
       *
-           WHEN "063"
+      *--- 2009/12/02 DELETE START -------------------------------------
+      *     WHEN "063"
+      *     WHEN "072"
+      *     WHEN "073"
+      *     WHEN "074"
+      *     WHEN "075"
+      *--- 2009/12/02 DELETE START -------------------------------------
            WHEN "067"
-           WHEN "072"
-           WHEN "073"
-           WHEN "074"
-           WHEN "075"
+      *--- 2010/01/15 ADD START ----------------------------------------
+           WHEN "069"
+      *--- 2010/01/15 ADD END   ----------------------------------------
       *    退職
              IF    COMB-KOHHKNNUM(1)    =   "027"  OR 
                    COMB-KOHHKNNUM(2)    =   "027"  OR
@@ -4741,7 +4953,78 @@
            .
        900-JYURRK-DRCD-READ-EXT.
            EXIT.
-      *      
+      *
+      *--- 2009/10/28 ADD START ----------------------------------------
+      *****************************************************************
+      *    診療科履歴情報検索処理
+      *****************************************************************
+       900-SRYKARRKA-SELECT-SEC            SECTION.
+      *
+           INITIALIZE               SRYKARRK-REC
+      *
+           MOVE    SYU-HOSPNUM      TO   KARRK-HOSPNUM
+           MOVE    SYU-PTID         TO   KARRK-PTID
+      *
+           MOVE    SRYKARRK-REC     TO   MCPDATA-REC
+           MOVE    "DBSELECT"       TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"  TO   MCP-TABLE
+           MOVE    "key2"           TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+           IF   MCP-RC   =   ZERO
+             PERFORM  900-SRYKARRKA-FETCH-SEC
+           ELSE
+             MOVE    1               TO   FLG-SRYKARRK
+           END-IF
+      *
+           .
+       900-SRYKARRKA-SELECT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療科履歴情報検索処理
+      *****************************************************************
+       900-SRYKARRKA-FETCH-SEC            SECTION.
+      *
+           MOVE    "DBFETCH"         TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"   TO   MCP-TABLE
+           MOVE    "key2"            TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    MCPDATA-REC     TO   SRYKARRK-REC 
+             MOVE    ZERO            TO   FLG-SRYKARRK
+           ELSE
+             MOVE    1               TO   FLG-SRYKARRK
+           END-IF
+      *
+           .
+       900-SRYKARRKA-FETCH-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療科履歴情報検索処理
+      *****************************************************************
+       900-SRYKARRKA-CLOSE-SEC            SECTION.
+      *
+           MOVE    SRYKARRK-REC     TO   MCPDATA-REC
+           MOVE    "DBCLOSECURSOR"  TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"  TO   MCP-TABLE
+           MOVE    "key2"           TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+      *
+           .
+       900-SRYKARRKA-CLOSE-EXT.
+           EXIT.
+      *
+      *--- 2009/10/28 ADD END ------------------------------------------
       *****************************************************************
       *    ＤＢ　オープン処理
       *****************************************************************
