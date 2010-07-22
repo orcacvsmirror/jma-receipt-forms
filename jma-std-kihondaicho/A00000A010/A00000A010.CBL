@@ -58,6 +58,8 @@
       *  10/02/10    @@@@-田中     治験対応
       *  10/03/08    @@@@-田中     集計対象範囲の指定を追加
       *  10/07/02    @@@@-門間     食堂加算算定時の不具合を修正
+      *  10/07/16    @@@@-田中     病理診断を正しく集計するよう修正
+      *                            外泊（他医療機関受診３０％減）を算定時に、入院料を加算しない修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -973,26 +975,28 @@
       *           END-IF
       *--- 2010/02/10 ADD START ----------------------------------------
       *--- 2009/05/01 ADD END ------------------------------------------
-               IF   ( ACCT-ZAIKBN  NOT =  1 )
-                   AND  ( ACCT-ZAIKBN  NOT =  2 )
+                 IF   ( ACCT-ZAIKBN  NOT =  1 )
+                     AND  ( ACCT-ZAIKBN  NOT =  2 )
       *--- 2010/02/10 ADD END ------------------------------------------
-                 EVALUATE   WRK-PARA-SYUKEIKBN
-                   WHEN  "2"
-                     MOVE    WRK-PARA-PRTSYMD(7:2)     TO    WRK-DAY1
-                     MOVE    WRK-PARA-PRTLYMD(7:2)     TO    WRK-DAY2
-                     PERFORM  VARYING  IDX8  FROM  WRK-DAY1  BY 1
-                              UNTIL  IDX8  >  WRK-DAY2
-                       IF   ACCT-DAY(1 IDX8)  >  0
+                   EVALUATE   WRK-PARA-SYUKEIKBN
+                     WHEN  "2"
+                       MOVE    WRK-PARA-PRTSYMD(7:2)     TO    WRK-DAY1
+                       MOVE    WRK-PARA-PRTLYMD(7:2)     TO    WRK-DAY2
+                       PERFORM  VARYING  IDX8  FROM  WRK-DAY1  BY 1
+                                UNTIL  IDX8  >  WRK-DAY2
+                         IF   ACCT-DAY(1 IDX8)  >  0
+                           PERFORM  2003-A010PUT-SEC
+                         END-IF
+                       END-PERFORM
+                     WHEN  "1"
+                       IF   ACCT-DAY(1 WRK-DAY)  >  0
                          PERFORM  2003-A010PUT-SEC
                        END-IF
-                     END-PERFORM
-                   WHEN  "1"
-                     IF   ACCT-DAY(1 WRK-DAY)  >  0
+                     WHEN  OTHER
                        PERFORM  2003-A010PUT-SEC
-                     END-IF
-                   WHEN  OTHER
-                   PERFORM  2003-A010PUT-SEC
       *--- 2010/02/10 ADD START ----------------------------------------
+                   END-EVALUATE
+                 END-IF
                END-IF
       *--- 2010/02/10 ADD END ------------------------------------------
       *--- 2010/03/08 CHANGE END ---------------------------------------
@@ -2416,7 +2420,10 @@
                  MOVE  "60"    TO    A010T-OUTTYPE
                  MOVE  "60"    TO    A010T3-OUTTYPE
                ELSE
-                 IF  TNS-KNSJISGRPKBN = 7
+      *--- 2010/07/16 CHANGE START -------------------------------------
+      *           IF  TNS-KNSJISGRPKBN = 7
+                 IF   TNS-SRYKBN  =  "64"
+      *--- 2010/07/16 CHANGE END ---------------------------------------
                    MOVE  "64"    TO    A010T-OUTTYPE
       * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "64"    TO    A010T3-OUTTYPE
@@ -6871,6 +6878,9 @@
                  END-IF
                  MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
                WHEN  4
+      *--- 2010/07/16 ADD START ----------------------------------------
+               WHEN  5
+      *--- 2010/07/16 ADD END ------------------------------------------
                  MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
              END-EVALUATE
            END-IF
