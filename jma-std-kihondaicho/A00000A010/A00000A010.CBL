@@ -57,6 +57,8 @@
       *  09/06/18    @@@@-田中     日報出力の回数計算を修正
       *  10/03/08    @@@@-田中     集計対象範囲の指定を追加
       *  10/07/02    @@@@-門間     食堂加算算定時の不具合を修正
+      *  10/07/16    @@@@-田中     病理診断を正しく集計するよう修正
+      *                            外泊（他医療機関受診３０％減）を算定時に、入院料を加算しない修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -987,8 +989,9 @@
                        PERFORM  2003-A010PUT-SEC
                      END-IF
                    WHEN  OTHER
-                   PERFORM  2003-A010PUT-SEC
-      
+                     PERFORM  2003-A010PUT-SEC
+                 END-EVALUATE
+               END-IF
       *--- 2010/03/08 CHANGE END ---------------------------------------
              END-IF
            END-PERFORM
@@ -2410,7 +2413,10 @@
                  MOVE  "60"    TO    A010T-OUTTYPE
                  MOVE  "60"    TO    A010T3-OUTTYPE
                ELSE
-                 IF  TNS-KNSJISGRPKBN = 7
+      *--- 2010/07/16 CHANGE START -------------------------------------
+      *           IF  TNS-KNSJISGRPKBN = 7
+                 IF   TNS-SRYKBN  =  "64"
+      *--- 2010/07/16 CHANGE END ---------------------------------------
                    MOVE  "64"    TO    A010T-OUTTYPE
       * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "64"    TO    A010T3-OUTTYPE
@@ -6865,6 +6871,9 @@
                  END-IF
                  MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
                WHEN  4
+      *--- 2010/07/16 ADD START ----------------------------------------
+               WHEN  5
+      *--- 2010/07/16 ADD END ------------------------------------------
                  MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
              END-EVALUATE
            END-IF
