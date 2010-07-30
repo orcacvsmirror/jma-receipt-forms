@@ -50,6 +50,7 @@
       *  10/03/09    @@@@-ÅÄÃæ     ½é¿ÇÈ½Äê¾ò·ïÄÉ²Ã
       *  10/04/27    @@@@-ÅÄÃæ     ºÆ¿Ç¤ÎÈ½Äê¾ò·ï¤ò½¤Àµ
       *  10/07/06    @@@@-Ìç´Ö     Ï«ºÒ¡¦¼«ÇåÀÕÊÝ¸±»þ¤Î½é¿Ç¤ÎÈ½Äê¾ò·ïÄÉ²Ã
+      *  10/07/23    @@@@-Ìç´Ö     °åÎÅÊÝ¸±¤Î½é¿ÇÈ½Äê¾ò·ï¤òÄÉ²Ã
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1560,6 +1561,52 @@
                                        MCPDATA-REC
                                        SPA-AREA
       *--- 2010/04/27 ADD END ------------------------------------------
+      *--- 2010/07/23 ADD START ----------------------------------------
+           INITIALIZE                     SRYACCT-REC
+           MOVE    JYURRK-HOSPNUM         TO   ACCT-HOSPNUM
+           MOVE    JYURRK-NYUGAIKBN       TO   ACCT-NYUGAIKBN
+           MOVE    JYURRK-PTID            TO   ACCT-PTID
+           MOVE    JYURRK-SRYKA           TO   ACCT-SRYKA
+           MOVE    JYURRK-SRYYMD(1:6)     TO   ACCT-SRYYM
+           MOVE    JYURRK-ZAINUM          TO   ACCT-ZAINUM
+      *
+           MOVE    SRYACCT-REC            TO   MCPDATA-REC
+           MOVE    "DBSELECT"             TO   MCP-FUNC
+           MOVE    "tbl_sryacct"          TO   MCP-TABLE
+           MOVE    "key5"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"            USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+      *
+           IF   MCP-RC   =   ZERO
+             MOVE    "DBFETCH"            TO   MCP-FUNC
+             MOVE    "tbl_sryacct"        TO   MCP-TABLE
+             MOVE    "key5"               TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"          USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+             IF   MCP-RC   =   ZERO
+               MOVE    MCPDATA-REC        TO   SRYACCT-REC
+               MOVE    ZERO               TO   FLG-SRYACCT
+             ELSE     
+               MOVE    1                  TO   FLG-SRYACCT
+               INITIALIZE                 SRYACCT-REC
+             END-IF
+           ELSE
+             MOVE  1                      TO   FLG-SRYACCT
+             INITIALIZE                   SRYACCT-REC
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"        TO   MCP-FUNC
+           MOVE    "tbl_sryacct"          TO   MCP-TABLE
+           MOVE    "key5"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"            USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+      *--- 2010/07/23 ADD END   ----------------------------------------
       *--- 2010/07/06 ADD START ----------------------------------------
              IF  JYURRK-HKNKBN  =  "0"
       *--- 2010/07/06 ADD END   ----------------------------------------
@@ -1571,6 +1618,9 @@
                   AND   JYURRK-RENNUM  =  1
       *--- 2010/03/09 ADD START ----------------------------------------
                   AND   JYURRK-SRYKBN(1)  >  "00"
+      *--- 2010/07/23 ADD START ----------------------------------------
+                  AND   ACCT-SRYKBN  =  "11"
+      *--- 2010/07/23 ADD END   ----------------------------------------
                   AND   (JYURRK-DOUJI-RENNUM  =  1  
                   OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
       *--- 2010/03/09 ADD END ------------------------------------------
@@ -1831,6 +1881,9 @@
       ***  ÊÝ¸±ÅÀ¿ô·ï¿ô¥«¥¦¥ó¥È 
                  IF  FLG-HKN = 1
                    ADD   1  TO   SUM-SHKNKEN
+      *--- 2010/07/23 ADD START ----------------------------------------
+                   MOVE    JYURRK-DENPNUM    TO   WRK-DENPNUM
+      *--- 2010/07/23 ADD END   ----------------------------------------
                  END-IF 
                ELSE
                  MOVE  2                   TO JYURRK-RENNUM
@@ -1906,6 +1959,9 @@
       ***  ÊÝ¸±ÅÀ¿ô·ï¿ô¥«¥¦¥ó¥È 
                    IF  FLG-HKN = 1
                        ADD   1  TO   SUM-RHKNKEN
+      *--- 2010/07/23 ADD START ----------------------------------------
+                       MOVE    JYURRK-DENPNUM    TO   WRK-DENPNUM
+      *--- 2010/07/23 ADD END   ----------------------------------------
                    END-IF 
       *
                  ELSE

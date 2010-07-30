@@ -80,6 +80,7 @@
       *              @@@@-田中    10/03/09  初診・新患判定条件追加
       *              @@@@-田中    10/04/27  再診の判定条件を修正
       *              @@@@-門間    10/07/06  労災・自賠責保険時の初診の判定条件追加
+      *              @@@@-門間    10/07/23  医療保険の初診判定条件を追加
       *****************************************************************
       *
       *
@@ -2821,6 +2822,52 @@
                                        MCPDATA-REC
                                        SPA-AREA
       *--- 2010/04/27 ADD END ------------------------------------------
+      *--- 2010/07/23 ADD START ----------------------------------------
+           INITIALIZE                     SRYACCT-REC
+           MOVE    JYURRK-HOSPNUM         TO   ACCT-HOSPNUM
+           MOVE    JYURRK-NYUGAIKBN       TO   ACCT-NYUGAIKBN
+           MOVE    JYURRK-PTID            TO   ACCT-PTID
+           MOVE    JYURRK-SRYKA           TO   ACCT-SRYKA
+           MOVE    JYURRK-SRYYMD(1:6)     TO   ACCT-SRYYM
+           MOVE    JYURRK-ZAINUM          TO   ACCT-ZAINUM
+      *
+           MOVE    SRYACCT-REC            TO   MCPDATA-REC
+           MOVE    "DBSELECT"             TO   MCP-FUNC
+           MOVE    "tbl_sryacct"          TO   MCP-TABLE
+           MOVE    "key5"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"            USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+      *
+           IF   MCP-RC   =   ZERO
+             MOVE    "DBFETCH"            TO   MCP-FUNC
+             MOVE    "tbl_sryacct"        TO   MCP-TABLE
+             MOVE    "key5"               TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"          USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+             IF   MCP-RC   =   ZERO
+               MOVE    MCPDATA-REC        TO   SRYACCT-REC
+               MOVE    ZERO               TO   FLG-SRYACCT
+             ELSE     
+               MOVE    1                  TO   FLG-SRYACCT
+               INITIALIZE                 SRYACCT-REC
+             END-IF
+           ELSE
+             MOVE  1                      TO   FLG-SRYACCT
+             INITIALIZE                   SRYACCT-REC
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"        TO   MCP-FUNC
+           MOVE    "tbl_sryacct"          TO   MCP-TABLE
+           MOVE    "key5"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"            USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+      *--- 2010/07/23 ADD END   ----------------------------------------
       *--- 2010/07/06 ADD START ----------------------------------------
            IF  JYURRK-HKNKBN  =  "0"
       *--- 2010/07/06 ADD END   ----------------------------------------
@@ -2829,6 +2876,9 @@
                AND   JYURRK-RENNUM  =  1
       *--- 2010/03/09 ADD START ----------------------------------------
                AND   JYURRK-SRYKBN(1)  >  "00"
+      *--- 2010/07/23 ADD START ----------------------------------------
+               AND   ACCT-SRYKBN  =  "11"
+      *--- 2010/07/23 ADD END   ----------------------------------------
                AND   (JYURRK-DOUJI-RENNUM  =  1  
                OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
       *--- 2010/03/09 ADD END ------------------------------------------
@@ -3168,6 +3218,9 @@
       ***  初診件数としてカウントする。
       ***  保険別件数カウント 
                ADD    1   TO   SUM-SAKEN(IDX)
+      *--- 2010/07/23 ADD START ----------------------------------------
+               MOVE    JYURRK-DENPNUM   TO   WRK-DENPNUM
+      *--- 2010/07/23 ADD END   ----------------------------------------
       ***  自費分件数カウント 
                PERFORM  VARYING IDX2  FROM 1  BY  1
                         UNTIL    IDX2  >  10
@@ -3266,6 +3319,9 @@
       *  再診の件数としてカウントする。
       ***  保険別件数カウント 
                  ADD     1   TO   SUM-RKEN(IDX)
+      *--- 2010/07/23 ADD START ----------------------------------------
+                 MOVE    JYURRK-DENPNUM   TO   WRK-DENPNUM
+      *--- 2010/07/23 ADD END   ----------------------------------------
       ***  自費分件数カウント 
                  PERFORM  VARYING IDX2  FROM 1  BY  1
                           UNTIL    IDX2  >  10
