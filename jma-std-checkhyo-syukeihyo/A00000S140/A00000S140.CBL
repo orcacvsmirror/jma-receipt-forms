@@ -20,8 +20,8 @@
       *****************************************************************
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 月次帳票
-      *  コンポーネント名  : 保険別総括表 
-      *  管理者            : 
+      *  コンポーネント名  : 保険別総括表
+      *  管理者            :
       *  作成日付    作業者        記述
       *  08/04/23    @@@@-田中     新規作成
       *  08/06/17    @@@@-田中     処理速度の向上の修正
@@ -43,6 +43,8 @@
       *  09/11/19    @@@@-田中     保険者一覧を保険者番号順に印字する
       *  10/01/13    @@@@-田中     公費請求額の計算式を修正
       *  10/04/06    @@@@-田中     保険請求額の計算式を修正
+      *  10/07/27    @@@@-門間     自費の集計処理を修正
+      *  10/08/04    @@@@-田中     公費請求額の条件を追加
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -70,13 +72,13 @@
       *
 006900*    エラーファイル
        FD  RECEERR-FILE.
-       01  RECEERR-REC             PIC X(200). 
+       01  RECEERR-REC             PIC X(200).
       *
        WORKING-STORAGE             SECTION.
-      *    印刷用データ 名称領域 
+      *    印刷用データ 名称領域
            COPY    "CPCOMMONPRT.INC".
       *
-      *    エラーファイル 名称領域 
+      *    エラーファイル 名称領域
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
@@ -92,7 +94,7 @@
            COPY    "A00000S140G2.INC".
            COPY    "A00000S140N2.INC".
       * 20081014 市町村ごとの集計を追加END
-      *    
+      *
       *    スパ領域
        01  STS-AREA.
            03  STS-PARA            PIC X(02).
@@ -169,7 +171,7 @@
            03  IDZ                 PIC 9(04).
            03  IDM                 PIC 9(04).
            03  IDX-MAX             PIC 9(04).
-           
+
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -327,9 +329,9 @@
       *--- 2009/07/29 ADD START ----------------------------------------
            03  WRK-HKNSKYMONEY          PIC 9(09).
       *--- 2009/01/08 DELETE START -------------------------------------
-      *     03  WRK-MSKYMONEY            PIC 9(09). 
+      *     03  WRK-MSKYMONEY            PIC 9(09).
       *--- 2009/01/08 DELETE END ---------------------------------------
-           03  WRK-TYOKIFTN             PIC 9(09). 
+           03  WRK-TYOKIFTN             PIC 9(09).
       *--- 2009/07/29 ADD END ------------------------------------------
       *--- 2009/11/19 ADD START ----------------------------------------
            03  IDX-S                     PIC 9(03).
@@ -364,7 +366,7 @@
       *
       *
            COPY    "CPSHELLTBL.INC".
-      *     
+      *
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -386,7 +388,7 @@
            COPY    "CPSK4001.INC".
       *
       *--- 2009/06/26 ADD START ----------------------------------------
-      *    主科設定情報 
+      *    主科設定情報
            COPY    "CPSK2009.INC".
       *--- 2009/06/26 ADD END   ----------------------------------------
       *
@@ -565,7 +567,7 @@
            MOVE    S100LNK-YM               TO   WRK-SYMD (1:6)
            MOVE    "01"                     TO   WRK-SYMD (7:2)
            PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG(1:16)        TO   WRK-SRYYM 
+           MOVE    WRK-HENYMDG(1:16)        TO   WRK-SRYYM
            MOVE    S100LNK-YM               TO   WRK-PARA-SRYYM
       *
       *    対象年月最終日取得
@@ -630,7 +632,7 @@
            MOVE    SPA-HOSPNUM              TO   SYS-1005-HOSPNUM
            MOVE    WRK-PARA-PRTLYMD         TO   WRK-SYMD
            PERFORM  820-SYSKANRI-DBSELECT-SEC
-           MOVE     1                       TO   IDX1 
+           MOVE     1                       TO   IDX1
            PERFORM  UNTIL  FLG-SYSKANRI3  =  1
              IF  FLG-SYSKANRI3 = ZERO
                MOVE  SYS-1005-KBNCD         TO   SUM-SRYKA(IDX1)
@@ -651,7 +653,7 @@
            .
         110-PARA-HENSYU-EXT.
            EXIT.
-      *    
+      *
       *****************************************************************
       *    主　　処理
       *****************************************************************
@@ -726,18 +728,22 @@
              IF       SYU-TOTAL-HKNTEN            =  0
                AND    SYU-TOTAL-MONEY             =  0
                AND  ( SYU-JIHI-TOTAL         NOT  =  0
-               OR     SYU-JIHI-TOTAL-TAX     NOT  =  0 
+               OR     SYU-JIHI-TOTAL-TAX     NOT  =  0
                OR     SYU-TOTAL-TGMONEY      NOT  =  0
                OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
-               COMPUTE  WRK-JIHI     =  WRK-JIHI
-                                     +  SYU-JIHI-TOTAL
-                                     +  SYU-JIHI-TOTAL-TAX
-               COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
-                                     +  SYU-TOTAL-TGMONEY
-                                     +  SYU-TOTAL-TGMONEY-TAX
+      *--- 2010/07/27 DELETE START -------------------------------------
+      *         COMPUTE  WRK-JIHI     =  WRK-JIHI
+      *                               +  SYU-JIHI-TOTAL
+      *                               +  SYU-JIHI-TOTAL-TAX
+      *         COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
+      *                               +  SYU-TOTAL-TGMONEY
+      *                               +  SYU-TOTAL-TGMONEY-TAX
+      *--- 2010/07/27 DELETE END   -------------------------------------
                PERFORM  2001-KASAN-JIHI-G-SEC
-               MOVE     0   TO   WRK-JIHI
-                                 WRK-TGMONEY
+      *--- 2010/07/27 DELETE START -------------------------------------
+      *         MOVE     0   TO   WRK-JIHI
+      *                           WRK-TGMONEY
+      *--- 2010/07/27 DELETE END   -------------------------------------
              END-IF
            END-IF
       *
@@ -755,7 +761,7 @@
       *
            MOVE     SYU-NYUGAIKBN       TO    S140TMP-NYUGAIKBN
       *
-           IF    SYS-1001-HOSPSBT1  =  1 
+           IF    SYS-1001-HOSPSBT1  =  1
              OR  SYS-2009-SYUKA-KBN = 1
              MOVE    SYU-SRYKA          TO    S140TMP-SRYKA
            ELSE
@@ -774,7 +780,7 @@
            MOVE   SYU-KOH3HKNNUM   TO   WRK-JIHI-HKNNUM(3)
            MOVE   SYU-KOH4HKNNUM   TO   WRK-JIHI-HKNNUM(4)
       *
-      *    公費集計処理 
+      *    公費集計処理
            IF    SYU-KOH1HKNNUM  NOT =  SPACE
              PERFORM  2001-JIHI-K-DATA-SEC
            END-IF
@@ -822,22 +828,30 @@
       *
       *    自費・保険外のみの場合、件数・日数は集計しない
       *    窓口請求額加算
-           ADD     WRK-TGMONEY      TO     S140TMP-MADOGK(IDX1)
-                                           S140TMP-MADOGK(IDX2)
-                                           S140TMP-GMADOGK
+      *--- 2010/07/27 DELETE START -------------------------------------
+      *     ADD     WRK-TGMONEY      TO     S140TMP-MADOGK(IDX1)
+      *                                     S140TMP-MADOGK(IDX2)
+      *                                     S140TMP-GMADOGK
+      *--- 2010/07/27 DELETE END   -------------------------------------
       *
       *    自費金額加算
-           ADD     WRK-JIHI         TO     S140TMP-JIHIGK(IDX1)
+      *--- 2010/07/27 CHANGE START -------------------------------------
+      *     ADD     WRK-JIHI         TO     S140TMP-JIHIGK(IDX1)
+           ADD     SYU-SKYMONEY     TO     S140TMP-JIHIGK(IDX1)
+      *--- 2010/07/27 CHANGE END   -------------------------------------
                                            S140TMP-JIHIGK(IDX2)
                                            S140TMP-GJIHIGK
       *
       *    医療収益
-           ADD     WRK-JIHI         TO     S140TMP-SYUEKI(IDX1)
-                                           S140TMP-SYUEKI(IDX2)
-                                           S140TMP-GSYUEKI
-           ADD     WRK-TGMONEY      TO     S140TMP-SYUEKI(IDX1)
-                                           S140TMP-SYUEKI(IDX2)
-                                           S140TMP-GSYUEKI
+      *--- 2010/07/27 DEL&CHA START ------------------------------------
+      *     ADD     WRK-JIHI         TO     S140TMP-SYUEKI(IDX1)
+      *                                     S140TMP-SYUEKI(IDX2)
+      *                                     S140TMP-GSYUEKI
+      *     ADD     WRK-TGMONEY      TO     S140TMP-SYUEKI(IDX1)
+           ADD     SYU-SKYMONEY      TO     S140TMP-SYUEKI(IDX1)
+      *--- 2010/07/27 DEL&CHA END   ------------------------------------
+                                            S140TMP-SYUEKI(IDX2)
+                                            S140TMP-GSYUEKI
       *
            MOVE    1                  TO   IDC
            MOVE    300                TO   IDX-MAX
@@ -847,7 +861,7 @@
                MOVE    ZERO           TO   IDX-MAX
              ELSE
                ADD     1              TO   IDC
-             END-IF     
+             END-IF
            END-PERFORM
       *
       *    保険者加算
@@ -855,14 +869,22 @@
       *
       *    自費・保険外のみの場合、件数・日数は集計しない
       *    窓口請求額加算
-             ADD    WRK-TGMONEY          TO    S140TMP-HMADOGK(IDC)
+      *--- 2010/07/27 DELETE START -------------------------------------
+      *       ADD    WRK-TGMONEY          TO    S140TMP-HMADOGK(IDC)
+      *--- 2010/07/27 DELETE END   -------------------------------------
       *
       *    自費計加算
-             ADD    WRK-JIHI             TO    S140TMP-HJIHIGK(IDC)
+      *--- 2010/07/27 CHANGE START -------------------------------------
+      *       ADD    WRK-JIHI             TO    S140TMP-HJIHIGK(IDC)
+             ADD    SYU-SKYMONEY         TO    S140TMP-HJIHIGK(IDC)
+      *--- 2010/07/27 CHANGE END   -------------------------------------
       *
       *    医療収益
-             ADD    WRK-JIHI             TO    S140TMP-HSYUEKI(IDC)
-             ADD    WRK-TGMONEY          TO    S140TMP-HSYUEKI(IDC)
+      *--- 2010/07/27 DEL&CHA START ------------------------------------
+      *       ADD    WRK-JIHI             TO    S140TMP-HSYUEKI(IDC)
+      *       ADD    WRK-TGMONEY          TO    S140TMP-HSYUEKI(IDC)
+             ADD    SYU-SKYMONEY         TO    S140TMP-HSYUEKI(IDC)
+      *--- 2010/07/27 DEL&CHA END   ------------------------------------
       *
            END-IF
       *
@@ -956,7 +978,7 @@
       *    小計集計場所設定
                MOVE              3      TO    IDX2
            END-IF
-      *    
+      *
            .
        2001-IDX-SET2-EXT.
            EXIT.
@@ -974,7 +996,7 @@
       *    TMPファイル読み込み
            MOVE    2                   TO    FLG-TYPE
            PERFORM 800-SKTTMP-READ-SEC
-      * 
+      *
       *    加算データ設定
            PERFORM  2001-KASAN-SEC
       *
@@ -1035,7 +1057,7 @@
                                              S140TMP-SGFTNGK
       *
       *
-      *    公費集計処理 
+      *    公費集計処理
            IF    RECE10-KOHNUM(1)  NOT =  SPACE
              PERFORM  2001-DATA-SET21-SEC
            END-IF
@@ -1133,7 +1155,7 @@
                MOVE    ZERO           TO   IDX-MAX
              ELSE
                ADD     1              TO   IDC
-             END-IF     
+             END-IF
            END-PERFORM
       *
       *    保険者加算
@@ -1228,7 +1250,7 @@
              COMPUTE   WRK-HKNGK  =  (RECE10-TOTALTEN(1)  *  10)
                                   -  RECE10-FTNMONEY(1)
            END-IF
-      
+
       *    収納情報から窓口請求額、公費請求額を集計
            MOVE    ZERO                     TO    WRK-MADOSEIKYUGK-G
                                                   WRK-KOHSEIKYUGK-G
@@ -1262,7 +1284,7 @@
       *                          +  WRK-KOHGK
       *--- (2008/12/12) line del end   monma ---------------------------
       *
-      *    日数 
+      *    日数
                MOVE  RECE10-SHOKUJINISSU(1)     TO   WRK-SNISSU
       *    請求額
                MOVE  RECE10-SHOKUJIRYOYOHI(1)   TO   WRK-SSEIKYU
@@ -1286,7 +1308,7 @@
        2002-PRINT-SEC                SECTION.
       *
       *    後期高齢データ印刷処理
-      
+
            PERFORM  2002-PRINT-TYPE2-SEC
       *
            .
@@ -1493,7 +1515,7 @@
            MOVE    CNT-PAGE           TO    WRK-PAGE
            MOVE    WRK-PAGE           TO    S140G2-PAGE
       *    診療科名(旧総合病院時のみ)
-      * 20081014 主科設定時に診療科を印字するSTART 
+      * 20081014 主科設定時に診療科を印字するSTART
       *     IF    SYS-1001-HOSPSBT1  =  1
       * 20081014 主科設定時に診療科を印字するEND
              MOVE     1               TO    IDX4
@@ -1536,7 +1558,7 @@
            MOVE    CNT-PAGE           TO   WRK-PAGE
            MOVE    WRK-PAGE           TO   S140N1-PAGE
       *    診療科名(旧総合病院時のみ)
-      * 20081014 主科設定時に診療科を印字するSTART 
+      * 20081014 主科設定時に診療科を印字するSTART
       *     IF    SYS-1001-HOSPSBT1  =  1
       * 20081014 主科設定時に診療科を印字するEND
              MOVE     1               TO   IDX4
@@ -1549,7 +1571,7 @@
                  ADD     1            TO   IDX4
                END-IF
              END-PERFORM
-      * 20081014 主科設定時に診療科を印字するSTART 
+      * 20081014 主科設定時に診療科を印字するSTART
       *     END-IF
       * 20081014 主科設定時に診療科を印字するEND
       *
@@ -1579,7 +1601,7 @@
            MOVE    CNT-PAGE           TO   WRK-PAGE
            MOVE    WRK-PAGE           TO   S140N2-PAGE
       *      *    診療科名(旧総合病院時のみ)
-      * 20081014 主科設定時に診療科を印字するSTART 
+      * 20081014 主科設定時に診療科を印字するSTART
       *     IF    SYS-1001-HOSPSBT1  =  1
       * 20081014 主科設定時に診療科を印字するEND
              MOVE     1               TO   IDX4
@@ -1817,7 +1839,7 @@
       *    日数
              MOVE     S140TMP-KNISSU(WRK-CNT1)      TO    WRK-Z4
              MOVE     WRK-Z4             TO    S140N1-KNISSU(IDX3)
-      *     
+      *
       *    点数
              MOVE     S140TMP-KTENSU(WRK-CNT1)      TO    WRK-Z92
              MOVE     WRK-Z92            TO    S140N1-KTENSU(IDX3)
@@ -2048,7 +2070,7 @@
                                                ORCSPRTAREA
                                                SPA-AREA
            IF   SPRT-RETURN   =   ZERO
-             CONTINUE            
+             CONTINUE
            ELSE
              MOVE   "印刷ＤＢに更新できませんでした"   TO   WRK-RECEERR
              PERFORM 500-ERR-HENSYU-SEC
@@ -2063,7 +2085,7 @@
       *****************************************************************
        340-PRINT-OUT-SEC         SECTION.
       *
-      * 
+      *
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"                      TO   SPRT-MODE
            MOVE    S100LNK-PRTKANRI-RENNUM    TO   SPRT-RENNUM
@@ -2098,7 +2120,7 @@
       *****************************************************************
        360-PRINT-OUT-SEC         SECTION.
       *
-      * 
+      *
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"                       TO   SPRT-MODE
            MOVE    S100LNK-PRTKANRI-RENNUM     TO   SPRT-RENNUM
@@ -2134,7 +2156,7 @@
       *****************************************************************
        350-PRINT-OUT-SEC         SECTION.
       *
-      * 
+      *
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"                     TO   SPRT-MODE
            MOVE    S100LNK-PRTKANRI-RENNUM   TO   SPRT-RENNUM
@@ -2144,7 +2166,7 @@
                                              TO   SPRT-TBL-GROUP
            MOVE    S100LNK-PRTKANRI-SRYYM    TO   SPRT-SRYYM
            MOVE    S100LNK-PRTKANRI-SKYYMD   TO   SPRT-SKYYMD
-           MOVE    S100LNK-PRTKANRI-SHELLID 
+           MOVE    S100LNK-PRTKANRI-SHELLID
                                              TO   SPRT-SHELLID
            MOVE    S100LNK-PRTKANRI-SHORI-RENNUM  TO   SPRT-SHORI-RENNUM
            MOVE    S100LNK-PRTKANRI-PRIORITY TO   SPRT-PRIORITY
@@ -2195,8 +2217,8 @@
            MOVE   WRK-KOHNAME-G          TO    WRK-MAE-INPUT
            PERFORM 2009-HENKAN-SEC
            MOVE   WRK-OUT-INPUT          TO    WRK-KOHNAME-G
-      *    
-      *     
+      *
+      *
            .
        333-KOHNAME-HEN-EXT.
            EXIT.
@@ -2281,7 +2303,7 @@
              MOVE    MCPDATA-REC     TO   SYS-1005-REC
            ELSE
              MOVE    1               TO   FLG-SYSKANRI3
-           END-IF  
+           END-IF
            .
        820-SYSKANRI-DBFETCH-EXT.
            EXIT.
@@ -2464,7 +2486,7 @@
            .
        900-TMP-READ-EXT.
            EXIT.
-      *      
+      *
       *****************************************************************
       *    請求管理読込
       *****************************************************************
@@ -2478,7 +2500,7 @@
       * 20080617 処理速度の向上の修正START tanaka
            MOVE    "6"                  TO   RECE10-TEISYUTUSAKI
       * 20080617 処理速度の向上の修正END
-      * 
+      *
            MOVE    RECE10-REC           TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
            MOVE    "tbl_seikyu"         TO   MCP-TABLE
@@ -2517,7 +2539,7 @@
       *
              MOVE    ZERO                 TO   FLG-END
              MOVE    MCPDATA-REC          TO   RECE10-REC
-      
+
       *    テスト患者のときは読み飛ばす
              MOVE    SPACE                TO   PTINF-REC
              INITIALIZE                        PTINF-REC
@@ -2874,11 +2896,11 @@
       *                                       -  SYU-KOH-COMPFTN(IDX)
       *             COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
       *                                          -  SYU-SKJ-FTN(IDX)
-                   IF    RECE10-FTNMONEY(1)  =  ZERO
-                       AND  RECE10-KYURATE  NOT = ZERO
+                 IF    RECE10-FTNMONEY(1)  =  ZERO
+                     AND  RECE10-KYURATE  NOT = ZERO
       *    限度なし
-                     MOVE  SYU-KOH-HKNNUM(IDX)   TO  WRK-KOHNUM
-                     PERFORM   950-HKNNUM-SET-SEC
+                   MOVE  SYU-KOH-HKNNUM(IDX)   TO  WRK-KOHNUM
+                   PERFORM   950-HKNNUM-SET-SEC
       *--- 2009/07/01 DELETE START -------------------------------------
       *               IF   HKN-RECEFTNDSPKBN  =  1
       *                 COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
@@ -2887,27 +2909,39 @@
       *                                              -  SYU-SKJ-FTN(IDX)
       *               ELSE
       *--- 2009/07/01 DELETE END ---------------------------------------
-                       COMPUTE  WRK-KOHSEIKYUGK = SYU-SYUCOMPFTN-ENTANI
-                                          -  SYU-KOH-COMPFTN-ENTANI(IDX)
-                       COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-                                                    -  SYU-SKJ-FTN(IDX)
+                   COMPUTE  WRK-KOHSEIKYUGK = SYU-SYUCOMPFTN-ENTANI
+                                      -  SYU-KOH-COMPFTN-ENTANI(IDX)
+                   COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+                                               -  SYU-SKJ-FTN(IDX)
       *--- 2009/07/01 DELETE START -------------------------------------
       *               END-IF
       *--- 2009/07/01 DELETE END ---------------------------------------
-                   ELSE
+                 ELSE
       *    限度あり
-                     ADD    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
-                     MOVE   1   TO    WRK-FTNFLG
-                     COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-                                                 -  SYU-SKJ-FTN(IDX)
-                   END-IF
+                   ADD    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
+                   MOVE   1   TO    WRK-FTNFLG
+                   COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
+                                               -  SYU-SKJ-FTN(IDX)
+                 END-IF
       *--- 2009/01/08 ADD+DELETE END -----------------------------------
-                   MOVE   SYU-KOH-COMPFTN(IDX)  TO  WRK-ZENCOMPFTN
+                 MOVE   SYU-KOH-COMPFTN(IDX)  TO  WRK-ZENCOMPFTN
       *--- 2009/08/18 DELETE START -------------------------------------
       *           END-IF
       *--- 2009/08/18 DELETE END ---------------------------------------
                END-IF
-      *
+      *--- 2010/08/04 ADD START ---------------------------------------- 
+               ELSE
+                 IF   RECE10-FLG(2)  =  1
+                     AND  ( FLG-TYOKI  =  1  OR  2 )
+                     AND  ( SYU-KOH-HKNNUM(2)  =  SPACE
+                     AND  SYU-KOH-HKNNUM(3)  =  SPACE
+                     AND  SYU-KOH-HKNNUM(4)  =  SPACE )
+
+                   COMPUTE  WRK-HKNGK  =  WRK-HKNGK
+                                       +  SYU-SYUCOMPFTN-ENTANI
+                                       -  SYU-SKYMONEY
+                 END-IF
+      *--- 2010/08/04 ADD END ------------------------------------------ 
              END-IF
            END-PERFORM
       *
@@ -2916,7 +2950,7 @@
              COMPUTE  WRK-HKNFTN  =  WRK-HKNFTN  -  WRK-KOHFTN
       *--- 2009/08/18 ADD START ----------------------------------------
              IF  WRK-HKNFTN  <=  10
-               MOVE    ZERO      TO   WRK-HKNFTN 
+               MOVE    ZERO      TO   WRK-HKNFTN
              END-IF
       *--- 2009/08/18 ADD END ------------------------------------------
              INITIALIZE    WRK-KOHFTN
@@ -2996,7 +3030,7 @@
                IF       SYU-TOTAL-HKNTEN =  0
                  AND    SYU-TOTAL-MONEY             =  0
                  AND  ( SYU-JIHI-TOTAL         NOT  =  0
-                 OR     SYU-JIHI-TOTAL-TAX     NOT  =  0 
+                 OR     SYU-JIHI-TOTAL-TAX     NOT  =  0
                  OR     SYU-TOTAL-TGMONEY      NOT  =  0
                  OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
                  CONTINUE
@@ -3024,7 +3058,7 @@
       *
       *    旧総合病院の時は該当する診療科のみ対象にする
       *--- 2008/10/30  CHANGE START ------------------------------------
-      * 20081014 主科設定時に診療科を印字するSTART 
+      * 20081014 主科設定時に診療科を印字するSTART
                  IF   SYS-1001-HOSPSBT1  NOT =  1
                      OR   RECE10-NYUGAIKBN   =   "1"
       *            IF    RECE10-NYUGAIKBN   =   "1" OR
@@ -3358,7 +3392,7 @@
            PERFORM   UNTIL    FLG-HKNNUM  =   1
              IF   HKN-TEKSTYMD   <=   WRK-SRYYMD
                  AND   HKN-TEKEDYMD  >=  WRK-SRYYMD
-               MOVE     1               TO   FLG-HKNNUM 
+               MOVE     1               TO   FLG-HKNNUM
              END-IF
       *
              IF   FLG-HKNNUM   =   ZERO
@@ -3366,7 +3400,7 @@
                MOVE    "key2"           TO   MCP-PATHNAME
                PERFORM  955-HKNNUM-READ-SEC
              END-IF
-           END-PERFORM      
+           END-PERFORM
       * 20080526 古い公費名を印字してしまう不具合を修正END
            INITIALIZE  MCPAREA
            MOVE   "DBCLOSECURSOR"       TO   MCP-FUNC

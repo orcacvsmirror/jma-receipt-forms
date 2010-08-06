@@ -62,7 +62,9 @@
       *  09/11/06    @@@@-田中     同保険者番号に変更時の不具合を修正
       *  10/01/13    @@@@-田中     公費請求額の計算式を修正   
       *  10/04/06    @@@@-田中     保険請求額の計算式を修正
-      *  10/07/02    @@@@-田中     表示しない項目を削除
+      *  10/07/02    @@@@-田中     処理が正常に終了しない不具合を修正(表示しない項目を削除)
+      *  10/07/27    @@@@-門間     自費の集計処理を修正
+      *  10/08/04    @@@@-田中     公費請求額の条件を追加
       ******************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -832,15 +834,19 @@
                  OR     SYU-JIHI-TOTAL-TAX     NOT  =  0 
                  OR     SYU-TOTAL-TGMONEY      NOT  =  0
                  OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
-                 COMPUTE  WRK-JIHI     =  WRK-JIHI
-                                       +  SYU-JIHI-TOTAL
-                                       +  SYU-JIHI-TOTAL-TAX
-                 COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
-                                       +  SYU-TOTAL-TGMONEY
-                                       +  SYU-TOTAL-TGMONEY-TAX
+      *--- 2010/07/27 DELETE START -------------------------------------
+      *           COMPUTE  WRK-JIHI     =  WRK-JIHI
+      *                                 +  SYU-JIHI-TOTAL
+      *                                 +  SYU-JIHI-TOTAL-TAX
+      *           COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
+      *                                 +  SYU-TOTAL-TGMONEY
+      *                                 +  SYU-TOTAL-TGMONEY-TAX
+      *--- 2010/07/27 DELETE END   -------------------------------------
                  PERFORM  2001-KASAN-JIHI-G-SEC
-                 MOVE     0   TO   WRK-JIHI
-                                   WRK-TGMONEY
+      *--- 2010/07/27 DELETE START -------------------------------------
+      *           MOVE     0   TO   WRK-JIHI
+      *                             WRK-TGMONEY
+      *--- 2010/07/27 DELETE END   -------------------------------------
                END-IF
              END-IF
            END-IF
@@ -1011,23 +1017,32 @@
       *
       *    自費・保険外のみの場合、件数・日数は集計しない
       *    窓口請求額加算
-             ADD     WRK-TGMONEY      TO     S137TMP-MADOGK(IDX1)
-                                             S137TMP-MADOGK(IDX2)
-                                             S137TMP-MADOGK(IDX3)
-                                             S137TMP-GMADOGK
+      *--- 2010/07/27 DELETE START -------------------------------------
+      *       ADD     WRK-TGMONEY      TO     S137TMP-MADOGK(IDX1)
+      *                                       S137TMP-MADOGK(IDX2)
+      *                                       S137TMP-MADOGK(IDX3)
+      *                                       S137TMP-GMADOGK
+      *--- 2010/07/27 DELETE END   -------------------------------------
       *
       *    自費金額加算
-             ADD     WRK-JIHI         TO     S137TMP-JIHIGK(IDX1)
+      *--- 2010/07/27 CHANGE START -------------------------------------
+      *       ADD     WRK-JIHI         TO     S137TMP-JIHIGK(IDX1)
+             ADD     SYU-SKYMONEY     TO     S137TMP-JIHIGK(IDX1)
+      *--- 2010/07/27 CHANGE END   -------------------------------------
                                              S137TMP-JIHIGK(IDX2)
                                              S137TMP-JIHIGK(IDX3)
                                              S137TMP-GJIHIGK
       *
       *    医療収益
-             ADD     WRK-JIHI         TO     S137TMP-SYUEKI(IDX1)
-                                             S137TMP-SYUEKI(IDX2)
-                                             S137TMP-SYUEKI(IDX3)
-                                             S137TMP-GSYUEKI
-             ADD     WRK-TGMONEY      TO     S137TMP-SYUEKI(IDX1)
+      *--- 2010/07/27 DEL&CHA START ------------------------------------
+      *       ADD     WRK-JIHI         TO     S137TMP-SYUEKI(IDX1)
+      *                                       S137TMP-SYUEKI(IDX2)
+      *                                       S137TMP-SYUEKI(IDX3)
+      *                                       S137TMP-GSYUEKI
+      *
+      *       ADD     WRK-TGMONEY      TO     S137TMP-SYUEKI(IDX1)
+             ADD     SYU-SKYMONEY     TO     S137TMP-SYUEKI(IDX1)
+      *--- 2010/07/27 DEL&CHA END   ------------------------------------
                                              S137TMP-SYUEKI(IDX2)
                                              S137TMP-SYUEKI(IDX3)
                                              S137TMP-GSYUEKI
@@ -3924,6 +3939,19 @@
       ***  20050907 MOTOHASI 公費助成額の算出を修正
                END-IF
       *
+      *--- 2010/08/04 ADD START ---------------------------------------- 
+             ELSE
+               IF   RECE10-FLG(2)  =  1
+                   AND  ( FLG-TYOKI  =  1  OR  2 )
+                   AND  ( SYU-KOH-HKNNUM(2)  =  SPACE
+                   AND  SYU-KOH-HKNNUM(3)  =  SPACE
+                   AND  SYU-KOH-HKNNUM(4)  =  SPACE )
+
+                 COMPUTE  WRK-HKNGK  =  WRK-HKNGK
+                                     +  SYU-SYUCOMPFTN-ENTANI
+                                     -  SYU-SKYMONEY
+               END-IF
+      *--- 2010/08/04 ADD END ------------------------------------------ 
              END-IF
            END-PERFORM
       *
