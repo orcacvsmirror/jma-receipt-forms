@@ -44,7 +44,7 @@
       *  10/01/13    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
       *  10/04/06    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
       *  10/07/27    @@@@-Ìç´Ö     ¼«Èñ¤Î½¸·×½èÍý¤ò½¤Àµ
-      *  10/08/04    @@@@-ÅÄÃæ     ¸øÈñÀÁµá³Û¤Î¾ò·ï¤òÄÉ²Ã
+      *  10/08/04    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î¾ò·ï¤òÄÉ²Ã
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -291,8 +291,12 @@
            03  WRK-KOHNAME-G             PIC X(24).
            03  WRK-KOHNAME-G2            PIC X(24).
       *--- 2009/06/26 ADD START ----------------------------------------
-           03  WRK-JIHI                  PIC 9(07).
-           03  WRK-TGMONEY               PIC 9(07).
+      *--- 2010/07/27 CHANGE START -------------------------------------
+      *     03  WRK-JIHI                 PIC 9(07).
+      *     03  WRK-TGMONEY              PIC 9(07).
+           03  WRK-JIHI                 PIC S9(07).
+           03  WRK-TGMONEY              PIC S9(07).
+      *--- 2010/07/27 CHANGE END   -------------------------------------
            03  WRK-JIHI-TBL        OCCURS 4.
                05  WRK-JIHI-HKNNUM       PIC X(03).
       *--- 2009/06/26 ADD END   ----------------------------------------
@@ -731,19 +735,19 @@
                OR     SYU-JIHI-TOTAL-TAX     NOT  =  0
                OR     SYU-TOTAL-TGMONEY      NOT  =  0
                OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
-      *--- 2010/07/27 DELETE START -------------------------------------
-      *         COMPUTE  WRK-JIHI     =  WRK-JIHI
-      *                               +  SYU-JIHI-TOTAL
-      *                               +  SYU-JIHI-TOTAL-TAX
-      *         COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
-      *                               +  SYU-TOTAL-TGMONEY
-      *                               +  SYU-TOTAL-TGMONEY-TAX
-      *--- 2010/07/27 DELETE END   -------------------------------------
+      *
+               COMPUTE  WRK-JIHI     =  WRK-JIHI
+                                     +  SYU-JIHI-TOTAL
+                                     +  SYU-JIHI-TOTAL-TAX
+               COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
+                                     +  SYU-TOTAL-TGMONEY
+                                     +  SYU-TOTAL-TGMONEY-TAX
+      *--- 2010/07/27 ADD START ----------------------------------------
+                                     +  SYU-CHOSEI
+      *--- 2010/07/27 ADD END   ----------------------------------------
                PERFORM  2001-KASAN-JIHI-G-SEC
-      *--- 2010/07/27 DELETE START -------------------------------------
-      *         MOVE     0   TO   WRK-JIHI
-      *                           WRK-TGMONEY
-      *--- 2010/07/27 DELETE END   -------------------------------------
+               MOVE     0   TO   WRK-JIHI
+                                 WRK-TGMONEY
              END-IF
            END-IF
       *
@@ -828,30 +832,22 @@
       *
       *    ¼«Èñ¡¦ÊÝ¸±³°¤Î¤ß¤Î¾ì¹ç¡¢·ï¿ô¡¦Æü¿ô¤Ï½¸·×¤·¤Ê¤¤
       *    Áë¸ýÀÁµá³Û²Ã»»
-      *--- 2010/07/27 DELETE START -------------------------------------
-      *     ADD     WRK-TGMONEY      TO     S140TMP-MADOGK(IDX1)
-      *                                     S140TMP-MADOGK(IDX2)
-      *                                     S140TMP-GMADOGK
-      *--- 2010/07/27 DELETE END   -------------------------------------
+           ADD     WRK-TGMONEY      TO     S140TMP-MADOGK(IDX1)
+                                           S140TMP-MADOGK(IDX2)
+                                           S140TMP-GMADOGK
       *
       *    ¼«Èñ¶â³Û²Ã»»
-      *--- 2010/07/27 CHANGE START -------------------------------------
-      *     ADD     WRK-JIHI         TO     S140TMP-JIHIGK(IDX1)
-           ADD     SYU-SKYMONEY     TO     S140TMP-JIHIGK(IDX1)
-      *--- 2010/07/27 CHANGE END   -------------------------------------
+           ADD     WRK-JIHI         TO     S140TMP-JIHIGK(IDX1)
                                            S140TMP-JIHIGK(IDX2)
                                            S140TMP-GJIHIGK
       *
       *    °åÎÅ¼ý±×
-      *--- 2010/07/27 DEL&CHA START ------------------------------------
-      *     ADD     WRK-JIHI         TO     S140TMP-SYUEKI(IDX1)
-      *                                     S140TMP-SYUEKI(IDX2)
-      *                                     S140TMP-GSYUEKI
-      *     ADD     WRK-TGMONEY      TO     S140TMP-SYUEKI(IDX1)
-           ADD     SYU-SKYMONEY      TO     S140TMP-SYUEKI(IDX1)
-      *--- 2010/07/27 DEL&CHA END   ------------------------------------
-                                            S140TMP-SYUEKI(IDX2)
-                                            S140TMP-GSYUEKI
+           ADD     WRK-JIHI         TO     S140TMP-SYUEKI(IDX1)
+                                           S140TMP-SYUEKI(IDX2)
+                                           S140TMP-GSYUEKI
+           ADD     WRK-TGMONEY      TO     S140TMP-SYUEKI(IDX1)
+                                           S140TMP-SYUEKI(IDX2)
+                                           S140TMP-GSYUEKI
       *
            MOVE    1                  TO   IDC
            MOVE    300                TO   IDX-MAX
@@ -869,22 +865,14 @@
       *
       *    ¼«Èñ¡¦ÊÝ¸±³°¤Î¤ß¤Î¾ì¹ç¡¢·ï¿ô¡¦Æü¿ô¤Ï½¸·×¤·¤Ê¤¤
       *    Áë¸ýÀÁµá³Û²Ã»»
-      *--- 2010/07/27 DELETE START -------------------------------------
-      *       ADD    WRK-TGMONEY          TO    S140TMP-HMADOGK(IDC)
-      *--- 2010/07/27 DELETE END   -------------------------------------
+             ADD    WRK-TGMONEY          TO    S140TMP-HMADOGK(IDC)
       *
       *    ¼«Èñ·×²Ã»»
-      *--- 2010/07/27 CHANGE START -------------------------------------
-      *       ADD    WRK-JIHI             TO    S140TMP-HJIHIGK(IDC)
-             ADD    SYU-SKYMONEY         TO    S140TMP-HJIHIGK(IDC)
-      *--- 2010/07/27 CHANGE END   -------------------------------------
+             ADD    WRK-JIHI             TO    S140TMP-HJIHIGK(IDC)
       *
       *    °åÎÅ¼ý±×
-      *--- 2010/07/27 DEL&CHA START ------------------------------------
-      *       ADD    WRK-JIHI             TO    S140TMP-HSYUEKI(IDC)
-      *       ADD    WRK-TGMONEY          TO    S140TMP-HSYUEKI(IDC)
-             ADD    SYU-SKYMONEY         TO    S140TMP-HSYUEKI(IDC)
-      *--- 2010/07/27 DEL&CHA END   ------------------------------------
+             ADD    WRK-JIHI             TO    S140TMP-HSYUEKI(IDC)
+             ADD    WRK-TGMONEY          TO    S140TMP-HSYUEKI(IDC)
       *
            END-IF
       *
