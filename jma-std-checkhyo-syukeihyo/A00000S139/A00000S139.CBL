@@ -70,6 +70,8 @@
       *  10/05/31    @@@@-Ìç´Ö     ¿©»öÎÅÍÜÈñ(¼«Èñ¡¦Ï«ºÒ¡¦¼«Çå¡¦¸ø³²)2½Å²Ã»»¤Î½¤Àµ
       *  10/07/27    @@@@-Ìç´Ö     ¼«Èñ¤Î½¸·×½èÍý¤ò½¤Àµ
       *  10/08/04    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î¾ò·ï¤òÄÉ²Ã
+      *  10/08/12    @@@@-ÅÄÃæ     Ä¹´ü°åÎÅ»þ¤Ë¸øÈñÀÁµá³Û¤Î·×»»¤ò½¤Àµ
+      *  10/08/12    @@@@-ÅÄÃæ     ¸øÈñÃ±ÆÈ»þ¤Ë¸øÈñÀÁµá³Û¤Î·×»»¤ò½¤Àµ
       *********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -372,6 +374,9 @@
       *--- 2009/08/18 DELETE END ---------------------------------------
            03  WRK-TYOKIFTN             PIC 9(09). 
       *--- 2009/07/29 ADD END ------------------------------------------
+      *--- 2010/08/12 ADD START ----------------------------------------
+           03  WRK-KOHMADOGK           PIC S9(09).
+      *--- 2010/08/12 ADD END ------------------------------------------
       *
       *    ¿ÇÎÅ²ÊÌ¾ÂàÈò¥¨¥ê¥¢
        01  SUM-AREA.
@@ -1138,31 +1143,55 @@
            MOVE    ZERO                TO   FLG-TYOKI
       *--- 2009/07/29 ADD END ------------------------------------------
       *
+      *--- 2010/08/12 ADD START ----------------------------------------
+           IF   (RECE10-TOKKI(1)  =  "02"
+               OR  RECE10-TOKKI(2)  =  "02"
+               OR  RECE10-TOKKI(3)  =  "02"
+               OR  RECE10-TOKKI(4)  =  "02"
+               OR  RECE10-TOKKI(5)  =  "02")
+             MOVE    1        TO   FLG-TYOKI
+             MOVE    10000    TO   WRK-TYOKIFTN
+           ELSE
+             IF  (RECE10-TOKKI(1)  =  "16"
+                 OR  RECE10-TOKKI(2)  =  "16"
+                 OR  RECE10-TOKKI(3)  =  "16"
+                 OR  RECE10-TOKKI(4)  =  "16"
+                 OR  RECE10-TOKKI(5)  =  "16")
+               MOVE    2        TO   FLG-TYOKI
+               MOVE    20000    TO   WRK-TYOKIFTN
+             END-IF
+           END-IF
+      *--- 2010/08/12 ADD END ------------------------------------------
       *    ¸ÂÅÙ³Û¤¬Í­¤ë¾ì¹ç¤Ï(ÅÀ¿ô¡ß£±£°) ¡Ý ´µ¼ÔÉéÃ´ ¤Ç»»½Ð¤¹¤ë
            IF    RECE10-FTNMONEY(1)  =  ZERO
-      ***  20050419  @@@@-MOTOHASI
                AND  RECE10-KYURATE  NOT =  ZERO
       ***  20050419  @@@@-MOTOHASI
       *--- 2009/07/29 ADD START ----------------------------------------
-             IF   (RECE10-TOKKI(1)  =  "02"
-                 OR  RECE10-TOKKI(2)  =  "02"
-                 OR  RECE10-TOKKI(3)  =  "02"
-                 OR  RECE10-TOKKI(4)  =  "02"
-                 OR  RECE10-TOKKI(5)  =  "02")
-               MOVE    1        TO   FLG-TYOKI
-             ELSE
-               IF  (RECE10-TOKKI(1)  =  "16"
-                   OR  RECE10-TOKKI(2)  =  "16"
-                   OR  RECE10-TOKKI(3)  =  "16"
-                   OR  RECE10-TOKKI(4)  =  "16"
-                   OR  RECE10-TOKKI(5)  =  "16")
-                 MOVE    2        TO   FLG-TYOKI
-               ELSE
+      *--- 2010/08/12 CHANGE START -------------------------------------
+      *       IF   (RECE10-TOKKI(1)  =  "02"
+      *           OR  RECE10-TOKKI(2)  =  "02"
+      *           OR  RECE10-TOKKI(3)  =  "02"
+      *           OR  RECE10-TOKKI(4)  =  "02"
+      *           OR  RECE10-TOKKI(5)  =  "02")
+      *         MOVE    1        TO   FLG-TYOKI
+      *       ELSE
+      *         IF  (RECE10-TOKKI(1)  =  "16"
+      *             OR  RECE10-TOKKI(2)  =  "16"
+      *             OR  RECE10-TOKKI(3)  =  "16"
+      *             OR  RECE10-TOKKI(4)  =  "16"
+      *             OR  RECE10-TOKKI(5)  =  "16")
+      *           MOVE    2        TO   FLG-TYOKI
+      *         ELSE
+             IF    FLG-TYOKI  NOT =  1
+                 AND   FLG-TYOKI  NOT =  2
+      *--- 2010/08/12 CHANGE END ---------------------------------------
       *--- 2009/07/29 ADD END ------------------------------------------
-                 COMPUTE   WRK-HKNGK  =  RECE10-TOTALTEN(1)
-                                      *  RECE10-KYURATE
+                COMPUTE   WRK-HKNGK  =  RECE10-TOTALTEN(1)
+                                   *  RECE10-KYURATE
       *--- 2009/07/29 ADD START ----------------------------------------
-               END-IF
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *         END-IF
+      *--- 2010/08/12 DELETE END ---------------------------------------
              END-IF
       *--- 2009/07/29 ADD END ------------------------------------------
            ELSE
@@ -1176,6 +1205,9 @@
       *--- (2008/12/18) line add start monma ---------------------------
                                                 WRK-JIHIGK-G
       *--- (2008/12/18) line add end   monma ---------------------------
+      *--- 2010/08/12 ADD START ----------------------------------------
+                                                WRK-KOHMADOGK
+      *--- 2010/08/12 ADD END ------------------------------------------
       *
            PERFORM  920-SYUNOU-SET-SEC
       *--- (2008/12/18) line add&del start monma -----------------------
@@ -1249,28 +1281,35 @@
       *                + RECE10-SHOKUJIRYOYOHI(IDX8)
       *    ¸øÈñÀÁµá³Û
       *--- 2009/01/08 ADD START ----------------------------------------
-             IF  RECE10-SHOKUJIFTN(IDX8)  NOT =  ZERO
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *       IF  RECE10-SHOKUJIFTN(IDX8)  NOT =  ZERO
+      *--- 2010/08/12 DELETE END ---------------------------------------
       *    ´µ¼Ô¿©»öÉéÃ´Í­¤ê
       *--- 2009/11/06 CHANGE START -------------------------------------
       *         COMPUTE   WRK-HKNGK  =  ((WRK-FUKUKOHTEN
-                COMPUTE   WRK-KOHGK  =  ((WRK-FUKUKOHTEN
+              COMPUTE   WRK-KOHGK  =  ((WRK-FUKUKOHTEN
       *--- 2009/11/06 CHANGE END ---------------------------------------
                                   +  RECE10-TOTALTEN(IDX8))  *  10)
-                                  -  (WRK-MADOGK
+      *--- 2010/08/12 CHANGE START -------------------------------------
+      *                            -  (WRK-MADOGK
+                                  -  (WRK-KOHMADOGK
+      *--- 2010/08/12 CHANGE END ---------------------------------------
                                   -  RECE10-SHOKUJIFTN(IDX8))
-             ELSE
-      *    ´µ¼Ô¿©»öÉéÃ´Ìµ¤·
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *       ELSE
+      **    ´µ¼Ô¿©»öÉéÃ´Ìµ¤·
+      **--- 2009/01/08 ADD END ------------------------------------------
+      **--- 2009/11/06 CHANGE START -------------------------------------
+      **         COMPUTE   WRK-HKNGK  =  ((WRK-FUKUKOHTEN
+      *          COMPUTE   WRK-KOHGK  =  ((WRK-FUKUKOHTEN
+      **--- 2009/11/06 CHANGE END ---------------------------------------
+      *                            +  RECE10-TOTALTEN(IDX8))  *  10)
+      *                            +  RECE10-SHOKUJIRYOYOHI(IDX8)
+      *                            -  RECE10-FTNMONEY(IDX8)
+      **--- 2009/01/08 ADD START ----------------------------------------
+      *       END-IF
       *--- 2009/01/08 ADD END ------------------------------------------
-      *--- 2009/11/06 CHANGE START -------------------------------------
-      *         COMPUTE   WRK-HKNGK  =  ((WRK-FUKUKOHTEN
-                COMPUTE   WRK-KOHGK  =  ((WRK-FUKUKOHTEN
-      *--- 2009/11/06 CHANGE END ---------------------------------------
-                                  +  RECE10-TOTALTEN(IDX8))  *  10)
-                                  +  RECE10-SHOKUJIRYOYOHI(IDX8)
-                                  -  RECE10-FTNMONEY(IDX8)
-      *--- 2009/01/08 ADD START ----------------------------------------
-             END-IF
-      *--- 2009/01/08 ADD END ------------------------------------------
+      *--- 2010/08/12 DELETE END ---------------------------------------
       *
       * 20071114 ¸øÈñÃ±ÆÈ¤ÎÉÔ¶ñ¹ç¤ò½¤ÀµEND
       ***  20040712  ¤³¤³¤Þ¤Ç
@@ -1302,24 +1341,28 @@
       *    °åÎÅ¼ý±×
            IF    RECE10-HKNNUM  =  SPACE
       *    ¸øÈñÃ±ÆÈ
+      *--- 2010/08/12 DELETE START -------------------------------------
       *--- 2009/01/08 ADD START ----------------------------------------
-             IF  RECE10-SHOKUJIFTN(IDX8)  NOT =  ZERO
+      *       IF  RECE10-SHOKUJIFTN(IDX8)  NOT =  ZERO
       *    ´µ¼Ô¿©»öÉéÃ´Ìµ¤·
       *--- 2009/01/08 ADD END ------------------------------------------
-               COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-                                    +  WRK-KOHGK
+      *--- 2010/08/12 DELETE END ---------------------------------------
+             COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+                                  +  WRK-KOHGK
       *--- (2008/12/18) line add start monma ---------------------------
       *    ¿©»ö¼ý±×²Ã»»
-                                    +  WRK-JIHIGK
-                                    +  (WRK-SSEIKYU - WRK-SFTNGK)
+                                  +  WRK-JIHIGK
+                                  +  (WRK-SSEIKYU - WRK-SFTNGK)
       *--- (2008/12/18) line add end   monma ---------------------------
       *--- 2009/01/08 ADD START ----------------------------------------
-             ELSE
-      *    ´µ¼Ô¿©»öÉéÃ´Í­¤ê
-               COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-                                    +  WRK-KOHGK
-                                    +  WRK-JIHIGK
-             END-IF
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *       ELSE
+      **    ´µ¼Ô¿©»öÉéÃ´Í­¤ê
+      *         COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+      *                              +  WRK-KOHGK
+      *                              +  WRK-JIHIGK
+      *       END-IF
+      *--- 2010/08/12 DELETE END ---------------------------------------
            ELSE
       *    ¸øÈñÃ±ÆÈ°Ê³°
              COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
@@ -2197,28 +2240,39 @@
                  COMPUTE  WRK-HKNGK ROUNDED  =
                                        SYU-TOTAL-HKNTEN * 12
                END-IF
-                 COMPUTE  WRK-HKNGK  =  WRK-HKNGK
-                                     +  SYU-RSISHOSHIN-MONEY
-                                     +  SYU-RSISAISHIN-MONEY
-                                     +  SYU-RSISDO-MONEY
-                                     +  SYU-RSIETC-MONEY
-                                     +  SYU-RYOYOHI-SKJ
+               COMPUTE  WRK-HKNGK  =  WRK-HKNGK
+                                   +  SYU-RSISHOSHIN-MONEY
+                                   +  SYU-RSISAISHIN-MONEY
+                                   +  SYU-RSISDO-MONEY
+                                   +  SYU-RSIETC-MONEY
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *                             +  SYU-RYOYOHI-SKJ
+      *--- 2010/08/12 DELETE END ---------------------------------------
+      *
       * 20080616 ·òÊÝ½àµò»þ¤Î¼«ÇåÀÕ¤Î·×»»¤ò½¤ÀµSTART tanaka
                IF   SYU-SYUHKNNUM    =   "973"
-                 IF  SYU-PTFTNRATE NOT =  ZERO
-                   MOVE ZERO  TO   WRK-HKNGK
-                 ELSE
-                   COMPUTE WRK-HKNGK  =  SYU-RSIJIBAI-SKYMONEY
-                                      -  SYU-JIHI-TOTAL
-                                      -  SYU-JIHI-TOTAL-TAX
-                                      -  SYU-TOTAL-TGMONEY
-                                      -  SYU-TOTAL-TGMONEY-TAX
-                                      -  SYU-CHOSEI
-                                      -  SYU-YKZ-FTN
-                                      -  SYU-SKYMONEY-SKJ-JIHI-KEI
-                                      -  SYU-SKYMONEY-LIFE-JIHI-KEI
-                                      -  SYU-RMSAGAKU
-                 END-IF
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *           IF  SYU-PTFTNRATE NOT =  ZERO
+      *             MOVE    ZERO     TO   WRK-HKNGK
+      *             COMPUTE  WRK-MADOGK  =  SYU-SKYMONEY - WRK-JIHIGK
+      *           ELSE
+      *--- 2010/08/12 DELETE END ---------------------------------------
+                   COMPUTE  WRK-HKNGK  =  SYU-RSIJIBAI-SKYMONEY
+                                       -  SYU-JIHI-TOTAL
+                                       -  SYU-JIHI-TOTAL-TAX
+                                       -  SYU-TOTAL-TGMONEY
+                                       -  SYU-TOTAL-TGMONEY-TAX
+                                       -  SYU-CHOSEI
+                                       -  SYU-YKZ-FTN
+      *--- 2010/08/12 CHANGE START -------------------------------------
+      *                                 -  SYU-SKYMONEY-SKJ-JIHI-KEI
+      *                                 -  SYU-SKYMONEY-LIFE-JIHI-KEI
+                                       -  SYU-SYUSKJ-RYOYOHI
+      *--- 2010/08/12 CHANGE END ---------------------------------------
+                                       -  SYU-RMSAGAKU
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *           END-IF
+      *--- 2010/08/12 DELETE END ---------------------------------------
                END-IF
       * 20080616 ·òÊÝ½àµò»þ¤Î¼«ÇåÀÕ¤Î·×»»¤ò½¤ÀµEND
              END-IF
@@ -2230,12 +2284,17 @@
                                    +  SYU-JIHI-TOTAL
                                    +  SYU-JIHI-TOTAL-TAX
                                    +  SYU-RMSAGAKU
-                                   +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *                             +  SYU-SKYMONEY-SKJ-JIHI-KEI
+      *--- 2010/08/12 DELETE END ---------------------------------------
                IF      SYU-SRYYMD  <  "20070401"
                  COMPUTE WRK-JIHI4   =   WRK-JIHI4  +  SYU-JIHI-TAX
                END-IF
                COMPUTE   WRK-HKNGK  =  SYU-RSIJIBAI-SKYMONEY
                                     -  WRK-JIHI4
+      *--- 2010/08/12 ADD START ----------------------------------------
+                                    -  SYU-SYUSKJ-RYOYOHI
+      *--- 2010/08/12 ADD END ------------------------------------------
              END-IF
       * 20080423 H20Ç¯4·î²þÀµÂÐ±þEND
            END-IF
@@ -2248,28 +2307,30 @@
       *
       ***  20040820  @@@@-MOTOHASI  ¿©»öÎÅÍÜÄÉ²Ã
       *    Æü¿ô
-           MOVE  SYU-SYUSKJ-NISSU     TO   WRK-SNISSU
+           MOVE    SYU-SYUSKJ-NISSU     TO   WRK-SNISSU
       *    ÀÁµá³Û
-           MOVE  SYU-SYUSKJ-RYOYOHI   TO   WRK-SSEIKYU
+           MOVE    SYU-SYUSKJ-RYOYOHI   TO   WRK-SSEIKYU
       *    É¸½àÉéÃ´³Û
-           MOVE  SYU-SYUSKJ-FTN       TO   WRK-SFTNGK
+           MOVE    SYU-SYUSKJ-FTN       TO   WRK-SFTNGK
       ***  20040820  @@@@-MOTOHASI  
       *
       *--- (2008/12/18) line add start monma ---------------------------
       *    °åÎÅ¼ý±× ¿©»ö¼ý±×²Ã»»
       *--- 2010/05/31 CHANGE START -------------------------------------
-      *     COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-      *                          +  WRK-KOHGK  +  WRK-JIHIGK
-      *                          +  (WRK-SSEIKYU - WRK-SFTNGK)
-           IF  SYU-SYUHKNNUM(1:2)  NOT =  "98"  AND
-               WRK-SFTNGK              =  0
-             COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-                                  +  WRK-KOHGK  +  WRK-JIHIGK
-           ELSE
-             COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-                                  +  WRK-KOHGK  +  WRK-JIHIGK
-                                  +  (WRK-SSEIKYU - WRK-SFTNGK)
-           END-IF
+      *--- 2010/08/12 CHANGE START -------------------------------------
+           COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+                                +  WRK-KOHGK  +  WRK-JIHIGK
+                                +  (WRK-SSEIKYU - WRK-SFTNGK)
+      *     IF  SYU-SYUHKNNUM(1:2)  NOT =  "98"  AND
+      *         WRK-SFTNGK              =  0
+      *       COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+      *                            +  WRK-KOHGK  +  WRK-JIHIGK
+      *     ELSE
+      *       COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
+      *                            +  WRK-KOHGK  +  WRK-JIHIGK
+      *                            +  (WRK-SSEIKYU - WRK-SFTNGK)
+      *     END-IF
+      *--- 2010/08/12 CHANGE END ---------------------------------------
       *--- 2010/05/31 CHANGE END   -------------------------------------
       *--- (2008/12/18) line add end   monma ---------------------------
       *
@@ -3900,7 +3961,9 @@
                  MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)
                                               TO   SYU-SYUCOMPFTN-ENTANI
                  MOVE    SYU-KOH-COMPFTN(IDX7)  TO   SYU-SYUCOMPFTN
-                 MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *           MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
+      *--- 2010/08/12 DELETE END ---------------------------------------
                END-IF
                IF   FLG-TYOKI  =  2
                    AND  SYU-KOH-HKNNUM(IDX7)  =  "974"
@@ -3910,7 +3973,9 @@
                  MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)
                                               TO   SYU-SYUCOMPFTN-ENTANI
                  MOVE    SYU-KOH-COMPFTN(IDX7)  TO   SYU-SYUCOMPFTN
-                 MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *           MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
+      *--- 2010/08/12 DELETE END ---------------------------------------
                END-IF
              END-PERFORM
       *--- 2010/04/06 ADD START ----------------------------------------
@@ -3995,7 +4060,10 @@
       *--- 2009/07/01 DELETE END ---------------------------------------
                    ELSE
       *    ¸ÂÅÙ¤¢¤ê
-                     ADD    SYU-KOH-COMPFTN(IDX)  TO   WRK-KOHFTN
+      *--- 2010/08/12 CHANGE START -------------------------------------
+      *               ADD    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
+                     MOVE    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
+      *--- 2010/08/12 CHANGE END ---------------------------------------
                      MOVE   1   TO    WRK-FTNFLG
                      COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
                                                   -  SYU-SKJ-FTN(IDX)
@@ -4051,6 +4119,15 @@
            ADD    WRK-KOHSKJSEIKYUGK  TO   WRK-KOHSEIKYUGK-G
            ADD    SYU-SKYMONEY        TO   WRK-MADOSEIKYUGK-G
       *
+      *--- 2010/08/12 ADD START ----------------------------------------
+           COMPUTE    WRK-KOHMADOGK  =  WRK-KOHMADOGK
+                                     +  SYU-SKYMONEY
+                                     -  SYU-JIHI-TOTAL
+                                     -  SYU-JIHI-TOTAL-TAX
+                                     -  SYU-TOTAL-TGMONEY
+                                     -  SYU-TOTAL-TGMONEY-TAX
+                                     -  SYU-RMSAGAKU
+      *--- 2010/08/12 ADD END ----------------------------------------
       *--- 2009/07/29 ADD START ----------------------------------------
       *--- 2009/08/18 DELETE START -------------------------------------
       *     COMPUTE   WRK-MSKYMONEY   =  WRK-MADOSEIKYUGK-G
