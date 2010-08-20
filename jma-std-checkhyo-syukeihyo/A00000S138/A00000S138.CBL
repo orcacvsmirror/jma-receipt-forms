@@ -59,6 +59,7 @@
       *  10/04/06    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î·×»»¼°¤ò½¤Àµ
       *  10/07/27    @@@@-Ìç´Ö     ¼«Èñ¤Î½¸·×½èÍý¤ò½¤Àµ
       *  10/08/04    @@@@-ÅÄÃæ     ÊÝ¸±ÀÁµá³Û¤Î¾ò·ï¤òÄÉ²Ã
+      *  10/08/12    @@@@-ÅÄÃæ     Ä¹´ü°åÎÅ»þ¤Ë¸øÈñÀÁµá³Û¤Î·×»»¤ò½¤Àµ
       ********************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -372,6 +373,9 @@
       *--- 2010/04/06 ADD START ----------------------------------------
            03  WRK-WARI                  PIC 9(02)V9.
       *--- 2010/04/06 ADD END ------------------------------------------
+      *--- 2010/08/12 ADD START ----------------------------------------
+           03  WRK-TYOKIFTN            PIC 9(09).
+      *--- 2010/08/12 ADD END ------------------------------------------
       *
       *    ¿ÇÎÅ²ÊÌ¾ÂàÈò¥¨¥ê¥¢
        01  SUM-AREA.
@@ -1905,31 +1909,56 @@
            MOVE    ZERO                TO   FLG-TYOKI
       *--- 2009/07/29 ADD END ------------------------------------------
       *
+      *--- 2010/08/12 ADD START ----------------------------------------
+           IF   (RECE10-TOKKI(1)  =  "02"
+               OR  RECE10-TOKKI(2)  =  "02"
+               OR  RECE10-TOKKI(3)  =  "02"
+               OR  RECE10-TOKKI(4)  =  "02"
+               OR  RECE10-TOKKI(5)  =  "02")
+             MOVE    1        TO   FLG-TYOKI
+             MOVE    10000    TO   WRK-TYOKIFTN
+           ELSE
+             IF  (RECE10-TOKKI(1)  =  "16"
+                 OR  RECE10-TOKKI(2)  =  "16"
+                 OR  RECE10-TOKKI(3)  =  "16"
+                 OR  RECE10-TOKKI(4)  =  "16"
+                 OR  RECE10-TOKKI(5)  =  "16")
+               MOVE    2        TO   FLG-TYOKI
+               MOVE    20000    TO   WRK-TYOKIFTN
+             END-IF
+           END-IF
+      *--- 2010/08/12 ADD END ------------------------------------------
       *    ¸ÂÅÙ³Û¤¬Í­¤ë¾ì¹ç¤Ï(ÅÀ¿ô¡ß£±£°) ¡Ý ´µ¼ÔÉéÃ´ ¤Ç»»½Ð¤¹¤ë
            IF    RECE10-FTNMONEY(1)  =  ZERO
       ***  20050419  @@@@-MOTOHASI
                AND  RECE10-KYURATE  NOT =  ZERO
       ***  20050419  @@@@-MOTOHASI
       *--- 2009/07/29 ADD START ----------------------------------------
-             IF   (RECE10-TOKKI(1)  =  "02"
-                 OR  RECE10-TOKKI(2)  =  "02"
-                 OR  RECE10-TOKKI(3)  =  "02"
-                 OR  RECE10-TOKKI(4)  =  "02"
-                 OR  RECE10-TOKKI(5)  =  "02")
-               MOVE    1        TO   FLG-TYOKI
-             ELSE
-               IF  (RECE10-TOKKI(1)  =  "16"
-                   OR  RECE10-TOKKI(2)  =  "16"
-                   OR  RECE10-TOKKI(3)  =  "16"
-                   OR  RECE10-TOKKI(4)  =  "16"
-                   OR  RECE10-TOKKI(5)  =  "16")
-                 MOVE    2        TO   FLG-TYOKI
-               ELSE
+      *--- 2010/08/12 CHANGE START -------------------------------------
+      *       IF   (RECE10-TOKKI(1)  =  "02"
+      *           OR  RECE10-TOKKI(2)  =  "02"
+      *           OR  RECE10-TOKKI(3)  =  "02"
+      *           OR  RECE10-TOKKI(4)  =  "02"
+      *           OR  RECE10-TOKKI(5)  =  "02")
+      *         MOVE    1        TO   FLG-TYOKI
+      *       ELSE
+      *         IF  (RECE10-TOKKI(1)  =  "16"
+      *             OR  RECE10-TOKKI(2)  =  "16"
+      *             OR  RECE10-TOKKI(3)  =  "16"
+      *             OR  RECE10-TOKKI(4)  =  "16"
+      *             OR  RECE10-TOKKI(5)  =  "16")
+      *           MOVE    2        TO   FLG-TYOKI
+      *         ELSE
+             IF    FLG-TYOKI  NOT =  1
+                 AND   FLG-TYOKI  NOT =  2
+      *--- 2010/08/12 CHANGE END ---------------------------------------
       *--- 2009/07/29 ADD END ------------------------------------------
-                 COMPUTE   WRK-HKNGK  =  RECE10-TOTALTEN(1)
-                                      *  RECE10-KYURATE
+               COMPUTE   WRK-HKNGK  =  RECE10-TOTALTEN(1)
+                                    *  RECE10-KYURATE
       *--- 2009/07/29 ADD START ----------------------------------------
-               END-IF
+      *--- 2010/08/12 DELETE START -------------------------------------
+      *         END-IF
+      *--- 2010/08/12 DELETE END ---------------------------------------
              END-IF
       *--- 2009/07/29 ADD END ------------------------------------------
            ELSE
@@ -4376,7 +4405,10 @@
       *--- 2009/07/01 DELETE END ---------------------------------------
                    ELSE
       *    ¸ÂÅÙ¤¢¤ê
-                     ADD    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
+      *--- 2010/08/12 CHANGE START -------------------------------------
+      *               ADD    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
+                     MOVE    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
+      *--- 2010/08/12 CHANGE END ---------------------------------------
                      MOVE   1   TO    WRK-FTNFLG
                      COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
                                                  -  SYU-SKJ-FTN(IDX)
