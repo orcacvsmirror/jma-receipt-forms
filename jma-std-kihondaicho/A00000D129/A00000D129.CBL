@@ -56,6 +56,7 @@
       *  10/02/22    @@@@-Ìç´Ö     ¼«ÇåÀÕÊÝ¸±(100%)¤Î·×»»¼°¤ò½¤Àµ
       *  10/03/15    @@@@-Ìç´Ö     ½é¿ÇÈ½Äê¾ò·ïÄÉ²Ã
       *  10/06/29    @@@@-Ìç´Ö     Ï«ºÒ¡¦¼«ÇåÀÕ¡¦¸ø³²ÊÝ¸±¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
+      *  10/08/25    @@@@-ÅÄÃæ     Ï«ºÒÊÝ¸±¤ò»ÈÍÑ»þ¤ËÊÝ¸±ÆâÉéÃ´¶â¤Î·×»»¼°¤ò½¤Àµ
       *****************************************************************
       *
       *
@@ -2021,10 +2022,17 @@
       * ÊÝ¸±ÆâÉéÃ´¶â              
       *
       *--- 2010/02/22 ADD START ----------------------------------------
-                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
-                     AND PTRSI-JIBAISEIKBN    NOT  =  2
+      *--- 2010/08/25 CHANGE START -------------------------------------
+      *             IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+      *               AND  PTRSI-JIBAISEIKBN  NOT  =  2
+                   IF   ( (SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+                       AND  SYU-PTFTNRATE  NOT =  ZERO )
+                       OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+                       OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+                       AND  PTRSI-JIBAISEIKBN  NOT  =  2
+      *--- 2010/08/25 CHANGE END ---------------------------------------
       *            Ï«ºÒ½é¿Ç¶â³Û¶â³Û
                         ADD  SYU-RSISHOSHIN-MONEY  
                                TO  SUM-YOSO(I3 10)

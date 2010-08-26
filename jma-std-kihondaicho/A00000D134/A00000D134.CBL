@@ -53,6 +53,7 @@
       *  10/01/15    @@@@-門間     特療費(068,069)が自費に集計されてしまう不具合を修正
       *  10/02/22    @@@@-門間     自賠責保険(100%)の計算式を修正
       *  10/06/29    @@@@-門間     労災・自賠責・公害保険の端数処理を修正
+      *  10/08/25    @@@@-田中     労災保険を使用時に保険内負担金の計算式を修正
       *****************************************************************
       *  プログラム修正履歴
       * [ORCA]ver      日付        内容
@@ -2510,10 +2511,17 @@
       * 保険内負担金
       *
       *--- 2010/02/22 ADD START ----------------------------------------
-                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
-                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
-                     AND PTRSI-JIBAISEIKBN    NOT  =  2
+      *--- 2010/08/25 CHANGE START -------------------------------------
+      *             IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+      *               OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+      *               AND  PTRSI-JIBAISEIKBN  NOT  =  2
+                   IF   ( (SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+                       AND  SYU-PTFTNRATE  NOT =  ZERO )
+                       OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+                       OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+                       AND  PTRSI-JIBAISEIKBN  NOT  =  2
+      *--- 2010/08/25 CHANGE END ---------------------------------------
       *            労災初診金額金額
                         ADD  SYU-RSISHOSHIN-MONEY  
                                TO  SUM-YOSO(I3 10)
