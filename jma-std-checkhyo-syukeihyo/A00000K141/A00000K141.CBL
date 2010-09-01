@@ -55,6 +55,7 @@
       *  10/05/31    @@@@-田中     逓減の集計を修正
       *  10/06/02    @@@@-田中     検査・在宅の集計条件を修正
       *  10/06/24    @@@@-門間     包括修正・パラメタの追加
+      *  10/08/27    @@@@-門間     自費の診療行為コードの有効年月日を正しく判定するように修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -193,6 +194,9 @@
            03  IDZ                PIC 9(04).
            03  IDM                PIC 9(04).
            03  IDX-MAX            PIC 9(04).
+      *--- 2010/08/27 ADD START ----------------------------------------
+           03  IDX-TEN            PIC 9(02).
+      *--- 2010/08/27 ADD END   ----------------------------------------
            
       *
       *    パラメタ領域
@@ -325,6 +329,9 @@
            03  WRK-TENSU3            PIC 9(09).
       * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
       *
+      *--- 2010/08/27 ADD START ----------------------------------------
+           03  WRK-TENYMD            PIC X(08).
+      *--- 2010/08/27 ADD END   ----------------------------------------
       *    診療科名退避エリア
        01  WRK-DR-AREA.
            03  WRK-DRMAX                         PIC 9(03).
@@ -1319,6 +1326,17 @@
                      OR JYURRK-ZAINUM14 =  ACCT-ZAINUM
                      OR JYURRK-ZAINUM15 =  ACCT-ZAINUM
       *
+      *--- 2010/08/27 ADD START ----------------------------------------
+                       INITIALIZE   WRK-TENYMD
+                       PERFORM   VARYING   IDX-TEN   FROM   1   BY   1
+                                 UNTIL     IDX-TEN   >   31
+                                 OR        WRK-TENYMD   NOT =   SPACE
+                         IF   ACCT-DAY(1 IDX-TEN)   >   ZERO
+                           MOVE   ACCT-SRYYM   TO   WRK-TENYMD(1:6)
+                           MOVE   IDX-TEN      TO   WRK-TENYMD(7:2)
+                         END-IF
+                       END-PERFORM
+      *--- 2010/08/27 ADD END   ----------------------------------------
       ***  20040708  @@@@-MOTOHASI  追加
                        IF  WRK-NYUGAIKBN  =   "1"
       *                   麻毒、調剤の場合、対象外にする
@@ -1348,6 +1366,17 @@
            IF  WRK-NYUGAIKBN  =   "1"
              PERFORM  910-SRYACCT-SELECT-SEC
                PERFORM  UNTIL  FLG-SRYACCT   =   1
+      *--- 2010/08/27 ADD START ----------------------------------------
+                   INITIALIZE   WRK-TENYMD
+                   PERFORM   VARYING   IDX-TEN   FROM   1   BY   1
+                             UNTIL     IDX-TEN   >   31
+                             OR        WRK-TENYMD   NOT =   SPACE
+                     IF   ACCT-DAY(1 IDX-TEN)   >   ZERO
+                       MOVE   ACCT-SRYYM   TO   WRK-TENYMD(1:6)
+                       MOVE   IDX-TEN      TO   WRK-TENYMD(7:2)
+                     END-IF
+                   END-PERFORM
+      *--- 2010/08/27 ADD END   ----------------------------------------
                    IF  ACCT-SRYKBN  =  "24" OR "26"
                        IF  ACCT-DAY-1(1) NOT =  0
                            MOVE   "01"       TO    WRK-DD
@@ -4593,10 +4622,16 @@
            MOVE    SPA-HOSPNUM         TO  TNS-HOSPNUM
       ***07/09/18 nagaya 4.0対応 end
            MOVE    SRY-SRYCD(IDZ)      TO  TNS-SRYCD
-           MOVE    ZERO                TO  TNS-YUKOSTYMD
+      *--- 2010/08/27 CHANGE START -------------------------------------
+      *     MOVE    ZERO                TO  TNS-YUKOSTYMD
+           MOVE    WRK-TENYMD          TO  TNS-YUKOSTYMD
+      *--- 2010/08/27 CHANGE END   -------------------------------------
       ****2006/04/11 @@@@-BRAND START
       *     MOVE    ALL 9               TO  TNS-YUKOEDYMD
-           MOVE    ALL "9"             TO  TNS-YUKOEDYMD
+      *--- 2010/08/27 CHANGE START -------------------------------------
+      *     MOVE    ALL "9"             TO  TNS-YUKOEDYMD
+           MOVE    WRK-TENYMD          TO  TNS-YUKOEDYMD
+      *--- 2010/08/27 CHANGE END   -------------------------------------
       ****2006/04/11 @@@@-BRAND END
            MOVE    TNS-TENSU-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
