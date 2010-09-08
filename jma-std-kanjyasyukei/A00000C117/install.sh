@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/dash
 
 . /etc/jma-receipt/jma-receipt.env
 
@@ -7,7 +7,8 @@ usrname=`whoami`
 # Etchで使用するコードUTF-8への変換
 # echo message (default character-code EUC)
 function echomsg() {
-  if [ "${LANG}" = "ja_JP.UTF-8" ] || [ "${LANG}" = "ja_JP.UTF8" ]; then
+  if [ "${LANG}" = "ja_JP.UTF-8" ] || [ "${LANG}" = "ja_JP.UTF8" ] ||
+     [ "${LANG}" = "ja_JP.utf8" ]; then
     if [ -z $2 ]; then
       echo `echo $1 | nkf -wE`
     else
@@ -36,6 +37,7 @@ echomsg "公開帳票 プログラムコピー中..."
 cp -af *.CBL ${SITESRCDIR}/cobol 2> /dev/null
 cp -af *.INC ${SITESRCDIR}/cobol/copy 2> /dev/null
 cp -af *.red ${SITESRCDIR}/form 2> /dev/null
+cp -af version_* ${SITESRCDIR}/doc
 
 # run site-upgrade.sh
 if [ -f ${SCRIPTSDIR}/allways/site-upgrade.sh ] ; then
