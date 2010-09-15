@@ -51,6 +51,7 @@
       *  10/04/27    @@@@-田中     再診の判定条件を修正
       *  10/07/06    @@@@-門間     労災・自賠責保険時の初診の判定条件追加
       *  10/07/23    @@@@-門間     医療保険の初診判定条件を追加
+      *  10/09/09    @@@@-田中     外来時に入院料を集計するよう修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2060,7 +2061,9 @@
                    MOVE  "請求件数"     TO  D601-KENSU2
       *
       ***  2004/05/06 @@@@-MOTOHASI 追加
-                   MOVE "入院料"        TO  D601-NYUINRYO
+      *--- 2010/09/09 DELETE START -------------------------------------
+      *             MOVE "入院料"       TO  D601-NYUINRYO
+      *--- 2010/09/09 DELETE END ---------------------------------------
       ***  ここまで
       *
               WHEN "2"
@@ -2072,10 +2075,15 @@
                    MOVE  "初診件数"     TO  D601-KENSU1
       *
       ***  2004/05/06 @@@@-MOTOHASI 追加
-                   MOVE   SPACE         TO  D601-NYUINRYO
+      *--- 2010/09/09 DELETE START -------------------------------------
+      *             MOVE   SPACE         TO  D601-NYUINRYO
+      *--- 2010/09/09 DELETE END ---------------------------------------
       ***  ここまで
       *
            END-EVALUATE
+      *--- 2010/09/09 ADD START ----------------------------------------
+           MOVE    "入院料"       TO   D601-NYUINRYO
+      *--- 2010/09/09 ADD END ------------------------------------------
       *
       *    診療科名称取得
            INITIALIZE                       SYS-1005-REC
@@ -2139,16 +2147,18 @@
       *
       ***  2004/05/06 @@@@-MOTOHASI 追加
       *
-           IF WRK-NYUGAIKBN =   "2" 
-      *=== 基本診療項目追加対応 By Takashima(2006/10/30) start
-      *           MOVE  SPACE     TO  D601-TEN (11) 
-      * 20080326  H20年4月改正対応START tanaka
-      *           MOVE  SPACE     TO  D601-TEN (14) 
-                 MOVE  SPACE     TO  D601-TEN (15) 
-      * 20080326  H20年4月改正対応END
-      *=== 基本診療項目追加対応 By Takashima(2006/10/30) end
-           END-IF
+      *--- 2010/09/09 DELETE START -------------------------------------
+      *     IF WRK-NYUGAIKBN =   "2" 
+      **=== 基本診療項目追加対応 By Takashima(2006/10/30) start
+      **           MOVE  SPACE     TO  D601-TEN (11) 
+      ** 20080326  H20年4月改正対応START tanaka
+      **           MOVE  SPACE     TO  D601-TEN (14) 
+      *           MOVE  SPACE     TO  D601-TEN (15) 
+      ** 20080326  H20年4月改正対応END
+      **=== 基本診療項目追加対応 By Takashima(2006/10/30) end
+      *     END-IF
       ***  ここまで
+      *--- 2010/09/09 DELETE END ---------------------------------------
       *
       *
       *  金額合計
@@ -2236,7 +2246,9 @@
                    MOVE  "請求件数"    TO  D601-KENSU2
       *
       ***  2004/05/06 @@@@-MOTOHASI 追加
-                   MOVE "入院料"        TO  D601-NYUINRYO
+      *--- 2010/09/09 DELETE START -------------------------------------
+      *             MOVE "入院料"       TO  D601-NYUINRYO
+      *--- 2010/09/09 DELETE END ---------------------------------------
       ***  ここまで
       *
               WHEN "2"
@@ -2253,6 +2265,9 @@
       ***  ここまで
       *
            END-EVALUATE
+      *--- 2010/09/09 ADD START ----------------------------------------
+           MOVE    "入院料"       TO   D601-NYUINRYO
+      *--- 2010/09/09 ADD END ------------------------------------------
       *
       * 診療科名称 
            EVALUATE WRK-NYUGAIKBN
@@ -2364,16 +2379,18 @@
       *
       ***  2004/05/06 @@@@-MOTOHASI 追加
       *
-           IF WRK-NYUGAIKBN =   "2" 
-      *=== 基本診療項目追加対応 By Takashima(2006/10/30) start
-      *           MOVE  SPACE     TO  D601-TEN (11) 
-      * 20080326  H20年4月改正対応START tanaka
-      *           MOVE  SPACE     TO  D601-TEN (14) 
-                 MOVE  SPACE     TO  D601-TEN (15) 
-      * 20080326  H20年4月改正対応END
-      *=== 基本診療項目追加対応 By Takashima(2006/10/30) end
-           END-IF
-      ***  ここまで
+      *--- 2010/09/09 DELETE START -------------------------------------
+      *     IF WRK-NYUGAIKBN =   "2" 
+      **=== 基本診療項目追加対応 By Takashima(2006/10/30) start
+      **           MOVE  SPACE     TO  D601-TEN (11) 
+      ** 20080326  H20年4月改正対応START tanaka
+      **           MOVE  SPACE     TO  D601-TEN (14) 
+      *           MOVE  SPACE     TO  D601-TEN (15) 
+      ** 20080326  H20年4月改正対応END
+      **=== 基本診療項目追加対応 By Takashima(2006/10/30) end
+      *     END-IF
+      ****  ここまで
+      *--- 2010/09/09 DELETE END ---------------------------------------
       *
       *
       *  金額合計
