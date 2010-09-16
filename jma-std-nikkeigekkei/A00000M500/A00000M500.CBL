@@ -67,6 +67,7 @@
       *    10/04/27    @@@@-田中     再診の判定条件を修正
       *    10/07/06    @@@@-門間     労災・自賠責保険時の初診の判定条件追加
       *    10/07/23    @@@@-門間     医療保険の初診判定条件を追加
+      *    10/09/09    @@@@-田中     外来時に入院料を集計するよう修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1655,14 +1656,18 @@
       * 20080326 H20年4月改正対応END
       *
       *** 20030410 追加 入院の場合は入院料を集計する。
-           IF   NG  =  1
+      *--- 2010/09/09 DELETE START -------------------------------------
+      *     IF   NG  =  1
+      *--- 2010/09/09 DELETE END ---------------------------------------
       *    入院料保険点数
-             ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX1 IDX 18)
-             ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX1 10 18)
-             ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX3 IDX 18)
-             ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX3 10 18)
-             ADD    SYU-NYN-HKNTEN   TO   SYU-TOTAL-HKNTEN
-           END-IF  
+           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX1 IDX 18)
+           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX1 10 18)
+           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX3 IDX 18)
+           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX3 10 18)
+           ADD    SYU-NYN-HKNTEN   TO   SYU-TOTAL-HKNTEN
+      *--- 2010/09/09 DELETE START -------------------------------------
+      *     END-IF  
+      *--- 2010/09/09 DELETE END ---------------------------------------
       *
       *    療養担当手当点数
            ADD    SYU-RYO-HKNTEN     TO   YOSO (NG IDX1 IDX 19)
@@ -3428,7 +3433,9 @@
                      MOVE  "入院件数"       TO   HC90-TKENSU1
                      MOVE  "退院件数"       TO   HC90-TKENSU2
       ***   入院の入院料保険点数タイトル設定
-                     MOVE  "入院料(点数)"   TO   HC90-THKN1
+      *--- 2010/09/09 DELETE START -------------------------------------
+      *               MOVE  "入院料(点数)"   TO   HC90-THKN1
+      *--- 2010/09/09 DELETE END ---------------------------------------
       ***   入院の負担金タイトル設定
       *           MOVE  "食事療養費"     TO  HC90-TFUTAN1
       *           MOVE  "食事負担額"     TO  HC90-TFUTAN2
@@ -3469,6 +3476,9 @@
                        MOVE  WRK-TJIHI(IDX2)   TO   HC90-TJIHI(IDX2)
                      END-PERFORM
                    END-IF
+      *--- 2010/09/09 ADD START ----------------------------------------
+                   MOVE    "入院料(点数)"   TO   HC90-THKN1
+      *--- 2010/09/09 ADD END ------------------------------------------
       ***   20030410  変更
       *
                    ADD     1            TO   CNT-PAGE
