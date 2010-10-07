@@ -54,6 +54,7 @@
       *  10/02/22    @@@@-Ìç´Ö     ¼«ÇåÀÕÊÝ¸±(100%)¤Î·×»»¼°¤ò½¤Àµ
       *  10/06/29    @@@@-Ìç´Ö     Ï«ºÒ¡¦¼«ÇåÀÕ¡¦¸ø³²ÊÝ¸±¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *  10/08/25    @@@@-ÅÄÃæ     Ï«ºÒÊÝ¸±¤ò»ÈÍÑ»þ¤ËÊÝ¸±ÆâÉéÃ´¶â¤Î·×»»¼°¤ò½¤Àµ
+      *  10/09/28    @@@@-Ìç´Ö     ÍÂ¤ê¶â¤Î½¸·×½èÍý¤ò½¤Àµ
       *****************************************************************
       *  ¥×¥í¥°¥é¥à½¤ÀµÍúÎò
       * [ORCA]ver      ÆüÉÕ        ÆâÍÆ
@@ -173,9 +174,6 @@
            03  FLG-INVALID         PIC 9(01).
            03  FLG-820SYS          PIC X(04).
            03  INP-STS             PIC 9(04).
-      *--- 2010/06/29 ADD START ----------------------------------------
-           03  FLG-JIHI            PIC 9(01).
-      *--- 2010/06/29 ADD END   ----------------------------------------
       *
       *    ¥«¥¦¥ó¥ÈÎÎ°è
        01  CNT-AREA.
@@ -2697,170 +2695,52 @@
       * 20070913 ¸ºÌÈ¶â³ÛÄÉ²ÃEND
       *--- 2009/10/28 ADD START ----------------------------------------
       *    ½õÀ®¶â³Û¤Î»»½Ð
-      *--- 2010/06/29 CHANGE START -------------------------------------
-      *             COMPUTE  WRK-MONEY  =  WRK-HKNNAI  +  WRK-JIHI
-                   COMPUTE  WRK-MONEY  =  WRK-HKNNAI
-      *--- 2010/06/29 CHANGE END   -------------------------------------
+                   COMPUTE  WRK-MONEY  =  WRK-HKNNAI  +  WRK-JIHI
                                        +  SYU-CHOSEI  +  SYU-RMSAGAKU
                                        +  WRK-FTN
                    COMPUTE  WRK-JOSEI  =  WRK-MONEY
                                        -  SYU-DISCOUNT-MONEY
-                   IF   SYU-DISCOUNT-MONEY  =  ZERO
-      *--- 2010/06/29 CHANGE START -------------------------------------
-      *               EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2
-      *                 WHEN  1
-      *                   COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
-      *                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
-      *                 WHEN  2
-      *                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-      *                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
-      *                 WHEN  3
-      *                   IF   WRK-JOSEI(11:1)  NOT =  0
-      *                     COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-      *                     COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
-      *                   END-IF
-      *               END-EVALUATE
-                     INITIALIZE  FLG-JIHI
-                     EVALUATE  SYU-SYUHKNNUM
-      *    Ï«ºÒ
-                     WHEN  WRK-CONS-ROUSAI-HKNNUM
-      *    Ï«ºÒ¡Ê¼«ÈñÊ¬¡Ë
-                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN3J
-                       WHEN  1
-                         COMPUTE  WRK-JIHI ROUNDED  =  WRK-JIHI  /  10
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
-                       WHEN  2
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
-                       WHEN  3
-                         IF   WRK-JIHI(9:1)  NOT =  0
-                           COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
-                           COMPUTE  WRK-JIHI =  WRK-JIHI  *  10  +  10
-                         END-IF
-                       WHEN  0
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  +  WRK-JIHI
-                         MOVE     1         TO  FLG-JIHI
-                       END-EVALUATE
-      *    Ï«ºÒ¡ÊÊÝ¸±Ê¬¡Ë
-                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN3
-                       WHEN  1
-                         COMPUTE  WRK-JOSEI ROUNDED  =  WRK-JOSEI  /  10
-                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10
-                       WHEN  2
-                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
-                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10
-                       WHEN  3
-                         IF   WRK-JOSEI(11:1)  NOT =  0
-                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
-                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10  +  10
-                         END-IF
-                       END-EVALUATE
-      *    ¼«ÇåÀÕ
-                     WHEN  WRK-CONS-JIBAI-HKNNUM
-      *    ¼«ÇåÀÕ¡Ê¼«ÈñÊ¬¡Ë
-                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN4J
-                       WHEN  1
-                         COMPUTE  WRK-JIHI ROUNDED  =  WRK-JIHI  /  10
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
-                       WHEN  2
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10 
-                       WHEN  3
-                         IF   WRK-JIHI(9:1)  NOT =  0
-                           COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
-                           COMPUTE  WRK-JIHI =  WRK-JIHI  *  10  +  10
-                         END-IF
-                       WHEN  0
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  +  WRK-JIHI
-                         MOVE     1         TO  FLG-JIHI
-                       END-EVALUATE
-      *    ¼«ÇåÀÕ¡ÊÊÝ¸±Ê¬¡Ë
-                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN4
-                       WHEN  1
-                         COMPUTE  WRK-JOSEI ROUNDED  =  WRK-JOSEI  /  10
-                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10
-                       WHEN  2
-                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
-                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10 
-                       WHEN  3
-                         IF   WRK-JOSEI(11:1)  NOT =  0
-                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
-                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10  +  10
-                         END-IF
-                       END-EVALUATE
-      *    ¸ø³²¡Ê¼«ÈñÊ¬¡Ë
-                     WHEN  WRK-CONS-KOGAI-HKNNUM
-                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN5J
-                       WHEN  1
-                         COMPUTE  WRK-JIHI ROUNDED  =  WRK-JIHI  /  10
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
-                       WHEN  2
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10 
-                       WHEN  3
-                         IF   WRK-JIHI(9:1)  NOT =  0
-                           COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
-                           COMPUTE  WRK-JIHI =  WRK-JIHI  *  10  +  10
-                         END-IF
-                       END-EVALUATE
-      *    °åÊÝ
-                     WHEN  OTHER
-      *    °åÊÝ¡Ê¼«ÈñÊ¬¡Ë
-                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2J
-                       WHEN  1
-                         COMPUTE  WRK-JIHI ROUNDED  =  WRK-JIHI  /  10
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10
-                       WHEN  2
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
-                         COMPUTE  WRK-JIHI =  WRK-JIHI  *  10 
-                       WHEN  3
-                         IF   WRK-JIHI(9:1)  NOT =  0
-                           COMPUTE  WRK-JIHI =  WRK-JIHI  /  10
-                           COMPUTE  WRK-JIHI =  WRK-JIHI  *  10  +  10
-                         END-IF
-                       WHEN  0
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  +  WRK-JIHI
-                         MOVE     1         TO  FLG-JIHI
-                       END-EVALUATE
-      *    °åÊÝ¡ÊÊÝ¸±Ê¬¡Ë
+      *--- 2010/06/29 ADD START ----------------------------------------
+                   IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
+                     OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
+                     AND PTRSI-JIBAISEIKBN    NOT  =  2
+                     CONTINUE
+                   ELSE
+      *--- 2010/06/29 ADD END   ----------------------------------------
+                     IF   SYU-DISCOUNT-MONEY  =  ZERO
                        EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2
                        WHEN  1
-                         COMPUTE  WRK-JOSEI ROUNDED  =  WRK-JOSEI  /  10
-                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10
+                         COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
                        WHEN  2
-                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
-                         COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10 
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
                        WHEN  3
                          IF   WRK-JOSEI(11:1)  NOT =  0
-                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  /  10
-                           COMPUTE  WRK-JOSEI =  WRK-JOSEI  *  10  +  10
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
                          END-IF
                        END-EVALUATE
-                     END-EVALUATE
-      *    ¸ºÌÈÍ­¤ê
-      *--- 2010/06/29 CHANGE END   -------------------------------------
-                   ELSE
-                     EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
-                     WHEN  1
-                       COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI  /  10
-                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
-                     WHEN  2
-                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-                       COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
-                     WHEN  3
-                       IF   WRK-JOSEI(11:1)  NOT =  0
+                     ELSE
+                       EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
+                       WHEN  1
+                         COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
+                       WHEN  2
                          COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10  +  10
-                       END-IF
-                     END-EVALUATE
-                   END-IF
-      *
+                         COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
+                       WHEN  3
+                         IF   WRK-JOSEI(11:1)  NOT =  0
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
+                           COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
+                         END-IF
+                       END-EVALUATE
+                     END-IF
       *--- 2010/06/29 ADD START ----------------------------------------
-                   IF  FLG-JIHI  NOT  =  1
-                     COMPUTE  WRK-JOSEI  =  WRK-JOSEI  +  WRK-JIHI
                    END-IF
       *--- 2010/06/29 ADD END   ----------------------------------------
-      *    ½õÀ®¶â³Û
+      *
                    COMPUTE  WRK-JOSEI  =  WRK-JOSEI  -  SYU-SKYMONEY
                    ADD    WRK-JOSEI    TO   SUM-YOSO(I3 16) 
                    ADD    WRK-JOSEI    TO   SUM-YOSO(SUM-HKNMAX 16)
@@ -3246,7 +3126,10 @@
                      PERFORM VARYING IDX3  FROM  1 BY 1
       *=== ¼«Èñ¡¢´ðËÜ¿ÇÎÅ¹àÌÜÄÉ²ÃÂÐ±þ By Takashima(2006/11/14) start
       *                       UNTIL   IDX3  >  5
-                             UNTIL   IDX3  >  10
+      *--- 20100928 CHANGE START ---------------------------------------
+      *                       UNTIL   IDX3  >  10
+                             UNTIL   IDX3  >  5
+      *--- 20100928 CHANGE START ---------------------------------------
       *=== ¼«Èñ¡¢´ðËÜ¿ÇÎÅ¹àÌÜÄÉ²ÃÂÐ±þ By Takashima(2006/11/14) end
                         IF   SRY-SRYCD(IDX3)    = WRK-INI-AZUKARICD
                          AND SRY-JIHIMONEY(IDX3) > ZERO
