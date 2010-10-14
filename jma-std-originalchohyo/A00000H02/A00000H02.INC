@@ -23,8 +23,12 @@
             05  HCM19-KIKYY PIC X(4).
             05  HCM19-KIKMM PIC X(4).
             05  HCM19-KIKDD PIC X(4).
-            05  HCM19-HOSPADRS  PIC X(80).
-            05  HCM19-HOSPNAME  PIC X(80).
+      *--- 2010/10/08 CHANGE START -------------------------------------
+      *      05  HCM19-HOSPADRS  PIC X(80).
+      *      05  HCM19-HOSPNAME  PIC X(80).
+            05  HCM19-HOSPADRS  PIC X(72).
+            05  HCM19-HOSPNAME  PIC X(72).
+      *--- 2010/10/08 CHANGE END   -------------------------------------
             05  HCM19-HOSPTEL   PIC X(15).
             05  HCM19-DRNAME    PIC X(26).
             05  HCM19-FTNJA2    PIC X(16).
@@ -65,8 +69,12 @@
             05  HCM19-B-KIKYY PIC X(4).
             05  HCM19-B-KIKMM PIC X(4).
             05  HCM19-B-KIKDD PIC X(4).
-            05  HCM19-B-HOSPADRS  PIC X(80).
-            05  HCM19-B-HOSPNAME  PIC X(80).
+      *--- 2010/10/08 CHANGE START -------------------------------------
+      *      05  HCM19-B-HOSPADRS  PIC X(80).
+      *      05  HCM19-B-HOSPNAME  PIC X(80).
+            05  HCM19-B-HOSPADRS  PIC X(72).
+            05  HCM19-B-HOSPNAME  PIC X(72).
+      *--- 2010/10/08 CHANGE END   -------------------------------------
             05  HCM19-B-HOSPTEL   PIC X(15).
             05  HCM19-B-DRNAME    PIC X(26).
             05  HCM19-B-FTNJA2    PIC X(16).

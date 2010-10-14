@@ -54,6 +54,7 @@
       *  10/03/23    @@@@ー田中    H22年4月改正対応
       *  10/04/23    @@@@ー田中    小数点以下５桁対応
       *  10/05/25    @@@@ー門間    前回処方及び中途終了時に保険医署名が出力されない不具合の修正
+      *  10/10/08    @@@@ー門間    医療機関所在地及び名称を文字数を修正
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
@@ -334,14 +335,24 @@
       *
            03  WRK-ORC-DBPATH          PIC X(64).
       *---(03.04.01) LINE ADD START -----------------------------------
-           03  WRK-HOSPNAME            PIC X(80).
+      *--- 2010/10/08 CHANGE START -------------------------------------
+      *     03  WRK-HOSPNAME            PIC X(80).
+      *     03  WRK-HOSPNAME-R          REDEFINES   WRK-HOSPNAME.
+      *         05  WRK-HOSPNAME1       PIC X(40).
+      *         05  WRK-HOSPNAME2       PIC X(40).
+      *     03  WRK-HOSPADRS            PIC X(80).
+      *     03  WRK-HOSPADRS-R          REDEFINES   WRK-HOSPADRS.
+      *         05  WRK-HOSPADRS1       PIC X(40).
+      *         05  WRK-HOSPADRS2       PIC X(40).
+           03  WRK-HOSPNAME            PIC X(72).
            03  WRK-HOSPNAME-R          REDEFINES   WRK-HOSPNAME.
-               05  WRK-HOSPNAME1       PIC X(40).
-               05  WRK-HOSPNAME2       PIC X(40).
-           03  WRK-HOSPADRS            PIC X(80).
+               05  WRK-HOSPNAME1       PIC X(36).
+               05  WRK-HOSPNAME2       PIC X(36).
+           03  WRK-HOSPADRS            PIC X(72).
            03  WRK-HOSPADRS-R          REDEFINES   WRK-HOSPADRS.
-               05  WRK-HOSPADRS1       PIC X(40).
-               05  WRK-HOSPADRS2       PIC X(40).
+               05  WRK-HOSPADRS1       PIC X(36).
+               05  WRK-HOSPADRS2       PIC X(36).
+      *--- 2010/10/08 CHANGE END   -------------------------------------
            03  WRK-HOSPTEL             PIC X(15).
       *---(03.04.01) LINE ADD END   -----------------------------------
       *=== 4.0対応 By Otake(2007/09/21) start
