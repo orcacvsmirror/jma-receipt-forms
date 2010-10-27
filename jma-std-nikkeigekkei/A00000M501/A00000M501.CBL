@@ -81,6 +81,7 @@
       *              @@@@-ÅÄÃæ    10/04/27  ºÆ¿Ç¤ÎÈ½Äê¾ò·ï¤ò½¤Àµ
       *              @@@@-Ìç´Ö    10/07/06  Ï«ºÒ¡¦¼«ÇåÀÕÊÝ¸±»þ¤Î½é¿Ç¤ÎÈ½Äê¾ò·ïÄÉ²Ã
       *              @@@@-Ìç´Ö    10/07/23  °åÎÅÊÝ¸±¤Î½é¿ÇÈ½Äê¾ò·ï¤òÄÉ²Ã
+      *              @@@@-Ìç´Ö    10/10/22  ½é¿ÇÈ½Äê¾ò·ï¤ò½¤Àµ
       *****************************************************************
       *
       *
@@ -2823,50 +2824,56 @@
                                        SPA-AREA
       *--- 2010/04/27 ADD END ------------------------------------------
       *--- 2010/07/23 ADD START ----------------------------------------
-           INITIALIZE                     SRYACCT-REC
-           MOVE    JYURRK-HOSPNUM         TO   ACCT-HOSPNUM
-           MOVE    JYURRK-NYUGAIKBN       TO   ACCT-NYUGAIKBN
-           MOVE    JYURRK-PTID            TO   ACCT-PTID
-           MOVE    JYURRK-SRYKA           TO   ACCT-SRYKA
-           MOVE    JYURRK-SRYYMD(1:6)     TO   ACCT-SRYYM
-           MOVE    JYURRK-ZAINUM          TO   ACCT-ZAINUM
+      *--- 2010/10/22 ADD START ----------------------------------------
+           IF  JYURRK-RENNUM  NOT = 1
+      *--- 2010/10/22 ADD END   ----------------------------------------
+             INITIALIZE                     SRYACCT-REC
+             MOVE    JYURRK-HOSPNUM         TO   ACCT-HOSPNUM
+             MOVE    JYURRK-NYUGAIKBN       TO   ACCT-NYUGAIKBN
+             MOVE    JYURRK-PTID            TO   ACCT-PTID
+             MOVE    JYURRK-SRYKA           TO   ACCT-SRYKA
+             MOVE    JYURRK-SRYYMD(1:6)     TO   ACCT-SRYYM
+             MOVE    JYURRK-ZAINUM          TO   ACCT-ZAINUM
       *
-           MOVE    SRYACCT-REC            TO   MCPDATA-REC
-           MOVE    "DBSELECT"             TO   MCP-FUNC
-           MOVE    "tbl_sryacct"          TO   MCP-TABLE
-           MOVE    "key5"                 TO   MCP-PATHNAME
-           CALL    "ORCDBMAIN"            USING
-                                          MCPAREA
-                                          MCPDATA-REC
-                                          SPA-AREA
+             MOVE    SRYACCT-REC            TO   MCPDATA-REC
+             MOVE    "DBSELECT"             TO   MCP-FUNC
+             MOVE    "tbl_sryacct"          TO   MCP-TABLE
+             MOVE    "key5"                 TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"            USING
+                                            MCPAREA
+                                            MCPDATA-REC
+                                            SPA-AREA
       *
-           IF   MCP-RC   =   ZERO
-             MOVE    "DBFETCH"            TO   MCP-FUNC
-             MOVE    "tbl_sryacct"        TO   MCP-TABLE
-             MOVE    "key5"               TO   MCP-PATHNAME
-             CALL    "ORCDBMAIN"          USING
-                                          MCPAREA
-                                          MCPDATA-REC
-                                          SPA-AREA
              IF   MCP-RC   =   ZERO
-               MOVE    MCPDATA-REC        TO   SRYACCT-REC
-               MOVE    ZERO               TO   FLG-SRYACCT
-             ELSE     
-               MOVE    1                  TO   FLG-SRYACCT
-               INITIALIZE                 SRYACCT-REC
+               MOVE    "DBFETCH"            TO   MCP-FUNC
+               MOVE    "tbl_sryacct"        TO   MCP-TABLE
+               MOVE    "key5"               TO   MCP-PATHNAME
+               CALL    "ORCDBMAIN"          USING
+                                            MCPAREA
+                                            MCPDATA-REC
+                                            SPA-AREA
+               IF   MCP-RC   =   ZERO
+                 MOVE    MCPDATA-REC        TO   SRYACCT-REC
+                 MOVE    ZERO               TO   FLG-SRYACCT
+               ELSE     
+                 MOVE    1                  TO   FLG-SRYACCT
+                 INITIALIZE                 SRYACCT-REC
+               END-IF
+             ELSE
+               MOVE  1                      TO   FLG-SRYACCT
+               INITIALIZE                   SRYACCT-REC
              END-IF
-           ELSE
-             MOVE  1                      TO   FLG-SRYACCT
-             INITIALIZE                   SRYACCT-REC
-           END-IF
       *
-           MOVE    "DBCLOSECURSOR"        TO   MCP-FUNC
-           MOVE    "tbl_sryacct"          TO   MCP-TABLE
-           MOVE    "key5"                 TO   MCP-PATHNAME
-           CALL    "ORCDBMAIN"            USING
-                                          MCPAREA
-                                          MCPDATA-REC
-                                          SPA-AREA
+             MOVE    "DBCLOSECURSOR"        TO   MCP-FUNC
+             MOVE    "tbl_sryacct"          TO   MCP-TABLE
+             MOVE    "key5"                 TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"            USING
+                                            MCPAREA
+                                            MCPDATA-REC
+                                            SPA-AREA
+      *--- 2010/10/22 ADD START ----------------------------------------
+           END-IF
+      *--- 2010/10/22 ADD END   ----------------------------------------
       *--- 2010/07/23 ADD END   ----------------------------------------
       *--- 2010/07/06 ADD START ----------------------------------------
            IF  JYURRK-HKNKBN  =  "0"
