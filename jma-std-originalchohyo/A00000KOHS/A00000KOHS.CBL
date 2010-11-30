@@ -52,6 +52,7 @@
       *  01.00.19      Ìç´Ö    09/04/16   ¥×¥í¥°¥é¥à¥ª¥×¥·¥ç¥óÂÐ±þ(INI¥Õ¥¡¥¤¥ë)
       *  01.00.20      ÅÄÃæ    09/10/22   ´µ¼ÔÈÖ¹æ¤Î·å¿ô¤òÊÑ¹¹
       *  01.00.21      ÅÄÃæ    10/06/21   ´µ¼Ô¸¡º÷¾ò·ï¤òÊÑ¹¹
+      *  01.00.22      Ìç´Ö    10/11/22   ÂÐ¾Ý¤Î¸øÈñÊ¬¤Î¤ß½¸·×¤¹¤ë¤è¤¦¤Ë½¤Àµ
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -238,6 +239,9 @@
       *--- ¥×¥í¥°¥é¥à¥ª¥×¥·¥ç¥óÂÐ±þ(INI¥Õ¥¡¥¤¥ë) 2009/04/16 ADD START
            03  IDXP                 PIC 9(02).
       *--- ¥×¥í¥°¥é¥à¥ª¥×¥·¥ç¥óÂÐ±þ(INI¥Õ¥¡¥¤¥ë) 2009/04/16 ADD END
+      *--- 2010/11/22 ADD START ----------------------------------------
+           03  IDX7                 PIC 9(04).
+      *--- 2010/11/22 ADD END   ----------------------------------------
       *
       *    ¥Ñ¥é¥á¥¿ÎÎ°è
        01  WRK-PARA.
@@ -302,6 +306,10 @@
       *--- 2009/01/29 ADD START ----------------------------------------
            03  WRK-SKYMONEY         PIC 9(09).
       *--- 2009/01/29 ADD END ------------------------------------------
+      *--- 2010/11/22 ADD START ----------------------------------------
+           03  WRK-NISSU1           PIC 9(02).
+           03  WRK-NISSU2           PIC 9(02).
+      *--- 2010/11/22 ADD END   ----------------------------------------
       *
       *--- ¥×¥í¥°¥é¥à¥ª¥×¥·¥ç¥óÂÐ±þ(INI¥Õ¥¡¥¤¥ë) 2009/04/16 ADD START
        01  PGOPTION-AREA.
@@ -791,124 +799,220 @@
       *
       *--- 2010/06/17 ADD START ----------------------------------------
            INITIALIZE          FLG-KOHCHK
-           PERFORM  900-SEIKYU-SELECT-SEC
+      *--- 2010/11/22 CHANGE START -------------------------------------
+      *     PERFORM  900-SEIKYU-SELECT-SEC
+           PERFORM  20021-KOHCHK-SELECT-SEC
+      *--- 2010/11/22 CHANGE END   -------------------------------------
       *
            IF   FLG-KOHCHK  =  1
+      *--- 2010/11/22 ADD START ----------------------------------------
+             PERFORM  900-SEIKYU-SELECT-SEC
+             PERFORM  910-SYUNOU-SELECT-SEC
+             PERFORM  UNTIL  FLG-SYUNOU  =  1
+      *
+               IF  SYU-DENPJTIKBN  NOT =  "3"
+                 AND  (( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH1HKNNUM
+                 AND     SYU-KOH1HKNNUM       NOT =  SPACE )
+                 OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH2HKNNUM
+                 AND     SYU-KOH2HKNNUM       NOT =  SPACE )
+                 OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH3HKNNUM
+                 AND     SYU-KOH3HKNNUM       NOT =  SPACE )
+                 OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH4HKNNUM
+                 AND     SYU-KOH4HKNNUM       NOT =  SPACE ))
+      *--- 2010/11/22 ADD END   ----------------------------------------
       *--- 2010/06/17 ADD END ------------------------------------------
       *
       *    ¥Ç¡¼¥¿ÀßÄê
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) start
       *     MOVE    RECE10-HOSPID             TO  MF100-HOSPID
-             MOVE    RECE10-HOSPNUM            TO   MF100-HOSPNUM
+                 MOVE    RECE10-HOSPNUM          TO   MF100-HOSPNUM
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) end
-             MOVE    RECE10-PTNUM              TO   MF100-PTNUM
-             MOVE    RECE10-PTID               TO   MF100-PTID
-             MOVE    RECE10-SRYYM              TO   MF100-SRYYM
-             MOVE    RECE10-NYUGAIKBN          TO   MF100-NYUGAIKBN
-             MOVE    RECE10-RECEKA             TO   MF100-SRYKA
-             MOVE    RECE10-TEISYUTUSAKI       TO   MF100-TEISYUTUSAKI
-             MOVE    RECE10-RECESYUBETU        TO   MF100-RECESYUBETU
-             MOVE    RECE10-HKNJANUM           TO   MF100-HKNJANUM
-             MOVE    RECE10-TEKSTYMD           TO   MF100-TEKSTYMD
-             MOVE    PTINF-NAME                TO   MF100-NAME
+                 MOVE    RECE10-PTNUM            TO   MF100-PTNUM
+                 MOVE    RECE10-PTID             TO   MF100-PTID
+                 MOVE    RECE10-SRYYM            TO   MF100-SRYYM
+                 MOVE    RECE10-NYUGAIKBN        TO   MF100-NYUGAIKBN
+                 MOVE    RECE10-RECEKA           TO   MF100-SRYKA
+                 MOVE    RECE10-TEISYUTUSAKI     TO   MF100-TEISYUTUSAKI
+                 MOVE    RECE10-RECESYUBETU      TO   MF100-RECESYUBETU
+                 MOVE    RECE10-HKNJANUM         TO   MF100-HKNJANUM
+                 MOVE    RECE10-TEKSTYMD         TO   MF100-TEKSTYMD
+                 MOVE    PTINF-NAME              TO   MF100-NAME
       * 20080924 ¥«¥Ê»áÌ¾¤òÄÉ²ÃSTART
-             MOVE    PTINF-KANANAME            TO   MF100-FURIGANA
+                 MOVE    PTINF-KANANAME          TO   MF100-FURIGANA
       * 20080924 ¥«¥Ê»áÌ¾¤òÄÉ²ÃEND
-             MOVE    PTINF-SEX                 TO   MF100-SEX
-             MOVE    RECE10-KIGO               TO   MF100-KIGO
-             MOVE    RECE10-NUM                TO   MF100-NUM
-             MOVE    RECE10-KYURATE            TO   MF100-KYURATE
-             MOVE    RECE10-JNISSU(1)          TO   MF100-JNISSU
-             MOVE    RECE10-TOTALTEN(1)        TO   MF100-TOTALTEN
-             MOVE    RECE10-RJNHKNNUM          TO   MF100-RJNHKNNUM
-      *--- 2009/01/29 ADD START ----------------------------------------
-             IF   RECE10-KOHNUM(1)  =  MF100-KOHNUM
+                 MOVE    PTINF-SEX               TO   MF100-SEX
+                 MOVE    RECE10-KIGO             TO   MF100-KIGO
+                 MOVE    RECE10-NUM              TO   MF100-NUM
+                 MOVE    RECE10-KYURATE          TO   MF100-KYURATE
+      *--- 2010/11/22 CHANGE START -------------------------------------
+      *       MOVE    RECE10-JNISSU(1)          TO   MF100-JNISSU
+      *       MOVE    RECE10-TOTALTEN(1)        TO   MF100-TOTALTEN
+                 MOVE    RECE10-RJNHKNNUM        TO   MF100-RJNHKNNUM
+      *
+      *           MOVE    ZERO                    TO   MF100-FTNMONEY
+      *
+                 IF  RECE10-NYUGAIKBN  =  "1"
+      *
+                   MOVE  SYU-SKYSTYMD(7:2)    TO  WRK-NISSU1
+                   MOVE  SYU-SKYEDYMD(7:2)    TO  WRK-NISSU2
+                   COMPUTE  WRK-NISSU1  =  (WRK-NISSU2  -  WRK-NISSU1)
+                                        +  1
+                   ADD    WRK-NISSU1          TO  MF100-JNISSU
+                   ADD    SYU-TOTAL-HKNTEN    TO  MF100-TOTALTEN
+      *
+                   IF   SYU-KOH1HKNNUM  =  MF100-KOHNUM
       *    Æü¿ô²Ã»»
-               ADD    RECE10-SHOKUJINISSU(2)      TO   MF100-SKJKAISU
+                     ADD   SYU-KOH1SKJ-NISSU    TO  MF100-SKJKAISU
       *    ÀÁµá³Û²Ã»»
-               ADD    RECE10-SHOKUJIRYOYOHI(2)    TO   MF100-SKJSKY
+                     ADD   SYU-KOH1SKJ-RYOYOHI  TO  MF100-SKJSKY
       *    É¸½àÉéÃ´³Û²Ã»»
-               ADD    RECE10-SHOKUJIFTN(2)        TO   MF100-SKJFTN
-             ELSE
-               IF  RECE10-KOHNUM(2)  =  MF100-KOHNUM
-      *    Æü¿ô²Ã»»
-                 ADD    RECE10-SHOKUJINISSU(3)    TO   MF100-SKJKAISU
-      *    ÀÁµá³Û²Ã»»
-                 ADD    RECE10-SHOKUJIRYOYOHI(3)  TO   MF100-SKJSKY
-      *    É¸½àÉéÃ´³Û²Ã»»
-                 ADD    RECE10-SHOKUJIFTN(3)      TO   MF100-SKJFTN
-               ELSE
-                 IF  RECE10-KOHNUM(3)  =  MF100-KOHNUM
-      *    Æü¿ô²Ã»»
-                   ADD    RECE10-SHOKUJINISSU(4)    TO   MF100-SKJKAISU
-      *    ÀÁµá³Û²Ã»»
-                   ADD    RECE10-SHOKUJIRYOYOHI(4)  TO   MF100-SKJSKY
-      *    É¸½àÉéÃ´³Û²Ã»»
-                   ADD    RECE10-SHOKUJIFTN(4)      TO   MF100-SKJFTN
-                 ELSE
-                   IF  RECE10-KOHNUM(4)  =  MF100-KOHNUM
-      *    Æü¿ô²Ã»»
-                     ADD    RECE10-SHOKUJINISSU(5)   TO   MF100-SKJKAISU
-      *    ÀÁµá³Û²Ã»»
-                     ADD    RECE10-SHOKUJIRYOYOHI(5) TO   MF100-SKJSKY
-      *    É¸½àÉéÃ´³Û²Ã»»
-                     ADD    RECE10-SHOKUJIFTN(5)     TO   MF100-SKJFTN
+                     ADD   SYU-KOH1SKJ-FTN      TO  MF100-SKJFTN
                    ELSE
+                     IF  SYU-KOH2HKNNUM  =  MF100-KOHNUM
       *    Æü¿ô²Ã»»
-                     ADD    RECE10-SHOKUJINISSU(1)   TO   MF100-SKJKAISU
+                       ADD   SYU-KOH2SKJ-NISSU    TO  MF100-SKJKAISU
       *    ÀÁµá³Û²Ã»»
-                     ADD    RECE10-SHOKUJIRYOYOHI(1) TO   MF100-SKJSKY
+                       ADD   SYU-KOH2SKJ-RYOYOHI  TO  MF100-SKJSKY
       *    É¸½àÉéÃ´³Û²Ã»»
-                     ADD    RECE10-SHOKUJIFTN(1)     TO   MF100-SKJFTN
+                       ADD   SYU-KOH2SKJ-FTN      TO  MF100-SKJFTN
+                     ELSE
+                       IF  SYU-KOH3HKNNUM  =  MF100-KOHNUM
+      *    Æü¿ô²Ã»»
+                         ADD   SYU-KOH3SKJ-NISSU    TO  MF100-SKJKAISU
+      *    ÀÁµá³Û²Ã»»
+                         ADD   SYU-KOH3SKJ-RYOYOHI  TO  MF100-SKJSKY
+      *    É¸½àÉéÃ´³Û²Ã»»
+                         ADD   SYU-KOH3SKJ-FTN      TO  MF100-SKJFTN
+                       ELSE
+                         IF  SYU-KOH4HKNNUM  =  MF100-KOHNUM
+      *    Æü¿ô²Ã»»
+                           ADD   SYU-KOH4SKJ-NISSU    TO  MF100-SKJKAISU
+      *    ÀÁµá³Û²Ã»»
+                           ADD   SYU-KOH4SKJ-RYOYOHI  TO  MF100-SKJSKY
+      *    É¸½àÉéÃ´³Û²Ã»»
+                           ADD   SYU-KOH4SKJ-FTN      TO  MF100-SKJFTN
+                         ELSE
+      *    Æü¿ô²Ã»»
+                           ADD   SYU-SYUSKJ-NISSU     TO  MF100-SKJKAISU
+      *    ÀÁµá³Û²Ã»»
+                           ADD   SYU-SYUSKJ-RYOYOHI   TO  MF100-SKJSKY
+      *    É¸½àÉéÃ´³Û²Ã»»
+                           ADD   SYU-SYUSKJ-FTN       TO  MF100-SKJFTN
+                         END-IF
+                       END-IF
+                     END-IF
                    END-IF
+      *
+                 ELSE
+      *
+                   ADD    1                        TO  MF100-JNISSU
+                   ADD    SYU-TOTAL-HKNTEN         TO  MF100-TOTALTEN
                  END-IF
-               END-IF
-             END-IF
+      *
+      **--- 2009/01/29 ADD START ----------------------------------------
+      *       IF   RECE10-KOHNUM(1)  =  MF100-KOHNUM
+      **    Æü¿ô²Ã»»
+      *         ADD    RECE10-SHOKUJINISSU(2)      TO   MF100-SKJKAISU
+      **    ÀÁµá³Û²Ã»»
+      *         ADD    RECE10-SHOKUJIRYOYOHI(2)    TO   MF100-SKJSKY
+      **    É¸½àÉéÃ´³Û²Ã»»
+      *         ADD    RECE10-SHOKUJIFTN(2)        TO   MF100-SKJFTN
+      *       ELSE
+      *         IF  RECE10-KOHNUM(2)  =  MF100-KOHNUM
+      **    Æü¿ô²Ã»»
+      *           ADD    RECE10-SHOKUJINISSU(3)    TO   MF100-SKJKAISU
+      **    ÀÁµá³Û²Ã»»
+      *           ADD    RECE10-SHOKUJIRYOYOHI(3)  TO   MF100-SKJSKY
+      **    É¸½àÉéÃ´³Û²Ã»»
+      *           ADD    RECE10-SHOKUJIFTN(3)      TO   MF100-SKJFTN
+      *         ELSE
+      *           IF  RECE10-KOHNUM(3)  =  MF100-KOHNUM
+      **    Æü¿ô²Ã»»
+      *             ADD    RECE10-SHOKUJINISSU(4)    TO   MF100-SKJKAISU
+      **    ÀÁµá³Û²Ã»»
+      *             ADD    RECE10-SHOKUJIRYOYOHI(4)  TO   MF100-SKJSKY
+      **    É¸½àÉéÃ´³Û²Ã»»
+      *             ADD    RECE10-SHOKUJIFTN(4)      TO   MF100-SKJFTN
+      *           ELSE
+      *             IF  RECE10-KOHNUM(4)  =  MF100-KOHNUM
+      **    Æü¿ô²Ã»»
+      *               ADD    RECE10-SHOKUJINISSU(5)   TO   MF100-SKJKAISU
+      **    ÀÁµá³Û²Ã»»
+      *               ADD    RECE10-SHOKUJIRYOYOHI(5) TO   MF100-SKJSKY
+      **    É¸½àÉéÃ´³Û²Ã»»
+      *               ADD    RECE10-SHOKUJIFTN(5)     TO   MF100-SKJFTN
+      *             ELSE
+      **    Æü¿ô²Ã»»
+      *               ADD    RECE10-SHOKUJINISSU(1)   TO   MF100-SKJKAISU
+      **    ÀÁµá³Û²Ã»»
+      *               ADD    RECE10-SHOKUJIRYOYOHI(1) TO   MF100-SKJSKY
+      **    É¸½àÉéÃ´³Û²Ã»»
+      *               ADD    RECE10-SHOKUJIFTN(1)     TO   MF100-SKJFTN
+      *             END-IF
+      *           END-IF
+      *         END-IF
+      *       END-IF
       *--- 2009/01/29 ADD END ------------------------------------------
+      *--- 2010/11/22 CHANGE END   -------------------------------------
       *
       *    ¸øÈñÌ¾¼èÆÀ
-             MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
-             PERFORM  950-HKNNUM-SET-SEC
-             MOVE    HKN-TANSEIDONAME          TO   MF100-KOHNAME
+                 MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
+                 PERFORM  950-HKNNUM-SET-SEC
+                 MOVE    HKN-TANSEIDONAME          TO   MF100-KOHNAME
       *
       *    Â¾Ë¡¸øÈñ¾ðÊóÀßÄê
-             MOVE    1                         TO   IDX1
-             IF   RECE10-RJNHKNNUM  NOT =  SPACE
-               MOVE   "27"                     TO   MF100-TAHO(IDX1)
-               ADD    1                        TO   IDX1
-             END-IF
+                 MOVE    1                         TO   IDX1
+                 IF   RECE10-RJNHKNNUM  NOT =  SPACE
+                   MOVE   "27"                     TO   MF100-TAHO(IDX1)
+                   ADD    1                        TO   IDX1
+                 END-IF
       *
-             IF   RECE10-ETC-KOHNUM(1)   =   "972"
-                 OR  RECE10-ETC-KOHNUM(2)   =   "972"
-                 OR  RECE10-ETC-KOHNUM(3)   =   "972"
-                 OR  RECE10-ETC-KOHNUM(4)   =   "972"
-               MOVE  "Ä¹"                      TO   MF100-TAHO(IDX1)
-               ADD   1                         TO   IDX1
-             END-IF
+                 IF   RECE10-ETC-KOHNUM(1)   =   "972"
+                     OR  RECE10-ETC-KOHNUM(2)   =   "972"
+                     OR  RECE10-ETC-KOHNUM(3)   =   "972"
+                     OR  RECE10-ETC-KOHNUM(4)   =   "972"
+                   MOVE  "Ä¹"                      TO   MF100-TAHO(IDX1)
+                   ADD   1                         TO   IDX1
+                 END-IF
       *
-             PERFORM  VARYING  IDX2   FROM    1   BY  1
-                      UNTIL    IDX2   >   4
-                      OR   IDX1   >   4
-                      OR   RECE10-KOHNUM(IDX2)  =  SPACE
-               IF     RECE10-KOHNUM(IDX2)(1:1)  =  "0"
-                 MOVE     RECE10-KOHNUM(IDX2)  TO   WRK-KOHNUM
-                 PERFORM  950-HKNNUM-SET-SEC
-                 MOVE     HKN-HBTNUM           TO   MF100-TAHO(IDX1)
-                 ADD      1                    TO   IDX1
-               END-IF
-             END-PERFORM
+                 PERFORM  VARYING  IDX2   FROM    1   BY  1
+                          UNTIL    IDX2   >   4
+                          OR   IDX1   >   4
+                          OR   RECE10-KOHNUM(IDX2)  =  SPACE
+                   IF     RECE10-KOHNUM(IDX2)(1:1)  =  "0"
+                     MOVE     RECE10-KOHNUM(IDX2)  TO   WRK-KOHNUM
+                     PERFORM  950-HKNNUM-SET-SEC
+                     MOVE     HKN-HBTNUM           TO   MF100-TAHO(IDX1)
+                     ADD      1                    TO   IDX1
+                   END-IF
+                 END-PERFORM
       *
       *    ¼ýÇ¼¾ðÊó¤è¤ê¡¢ËÜ¿ÍÉéÃ´³Û¤ò½¸·×
-             MOVE     ZERO                     TO   MF100-FTNMONEY
-             PERFORM  920-SYUNOU-SET-SEC
+      *--- 2010/11/22 CHANGE START -------------------------------------
+      *         MOVE     ZERO                     TO   MF100-FTNMONEY
+      *         PERFORM  920-SYUNOU-SET-SEC
+      *    ¼ýÇ¼¾ðÊó¤è¤ê¡¢ËÜ¿ÍÉéÃ´³Û¤ò½¸·×
+                 COMPUTE  WRK-SKYMONEY  =  SYU-SKYMONEY
+                                        -  SYU-JIHI-TOTAL
+                                        -  SYU-JIHI-TOTAL-TAX
+                 ADD   WRK-SKYMONEY     TO   MF100-FTNMONEY
+      *
+      *--- 2010/11/22 CHANGE END   -------------------------------------
       ***** 04/06/03 INS
       *    ¸øÈñÈÖ¹æ¤Ç¥½¡¼¥È¤¹¤ë
-             MOVE     MF100-KOHNUM             TO   MF100-KOHNUM-KEY
+                 MOVE     MF100-KOHNUM      TO   MF100-KOHNUM-KEY
       *****
       *
       ****2006/02/20 @@@@-BRAND start
       *    WRITE    MF100-REC
       *    ADD      1        TO      CNT-MF100
+      *--- 2010/11/22 ADD START ----------------------------------------
+               END-IF
+               PERFORM  910-SYUNOU-FETCH-SEC
+             END-PERFORM
+      *
+             PERFORM  910-SYUNOU-CLOSE-SEC
+      *--- 2010/11/22 ADD END    ---------------------------------------
              IF  FLG-KBN   =   ZERO
                WRITE    MF100-REC
                ADD     1        TO   CNT-MF100
@@ -924,6 +1028,48 @@
        2002-HENSYU-EXT.
            EXIT.
       *
+      *--- 2010/11/22 ADD START ----------------------------------------
+      *****************************************************************
+      *    ¸øÈñ¥Á¥§¥Ã¥¯½èÍý
+      *****************************************************************
+       20021-KOHCHK-SELECT-SEC             SECTION.
+      *
+      *    ÂÐ¾Ý¸øÈñ½ê»ý¼ÔÈ½Äê
+           INITIALIZE  MF100-REC
+      *
+           PERFORM  VARYING  IDX7   FROM    1   BY  1
+                    UNTIL    IDX7   >   4
+                    OR       RECE02-KOHNUM(IDX7)  =  SPACE
+             IF  RECE02-KOHNUM(IDX7)  =  KOHI-KOHNUM(1)
+               OR  KOHI-KOHNUM(2)    OR  KOHI-KOHNUM(3)
+               OR  KOHI-KOHNUM(4)    OR  KOHI-KOHNUM(5)
+               OR  KOHI-KOHNUM(6)    OR  KOHI-KOHNUM(7)
+               OR  KOHI-KOHNUM(8)    OR  KOHI-KOHNUM(9)
+               OR  KOHI-KOHNUM(10)   OR  KOHI-KOHNUM(11)
+               OR  KOHI-KOHNUM(12)   OR  KOHI-KOHNUM(13)
+               OR  KOHI-KOHNUM(14)   OR  KOHI-KOHNUM(15)
+               OR  KOHI-KOHNUM(16)   OR  KOHI-KOHNUM(17)
+               OR  KOHI-KOHNUM(18)   OR  KOHI-KOHNUM(19)
+               OR  KOHI-KOHNUM(20)   OR  KOHI-KOHNUM(21)
+               OR  KOHI-KOHNUM(22)   OR  KOHI-KOHNUM(23)
+               OR  KOHI-KOHNUM(24)   OR  KOHI-KOHNUM(25)
+               OR  KOHI-KOHNUM(26)   OR  KOHI-KOHNUM(27)
+               OR  KOHI-KOHNUM(28)   OR  KOHI-KOHNUM(29)
+               OR  KOHI-KOHNUM(30)   OR  KOHI-KOHNUM(31)
+               OR  KOHI-KOHNUM(32)   OR  KOHI-KOHNUM(33)
+               OR  KOHI-KOHNUM(34)   OR  KOHI-KOHNUM(35)
+               OR  KOHI-KOHNUM(36)   OR  KOHI-KOHNUM(37)
+               OR  KOHI-KOHNUM(38)   OR  KOHI-KOHNUM(39)
+               OR  KOHI-KOHNUM(40)
+               PERFORM  9001-CHK-SEC
+             END-IF
+           END-PERFORM
+      *
+           .
+       20021-KOHCHK-SELECT-EXT.
+           EXIT.
+      *
+      *--- 2010/11/22 ADD END   ----------------------------------------
       *****************************************************************
       *    ¥Ç¡¼¥¿°õºþ½èÍý
       *****************************************************************
@@ -1492,12 +1638,14 @@
              END-IF
       *
       *      ÂÐ¾Ý¸øÈñ½ê»ý¼ÔÈ½Äê
-             INITIALIZE  MF100-REC
-             PERFORM  9001-CHK-SEC
-      *
-             IF   MF100-KOHNUM   =   SPACE
-               GO    TO   900-SEIKYU-READ-SEC
-             END-IF
+      *--- 2010/11/22 DELETE START -------------------------------------
+      *       INITIALIZE  MF100-REC
+      *       PERFORM  9001-CHK-SEC
+      **
+      *       IF   MF100-KOHNUM   =   SPACE
+      *         GO    TO   900-SEIKYU-READ-SEC
+      *       END-IF
+      *--- 2010/11/22 DELETE END   -------------------------------------
       *
              ADD    1                  TO   CNT-RECE10
            ELSE
@@ -1724,16 +1872,22 @@
       *
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) start
       *     MOVE  RECE10-HOSPID      TO  PTKOH-HOSPID
-           MOVE    RECE10-HOSPNUM       TO   PTKOH-HOSPNUM
+           MOVE    RECE02-HOSPNUM       TO   PTKOH-HOSPNUM
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) end
-           MOVE    RECE10-PTID          TO   PTKOH-PTID
+           MOVE    RECE02-PTID          TO   PTKOH-PTID
+      *--- 2010/11/22 ADD START ----------------------------------------
+           MOVE    RECE02-KOHID(IDX7)   TO   PTKOH-KOHID
+      *--- 2010/11/22 ADD END   ----------------------------------------
            MOVE    PTKOHINF-REC         TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) start
       *     MOVE  PATH-TBL-PTKOHINF-KEY2    TO  MCP-PATH
       *     CALL     "MCPSUB"               USING
            MOVE    "tbl_ptkohinf"       TO   MCP-TABLE
-           MOVE    "key2"               TO   MCP-PATHNAME
+      *--- 2010/11/22 CHANGE START -------------------------------------
+      *     MOVE    "key2"               TO   MCP-PATHNAME
+           MOVE    "key"                TO   MCP-PATHNAME
+      *--- 2010/11/22 CHANGE END   -------------------------------------
            CALL    "ORCDBMAIN"          USING
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) end
                                         MCPAREA
@@ -1745,54 +1899,59 @@
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) start
       *       MOVE  PATH-TBL-PTKOHINF-KEY2  TO  MCP-PATH
              MOVE    "tbl_ptkohinf"     TO   MCP-TABLE
-             MOVE    "key2"             TO   MCP-PATHNAME
+      *--- 2010/11/22 CHANGE START -------------------------------------
+      *       MOVE    "key2"             TO   MCP-PATHNAME
+             MOVE    "key"             TO   MCP-PATHNAME
+      *--- 2010/11/22 CHANGE END   -------------------------------------
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) end
              PERFORM  935-PTKOHINF-READ-SEC
       *
-      *    ¸øÈñ¡Ý½þ´ÔÊ§¤¤½ê»ý¼Ô¤«
-             PERFORM  UNTIL  FLG-PTKOHINF  =  1
-                      OR     MF100-KOHNUM  NOT =  SPACE
-               IF  PTKOH-KOHNUM  =  KOHI-KOHNUM(1)
-                                OR  KOHI-KOHNUM(2)
-                                OR  KOHI-KOHNUM(3)
-                                OR  KOHI-KOHNUM(4)
-                                OR  KOHI-KOHNUM(5)
-                                OR  KOHI-KOHNUM(6)
-                                OR  KOHI-KOHNUM(7)
-                                OR  KOHI-KOHNUM(8)
-                                OR  KOHI-KOHNUM(9)
-                                OR  KOHI-KOHNUM(10)
-      ***** 04/06/03 INS
-                                OR  KOHI-KOHNUM(11)
-                                OR  KOHI-KOHNUM(12)
-                                OR  KOHI-KOHNUM(13)
-                                OR  KOHI-KOHNUM(14)
-                                OR  KOHI-KOHNUM(15)
-                                OR  KOHI-KOHNUM(16)
-                                OR  KOHI-KOHNUM(17)
-                                OR  KOHI-KOHNUM(18)
-                                OR  KOHI-KOHNUM(19)
-                                OR  KOHI-KOHNUM(20)
-                                OR  KOHI-KOHNUM(21)
-                                OR  KOHI-KOHNUM(22)
-                                OR  KOHI-KOHNUM(23)
-                                OR  KOHI-KOHNUM(24)
-                                OR  KOHI-KOHNUM(25)
-                                OR  KOHI-KOHNUM(26)
-                                OR  KOHI-KOHNUM(27)
-                                OR  KOHI-KOHNUM(28)
-                                OR  KOHI-KOHNUM(29)
-                                OR  KOHI-KOHNUM(30)
-                                OR  KOHI-KOHNUM(31)
-                                OR  KOHI-KOHNUM(32)
-                                OR  KOHI-KOHNUM(33)
-                                OR  KOHI-KOHNUM(34)
-                                OR  KOHI-KOHNUM(35)
-                                OR  KOHI-KOHNUM(36)
-                                OR  KOHI-KOHNUM(37)
-                                OR  KOHI-KOHNUM(38)
-                                OR  KOHI-KOHNUM(39)
-                                OR  KOHI-KOHNUM(40)
+      *--- 2010/11/22 DELETE START -------------------------------------
+      **    ¸øÈñ¡Ý½þ´ÔÊ§¤¤½ê»ý¼Ô¤«
+      *       PERFORM  UNTIL  FLG-PTKOHINF  =  1
+      *                OR     MF100-KOHNUM  NOT =  SPACE
+      *         IF  PTKOH-KOHNUM  =  KOHI-KOHNUM(1)
+      *                          OR  KOHI-KOHNUM(2)
+      *                          OR  KOHI-KOHNUM(3)
+      *                          OR  KOHI-KOHNUM(4)
+      *                          OR  KOHI-KOHNUM(5)
+      *                          OR  KOHI-KOHNUM(6)
+      *                          OR  KOHI-KOHNUM(7)
+      *                          OR  KOHI-KOHNUM(8)
+      *                          OR  KOHI-KOHNUM(9)
+      *                          OR  KOHI-KOHNUM(10)
+      ****** 04/06/03 INS
+      *                          OR  KOHI-KOHNUM(11)
+      *                          OR  KOHI-KOHNUM(12)
+      *                          OR  KOHI-KOHNUM(13)
+      *                          OR  KOHI-KOHNUM(14)
+      *                          OR  KOHI-KOHNUM(15)
+      *                          OR  KOHI-KOHNUM(16)
+      *                          OR  KOHI-KOHNUM(17)
+      *                          OR  KOHI-KOHNUM(18)
+      *                          OR  KOHI-KOHNUM(19)
+      *                          OR  KOHI-KOHNUM(20)
+      *                          OR  KOHI-KOHNUM(21)
+      *                          OR  KOHI-KOHNUM(22)
+      *                          OR  KOHI-KOHNUM(23)
+      *                          OR  KOHI-KOHNUM(24)
+      *                          OR  KOHI-KOHNUM(25)
+      *                          OR  KOHI-KOHNUM(26)
+      *                          OR  KOHI-KOHNUM(27)
+      *                          OR  KOHI-KOHNUM(28)
+      *                          OR  KOHI-KOHNUM(29)
+      *                          OR  KOHI-KOHNUM(30)
+      *                          OR  KOHI-KOHNUM(31)
+      *                          OR  KOHI-KOHNUM(32)
+      *                          OR  KOHI-KOHNUM(33)
+      *                          OR  KOHI-KOHNUM(34)
+      *                          OR  KOHI-KOHNUM(35)
+      *                          OR  KOHI-KOHNUM(36)
+      *                          OR  KOHI-KOHNUM(37)
+      *                          OR  KOHI-KOHNUM(38)
+      *                          OR  KOHI-KOHNUM(39)
+      *                          OR  KOHI-KOHNUM(40)
+      *--- 2010/11/22 DELETE END   -------------------------------------
       *--- 2010/06/17 DELETE START -------------------------------------
       ****2006/02/20 @@@@-BRAND start
       *    ¸øÈñ¡Ý½þ´ÔÊ§¤¤½ê»ý¼Ô¤«¤Î»È¤¦È½Äê
@@ -1832,14 +1991,20 @@
       *--- 2010/06/17 ADD START ----------------------------------------
                  MOVE    1     TO   FLG-KOHCHK
       *--- 2010/06/17 ADD END ------------------------------------------
-               END-IF
+      *--- 2010/11/22 DELETE START -------------------------------------
+      *         END-IF
+      *--- 2010/11/22 DELETE END   -------------------------------------
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) start
       *         MOVE  PATH-TBL-PTKOHINF-KEY2  TO  MCP-PATH
-               MOVE   "tbl_ptkohinf"         TO   MCP-TABLE
-               MOVE   "key2"                 TO   MCP-PATHNAME
+      *--- 2010/11/22 DELETE START -------------------------------------
+      *         MOVE   "tbl_ptkohinf"         TO   MCP-TABLE
+      *         MOVE   "key2"                 TO   MCP-PATHNAME
+      *--- 2010/11/22 DELETE END   -------------------------------------
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) end
-               PERFORM  935-PTKOHINF-READ-SEC
-             END-PERFORM
+      *--- 2010/11/22 DELETE START -------------------------------------
+      *         PERFORM  935-PTKOHINF-READ-SEC
+      *       END-PERFORM
+      *--- 2010/11/22 DELETE END   -------------------------------------
            ELSE
       ****2005/10/17  @@@@-BRAND  start
       *      DISPLAY  "PTKOHINF SELECT ERR" UPON CONSOLE
@@ -1856,7 +2021,10 @@
       *     MOVE  PATH-TBL-PTKOHINF-KEY2  TO  MCP-PATH
       *     CALL     "MCPSUB"             USING
            MOVE    "tbl_ptkohinf"           TO   MCP-TABLE
-           MOVE    "key2"                   TO   MCP-PATHNAME
+      *--- 2010/11/22 CHANGE START -------------------------------------
+      *     MOVE    "key2"                   TO   MCP-PATHNAME
+           MOVE    "key"                   TO   MCP-PATHNAME
+      *--- 2010/11/22 CHANGE END   -------------------------------------
            CALL    "ORCDBMAIN"              USING
       *=== 4.0ÂÐ±þ By Otake(2007/09/21) end
                                             MCPAREA
@@ -1960,6 +2128,77 @@
            .
        800-PTINF-READ-EXT.
            EXIT.
+      *
+      *--- 2010/11/22 ADD START ----------------------------------------
+      ******************************************************************
+      **    ¼ýÇ¼¾ðÊó¸¡º÷
+      ******************************************************************
+       910-SYUNOU-SELECT-SEC             SECTION.
+      *
+           INITIALIZE                    SYUNOU-REC
+      *
+           MOVE    RECE10-HOSPNUM    TO  SYU-HOSPNUM
+           MOVE    RECE10-NYUGAIKBN  TO  SYU-NYUGAIKBN
+           MOVE    RECE10-PTID       TO  SYU-PTID
+           MOVE    RECE10-SRYYM      TO  SYU-SKYSTYMD(1:6)
+           MOVE    "01"              TO  SYU-SKYSTYMD(7:2)
+           MOVE    "99999999"        TO  SYU-SKYEDYMD
+      *
+           MOVE    SYUNOU-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"        TO  MCP-FUNC
+           MOVE    "tbl_syunou"      TO  MCP-TABLE
+           MOVE    "key5"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+           IF      MCP-RC              =   ZERO
+               PERFORM 910-SYUNOU-FETCH-SEC
+           ELSE
+               MOVE    1             TO  FLG-SYUNOU
+           END-IF        
+           .
+       910-SYUNOU-SELECT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *     ¼ýÇ¼¾ðÊó¸¡º÷
+      *****************************************************************
+       910-SYUNOU-FETCH-SEC                SECTION.
+      *
+           MOVE    "DBFETCH"         TO  MCP-FUNC
+           MOVE    "tbl_syunou"      TO  MCP-TABLE
+           MOVE    "key5"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+           IF      MCP-RC              =   ZERO
+               MOVE    ZERO          TO  FLG-SYUNOU
+               MOVE    MCPDATA-REC   TO  SYUNOU-REC
+           ELSE
+               MOVE    1             TO  FLG-SYUNOU
+           END-IF  
+           .
+       910-SYUNOU-FETCH-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    £Ä£Â¡¡¥¯¥í¡¼¥º½èÍý
+      *****************************************************************
+       910-SYUNOU-CLOSE-SEC                 SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"   TO  MCP-FUNC
+           MOVE    "tbl_syunou"      TO  MCP-TABLE
+           MOVE    "key5"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+           .
+       910-SYUNOU-CLOSE-EXT.
+           EXIT.
+      *--- 2010/11/22 ADD END   ----------------------------------------
       *
       *****************************************************************
       *  ¼ýÇ¼¾ðÊó¥»¥Ã¥È
