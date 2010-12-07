@@ -14,9 +14,10 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
+      ********************************************************************
       *  プログラム修正履歴
-      *              @@@@-高嶋    06/10/30  自費、基本診療項目追加対応
-      *              @@@@-田中    08/03/26  H20年4月改正対応
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    10/12/07  コメント履歴削除
       ********************************************************************
        01  HC90.
               03  HC90-SYSYMD        PIC X(22).
@@ -36,10 +37,6 @@
               03  HC90-TFUTAN3       PIC X(20).
               03  HC90-TJIHI-G                   OCCURS  10 TIMES.
                   05  HC90-TJIHI     PIC X(8).
-      * 20080326 H20年4月改正対応START tanaka
-      *        03  HC90-YOSO-G                    OCCURS  10 TIMES.
               03  HC90-YOSO-G                    OCCURS  11 TIMES.
-      *            05  HC90-YOSO-OCC              OCCURS  34 TIMES.
                   05  HC90-YOSO-OCC              OCCURS  35 TIMES.
-      * 20080326 H20年4月改正対応END
                       07  HC90-YOSO  PIC X(12).

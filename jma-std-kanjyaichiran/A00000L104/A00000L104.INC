@@ -1,4 +1,4 @@
-      *******************************************************************
+      *****************************************************************
       * Project code name "ORCA"
       * 日医標準レセプトソフト（JMA standard receipt software）
       * Copyright(C) 2002 JMA (Japan Medical Association)
@@ -14,7 +14,11 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
-      ********************************************************************
+      *****************************************************************
+      *  コピー句修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    10/12/07  コメント履歴削除
+      *****************************************************************
        01  L104.
               03    L104-MIDASI         PIC  X(10).
               03    L104-ERRMSG         PIC  X(50).
@@ -54,10 +58,8 @@
               03    L104-KIGONUM-G.
                05   L104-KIGONUM-TBL    OCCURS  15.
                  07 L104-KIGONUM        PIC  X(52).
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) end
                  07 L104-KIGO           PIC  X(52).
                  07 L104-BANGO          PIC  X(52).
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) start
               03    L104-ATAMAGAKI-G.
                05   L104-ATAMAGAKI-TBL  OCCURS  15.
                  07 L104-ATAMAGAKI      PIC  X(10).

@@ -15,6 +15,10 @@
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
       ********************************************************************
+      *  コピー句修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    10/12/07  コメント履歴削除
+      *****************************************************************
        01  L108T.
           03  L108T-KEY.
             05  L108T-BYOCD           PIC  X(07).
@@ -31,10 +35,8 @@
           03  L108T-HKNJANUM          PIC  X(08).
           03  L108T-HONKAZKKBN        PIC  X(01).
           03  L108T-KIGONUM           PIC  X(52).
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/01) start
           03  L108T-KIGO              PIC  X(52).
           03  L108T-BANGO             PIC  X(52).
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/01) end
           03  L108T-KOH1FTNNUM        PIC  X(30).
           03  L108T-NYUGAIKBN         PIC  X(02).
           03  L108T-LASTYMD           PIC  X(10).

@@ -1,4 +1,4 @@
-      *******************************************************************
+      *****************************************************************
       * Project code name "ORCA"
       * 日医標準レセプトソフト（JMA standard receipt software）
       * Copyright(C) 2002 JMA (Japan Medical Association)
@@ -14,15 +14,10 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
-      ********************************************************************
-      *****************************************************************
-      *
-      *     (初診) 患者一覧サブプログラム アギユメント      
-      *            
       *****************************************************************
       *  コピー句修正履歴
       * Maj/Min/Rev  修正者       日付      内容
-      *  01.00.01      吉川     07/09/06    Ver4.0対応
+      * 01.00.01     @@@@-門間    10/12/07  コメント履歴削除
       *****************************************************************
        01  A00000L100-LNK.
            03  L100LNK-PRTKANRI-RENNUM              PIC 9(04).
@@ -38,10 +33,7 @@
            03  L100LNK-PRTKANRI-PRTNM               PIC X(16).
            03  L100LNK-JOBID                        PIC 9(07).
            03  L100LNK-SHELLID                      PIC X(08).
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     03  L100LNK-HOSPID                       PIC X(24).
            03  L100LNK-HOSPNUM                      PIC 9(02).
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            03  L100LNK-YMD1                         PIC X(08).
            03  L100LNK-YMD2                         PIC X(08).
            03  L100LNK-SRYKA                        PIC X(02).

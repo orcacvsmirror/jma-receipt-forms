@@ -22,26 +22,12 @@
       *  サブシステム名    : 患者一覧
       *  コンポーネント名  : (診療行為)患者一覧
       *  管理者            : 
-      *  作成日付    作業者        記述
-      *  04/02/20    @@@@-高橋     新規作成
-      *  04/09/17    @@@@-本橋     MONPE化
-      *  04/10/06    @@@@-本橋     日医標準レセプトソフトver2.4.0対応による
-      *                            受診履歴テーブル−最終区分(lastkbn)の削除
-      *  04/12/06    @@@@-本橋     有効期限が設定された医師コードにおいて
-      *                            シス管理より医師名が取得できない不具合を修正
-      *  05/01/18    @@@@-本橋     記号もしくは番号のどちらかが未入力であっても
-      *                            印字するように修正
-      *  05/03/10    @@@@-鈴木     open-cobol 0.23への対応による変更
-      *                            monpe文字化け修正
-      *  06/08/09    @@@@-高嶋     sarge対応
-      *  07/09/20    @@@@-吉川     Ver4.0対応
-      *  08/04/03    @@@@-吉川     シス管の値が取得できない不具合を修正
-      *                            後期高齢者対応(ver4.2.0)
-      *                            記号・番号１６文字以上対応(ver4.2.0)
-      *  08/06/02    @@@@-田中     診療行為の欄が空白になる不具合を修正
-      *  09/04/30    @@@@-田中     Ubuntu対応
-      *  10/02/08    @@@@-田中     シス管の値が取得できない不具合を修正
-      *                            DBOPEN・DBCOMMITの処理が2重になっていた不具合を修正
+      *  作成日付    作業者       記述
+      *  04/02/20    @@@@-高橋    新規作成
+      *****************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -75,14 +61,8 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            COPY    "A00000L109.INC".
       *
@@ -166,9 +146,6 @@
            03  IDX-N             PIC 9(07).
            03  IDX-MAX           PIC 9(07).
       *
-      **** 20050301 open-cobol 0.23への対応 SUZUKI
-      *     03  IDX2              PIC 9(04).
-      **** 20050301 SUZUKI
            03  JIHIIDX           PIC 9(04).
            03  NG                PIC 9(04).
       *
@@ -177,10 +154,7 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID    PIC 9(07).
            03  WRK-PARA-SHELLID  PIC X(08).
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     03  WRK-PARA-HOSPID   PIC X(24).
            03  WRK-PARA-HOSPNUM  PIC 9(02).
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            03  WRK-PARA-PRTYM    PIC X(06).
            03  WRK-PARA-PRTLYMD  PIC X(08).
            03  WRK-PARA-PRTSYMD  PIC X(08).
@@ -196,9 +170,9 @@
            03  WRK-SYSYMDWH          PIC X(22).
            03  WRK-RENNUM            PIC 9(03).
            03  WRK-PTNUM             PIC X(20).
-           03  WRK-PTNUM6            PIC 9(06). 
-           03  WRK-SYUHKNNUM         PIC X(03). 
-      *  
+           03  WRK-PTNUM6            PIC 9(06).
+           03  WRK-SYUHKNNUM         PIC X(03).
+      *
            03  WRK-SYSYMD.
                05  WRK-SYSYY         PIC 9(04).
                05  WRK-SYSMM         PIC 9(02).
@@ -208,8 +182,6 @@
                05  WRK-SMM           PIC 9(02).
                05  WRK-SDD           PIC 9(02).
            03  WRK-HENYMDG           PIC X(22).
-      *
-      *****03  WRK-IN                PIC X(01).
       *
            03  WRK-MONEY             PIC 9(08).
            03  WRK-JIHI              PIC 9(08).
@@ -272,14 +244,12 @@
            03  WRK-SQL-COUNT        PIC X(20000).
            03  WRK-SQLC             PIC 9(05).
       *
-      * 2003/06/24  追加
            03  WRK-SYS-BEDSU     PIC 9(04).
            03  WRK-SYS-BEDSUIPN  PIC 9(04).
-      * 2003/06/24  追加
       *
        01  WRK-SRYKA-AREA.
            03  WRK-SRYKAMAX        PIC    9(03).
-           03  WRK-SRYKA-TBL       OCCURS 100.    
+           03  WRK-SRYKA-TBL       OCCURS 100.
                05  WRK-SRYKA-CD    PIC    X(02).
                05  WRK-SRYKANAME   PIC    X(30).
       *
@@ -292,10 +262,6 @@
            03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973". 
       *
            COPY    "CPSHELLTBL.INC".
-      *     
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     COPY    "ORCA-DBPATH".
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -353,7 +319,7 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
+           COPY    "CPPRTDATA.INC".
       *
       *    収納マスタ
        01  SYUNOU-REC.
@@ -408,19 +374,15 @@
        01  QUERY-PTINF-REC.
            COPY    "CPQPTINF.INC".
       *
-      **    患者マスタ件数取得用（照会用コピー句）
-      * 01  QUERY-PTINF-CNT-REC.
-      *     COPY    "CPQPTINF-CNT.INC".
-      *
       *****************************************************************
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   ジョブ管理ＤＢ制御サブ
+      *    ジョブ管理ＤＢ制御サブ
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
       *    日付変換サブ
            COPY    "CPORCSDAY.INC".
@@ -459,8 +421,6 @@
            IF      INP-STS                 =   ZERO
              PERFORM 200-MAIN-SEC
                    UNTIL       FLG-END     =   1
-      *     ELSE
-      *       PERFORM 210-ERR-SEC
            END-IF
       *
            PERFORM 300-END-SEC
@@ -479,17 +439,13 @@
            INITIALIZE                  WRK-SRYKA-AREA
            INITIALIZE                  L109T
            INITIALIZE                  L109
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
            INITIALIZE                  SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
       *    ステップ管理開始処理
            MOVE    "STS"               TO  SJOBKANRI-MODE
            INITIALIZE                      JOBKANRI-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
            MOVE    L100LNK-HOSPNUM     TO  JOB-HOSPNUM
                                            SPA-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    L100LNK-JOBID       TO  JOB-JOBID
            MOVE    L100LNK-SHELLID     TO  JOB-SHELLID
            MOVE    "A00000L109"        TO  JOB-PGID
@@ -497,19 +453,7 @@
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
                                    SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-      *
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "RECEERR"       TO  RECEERR-FILE-ID
-      *     MOVE    L100LNK-PRTKANRI-TERMID
-      *                             TO  RECEERR-TERMID
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-      *
-      *--- 2010/02/08 SELETE START -------------------------------------
-      *     PERFORM 100-DBOPEN-SEC
-      *--- 2010/02/08 SELETE END ---------------------------------------
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -550,120 +494,70 @@
            INITIALIZE                      SYS-1001-REC
            MOVE    "1001"              TO  SYS-1001-KANRICD
            MOVE    "*"                 TO  SYS-1001-KBNCD
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) start
-      *     MOVE    L100LNK-PRTKANRI-SRYYM(1:6)
-      *                                 TO  SYS-1001-STYUKYMD(1:6)
-      *                                     SYS-1001-EDYUKYMD(1:6)
-      *     MOVE    "01"                TO  SYS-1001-STYUKYMD(7:2)
-      *                                     SYS-1001-EDYUKYMD(7:2)
-      *--- 2010/02/08 CHANGE START -------------------------------------
-      *     MOVE    L100LNK-YMD1        TO  SYS-1001-STYUKYMD
-      *     MOVE    L100LNK-YMD2        TO  SYS-1001-EDYUKYMD
            MOVE     L100LNK-PRTKANRI-SKYYMD   TO   SYS-1001-STYUKYMD
                                                    SYS-1001-EDYUKYMD
-      *--- 2010/02/08 CHANGE END ---------------------------------------
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    SYS-1001-REC        TO  MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI        =   ZERO
                MOVE    MCPDATA-REC         TO  SYS-1001-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    SYS-1001-HOSPID     TO  WRK-PARA-HOSPID
                MOVE    SYS-1001-HOSPNUM    TO  WRK-PARA-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                MOVE    SYS-1001-BEDSU      TO  WRK-SYS-BEDSU
                MOVE    SYS-1001-BEDSUIPN   TO  WRK-SYS-BEDSUIPN
            ELSE    
                MOVE    "医療機関ＩＤが取得できませんでした。"
                                            TO  WRK-RECEERR
                PERFORM 500-ERR-HENSYU-SEC
-           END-IF                                     
+           END-IF
       *
       *    診療科情報
            IF L100LNK-SRYKA   =    SPACE
-      ***  全診療印刷フラグON
               MOVE   1        TO   FLG-SRYKA-ALL
            ELSE
               INITIALIZE                      SYS-1005-REC
               MOVE    "1005"              TO  SYS-1005-KANRICD
               MOVE    L100LNK-SRYKA       TO  SYS-1005-KBNCD
               MOVE    L100LNK-YMD2        TO  WRK-SYMD
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) start
-      *        MOVE    L100LNK-PRTKANRI-SRYYM(1:6)
-      *                                    TO  SYS-1005-STYUKYMD(1:6)
-      *                                        SYS-1005-EDYUKYMD(1:6)
-      *        MOVE    "01"                TO  SYS-1005-STYUKYMD(7:2)
-      *                                        SYS-1005-EDYUKYMD(7:2)
-      *--- 2010/02/08 CHANGE START -------------------------------------
-      *        MOVE    L100LNK-YMD1        TO  SYS-1005-STYUKYMD
-      *        MOVE    L100LNK-YMD2        TO  SYS-1005-EDYUKYMD
               MOVE    L100LNK-YMD2        TO   SYS-1005-STYUKYMD
               MOVE    L100LNK-YMD1        TO   SYS-1005-EDYUKYMD
-      *--- 2010/02/08 CHANGE END ---------------------------------------
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
               MOVE    SPA-HOSPNUM         TO  SYS-1005-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
               MOVE    SYS-1005-REC        TO  MCPDATA-REC
               PERFORM 800-SYSKANRI-READ-SEC
               IF      FLG-SYSKANRI        =   ZERO
                 MOVE  MCPDATA-REC         TO  SYS-1005-REC
               ELSE
-      ***       診療科コード入力値エラーの場合
                 MOVE  1                   TO  INP-STS
                 MOVE    "診療科コードの値が不正です。"
                                            TO  WRK-RECEERR
                 PERFORM 500-ERR-HENSYU-SEC
-              END-IF                                     
+              END-IF
            END-IF
       *
       *    医師情報
            IF L100LNK-DRCD    =    SPACE
-      ***  全診療印刷フラグON
               MOVE   1        TO   FLG-DRCD-ALL
            ELSE
               INITIALIZE                      SYS-1010-REC
               MOVE    "1010"              TO  SYS-1010-KANRICD
               MOVE    L100LNK-DRCD        TO  SYS-1010-KBNCD
-      ***  2004/12/06  MOTO
-      ***        MOVE    L100LNK-YMD2        TO  WRK-SYMD
               MOVE    L100LNK-YMD2        TO  WRK-SYSYMD
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) start
-      *        MOVE    L100LNK-PRTKANRI-SRYYM(1:6)
-      *                                    TO  SYS-1010-STYUKYMD(1:6)
-      *                                        SYS-1010-EDYUKYMD(1:6)
-      *        MOVE    "01"                TO  SYS-1010-STYUKYMD(7:2)
-      *                                        SYS-1010-EDYUKYMD(7:2)
-      *--- 2010/02/08 CHANGE START -------------------------------------
-      *        MOVE    L100LNK-YMD1        TO  SYS-1010-STYUKYMD
-      *        MOVE    L100LNK-YMD2        TO  SYS-1010-EDYUKYMD
               MOVE    L100LNK-YMD2        TO   SYS-1010-STYUKYMD
               MOVE    L100LNK-YMD1        TO   SYS-1010-EDYUKYMD
-      *--- 2010/02/08 CHANGE END ---------------------------------------
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
               MOVE    SPA-HOSPNUM         TO  SYS-1010-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
               MOVE    SYS-1010-REC        TO  MCPDATA-REC
               PERFORM 800-SYSKANRI-READ-SEC
               IF      FLG-SYSKANRI        =   ZERO
                 MOVE  MCPDATA-REC       TO  SYS-1010-REC
               ELSE
-      ***      医師コード入力値エラーの場合
                 MOVE  2                  TO  INP-STS
                 MOVE    "医師コードの値が不正です。"
                                            TO  WRK-RECEERR
                 PERFORM 500-ERR-HENSYU-SEC
-              END-IF                                     
+              END-IF
            END-IF
       *
       *    診療行為情報
            IF L100LNK-SELCD    =    SPACE
-      ***  全病名印刷フラグON
-      *        MOVE   1        TO   FLG-SRYCD-ALL
                MOVE    "診療行為コードが入力されていません。"
                                            TO  WRK-RECEERR
                PERFORM 500-ERR-HENSYU-SEC
@@ -676,12 +570,11 @@
              OR    L100LNK-PRSORT    =   "2"
                MOVE L100LNK-PRSORT    TO  FLG-PRSORT
            ELSE
-      ***      明細出力順序コード入力値エラーの場合
               MOVE 3                 TO  INP-STS
               MOVE    "印字順序の値が不正です。"
                                          TO  WRK-RECEERR
               PERFORM 500-ERR-HENSYU-SEC
-           END-IF                                     
+           END-IF
            .
        110-PARA-HENSYU-EXT.
            EXIT.
@@ -744,37 +637,31 @@
       *
       *    診療行為検索該当患者読み込み  [key21使用] 
       *    外来
-            INITIALIZE              JYURRK-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *      MOVE L100LNK-HOSPID TO  JYURRK-HOSPID
-            MOVE L100LNK-HOSPNUM TO  JYURRK-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-            MOVE "2"            TO  JYURRK-NYUGAIKBN
-            MOVE L100LNK-YMD1   TO  JYURRK-SRYYMD 
-            MOVE L100LNK-YMD2   TO  JYURRK-UPSRYYMD 
-            PERFORM  900-JYURRK-SELECT-SEC
-            PERFORM  900-JYURRK-FETCH-SEC
-            PERFORM  UNTIL   FLG-JYURRK  =   1
-                  PERFORM  320-PTBYO-11GET-SEC
-                  PERFORM  900-JYURRK-FETCH-SEC
-            END-PERFORM
-            PERFORM   900-JYURRK-CLOSE-SEC
+           INITIALIZE              JYURRK-REC
+           MOVE L100LNK-HOSPNUM TO  JYURRK-HOSPNUM
+           MOVE "2"            TO  JYURRK-NYUGAIKBN
+           MOVE L100LNK-YMD1   TO  JYURRK-SRYYMD 
+           MOVE L100LNK-YMD2   TO  JYURRK-UPSRYYMD 
+           PERFORM  900-JYURRK-SELECT-SEC
+           PERFORM  900-JYURRK-FETCH-SEC
+           PERFORM  UNTIL   FLG-JYURRK  =   1
+                 PERFORM  320-PTBYO-11GET-SEC
+                 PERFORM  900-JYURRK-FETCH-SEC
+           END-PERFORM
+           PERFORM   900-JYURRK-CLOSE-SEC
       *    入院
-            INITIALIZE              JYURRK-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *      MOVE L100LNK-HOSPID TO  JYURRK-HOSPID
-            MOVE L100LNK-HOSPNUM TO  JYURRK-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-            MOVE "1"            TO  JYURRK-NYUGAIKBN
-            MOVE L100LNK-YMD1   TO  JYURRK-SRYYMD 
-            MOVE L100LNK-YMD2   TO  JYURRK-UPSRYYMD 
-            PERFORM  900-JYURRK-SELECT-SEC
-            PERFORM  900-JYURRK-FETCH-SEC
-            PERFORM  UNTIL   FLG-JYURRK  =   1
-                  PERFORM  320-PTBYO-11GET-SEC
-                  PERFORM  900-JYURRK-FETCH-SEC
-            END-PERFORM
-            PERFORM   900-JYURRK-CLOSE-SEC
+           INITIALIZE              JYURRK-REC
+           MOVE L100LNK-HOSPNUM TO  JYURRK-HOSPNUM
+           MOVE "1"            TO  JYURRK-NYUGAIKBN
+           MOVE L100LNK-YMD1   TO  JYURRK-SRYYMD 
+           MOVE L100LNK-YMD2   TO  JYURRK-UPSRYYMD 
+           PERFORM  900-JYURRK-SELECT-SEC
+           PERFORM  900-JYURRK-FETCH-SEC
+           PERFORM  UNTIL   FLG-JYURRK  =   1
+                 PERFORM  320-PTBYO-11GET-SEC
+                 PERFORM  900-JYURRK-FETCH-SEC
+           END-PERFORM
+           PERFORM   900-JYURRK-CLOSE-SEC
       *
            CLOSE                   L109T-FILE
       *
@@ -786,101 +673,74 @@
       *****************************************************************
        320-PTBYO-11GET-SEC      SECTION.
       *
-      ***  20041006  Ver 2.4.0対応による削除  MOTO
-      ***     IF       JYURRK-LASTKBN    =      "1"
-            IF     JYURRK-EDANUM     =      "1"
-            AND     JYURRK-RENNUM     =      "1"
-            AND (( FLG-SRYKA-ALL      NOT =  "1"
-              AND  JYURRK-SRYKA       =      L100LNK-SRYKA )
-             OR    FLG-SRYKA-ALL      =      "1" )
-            AND (( FLG-DRCD-ALL       NOT =  "1"
-              AND  JYURRK-DRCD        =      L100LNK-DRCD )
-             OR    FLG-DRCD-ALL       =      "1" )
-      *         where SQL 作成
-                INITIALIZE              WRK-SQL
+           IF     JYURRK-EDANUM     =      "1"
+           AND     JYURRK-RENNUM     =      "1"
+           AND (( FLG-SRYKA-ALL      NOT =  "1"
+             AND  JYURRK-SRYKA       =      L100LNK-SRYKA )
+            OR    FLG-SRYKA-ALL      =      "1" )
+           AND (( FLG-DRCD-ALL       NOT =  "1"
+             AND  JYURRK-DRCD        =      L100LNK-DRCD )
+            OR    FLG-DRCD-ALL       =      "1" )
+      *        where SQL 作成
+               INITIALIZE              WRK-SQL
       *
-                MOVE    1               TO  WRK-SQL-PNT 
-                STRING  ",view_q002 b"         DELIMITED   BY  SIZE
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *               " where a.hospid='"       DELIMITED   BY  SIZE
-      *               L100LNK-HOSPID            DELIMITED   BY  SIZE
-                     " where a.hospnum='"      DELIMITED   BY  SIZE
-                     L100LNK-HOSPNUM           DELIMITED   BY  SIZE
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-                     "' "                      DELIMITED   BY  SIZE
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *               " and  b.hospid='"       DELIMITED   BY  SIZE
-      *               L100LNK-HOSPID            DELIMITED   BY  SIZE
-                     " and  b.hospnum='"       DELIMITED   BY  SIZE
-                     L100LNK-HOSPNUM           DELIMITED   BY  SIZE
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-                     "' "                      DELIMITED   BY  SIZE
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *               " and  h.hospid='"       DELIMITED   BY  SIZE
-      *               L100LNK-HOSPID            DELIMITED   BY  SIZE
-                     " and  h.hospnum='"       DELIMITED   BY  SIZE
-                     L100LNK-HOSPNUM           DELIMITED   BY  SIZE
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-                     "' "                      DELIMITED   BY  SIZE
-                     "and (a.ptid = "          DELIMITED   BY  SIZE
-                     JYURRK-PTID               DELIMITED   BY  SIZE
-                     ") "                      DELIMITED   BY  SIZE
-                     "and (b.ptid = "          DELIMITED   BY  SIZE
-                     JYURRK-PTID               DELIMITED   BY  SIZE
-                     ") "                      DELIMITED   BY  SIZE
-                     "and (h.ptid = "          DELIMITED   BY  SIZE
-                     JYURRK-PTID               DELIMITED   BY  SIZE
-                     ") "                      DELIMITED   BY  SIZE
-      *               "and (h.hospid = a.hospid) "  DELIMITED   BY  SIZE
-      *               "and (b.hospid = a.hospid) "  DELIMITED   BY  SIZE
-      *               "and (h.ptid = a.ptid) "  DELIMITED   BY  SIZE
-      *               "and (b.ptid = a.ptid) "  DELIMITED   BY  SIZE
-      *--- 2009/04/30 CHANGE START -------------------------------------
-      *               " and (b.nyugaikbn ="     DELIMITED   BY  SIZE
-      *               JYURRK-NYUGAIKBN          DELIMITED   BY  SIZE
-      *               ") "                      DELIMITED   BY  SIZE
-                     " and (b.nyugaikbn = '"     DELIMITED   BY  SIZE
-                     JYURRK-NYUGAIKBN          DELIMITED   BY  SIZE
-                     "') "                      DELIMITED   BY  SIZE
-      *               " and (b.sryymd ="        DELIMITED   BY  SIZE
-      *               JYURRK-SRYYMD             DELIMITED   BY  SIZE
-      *               ") "                      DELIMITED   BY  SIZE
-                     " and (b.sryymd = '"        DELIMITED   BY  SIZE
-                     JYURRK-SRYYMD             DELIMITED   BY  SIZE
-                     "') "                      DELIMITED   BY  SIZE
-      *--- 2009/04/30 CHANGE END ---------------------------------------
-                     " and (b.sryka ='"        DELIMITED   BY  SIZE
-                     JYURRK-SRYKA              DELIMITED   BY  SIZE
-                     "') "                      DELIMITED   BY  SIZE
-                     " and ("                  DELIMITED   BY  SIZE
-                     "(b.srycd1 = '"           DELIMITED   BY  SIZE
-                     L100LNK-SELCD             DELIMITED   BY  SIZE
-                     "') or "                  DELIMITED   BY  SIZE
-                     "(b.srycd2 = '"           DELIMITED   BY  SIZE
-                     L100LNK-SELCD             DELIMITED   BY  SIZE
-                     "') or "                  DELIMITED   BY  SIZE
-                     "(b.srycd3 = '"           DELIMITED   BY  SIZE
-                     L100LNK-SELCD             DELIMITED   BY  SIZE
-                     "') or "                  DELIMITED   BY  SIZE
-                     "(b.srycd4 = '"           DELIMITED   BY  SIZE
-                     L100LNK-SELCD             DELIMITED   BY  SIZE
-                     "') or "                  DELIMITED   BY  SIZE
-                     "(b.srycd5 = '"           DELIMITED   BY  SIZE
-                     L100LNK-SELCD             DELIMITED   BY  SIZE
-                     "')) and "                DELIMITED   BY  SIZE
-                     "(a.tstptnumkbn <> '1')"  DELIMITED   BY  SIZE
-                INTO    WRK-SQL
-                WITH    POINTER WRK-SQL-PNT
-                END-STRING
+               MOVE    1               TO  WRK-SQL-PNT 
+               STRING  ",view_q002 b"         DELIMITED   BY  SIZE
+                    " where a.hospnum='"      DELIMITED   BY  SIZE
+                    L100LNK-HOSPNUM           DELIMITED   BY  SIZE
+                    "' "                      DELIMITED   BY  SIZE
+                    " and  b.hospnum='"       DELIMITED   BY  SIZE
+                    L100LNK-HOSPNUM           DELIMITED   BY  SIZE
+                    "' "                      DELIMITED   BY  SIZE
+                    " and  h.hospnum='"       DELIMITED   BY  SIZE
+                    L100LNK-HOSPNUM           DELIMITED   BY  SIZE
+                    "' "                      DELIMITED   BY  SIZE
+                    "and (a.ptid = "          DELIMITED   BY  SIZE
+                    JYURRK-PTID               DELIMITED   BY  SIZE
+                    ") "                      DELIMITED   BY  SIZE
+                    "and (b.ptid = "          DELIMITED   BY  SIZE
+                    JYURRK-PTID               DELIMITED   BY  SIZE
+                    ") "                      DELIMITED   BY  SIZE
+                    "and (h.ptid = "          DELIMITED   BY  SIZE
+                    JYURRK-PTID               DELIMITED   BY  SIZE
+                    ") "                      DELIMITED   BY  SIZE
+                    " and (b.nyugaikbn = '"     DELIMITED   BY  SIZE
+                    JYURRK-NYUGAIKBN          DELIMITED   BY  SIZE
+                    "') "                      DELIMITED   BY  SIZE
+                    " and (b.sryymd = '"        DELIMITED   BY  SIZE
+                    JYURRK-SRYYMD             DELIMITED   BY  SIZE
+                    "') "                      DELIMITED   BY  SIZE
+                    " and (b.sryka ='"        DELIMITED   BY  SIZE
+                    JYURRK-SRYKA              DELIMITED   BY  SIZE
+                    "') "                      DELIMITED   BY  SIZE
+                    " and ("                  DELIMITED   BY  SIZE
+                    "(b.srycd1 = '"           DELIMITED   BY  SIZE
+                    L100LNK-SELCD             DELIMITED   BY  SIZE
+                    "') or "                  DELIMITED   BY  SIZE
+                    "(b.srycd2 = '"           DELIMITED   BY  SIZE
+                    L100LNK-SELCD             DELIMITED   BY  SIZE
+                    "') or "                  DELIMITED   BY  SIZE
+                    "(b.srycd3 = '"           DELIMITED   BY  SIZE
+                    L100LNK-SELCD             DELIMITED   BY  SIZE
+                    "') or "                  DELIMITED   BY  SIZE
+                    "(b.srycd4 = '"           DELIMITED   BY  SIZE
+                    L100LNK-SELCD             DELIMITED   BY  SIZE
+                    "') or "                  DELIMITED   BY  SIZE
+                    "(b.srycd5 = '"           DELIMITED   BY  SIZE
+                    L100LNK-SELCD             DELIMITED   BY  SIZE
+                    "')) and "                DELIMITED   BY  SIZE
+                    "(a.tstptnumkbn <> '1')"  DELIMITED   BY  SIZE
+               INTO    WRK-SQL
+               WITH    POINTER WRK-SQL-PNT
+               END-STRING
       *
-                PERFORM 910-PTINF-SELECT-SEC 
-                PERFORM 910-PTINF-READ-SEC     
-                PERFORM  UNTIL   FLG-PTINF  =   1
-                     PERFORM 320-WRITE-TEMP-SEC     
-                     PERFORM 910-PTINF-READ-SEC     
-                END-PERFORM
-                PERFORM 910-PTINF-CLOSE-SEC
-      **                       PERFORM  320-PTBYO-11GET-SEC
+               PERFORM 910-PTINF-SELECT-SEC 
+               PERFORM 910-PTINF-READ-SEC     
+               PERFORM  UNTIL   FLG-PTINF  =   1
+                    PERFORM 320-WRITE-TEMP-SEC     
+                    PERFORM 910-PTINF-READ-SEC     
+               END-PERFORM
+               PERFORM 910-PTINF-CLOSE-SEC
            END-IF
                 .
        320-PTBYO-11GET-EXT.
@@ -890,60 +750,42 @@
       *****************************************************************
        320-WRITE-TEMP-SEC      SECTION.
       *
-      * 患者情報抽出
+      *    患者情報抽出
            INITIALIZE                      PTINF-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE     L100LNK-HOSPID     TO  PTINF-HOSPID
            MOVE     L100LNK-HOSPNUM    TO  PTINF-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE     QUERY-PTINF-PTID   TO  PTINF-PTID
            PERFORM  900-PTINF-READ-SEC
-      * 患者番号情報抽出
+      *    患者番号情報抽出
            INITIALIZE                      PTNUM-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE     L100LNK-HOSPID     TO  PTNUM-HOSPID
            MOVE     L100LNK-HOSPNUM    TO  PTNUM-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE     QUERY-PTINF-PTID   TO  PTNUM-PTID
            PERFORM  940-PTNUM-READ-SEC
-      * 保険組合せマスター検索
+      *    保険組合せマスター検索
            INITIALIZE                      HKNCOMBI-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    L100LNK-HOSPID      TO  COMB-HOSPID
            MOVE    L100LNK-HOSPNUM     TO  COMB-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    QUERY-PTINF-PTID    TO  COMB-PTID
            MOVE    JYURRK-HKNCOMBINUM  TO  COMB-HKNCOMBINUM
            PERFORM 930-HKNCOMBI-READ-SEC
-      * 患者保険情報情報抽出
+      *    患者保険情報情報抽出
            INITIALIZE                      PTHKNINF-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    L100LNK-HOSPID      TO  PTHKN-HOSPID
            MOVE    L100LNK-HOSPNUM     TO  PTHKN-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    QUERY-PTINF-PTID    TO  PTHKN-PTID
            MOVE    COMB-HKNID          TO  PTHKN-HKNID
            PERFORM 950-PTHKNINF-READ-SEC
-      * 最終来院日
+      *    最終来院日
            INITIALIZE                      SRYKARRK-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    L100LNK-HOSPID      TO  KARRK-HOSPID
            MOVE    L100LNK-HOSPNUM     TO  KARRK-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    QUERY-PTINF-PTID    TO  KARRK-PTID
            MOVE    JYURRK-SRYKA        TO  KARRK-SRYKA
            PERFORM 970-SRYKARRK-READ-SEC
-      * 公費情報１
+      *    公費情報１
            INITIALIZE                  PTKOHINF-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    L100LNK-HOSPID      TO  PTKOH-HOSPID
            MOVE    L100LNK-HOSPNUM     TO  PTKOH-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    QUERY-PTINF-PTID    TO  PTKOH-PTID
            MOVE    COMB-KOH1ID         TO  PTKOH-KOHID
            PERFORM 960-PTKOHINF-READ-SEC
            MOVE    PTKOH-FTNJANUM      TO  WRK-KOH1FTNNUM
-      ** TMP書き込み
+      *    TMP書き込み
            IF    FLG-DRCD-ALL   =      "1"
                 MOVE  SPACE                 TO  L109T-DRCD
            ELSE
@@ -969,17 +811,11 @@
            MOVE    WRK-OUT-INPUT       TO  WRK-NUM
       *
            INITIALIZE              WRK-HEN-KIGONUM 
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) start
                                    L109T-KIGO
                                    L109T-BANGO
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) end
-      ***  20050118  記号・番号どちらかが未入力でも印字  MOTO
-      ***     IF      WRK-KIGONUM     NOT = SPACE 
-      ***      AND    WRK-NUM         NOT = SPACE 
            IF  WRK-KIGONUM  = SPACE  AND  WRK-NUM = SPACE 
                MOVE      SPACE         TO  WRK-HEN-KIGONUM
            ELSE
-      ***  20050118  記号・番号どちらかが未入力でも印字  MOTO
                 STRING  WRK-KIGONUM     DELIMITED   BY  SPACE
                         "・"            DELIMITED   BY  SIZE
                         WRK-NUM         DELIMITED   BY  SPACE
@@ -987,11 +823,9 @@
                 END-STRING
            END-IF
            MOVE    WRK-HEN-KIGONUM     TO  L109T-KIGONUM
-      *=== 後期高齢者対応 by Yoshikawa(2008/04/03) start
       *    後期高齢者は番号のみ
            IF  COMB-HKNNUM    =   "039"
                MOVE   WRK-NUM          TO  L109T-KIGONUM
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) start
            ELSE
       *    記号・番号で１６文字以上は別行に編集
                IF  WRK-HEN-KIGONUM(33:)   NOT =  SPACE
@@ -999,17 +833,13 @@
                    MOVE    WRK-KIGONUM TO  L109T-KIGO
                    MOVE    WRK-NUM     TO  L109T-BANGO
                END-IF
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) end
            END-IF
-      *=== 後期高齢者対応 by Yoshikawa(2008/04/03) end
            MOVE    WRK-KOH1FTNNUM      TO  L109T-KOH1FTNNUM
            MOVE    JYURRK-NYUGAIKBN    TO  L109T-NYUGAIKBN
            MOVE    JYURRK-SRYYMD       TO  L109T-SRYYMD
            MOVE    KARRK-LASTYMD       TO  L109T-LASTYMD
       *
-      *
       *    サブキー値の設定
-      *
            EVALUATE  FLG-PRSORT
                WHEN  ""
                  MOVE  SPACE           TO  L109T-SUBKEY1
@@ -1025,7 +855,6 @@
       *
            WRITE L109T
       *
-      *     ADD      1     TO  CNT-DRCD
            .
        320-WRITE-TEMP-EXT.
            EXIT.
@@ -1062,10 +891,6 @@
                 MOVE  WRK-Z5            TO   L109-CNT2(1:5)
                 MOVE  "件"              TO   L109-CNT2(8:2)
            END-IF
-      *     MOVE  "＜診療行為別計＞"    TO   L109-CNTTIT2
-      *     MOVE  CNT-BYO           TO   WRK-Z5
-      *     MOVE  WRK-Z5            TO   L109-CNT2(1:5)
-      *     MOVE  "件"              TO   L109-CNT2(8:2)
            MOVE  "＜＜総合計＞＞"  TO   L109-CNTTIT3
            MOVE  WRK-PRDTLCNT      TO   WRK-Z5
            MOVE  WRK-Z5            TO   L109-CNT3(1:5)
@@ -1082,83 +907,79 @@
       *****************************************************************
        330-PRT-DETL-SEC                SECTION.
       *
-            IF   WRK-PRSRYCD  NOT  =   L109T-SRYCD
-                 IF  IDX2 >   15
+           IF   WRK-PRSRYCD  NOT  =   L109T-SRYCD
+                IF  IDX2 >   15
+                    PERFORM  330-PRT-HEAD-SEC
+                    PERFORM  340-PRINT-OUT-SEC
+                    INITIALIZE        L109
+                END-IF
+                IF    FLG-DRCD-ALL      =     "2"
+                     MOVE  "＜医師別計＞"   TO L109-CNTTIT1
+                     MOVE  CNT-DRCD         TO WRK-Z5
+                     MOVE  WRK-Z5           TO L109-CNT1(1:5)
+                     MOVE  "件"             TO L109-CNT1(8:2)
+                END-IF
+                PERFORM  330-PRT-HEAD-SEC
+                PERFORM  340-PRINT-OUT-SEC
+                MOVE 1             TO   IDX2
+                MOVE L109T-SRYCD   TO   WRK-PRSRYCD
+                MOVE L109T-DRCD    TO   WRK-PRDRCD
+                INITIALIZE              L109
+                INITIALIZE              CNT-DRCD
+                INITIALIZE              CNT-BYO
+           ELSE IF   WRK-PRDRCD  NOT =  L109T-DRCD
+                  IF IDX2 >   15
                      PERFORM  330-PRT-HEAD-SEC
                      PERFORM  340-PRINT-OUT-SEC
-                     INITIALIZE        L109
-                 END-IF
-                 IF    FLG-DRCD-ALL      =     "2"
-                      MOVE  "＜医師別計＞"   TO L109-CNTTIT1
-                      MOVE  CNT-DRCD         TO WRK-Z5
-                      MOVE  WRK-Z5           TO L109-CNT1(1:5)
-                      MOVE  "件"             TO L109-CNT1(8:2)
-                 END-IF
-      *           MOVE  "＜診療行為別計＞" TO L109-CNTTIT3
-      *           MOVE  CNT-BYO        TO WRK-Z5
-      *           MOVE  WRK-Z5           TO L109-CNT3(1:5)
-      *           MOVE  "件"             TO L109-CNT3(8:2)
-                 PERFORM  330-PRT-HEAD-SEC
-                 PERFORM  340-PRINT-OUT-SEC
-                 MOVE 1             TO   IDX2
-                 MOVE L109T-SRYCD   TO   WRK-PRSRYCD
-                 MOVE L109T-DRCD    TO   WRK-PRDRCD
-                 INITIALIZE              L109
-                 INITIALIZE              CNT-DRCD
-                 INITIALIZE              CNT-BYO
-            ELSE IF   WRK-PRDRCD  NOT =  L109T-DRCD
-                   IF IDX2 >   15
-                      PERFORM  330-PRT-HEAD-SEC
-                      PERFORM  340-PRINT-OUT-SEC
-                      INITIALIZE            L109
-                   END-IF
-                   MOVE  "＜医師別計＞" TO  L109-CNTTIT3
-                   MOVE  CNT-DRCD       TO  WRK-Z5
-                   MOVE  WRK-Z5         TO  L109-CNT3(1:5)
-                   MOVE  "件"           TO  L109-CNT3(8:2)
-                   PERFORM  330-PRT-HEAD-SEC
-                   PERFORM  340-PRINT-OUT-SEC
-                   MOVE 1           TO   IDX2
-                   MOVE L109T-DRCD  TO   WRK-PRDRCD
-                   INITIALIZE            L109
-                   INITIALIZE            CNT-DRCD
-                ELSE  IF  IDX2      >    15
-                         PERFORM  330-PRT-HEAD-SEC
-                         PERFORM  340-PRINT-OUT-SEC
-                         MOVE 1      TO  IDX2
-                         INITIALIZE      L109
-                END-IF
+                     INITIALIZE            L109
+                  END-IF
+                  MOVE  "＜医師別計＞" TO  L109-CNTTIT3
+                  MOVE  CNT-DRCD       TO  WRK-Z5
+                  MOVE  WRK-Z5         TO  L109-CNT3(1:5)
+                  MOVE  "件"           TO  L109-CNT3(8:2)
+                  PERFORM  330-PRT-HEAD-SEC
+                  PERFORM  340-PRINT-OUT-SEC
+                  MOVE 1           TO   IDX2
+                  MOVE L109T-DRCD  TO   WRK-PRDRCD
+                  INITIALIZE            L109
+                  INITIALIZE            CNT-DRCD
+               ELSE  IF  IDX2      >    15
+                        PERFORM  330-PRT-HEAD-SEC
+                        PERFORM  340-PRINT-OUT-SEC
+                        MOVE 1      TO  IDX2
+                        INITIALIZE      L109
                END-IF
+              END-IF
            END-IF
       *
-      * 件数集計
+      *    件数集計
            ADD   1                   TO  WRK-PRDTLCNT
            ADD   1                   TO  CNT-BYO
            ADD   1                   TO  CNT-DRCD
-      * 通番
+      *    通番
            MOVE  WRK-PRDTLCNT        TO  WRK-Z5
            MOVE  WRK-Z5              TO  L109-NUM(IDX2)
       *
-      * 患者番号
+      *    患者番号
            MOVE  L109T-PTNUM         TO  L109-PTNUM(IDX2)
-      * カナ氏名
+      *    カナ氏名
            MOVE  L109T-KANANAME      TO  L109-KANANAME(IDX2)
-      * 氏名
+      *    氏名
            MOVE  L109T-NAME          TO  L109-NAME(IDX2)
-      * 性別
+      *    性別
            EVALUATE  L109T-SEX
                WHEN  "1"
                      MOVE  "男"      TO  L109-SEX(IDX2)
                WHEN  "2"
                      MOVE  "女"      TO  L109-SEX(IDX2)
            END-EVALUATE 
-      * 生年月日
+      *    生年月日
            MOVE  L109T-BIRTHDAY(1:4) TO  L109-BIRTHDAY(IDX2)(1:4) 
            MOVE  "/"                 TO  L109-BIRTHDAY(IDX2)(5:1) 
            MOVE  L109T-BIRTHDAY(5:2) TO  L109-BIRTHDAY(IDX2)(6:2) 
            MOVE  "/"                 TO  L109-BIRTHDAY(IDX2)(8:1) 
            MOVE  L109T-BIRTHDAY(7:2) TO  L109-BIRTHDAY(IDX2)(9:2) 
-      * 年齢
+      *    年齢
            MOVE  L100LNK-PRTKANRI-SKYYMD   TO  WRK-SYSYMD
            MOVE  L109T-BIRTHDAY            TO  WRK-BIRTHDAY
            COMPUTE WRK-NENREI              =   WRK-SYSYY
@@ -1168,24 +989,22 @@
            END-IF
            MOVE    WRK-NENREI              TO  WRK-Z3
            MOVE    WRK-Z3                  TO  L109-AGE(IDX2)
-      * 保険者番号
+      *    保険者番号
            MOVE  L109T-HKNJANUM      TO  L109-HKNJANUM(IDX2)
-      * 本人家族区分
+      *    本人家族区分
            EVALUATE L109T-HONKAZKKBN
                WHEN 1
                     MOVE  "本"     TO  L109-HONKAZKKBN(IDX2)
                WHEN 2
                     MOVE  "家"     TO  L109-HONKAZKKBN(IDX2)
            END-EVALUATE
-      * 記号・番号
+      *    記号・番号
            MOVE  L109T-KIGONUM       TO  L109-KIGONUM(IDX2)
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) start
            MOVE  L109T-KIGO          TO  L109-KIGO(IDX2)
            MOVE  L109T-BANGO         TO  L109-BANGO(IDX2)
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) end
-      * 公費番号
+      *    公費番号
            MOVE  L109T-KOH1FTNNUM    TO  L109-KOH1FTNNUM(IDX2)
-      * 入院外来区分
+      *    入院外来区分
            EVALUATE L109T-NYUGAIKBN
                WHEN 1
                     MOVE  "入"     TO  L109-NYUGAIKBN(IDX2)
@@ -1193,27 +1012,14 @@
                     MOVE  "外"     TO  L109-NYUGAIKBN(IDX2)
            END-EVALUATE
       *
-      * 診療科情報
+      *    診療科情報
            INITIALIZE                     SYS-1005-REC
            MOVE    "1005"            TO   SYS-1005-KANRICD
            MOVE    L109T-SRYKA       TO   SYS-1005-KBNCD
            MOVE    L100LNK-YMD2      TO   WRK-SYMD
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) start
-      *     MOVE    L100LNK-PRTKANRI-SRYYM(1:6)
-      *                               TO  SYS-1005-STYUKYMD(1:6)
-      *                                   SYS-1005-EDYUKYMD(1:6)
-      *     MOVE    "01"              TO  SYS-1005-STYUKYMD(7:2)
-      *                                   SYS-1005-EDYUKYMD(7:2)
-      *--- 2010/02/08 CHANGE START -------------------------------------
-      *     MOVE    L100LNK-YMD1      TO  SYS-1005-STYUKYMD
-      *     MOVE    L100LNK-YMD2      TO  SYS-1005-EDYUKYMD
            MOVE    L100LNK-YMD2      TO   SYS-1005-STYUKYMD
            MOVE    L100LNK-YMD1      TO   SYS-1005-EDYUKYMD
-      *--- 2010/02/08 CHANGE END ---------------------------------------
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
            MOVE    SPA-HOSPNUM       TO  SYS-1005-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    SYS-1005-REC      TO   MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI      =    ZERO
@@ -1221,35 +1027,18 @@
                MOVE  SYS-1005-SRYKANAME
                                      TO   L109-SRYKA(IDX2)
            END-IF                                     
-      * 診察開始日
+      *    診察開始日
            MOVE  L109T-SRYYMD(1:4)   TO  L109-SRYYMD(IDX2)(1:4) 
            MOVE  "/"                 TO  L109-SRYYMD(IDX2)(5:1) 
            MOVE  L109T-SRYYMD(5:2)   TO  L109-SRYYMD(IDX2)(6:2) 
            MOVE  "/"                 TO  L109-SRYYMD(IDX2)(8:1) 
            MOVE  L109T-SRYYMD(7:2)   TO  L109-SRYYMD(IDX2)(9:2) 
-      * 最終来院日
+      *    最終来院日
            MOVE  L109T-LASTYMD(1:4)  TO  L109-LASTYMD(IDX2)(1:4) 
            MOVE  "/"                 TO  L109-LASTYMD(IDX2)(5:1) 
            MOVE  L109T-LASTYMD(5:2)  TO  L109-LASTYMD(IDX2)(6:2) 
            MOVE  "/"                 TO  L109-LASTYMD(IDX2)(8:1) 
            MOVE  L109T-LASTYMD(7:2)  TO  L109-LASTYMD(IDX2)(9:2) 
-      * 転帰区分
-      *     EVALUATE L109T-TENKIKBN
-      *         WHEN 1
-      *              MOVE  "治癒"     TO  L109-TENKI(IDX2)
-      *         WHEN 2
-      *              MOVE  "死亡"     TO  L109-TENKI(IDX2)
-      *         WHEN 3
-      *              MOVE  "中止"     TO  L109-TENKI(IDX2)
-      *         WHEN 8
-      *              MOVE  "移転"     TO  L109-TENKI(IDX2)
-      *     END-EVALUATE
-      * 転帰日
-      *     MOVE  L109T-TENKIYMD(1:4) TO  L109-TENKIYMD(IDX2)(1:4) 
-      *     MOVE  "/"                 TO  L109-TENKIYMD(IDX2)(5:1) 
-      *     MOVE  L109T-TENKIYMD(5:2) TO  L109-TENKIYMD(IDX2)(6:2) 
-      *     MOVE  "/"                 TO  L109-TENKIYMD(IDX2)(8:1) 
-      *     MOVE  L109T-TENKIYMD(7:2) TO  L109-TENKIYMD(IDX2)(9:2) 
       *
            .
        330-PRT-DETL-EXT.
@@ -1271,21 +1060,14 @@
       *    診療行為情報
            MOVE    L100LNK-SELCD     TO   L109-SRYCD
            INITIALIZE                     TNS-TENSU-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
            MOVE    SPA-HOSPNUM       TO   TNS-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    L100LNK-SELCD     TO   TNS-SRYCD
-      * 20080602 診療行為の欄が空白になる不具合を修正START tanaka
-      *     MOVE    "00000000"        TO   TNS-YUKOSTYMD
-      *     MOVE    "00000000"        TO   TNS-YUKOEDYMD
            MOVE    L100LNK-YMD1        TO   TNS-YUKOSTYMD
            MOVE    L100LNK-YMD2        TO   TNS-YUKOEDYMD
-      * 20080602 診療行為の欄が空白になる不具合を修正END
            PERFORM 980-TENSU-READ-SEC
            IF      FLG-BYO           =    ZERO
                MOVE  TNS-NAME        TO   L109-SRYMEI
            END-IF                                     
-      *     MOVE  WRK-SQL             TO   L109-SRYMEI
       *
       *    職員情報
            IF    FLG-DRCD-ALL  NOT =     "1"                                     
@@ -1296,25 +1078,10 @@
                 ELSE
                      MOVE    L100LNK-DRCD      TO   SYS-1010-KBNCD
                 END-IF
-      ***  2004/12/06  MOTO
-      ***        MOVE    L100LNK-YMD2        TO  WRK-SYMD
                 MOVE    L100LNK-YMD2        TO  WRK-SYSYMD
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) start
-      *          MOVE    L100LNK-PRTKANRI-SRYYM(1:6)
-      *                                    TO  SYS-1010-STYUKYMD(1:6)
-      *                                        SYS-1010-EDYUKYMD(1:6)
-      *          MOVE    "01"              TO  SYS-1010-STYUKYMD(7:2)
-      *                                        SYS-1010-EDYUKYMD(7:2)
-      *--- 2010/02/08 CHANGE START -------------------------------------
-      *          MOVE    L100LNK-YMD1      TO  SYS-1010-STYUKYMD
-      *          MOVE    L100LNK-YMD2      TO  SYS-1010-EDYUKYMD
                 MOVE    L100LNK-YMD2      TO   SYS-1010-STYUKYMD
                 MOVE    L100LNK-YMD1      TO   SYS-1010-EDYUKYMD
-      *--- 2010/02/08 CHANGE END ---------------------------------------
-      *=== シス管取得不具合修正 by Yoshikawa(2008/04/03) end
                 MOVE    SPA-HOSPNUM       TO  SYS-1010-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                 MOVE    SYS-1010-REC      TO   MCPDATA-REC
                 PERFORM 800-SYSKANRI-READ-SEC
                 IF      FLG-SYSKANRI      =    ZERO
@@ -1334,43 +1101,36 @@
       *****************************************************************
        340-PRINT-OUT-SEC         SECTION.
       *    
-               INITIALIZE                  ORCSPRTAREA
-               MOVE    "INS"               TO  SPRT-MODE
-               MOVE    L100LNK-PRTKANRI-RENNUM TO  SPRT-RENNUM
-               MOVE    L100LNK-PRTKANRI-TBL-KEY
-                                           TO  SPRT-TBL-KEY
-               MOVE    L100LNK-PRTKANRI-TBL-GROUP
-                                           TO  SPRT-TBL-GROUP
-               MOVE    L100LNK-PRTKANRI-SRYYM  TO  SPRT-SRYYM
-               MOVE    L100LNK-PRTKANRI-SKYYMD TO  SPRT-SKYYMD
-               MOVE    L100LNK-PRTKANRI-SHELLID 
-                                           TO  SPRT-SHELLID
-               MOVE    L100LNK-PRTKANRI-SHORI-RENNUM
-                                           TO  SPRT-SHORI-RENNUM
-               MOVE    L100LNK-PRTKANRI-PRIORITY
-                                           TO  SPRT-PRIORITY
-      ***  20040917 MOTOHASI MONPEに変更
-      ***         MOVE   "A00000L109"         TO  SPRT-PRTID
-               MOVE   "A00000L109.red"         TO  SPRT-PRTID
-      ***  20040917 MOTOHASI MONPEに変更
-               MOVE   "(診療行為)患者一覧"     TO  SPRT-TITLE
-               MOVE    L109                TO  SPRT-PRTDATA
-               MOVE    L100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-               MOVE    L100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-               MOVE    L100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-      ***  site-libを実行環境にする為コメントアウト
-      ***         MOVE    "1"          TO  SPRT-SITEKBN
-               CALL    "ORCSPRT"         USING
-                                         ORCSPRTAREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-               IF  SPRT-RETURN         =   ZERO
-                   CONTINUE               ELSE
-                   MOVE    "印刷ＤＢに更新できませんでした"
-                                       TO  WRK-RECEERR
-                   PERFORM 500-ERR-HENSYU-SEC                           
-               END-IF
+           INITIALIZE                  ORCSPRTAREA
+           MOVE    "INS"               TO  SPRT-MODE
+           MOVE    L100LNK-PRTKANRI-RENNUM TO  SPRT-RENNUM
+           MOVE    L100LNK-PRTKANRI-TBL-KEY
+                                       TO  SPRT-TBL-KEY
+           MOVE    L100LNK-PRTKANRI-TBL-GROUP
+                                       TO  SPRT-TBL-GROUP
+           MOVE    L100LNK-PRTKANRI-SRYYM  TO  SPRT-SRYYM
+           MOVE    L100LNK-PRTKANRI-SKYYMD TO  SPRT-SKYYMD
+           MOVE    L100LNK-PRTKANRI-SHELLID 
+                                       TO  SPRT-SHELLID
+           MOVE    L100LNK-PRTKANRI-SHORI-RENNUM
+                                       TO  SPRT-SHORI-RENNUM
+           MOVE    L100LNK-PRTKANRI-PRIORITY
+                                       TO  SPRT-PRIORITY
+           MOVE   "A00000L109.red"         TO  SPRT-PRTID
+           MOVE   "(診療行為)患者一覧"     TO  SPRT-TITLE
+           MOVE    L109                TO  SPRT-PRTDATA
+           MOVE    L100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
+           MOVE    L100LNK-PRTKANRI-OPID   TO  SPRT-OPID
+           MOVE    L100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
+           CALL    "ORCSPRT"         USING
+                                     ORCSPRTAREA
+                                     SPA-AREA
+           IF  SPRT-RETURN         =   ZERO
+               CONTINUE               ELSE
+               MOVE    "印刷ＤＢに更新できませんでした"
+                                   TO  WRK-RECEERR
+               PERFORM 500-ERR-HENSYU-SEC
+           END-IF
       *
            .
        340-PRINT-OUT-EXT.
@@ -1390,25 +1150,21 @@
                WRITE   RECEERR-REC
                CLOSE   RECEERR-FILE
       *         
-      *        ジョブ管理開始処理
+      *    ジョブ管理開始処理
                MOVE    "JBE"               TO  SJOBKANRI-MODE
                INITIALIZE                      JOBKANRI-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
                MOVE    SPA-HOSPNUM         TO  JOB-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                MOVE    L100LNK-JOBID       TO  JOB-JOBID
                MOVE    L100LNK-SHELLID     TO  JOB-SHELLID
                MOVE    WRK-RECEERR         TO  JOB-YOBI
                MOVE    "9999"              TO  JOB-ERRCD
                CALL    "ORCSJOB"       USING
-                                       ORCSJOBKANRIAREA  
+                                       ORCSJOBKANRIAREA
                                        JOBKANRI-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            END-IF
       *
-           MOVE    1                   TO  FLG-END     
+           MOVE    1                   TO  FLG-END
       *
            .
        500-ERR-HENSYU-EXT.
@@ -1422,22 +1178,14 @@
       *    ステップ管理終了処理
            MOVE    "STE"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    L100LNK-JOBID   TO  JOB-JOBID
            MOVE    L100LNK-SHELLID TO  JOB-SHELLID
            MOVE    CNT-PAGE        TO  JOB-UPDCNT
            CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
+                                   ORCSJOBKANRIAREA
                                    JOBKANRI-REC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
                                    SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-      *
-      *--- 2010/02/08 SELETE START -------------------------------------
-      *     PERFORM 900-DBDISCONNECT-SEC
-      *--- 2010/02/08 SELETE END ---------------------------------------
       *
            .
        300-END-EXT.
@@ -1490,20 +1238,13 @@
       *
            MOVE    JYURRK-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "JYURRK-KEY21"      TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_jyurrk"        TO  MCP-TABLE
            MOVE    "key21"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-          IF      MCP-RC           =   ZERO
+           IF      MCP-RC           =   ZERO
                MOVE    ZERO        TO  FLG-JYURRK
            ELSE
                MOVE    1           TO  FLG-JYURRK
@@ -1518,19 +1259,12 @@
        900-JYURRK-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "JYURRK-KEY21"       TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_jyurrk"        TO  MCP-TABLE
            MOVE    "key21"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-JYURRK
                MOVE    MCPDATA-REC  TO  JYURRK-REC
@@ -1547,23 +1281,13 @@
       *****************************************************************
        900-JYURRK-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE  "DBCLOSE"            TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "JYURRK-KEY21"       TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_jyurrk"        TO  MCP-TABLE
            MOVE    "key21"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        900-JYURRK-CLOSE-EXT.
@@ -1576,21 +1300,13 @@
       *
            MOVE    PTBYO-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTBYOMEI-KEY2"     TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
            MOVE    "key2"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-      *** データチェック
-          IF      MCP-RC           =   ZERO
+           IF      MCP-RC           =   ZERO
                MOVE    ZERO        TO  FLG-PTBYO
            ELSE
                MOVE    1           TO  FLG-PTBYO
@@ -1605,20 +1321,12 @@
        900-PTBYO-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTBYOMEI-KEY2"     TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
            MOVE    "key2"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-      *    ** データチェック
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-PTBYO
                MOVE    MCPDATA-REC  TO  PTBYO-REC
@@ -1635,23 +1343,13 @@
       *****************************************************************
        900-PTBYO-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE  "DBCLOSE"            TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTBYOMEI-KEY2"     TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
            MOVE    "key2"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        900-PTBYO-CLOSE-EXT.
@@ -1662,13 +1360,8 @@
       *****************************************************************
        910-PTINF-SELECT-SEC            SECTION.
       *
-      *    INITIALIZE                  MCPAREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    PATH-QUERY-PTINF-KEY
-      *                                 TO  MCP-PATH
            MOVE    "query_ptinf"       TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    SPACE               TO  QUERY-PTINF-REC
            MOVE    WRK-SQL             TO  QUERY-PTINF-SQL
            MOVE    QUERY-PTINF-REC     TO  MCPDATA-REC
@@ -1687,13 +1380,8 @@
       *****************************************************************
        910-PTINF-READ-SEC              SECTION.
       *
-      *    INITIALIZE              MCPAREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    PATH-QUERY-PTINF-KEY
-      *                                 TO  MCP-PATH
            MOVE    "query_ptinf"       TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    SPACE               TO  MCPDATA-REC
            PERFORM 910-DB-READ-SEC
            IF      MCP-RC              =   ZERO
@@ -1711,13 +1399,8 @@
       *****************************************************************
        910-PTINF-CLOSE-SEC             SECTION.
       *
-      *    INITIALIZE              MCPAREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    PATH-QUERY-PTINF-KEY
-      *                                 TO  MCP-PATH
            MOVE    "query_ptinf"       TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    SPACE               TO  MCPDATA-REC
            PERFORM 910-DB-CLOSE-SEC
       *
@@ -1730,17 +1413,12 @@
        910-DB-SELECT-SEC               SECTION.
       *
            MOVE    "DBSELECT"      TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     CALL    "MCPSUB"    USING   MCPAREA
-      *                                 MCPDATA-REC
            CALL    "ORCDBMAIN"     USING
                                    MCPAREA
                                    MCPDATA-REC
                                    SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
-      *
        910-DB-SELECT-EXT.
            EXIT.
       *****************************************************************
@@ -1749,17 +1427,12 @@
        910-DB-READ-SEC                 SECTION.
       *
            MOVE    "DBFETCH"       TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     CALL    "MCPSUB"    USING   MCPAREA
-      *                                 MCPDATA-REC
            CALL    "ORCDBMAIN"     USING
                                    MCPAREA
                                    MCPDATA-REC
                                    SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
-      *
        910-DB-FETCH-EXT.
            EXIT.
       *****************************************************************
@@ -1767,21 +1440,13 @@
       *****************************************************************
        910-DB-CLOSE-SEC                SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"       TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR" TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     CALL    "MCPSUB"    USING   MCPAREA
-      *                                 MCPDATA-REC
            CALL    "ORCDBMAIN"     USING
                                    MCPAREA
                                    MCPDATA-REC
                                    SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
-      *
        910-DB-CLOSE-EXT.
            EXIT.
       *****************************************************************
@@ -1791,20 +1456,13 @@
       *
            MOVE    JYURRK-F-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "JYURRK-KEY13"      TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_jyurrk"        TO  MCP-TABLE
            MOVE    "key13"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-          IF      MCP-RC           =   ZERO
+           IF      MCP-RC           =   ZERO
                MOVE    ZERO        TO  FLG-F-JYURRK
            ELSE
                MOVE    1           TO  FLG-F-JYURRK
@@ -1819,19 +1477,12 @@
        910-JYURRK-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "JYURRK-KEY13"       TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_jyurrk"         TO  MCP-TABLE
            MOVE    "key13"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-F-JYURRK
                MOVE    MCPDATA-REC  TO  JYURRK-F-REC
@@ -1848,23 +1499,13 @@
       *****************************************************************
        910-JYURRK-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE  "DBCLOSE"            TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE  "JYURRK-KEY13"       TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"          USING
-      *                                MCPAREA
-      *                                ORCMCPAREA
-      *                                MCPDATA-REC
            MOVE  "tbl_jyurrk"         TO  MCP-TABLE
            MOVE  "key13"              TO  MCP-PATHNAME
            CALL  "ORCDBMAIN"          USING
                                       MCPAREA
                                       MCPDATA-REC
                                       SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        910-JYURRK-CLOSE-EXT.
@@ -1877,34 +1518,20 @@
       *
            MOVE    SRYACCT-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"            TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SRYACCT-KEY3"   TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_sryacct"     TO  MCP-TABLE
            MOVE    "key3"            TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"       USING
                                      MCPAREA
                                      MCPDATA-REC
                                      SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"       TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "SRYACCT-KEY3"   TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_sryacct"   TO  MCP-TABLE
                MOVE    "key3"          TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"     USING
                                        MCPAREA
                                        MCPDATA-REC
                                          SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC   TO  SRYACCT-REC
                    MOVE    ZERO                    TO  FLG-SRYACCT
@@ -1917,23 +1544,13 @@
                INITIALIZE                  SRYACCT-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SRYACCT-KEY3"   TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_sryacct"       TO  MCP-TABLE
            MOVE    "key3"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        900-SRYACCT-READ-EXT.
@@ -1946,20 +1563,13 @@
       *
            MOVE    SRYACT-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SRYACT-KEY8"       TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_sryact"        TO  MCP-TABLE
            MOVE    "key8"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-          IF      MCP-RC           =   ZERO
+           IF      MCP-RC           =   ZERO
                MOVE    ZERO        TO  FLG-SRYACT
            ELSE
                MOVE    1           TO  FLG-SRYACT
@@ -1975,19 +1585,12 @@
       *
            MOVE    SRYACT-REC           TO  MCPDATA-REC
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SRYACT-KEY8"        TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_sryact"        TO  MCP-TABLE
            MOVE    "key8"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-SRYACT
                MOVE    MCPDATA-REC  TO  SRYACT-REC
@@ -2004,23 +1607,13 @@
       *****************************************************************
        900-SRYACT-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE  "DBCLOSE"            TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE  "SRYACT-KEY8"        TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"          USING
-      *                                MCPAREA
-      *                                ORCMCPAREA
-      *                                MCPDATA-REC
            MOVE  "tbl_sryact"         TO  MCP-TABLE
            MOVE  "key8"               TO  MCP-PATHNAME
            CALL  "ORCDBMAIN"          USING
                                       MCPAREA
                                       MCPDATA-REC
                                       SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        900-SRYACT-CLOSE-EXT.
@@ -2044,34 +1637,20 @@
       *
            MOVE    WRK-SYSYMD          TO  ORC-DBYMD
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SYSKANRI-KEY10"    TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
-      *                                 MCPAREA
-      *                                 ORCMCPAREA
-      *                                 MCPDATA-REC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key10"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "SYSKANRI-KEY10"    TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_syskanri"      TO  MCP-TABLE
                MOVE    "key10"             TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    ZERO            TO  FLG-SYSKANRI
                ELSE
@@ -2081,23 +1660,13 @@
                MOVE    1               TO  FLG-SYSKANRI
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SYSKANRI-KEY10"    TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
-      *                                 MCPAREA
-      *                                 ORCMCPAREA
-      *                                 MCPDATA-REC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key10"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        800-SYSKANRI-READ-EXT.
@@ -2110,34 +1679,20 @@
       *
            MOVE    WRK-SYSYMD          TO  ORC-DBYMD
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_syskanri"      TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    ZERO            TO  FLG-SYSKANRI2
                ELSE
@@ -2147,23 +1702,13 @@
                MOVE    1               TO  FLG-SYSKANRI2
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        810-SYSKANRI-READ-EXT.
@@ -2177,20 +1722,13 @@
            MOVE    WRK-SYSYMD            TO  ORC-DBYMD
            MOVE    SYS-1005-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"                TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_syskanri"        TO  MCP-TABLE
            MOVE    "key2"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
                                          MCPAREA
                                          MCPDATA-REC
                                          SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
-          IF      MCP-RC           =   ZERO
+           IF      MCP-RC           =   ZERO
                 PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
@@ -2206,19 +1744,12 @@
        820-SYSKANRI-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"                  TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_syskanri"        TO  MCP-TABLE
            MOVE    "key2"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
                                          MCPAREA
                                          MCPDATA-REC
                                          SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC           =   ZERO
                MOVE    ZERO                   TO  FLG-SYSKANRI3
                MOVE    MCPDATA-REC  TO  SYS-1005-REC
@@ -2235,23 +1766,13 @@
       *****************************************************************
        820-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE  "DBCLOSE"                TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"          TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE  "tbl_syskanri"           TO  MCP-TABLE
            MOVE  "key2"                   TO  MCP-PATHNAME
            CALL  "ORCDBMAIN"              USING
                                           MCPAREA
                                           MCPDATA-REC
                                           SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        820-SYSKANRI-DBCLOSE-EXT.
@@ -2264,34 +1785,20 @@
       *
            MOVE    PTINF-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_ptinf"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_ptinf"         TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  PTINF-REC
                    MOVE    ZERO                TO  FLG-PTINF
@@ -2304,23 +1811,13 @@
                INITIALIZE                  PTINF-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_ptinf"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        900-PTINF-READ-EXT.
@@ -2333,34 +1830,20 @@
       *
            MOVE    HKNCOMBI-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "HKNCOMBI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_hkncombi"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "HKNCOMBI-KEY"      TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_hkncombi"      TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC     TO  HKNCOMBI-REC
                    MOVE    ZERO            TO  FLG-HKNCOMBI
@@ -2371,23 +1854,13 @@
                MOVE    1               TO  FLG-HKNCOMBI
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "HKNCOMBI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_hkncombi"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        930-HKNCOMBI-READ-EXT.
@@ -2399,34 +1872,20 @@
       *
            MOVE    PTNUM-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTNUM-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_ptnum"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "PTNUM-KEY"         TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_ptnum"         TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC     TO  PTNUM-REC
                    MOVE    ZERO            TO  FLG-PTNUM
@@ -2436,23 +1895,13 @@
            ELSE
                MOVE    1               TO  FLG-PTNUM
            END-IF
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTNUM-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_ptnum"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        940-PTNUM-READ-EXT.
@@ -2464,34 +1913,20 @@
       *
            MOVE    PTHKNINF-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTHKNINF-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_pthkninf"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "PTHKNINF-KEY"      TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_pthkninf"      TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC     TO  PTHKNINF-REC
                    MOVE    ZERO            TO  FLG-PTHKNINF
@@ -2501,24 +1936,14 @@
            ELSE
                MOVE    1               TO  FLG-PTHKNINF
            END-IF
-     *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTHKNINF-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_pthkninf"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        950-PTHKNINF-READ-EXT.
@@ -2531,34 +1956,20 @@
       *
            MOVE    PTKOHINF-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTKOHINF-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_ptkohinf"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "PTKOHINF-KEY"      TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_ptkohinf"      TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC     TO  PTKOHINF-REC
                    MOVE    ZERO            TO  FLG-PTKOHINF
@@ -2568,24 +1979,14 @@
            ELSE
                MOVE    1               TO  FLG-PTKOHINF
            END-IF
-     *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "PTKOHINF-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_ptkohinf"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        960-PTKOHINF-READ-EXT.
@@ -2597,34 +1998,20 @@
       *
            MOVE    SRYKARRK-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SRYKARRK-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_srykarrk"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "SRYKARRK-KEY"      TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_srykarrk"      TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
                                            MCPAREA
                                            MCPDATA-REC
                                            SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC     TO  SRYKARRK-REC
                    MOVE    ZERO            TO  FLG-SRYKARRK
@@ -2634,23 +2021,13 @@
            ELSE
                MOVE    1               TO  FLG-SRYKARRK
            END-IF
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "SRYKARRK-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_srykarrk"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        970-SRYKARRK-READ-EXT.
@@ -2662,34 +2039,20 @@
       *
            MOVE    TNS-TENSU-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"         TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "TENSU-KEY"        TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_tensu"        TO  MCP-TABLE
            MOVE    "key"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
                                       MCPAREA
                                       MCPDATA-REC
                                       SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"          TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *         MOVE    "TENSU-KEY"        TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-      *                                      MCPAREA
-      *                                      ORCMCPAREA
-      *                                      MCPDATA-REC
                MOVE    "tbl_tensu"        TO  MCP-TABLE
                MOVE    "key"              TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"        USING
                                           MCPAREA
                                           MCPDATA-REC
                                           SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC     TO  TNS-TENSU-REC
                    MOVE    ZERO            TO  FLG-BYO
@@ -2699,23 +2062,13 @@
            ELSE
                MOVE    1              TO  FLG-BYO
            END-IF
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE    "DBCLOSE"          TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"    TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     MOVE    "TENSU-KEY"        TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_tensu"        TO  MCP-TABLE
            MOVE    "key"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
                                       MCPAREA
                                       MCPDATA-REC
                                       SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        980-TENSU-READ-EXT.
@@ -2725,37 +2078,21 @@
       *****************************************************************
        100-DBOPEN-SEC                SECTION.
       *
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
            MOVE    LOW-VALUE           TO  MCP-TABLE
                                            MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    "DBOPEN"            TO  MCP-FUNC.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
            MOVE    LOW-VALUE           TO  MCP-TABLE
                                            MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    "DBSTART"           TO  MCP-FUNC.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        100-DBOPEN-EXT.
@@ -2766,37 +2103,21 @@
       *****************************************************************
        900-DBDISCONNECT-SEC            SECTION.
       *
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
            MOVE    LOW-VALUE           TO  MCP-TABLE
                                            MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    "DBCOMMIT"          TO  MCP-FUNC.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
            MOVE    LOW-VALUE           TO  MCP-TABLE
                                            MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
            MOVE    "DBDISCONNECT"      TO  MCP-FUNC.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) start
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/20) end
       *
            .
        900-DBCLOSE-EXT.

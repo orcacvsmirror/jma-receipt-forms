@@ -14,9 +14,10 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
+      ********************************************************************
       *  プログラム修正履歴
-      *              @@@@-高嶋    06/11/06  基本診療項目追加対応
-      *              @@@@-高嶋    08/03/25  H20年4月改正対応
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    10/12/07  コメント履歴削除
       ********************************************************************
        01  M700.
               03  M700-JOBMSG          PIC X(60).
@@ -40,8 +41,5 @@
               03  M700-GHKNTEN-G.
                   05  M700-GHKNTEN     PIC X(9)    OCCURS  32 TIMES.
               03  M700-TEN-G.
-      *=== H20年4月改正対応 by k.takashima (2008/03/25) start
-      *            05  M700-TEN-TBL                 OCCURS  15 TIMES.
                   05  M700-TEN-TBL                 OCCURS  16 TIMES.
-      *=== H20年4月改正対応 by k.takashima (2008/03/25) END
                       07  M700-TEN     PIC X(9)    OCCURS  32 TIMES.

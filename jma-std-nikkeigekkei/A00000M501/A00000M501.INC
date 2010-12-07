@@ -14,8 +14,10 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
+      ********************************************************************
       *  プログラム修正履歴
-      *              @@@@-高嶋    06/11/05  自費追加対応
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    10/12/07  コメント履歴削除
       ********************************************************************
        01  HC17B.
               03  HC17B-SYSYMD       PIC X(22).
@@ -37,30 +39,15 @@
               03  HC17B-RHKNKEN      PIC X(10).
               03  HC17B-SHKNKEN      PIC X(10).
               03  HC17B-SAHKNKEN     PIC X(10).
-      *+
-      *        03  HC17B-GMONEY-G                 OCCURS  19 TIMES.
               03  HC17B-GMONEY-G                 OCCURS  20 TIMES.
-      *+
                   05  HC17B-GMONEY   PIC X(10).
-      *+
-      *        03  HC17B-OKENSU-G                 OCCURS  19 TIMES.
               03  HC17B-OKENSU-G                 OCCURS  20 TIMES.
-      *+
                   05  HC17B-OKENSU   PIC X(10).
-      *+
-      *        03  HC17B-RKENSU-G                 OCCURS  19 TIMES.
               03  HC17B-RKENSU-G                 OCCURS  20 TIMES.
-      *+
                   05  HC17B-RKENSU   PIC X(10).
-      *+
-      *        03  HC17B-SKENSU-G                 OCCURS  19 TIMES.
               03  HC17B-SKENSU-G                 OCCURS  20 TIMES.
-      *+
                   05  HC17B-SKENSU   PIC X(10).
-      *+
-      *        03  HC17B-SAKENSU-G                OCCURS  19 TIMES.
               03  HC17B-SAKENSU-G                OCCURS  20 TIMES.
-      *+
                   05  HC17B-SAKENSU  PIC X(10).
               03  HC17B-GSEIKYU      PIC X(10).
               03  HC17B-GRYOSYU      PIC X(10).

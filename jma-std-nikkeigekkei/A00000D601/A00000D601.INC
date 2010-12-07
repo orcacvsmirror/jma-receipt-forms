@@ -14,9 +14,10 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
+      ********************************************************************
       *  プログラム修正履歴
-      *              @@@@-高嶋    06/10/30  基本診療項目追加対応
-      *              @@@@-田中    08/03/26  H20年4月改正対応
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    10/12/07  コメント履歴削除
       ********************************************************************
        01  D601.
               03  D601-JOBMSG      PIC X(60).
@@ -37,10 +38,7 @@
               03  D601-RHKNKEN     PIC X(5).
               03  D601-OHKNKEN     PIC X(5).
               03  D601-GHKNTEN     PIC X(9).
-      * 20080326 H20年4月改正対応START tanaka
-      *        03  D601-TEN-TBL                OCCURS  15 TIMES.
               03  D601-TEN-TBL                OCCURS  16 TIMES.
-      * 20080326 H20年4月改正対応END
                   05  D601-TEN     PIC X(9).
               03  D601-HKNFTN      PIC X(9).
               03  D601-JIHIFTN     PIC X(9).

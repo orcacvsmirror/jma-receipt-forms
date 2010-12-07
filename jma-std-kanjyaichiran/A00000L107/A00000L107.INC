@@ -15,6 +15,9 @@
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
       ********************************************************************
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    10/12/07  コメント履歴削除
+      *****************************************************************
        01  L107.
               03    L107-MIDASI         PIC  X(10).
               03    L107-ERRMSG         PIC  X(50).
@@ -54,10 +57,8 @@
               03    L107-KIGONUM-G.
                05   L107-KIGONUM-TBL    OCCURS  15.
                  07 L107-KIGONUM        PIC  X(52).
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) start
                  07 L107-KIGO           PIC  X(52).
                  07 L107-BANGO          PIC  X(52).
-      *=== 記号・番号１６文字以上対応 by Yoshikawa(2008/04/03) end
               03    L107-KOH1FTNNUM-G.
                05   L107-KOH1FTNNUM-TBL OCCURS  15.
                  07 L107-KOH1FTNNUM     PIC  X(08).

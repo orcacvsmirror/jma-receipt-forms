@@ -14,7 +14,7 @@
       * this licence along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
-      ********************************************************************
+      ******************************************************************
        IDENTIFICATION          DIVISION.
        PROGRAM-ID.             A00000L100.
       *****************************************************************
@@ -22,13 +22,13 @@
       *  サブシステム名    : 日次帳票
       *  コンポーネント名  : 患者リスト帳票制御処理
       *  管理者            : 
-      *  作成日付    作業者        記述
-      *  03/11/28    @@@@-半田     新規作成
-      *  04/01/26    @@@@-高橋     新規作成
-      *  04/09/17    @@@@-本橋     MONPE化
-      *  05/02/28    @@@@-鈴木     open-cobol 0.23への対応による変更
-      *  06/08/09    @@@@-高嶋     sarge対応
-      *  07/09/06    @@@@-吉川     Ver4.0対応
+      *  作成日付    作業者       記述
+      *  03/11/28    @@@@-半田    新規作成
+      *  04/01/26    @@@@-高橋    新規作成
+      *****************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -51,14 +51,8 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
       *
       *    スパ領域
        01  STS-AREA.
@@ -118,11 +112,8 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     03  WRK-PARA-HOSPID       PIC X(24).
            03  WRK-PARA-HOSPNUM      PIC 9(02).
            03  RECEERR               PIC X(100).
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
       *
            03  WRK-PARA-PRTYPE       PIC X(01).
            03  WRK-PARA-YMD1         PIC X(08).
@@ -156,16 +147,14 @@
                05  WRK-SMM           PIC 9(02).
                05  WRK-SDD           PIC 9(02).
            03  WRK-HENYMDG           PIC X(22).
-      * 20031113 追加
            03  WRK-SYU-TANSEIDONAME  PIC X(40).
            03  WRK-KOH1-TANSEIDONAME PIC X(20).
            03  WRK-KOH2-TANSEIDONAME PIC X(20).
            03  WRK-KOH3-TANSEIDONAME PIC X(20).
            03  WRK-KOH4-TANSEIDONAME PIC X(20).
-      * 20031113 追加
       *  
       *    郵便番号変換
-	   03  WRK-POSTMAEG.
+           03  WRK-POSTMAEG.
                05  WRK-POSTMAE1    PIC X(03).
                05  WRK-POSTMAE2    PIC X(04).
            03  WRK-POSTATOG.
@@ -175,9 +164,6 @@
       *
            03  WRK-PTID2             PIC X(10).
            03  WRK-SRYCD2            PIC X(10).
-      **** 20050228 open-cobol 0.23への対応 SUZUKI
-      *     03  WRK-RENNUM            PIC 9(05).
-      **** 20050228
            03  WRK-NYUGAIKBN         PIC X(01).
            03  WRK-NENREI            PIC 9(03).
            03  WRK-ADRS              PIC X(200).
@@ -199,9 +185,6 @@
       *
            COPY    "CPSHELLTBL.INC".
       *     
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     COPY    "ORCA-DBPATH".
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
       *    診療種別名テーブル
            COPY    "CPORCSSRYSYU.INC".        
       *
@@ -273,17 +256,17 @@
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   ジョブ管理ＤＢ制御サブ
+      *    ジョブ管理ＤＢ制御サブ
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
            COPY    "CPORCSPRT.INC".          
       *
-      *   日付変換サブ
+      *    日付変換サブ
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   患者番号変換サブ
+      *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
@@ -291,8 +274,8 @@
       *    ＤＢ検索
            COPY    "MCPAREA".
       *
-      *
            COPY    "MCPDATA.INC".
+      *
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
@@ -332,9 +315,7 @@
            INITIALIZE                  WRK-AREA
            INITIALIZE                  WRK-SRYKA-AERA
            INITIALIZE                  CNT-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
            INITIALIZE                  SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -352,11 +333,8 @@
                                                LNK-PRTKANRI-PRTNM    
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *                                         WRK-PARA-HOSPID
                                                WRK-PARA-HOSPNUM
                                                RECEERR
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
                                                WRK-PARA-PRTYPE
                                                WRK-PARA-YMD1
                                                WRK-PARA-YMD2
@@ -364,9 +342,7 @@
                                                WRK-PARA-DRCD
                                                WRK-PARA-SELCD
                                                WRK-PARA-PRSORT
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
            END-UNSTRING
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
       *
            .
        100-INIT-EXT.
@@ -401,10 +377,7 @@
       *
            MOVE  WRK-PARA-JOBID   TO    L100LNK-JOBID
            MOVE  WRK-PARA-SHELLID TO    L100LNK-SHELLID
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     MOVE  WRK-PARA-HOSPID  TO    L100LNK-HOSPID
            MOVE  WRK-PARA-HOSPNUM TO    L100LNK-HOSPNUM
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            MOVE  WRK-PARA-YMD1    TO    L100LNK-YMD1
            MOVE  WRK-PARA-YMD2    TO    L100LNK-YMD2
            MOVE  WRK-PARA-SRYKA   TO    L100LNK-SRYKA
@@ -414,31 +387,31 @@
       *
       *    帳票別サブプログラムCALL
            EVALUATE  WRK-PARA-PRTYPE
-      ***            (受診)
+      *    (受診)
                WHEN  ""
                      CALL  "A00000L101" USING  A00000L100-LNK
-      ***            (初診)
+      *    (初診)
                WHEN  "0"
                      CALL  "A00000L102" USING  A00000L100-LNK
-      ***            (在院)
+      *    (在院)
                WHEN  "1"
                      CALL  "A00000L103" USING  A00000L100-LNK
-      ***            (入院)
+      *    (入院)
                WHEN  "2"
                      CALL  "A00000L104" USING  A00000L100-LNK
-      ***            (退院)
+      *    (退院)
                WHEN  "3"
                      CALL  "A00000L105" USING  A00000L100-LNK
-      ***            (未納)
+      *    (未納)
                WHEN  "4"
                      CALL  "A00000L106" USING  A00000L100-LNK
-      ***            (前納)
+      *    (前納)
                WHEN  "5"
                      CALL  "A00000L107" USING  A00000L100-LNK
-      ***            (病名)
+      *    (病名)
                WHEN  "6"
                      CALL  "A00000L108" USING  A00000L100-LNK
-      ***            (診療行為)
+      *    (診療行為)
                WHEN  "7"
                      CALL  "A00000L109" USING  A00000L100-LNK
            END-EVALUATE
@@ -466,20 +439,13 @@
            MOVE    WRK-SYSYMD            TO  ORC-DBYMD
            MOVE    SYS-1005-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"                TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
-          IF      MCP-RC           =   ZERO
+           IF      MCP-RC           =   ZERO
                 PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
@@ -495,19 +461,12 @@
        820-SYSKANRI-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"                  TO  MCP-FUNC
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            IF      MCP-RC           =   ZERO
                MOVE    ZERO                   TO  FLG-SYSKANRI3
                MOVE    MCPDATA-REC  TO  SYS-1005-REC
@@ -524,23 +483,13 @@
       *****************************************************************
        820-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/09) start
-      *     MOVE  "DBCLOSE"                TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"          TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/09) end
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     MOVE    "SYSKANRI-KEY2"  TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            .
        820-SYSKANRI-DBCLOSE-EXT.
            EXIT.
@@ -550,37 +499,21 @@
       *****************************************************************
        100-DBOPEN-SEC                SECTION.
       *
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
            MOVE    LOW-VALUE           TO  MCP-TABLE
                                            MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            MOVE    "DBOPEN"            TO  MCP-FUNC.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
       *
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
            MOVE    LOW-VALUE           TO  MCP-TABLE
                                            MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            MOVE    "DBSTART"           TO  MCP-FUNC.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            .
        100-DBOPEN-EXT.
            EXIT.
@@ -590,38 +523,21 @@
       *****************************************************************
        900-DBDISCONNECT-SEC            SECTION.
       *
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
            MOVE    LOW-VALUE           TO  MCP-TABLE
                                            MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            MOVE    "DBCOMMIT"          TO  MCP-FUNC.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
       *
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
            MOVE    LOW-VALUE           TO  MCP-TABLE
                                            MCP-PATHNAME
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            MOVE    "DBDISCONNECT"      TO  MCP-FUNC.
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) start
-      *     CALL    "ORCMCPSUB"          USING
-      *                                  MCPAREA
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      *=== Ver4.0対応 By Yoshikawa(2007/09/06) end
            .
        900-DBCLOSE-EXT.
            EXIT.
-
