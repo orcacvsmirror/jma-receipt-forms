@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -730,7 +731,10 @@
              PERFORM 3201-JYUSIN-SRC-SEC
       *
              IF      FLG-SRYACCT         =  ZERO
-                 AND   JYURRK-SRYKBN  >  "00"
+      *--- 2010/12/07 CHANGE START -------------------------------------
+      *           AND   JYURRK-SRYKBN  >  "00"
+                 AND   JYURRK-SRYKBN1  >  "00"
+      *--- 2010/12/07 CHANGE END   -------------------------------------
                MOVE  '2'                 TO  L101T-JYURRK
              ELSE
                      MOVE  '0'              TO  L101T-JYURRK
