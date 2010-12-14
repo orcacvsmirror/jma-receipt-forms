@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -201,8 +202,12 @@
                  07  WRK-SMEI-DENPNUM       PIC 9(07).
                  07  WRK-SMEI-DENPEDANUM    PIC 9(02).
                05  WRK-SMEI-SORT-KEY2. 
-                 07  WRK-SMEI-NYUGAIKBN     PIC X(01).
-                 07  WRK-SMEI-SRYKA         PIC X(02).
+      *--- 2010/12/07 CHANGE START -------------------------------------
+      *           07  WRK-SMEI-NYUGAIKBN     PIC X(01).
+      *           07  WRK-SMEI-SRYKA         PIC X(02).
+                 07  WRK-SMEI-NYUGAIKBN2    PIC X(01).
+                 07  WRK-SMEI-SRYKA2        PIC X(02).
+      *--- 2010/12/07 CHANGE END   -------------------------------------
                  07  WRK-SMEI-PTNUM         PIC X(20).
                05  WRK-SMEI-SKYMONEY        PIC S9(07).
                05  WRK-SMEI-NYUHEN-MONEY    PIC S9(07).
