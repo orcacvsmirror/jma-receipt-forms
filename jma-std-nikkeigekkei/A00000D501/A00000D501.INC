@@ -18,6 +18,7 @@
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
       * 01.00.01     @@@@-門間    10/12/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       ********************************************************************
        01  HC17B.
             03  HC17B-SYSYMD      PIC X(22).
@@ -62,7 +63,10 @@
             03  HC17B-RSEIKYUKEN  PIC X(9).
             03  HC17B-RRYOSYUKEN  PIC X(9).
             03  HC17B-RSYUEKIKEN  PIC X(9).
-            02  HC17B-SSEIKYUKEN  PIC X(9).
+      *--- 2010/12/07 CHANGE START -------------------------------------
+      *      02  HC17B-SSEIKYUKEN  PIC X(9).
+            03  HC17B-SSEIKYUKEN  PIC X(9).
+      *--- 2010/12/07 CHANGE END   -------------------------------------
             03  HC17B-SRYOSYUKEN  PIC X(9).
             03  HC17B-SSYUEKIKEN  PIC X(9).
             03  HC17B-SASEIKYUKEN PIC X(9).
