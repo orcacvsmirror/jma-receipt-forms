@@ -22,13 +22,12 @@
       *  サブシステム名    : 日次帳票
       *  コンポーネント名  : 患者数集計表制御処理
       *  管理者            : 
-      *  作成日付    作業者        記述
-      *  04/01/22    @@@@-半田     新規作成
-      *  04/09/16    @@@@-本橋     MONPE化
-      *  05/03/01    @@@@-鈴木     open-cobol 0.23への対応による変更
-      *  05/03/25    @@@@-本橋     複数診療科への対応による、
-      *                            再診数カウント処理追加
-      *  07/09/10    @@@@-佐藤     4.0対応
+      *  作成日付    作業者       記述
+      *  04/01/22    @@@@-半田    新規作成
+      *****************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -51,14 +50,8 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-      *****07/09/10  4.0対応  Satoh  START*****
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      *****07/09/10  4.0対応  Satoh  END*******
       *
       *    スパ領域
        01  STS-AREA.
@@ -118,10 +111,7 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
-      *****07/09/10  4.0対応  Satoh  START*****
-      *     03  WRK-PARA-HOSPID       PIC X(24).
-           03  WRK-PARA-HOSPNUM       PIC 9(02).
-      *****07/09/10  4.0対応  Satoh  END*******
+           03  WRK-PARA-HOSPNUM      PIC 9(02).
       *
            03  WRK-PARA-PRTYPE       PIC X(01).
            03  WRK-PARA-MDKBN        PIC X(01).
@@ -180,10 +170,6 @@
       *
            COPY    "CPSHELLTBL.INC".
       *     
-      *****07/09/10  4.0対応  Satoh  START*****
-      *     COPY    "ORCA-DBPATH".
-      *****07/09/10  4.0対応  Satoh  END*******
-      *    診療種別名テーブル
            COPY    "CPORCSSRYSYU.INC".        
       *
       *****************************************************************
@@ -204,24 +190,23 @@
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   ジョブ管理ＤＢ制御サブ
+      *    ジョブ管理ＤＢ制御サブ
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
            COPY    "CPORCSPRT.INC".          
       *
-      *   日付変換サブ
+      *    日付変換サブ
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   患者番号変換サブ
+      *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
-      *
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
@@ -259,9 +244,7 @@
            INITIALIZE                  FLG-AREA
            INITIALIZE                  STS-AREA
            INITIALIZE                  WRK-AREA
-      *****07/09/10  4.0対応  Satoh  START*****
            INITIALIZE                  SPA-AREA
-      *****07/09/10  4.0対応  Satoh  END*******
       *
            UNSTRING   COMMAND-PARAM    DELIMITED  BY  ","
                                        INTO    LNK-PRTKANRI-RENNUM
@@ -277,21 +260,16 @@
                                                LNK-PRTKANRI-PRTNM    
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      *****07/09/10  4.0対応  Satoh  START*****
-      *                                         WRK-PARA-HOSPID
                                                WRK-PARA-HOSPNUM
                                                RECEERR
-      *****07/09/10  4.0対応  Satoh  END*******
                                                WRK-PARA-PRTYPE
                                                WRK-PARA-MDKBN
                                                WRK-PARA-YMD1
                                                WRK-PARA-YMD2
                                                WRK-PARA-NYUGAIKBN
-      *****07/09/10  4.0対応  Satoh  START*****
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
            MOVE    SPA-HOSPNUM        TO  JOB-HOSPNUM
-      *****07/09/10  4.0対応  Satoh  END*******
       *
            .
        100-INIT-EXT.
@@ -326,10 +304,7 @@
       *
            MOVE  WRK-PARA-JOBID         TO    C100LNK-JOBID
            MOVE  WRK-PARA-SHELLID       TO    C100LNK-SHELLID
-      *****07/09/10  4.0対応  Satoh START*****
-      *     MOVE  WRK-PARA-HOSPID        TO    C100LNK-HOSPID
            MOVE  WRK-PARA-HOSPNUM        TO    C100LNK-HOSPNUM
-      *****07/09/10  4.0対応  Satoh END*******
            MOVE  WRK-PARA-MDKBN         TO    C100LNK-MDKBN
            MOVE  WRK-PARA-YMD1          TO    C100LNK-YMD1
            MOVE  WRK-PARA-YMD2          TO    C100LNK-YMD2
@@ -337,59 +312,59 @@
       *
       *    帳票別サブプログラムCALL
            EVALUATE  WRK-PARA-PRTYPE
-      ***            (診療科別)
+      *    (診療科別)
                WHEN  SPACE
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      (診療科別)入院患者数集計表
+      *    (診療科別)入院患者数集計表
                           CALL "A00000C111" USING  A00000C100-LNK
                          WHEN  OTHER
-      ***                      (診療科別)外来患者数集計表
+      *    (診療科別)外来患者数集計表
                           CALL "A00000C110" USING  A00000C100-LNK
                      END-EVALUATE
-      ***            (医師別)
+      *    (医師別)
                WHEN  "0"
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      (医師別)入院患者数集計表
+      *    (医師別)入院患者数集計表
                           CALL "A00000C113" USING  A00000C100-LNK
                          WHEN  OTHER
-      ***                      (医師別)外来患者数集計表
+      *    (医師別)外来患者数集計表
                           CALL "A00000C112" USING  A00000C100-LNK
                      END-EVALUATE
-      ***            (年齢別)
+      *    (年齢別)
                WHEN  "1"
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      (年齢別)入院患者数集計表
+      *    (年齢別)入院患者数集計表
                           CALL "A00000C115" USING  A00000C100-LNK
                          WHEN  OTHER
-      ***                      (年齢別)外来患者数集計表
+      *    (年齢別)外来患者数集計表
                           CALL "A00000C114" USING  A00000C100-LNK
                      END-EVALUATE
-      ***            (地区別)
+      *    (地区別)
                WHEN  "2"
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      (地区別)入院患者数集計表
+      *    (地区別)入院患者数集計表
                           CALL "A00000C117" USING  A00000C100-LNK
                          WHEN  OTHER
-      ***                      (地区別)外来患者数集計表
+      *    (地区別)外来患者数集計表
                           CALL "A00000C116" USING  A00000C100-LNK
                      END-EVALUATE
-      ***            (保険別)
+      *    (保険別)
                WHEN  "3"
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      (保険別)入院患者数集計表
+      *    (保険別)入院患者数集計表
                           CALL "A00000C119" USING  A00000C100-LNK
                          WHEN  OTHER
-      ***                      (保険別)外来患者数集計表
+      *    (保険別)外来患者数集計表
                           CALL "A00000C118" USING  A00000C100-LNK
                      END-EVALUATE
-      ***            (病棟別)
+      *    (病棟別)
                WHEN  "4"
-      ***            (病棟別)入院患者数集計表
+      *    (病棟別)入院患者数集計表
                      CALL "A00000C120" USING  A00000C100-LNK
            END-EVALUATE
       *

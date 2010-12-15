@@ -22,19 +22,12 @@
       *  サブシステム名    : 月次帳票
       *  コンポーネント名  : (保険別)入院患者数集計表
       *  管理者            : 
-      *  作成日付    作業者        記述
-      *  04/02/17    @@@@-有村     新規作成
-      *  04/09/16    @@@@-本橋     MONPE化
-      *  05/03/01    @@@@-鈴木     open-cobol 0.23への対応による変更
-      *  06/08/10    @@@@-高嶋     sarge対応
-      *  07/09/13    @@@@-佐藤     4.0対応
-      *  08/04/02    @@@@-田中     H20年4月改正対応(公害保険,後期高齢者)
-      *  08/04/09    @@@@-田中     公費単独時に集計されない不具合を修正
-      *  08/08/26    @@@@-田中     退院日を在院日にカウントしない不具合を修正
-      *  08/09/05    @@@@-田中     在院数の縦の加算合計を対応
-      *  08/10/20    @@@@-田中     在院数の集計条件の不具合を修正
-      *  09/04/21    @@@@-田中     複数月分まとめて出力した時、在院数の不具合を修正
-      *  10/02/09    @@@@-田中     治験対応
+      *  作成日付    作業者       記述
+      *  04/02/17    @@@@-有村    新規作成
+      *****************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -57,14 +50,8 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      *****07/09/13  4.0対応  Satoh  END*******
       *
            COPY    "A00000C100N.INC".
       *
@@ -133,9 +120,6 @@
            03  IDX-S             PIC 9(07).
            03  IDX-N             PIC 9(07).
            03  IDX-MAX           PIC 9(07).
-      **** 20050301 open-cobol 0.23への対応 SUZUKI
-      *     03  IDX2              PIC 9(04).
-      **** 20050301 SUZUKI
            03  JIHIIDX           PIC 9(04).
            03  NG                PIC 9(04).
       *
@@ -162,8 +146,6 @@
                05  WRK-SMM           PIC 9(02).
                05  WRK-SDD           PIC 9(02).
            03  WRK-HENYMDG           PIC X(22).
-      *
-      *****03  WRK-IN                PIC X(01).
       *
            03  WRK-MONEY             PIC 9(08).
            03  WRK-JIHI              PIC 9(08).
@@ -206,14 +188,10 @@
             05 WRK-TMP-LYY       PIC 9(04).
             05 WRK-TMP-LMM       PIC 9(02).
             05 WRK-TMP-LDD       PIC 9(02).
-      * 20080826 退院日を在院日にカウントしない不具合を修正START
            03  WRK-ZAINISSU      PIC  S9(05).
-      * 20080826 退院日を在院日にカウントしない不具合を修正END
-      * 20080905 在院数の縦の加算合計を対応START
            03  SUM-GZAIIN-G   OCCURS  1000.
                05  SUM-GZAIIN          PIC  S9(05).
                05  WRK-S9-5            PIC  S9(05).
-      * 20080905 在院数の縦の加算合計を対応END
       *
        01  SUM-AREA                VALUE  ZERO.
            03  SUM-SRYKAMAX        PIC    9(03).
@@ -236,11 +214,9 @@
                05  SUM-TOUZAN-G.
                  07  SUM-TOUZAN-TBL    OCCURS  1000.
                    09  SUM-TOUZAN      PIC  S9(05).
-      * 20080826 退院日を在院日にカウントしない不具合を修正START
                05  SUM-TOUZAN2-G.
                  07  SUM-TOUZAN2-TBL    OCCURS  1000.
                    09  SUM-TOUZAN2      PIC  S9(05).
-      * 20080826 退院日を在院日にカウントしない不具合を修正END
       *
        01  WRK-CONS-AREA.
       *    自費保険番号 
@@ -251,10 +227,6 @@
            03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973". 
       *
            COPY    "CPSHELLTBL.INC".
-      *     
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     COPY    "ORCA-DBPATH".         
-      *****07/09/13  4.0対応  Satoh  END*******
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -344,22 +316,21 @@
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   ジョブ管理ＤＢ制御サブ
+      *    ジョブ管理ＤＢ制御サブ
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
            COPY    "CPORCSPRT.INC".          
       *
-      *   日付変換サブ
+      *    日付変換サブ
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   患者番号変換サブ
+      *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
-      *
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
@@ -383,10 +354,10 @@
            PERFORM 100-INIT-SEC
       *
            IF  INP-STS  =   ZERO
-      ***    正常主処理
+      *    正常主処理
              PERFORM 200-MAIN-SEC
            ELSE
-      ***    エラー処理
+      *    エラー処理
              PERFORM 210-ERR-SEC
            END-IF
       *
@@ -404,21 +375,15 @@
            INITIALIZE                  WRK-AREA
            INITIALIZE                  CNT-AREA
            INITIALIZE                  SUM-AREA
-      *****07/09/13  4.0対応  Satoh  START*****
            INITIALIZE                  SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
       *
            PERFORM 100-DBOPEN-SEC
-      *****07/09/13  4.0対応  Satoh  START*****
            MOVE    C100LNK-HOSPNUM TO  SPA-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
       *
       *    ステップ管理開始処理
            MOVE    "STS"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      *****07/09/13  4.0対応  Satoh  START*****
            MOVE    C100LNK-HOSPNUM TO  JOB-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
            MOVE    C100LNK-JOBID   TO  JOB-JOBID
            MOVE    C100LNK-SHELLID TO  JOB-SHELLID
            MOVE    "A00000C119"    TO  JOB-PGID
@@ -427,15 +392,7 @@
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                    SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
-      *
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "RECEERR"       TO  RECEERR-FILE-ID
-      *     MOVE    C100LNK-PRTKANRI-TERMID
-      *                             TO  RECEERR-TERMID
-      *****07/09/13  4.0対応  Satoh  END*******
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -463,22 +420,19 @@
            PERFORM 31012-SEIWA-HEN-SEC
            MOVE    WRK-HENYMDG         TO  WRK-YMD2WH 
       *
-      ***  画面入力値のチェック
-      *
+      *    画面入力値のチェック
       *    集計区分のチェック
            IF   C100LNK-MDKBN   NOT =   SPACE
             AND C100LNK-MDKBN   NOT =   "0"
                 MOVE    10      TO  INP-STS 
                 GO              TO  110-PARA-HENSYU-EXT
            END-IF
-      * 20080402 H20年4月改正対応START tanaka
       *    集計対象期間の改正日チェック
            IF   C100LNK-YMD1   <   "20080401"   
                 AND   C100LNK-YMD2   >  "20080331"
                 MOVE    11      TO  INP-STS 
                 GO              TO  110-PARA-HENSYU-EXT
            END-IF
-      * 20080402 H20年4月改正対応END
       *
       *    集計対象か期間のチェック
            IF   C100LNK-MDKBN   =   SPACE
@@ -510,17 +464,12 @@
            INITIALIZE                  SYS-1001-REC
            MOVE    "1001"              TO  SYS-1001-KANRICD
            MOVE    "*"                 TO  SYS-1001-KBNCD
-      *****07/09/13  4.0対応  Satoh  START*****
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
            MOVE    SYS-1001-REC        TO  MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI        =   ZERO
                MOVE    MCPDATA-REC         TO  SYS-1001-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE    SYS-1001-HOSPID     TO  C100LNK-HOSPID
                MOVE    SYS-1001-HOSPNUM    TO  C100LNK-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
            ELSE    
                MOVE    "医療機関ＩＤが取得できませんでした。"
                                            TO  WRK-RECEERR
@@ -528,7 +477,6 @@
            END-IF                                     
       *
       *    年齢名称設定
-      * 20080402 H20年4月改正対応START tanaka
            IF  C100LNK-YMD1  <  "20080401"
                MOVE    "社保本人"        TO    SUM-SRYKANAME(1)
                MOVE    "社保家族"        TO    SUM-SRYKANAME(2)
@@ -552,10 +500,9 @@
                MOVE    "全保険合計"      TO    SUM-SRYKANAME(9)
                MOVE    9                 TO    SUM-SRYKAMAX
            END-IF
-      * 20080402 H20年4月改正対応END
       *
            IF  C100LNK-MDKBN   =   SPACE
-      *      印刷年月日取得
+      *    印刷年月日取得
              MOVE     1              TO   IDX1 
              MOVE     C100LNK-YMD1   TO   WRK-TMP-YMD
              INITIALIZE  WRK-SYMD
@@ -586,7 +533,7 @@
              MOVE     "計"        TO   SUM-SRYYMD(IDX1)  
              MOVE     IDX1        TO   SUM-SRYYMDIMAX   
            ELSE
-      *      印刷年月取得
+      *    印刷年月取得
              MOVE   1                  TO   IDX1 
              MOVE   C100LNK-YMD1(1:6)  TO   WRK-TMP-YMD(1:6)
              MOVE   "01"               TO   WRK-TMP-YMD(7:2)
@@ -617,16 +564,16 @@
        200-MAIN-SEC                SECTION.
       *
            IF  C100LNK-MDKBN   =   SPACE
-      ***      (日別)入院数、退院数、在院中集計処理
+      *    (日別)入院数、退院数、在院中集計処理
                PERFORM 320-NYURRK-CNT-SEC
       *
-      ***      (日別)入院数、退院数、在院中印刷処理
+      *    (日別)入院数、退院数、在院中印刷処理
                PERFORM 330-TERM-HEN-SEC
            ELSE
-      ***      (月別)入院数、退院数、在院中集計処理
+      *    (月別)入院数、退院数、在院中集計処理
                PERFORM 320-NYURRK-M-CNT-SEC
       *
-      ***      (月別)入院数、退院数、在院中印刷処理
+      *    (月別)入院数、退院数、在院中印刷処理
                PERFORM 330-TERM-M-HEN-SEC
            END-IF 
       *
@@ -652,12 +599,10 @@
              MOVE
              "入力された集計区分の値に誤りがあります"
                                   TO    C100N-JOBMSG
-      * 20080402 H20年4月改正対応START tanaka
            WHEN 11
              MOVE 
            "入力された集計対象期間の範囲指定に誤りがあります（改正日）" 
                                   TO    C100N-JOBMSG
-      * 20080402 H20年4月改正対応END
            WHEN 20
              MOVE
              "入力された集計対象期間の範囲指定に誤りがあります"
@@ -687,81 +632,58 @@
            MOVE SUM-SRYYMDIMAX     TO  IDX5
       *
            INITIALIZE                      PTNYUINRRK-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    C100LNK-HOSPID      TO  PTNYUINRRK-HOSPID 
            MOVE    C100LNK-HOSPNUM      TO  PTNYUINRRK-HOSPNUM 
-      *****07/09/13  4.0対応  Satoh  END*******
            MOVE    C100LNK-YMD2        TO  PTNYUINRRK-NYUINYMD
            MOVE    C100LNK-YMD1        TO  PTNYUINRRK-TAIINYMD
       *
            PERFORM  900-NYURRK-SELECT-SEC
-
+      *
            PERFORM  UNTIL   FLG-PTNYUINRRK  =   1
-
-      ***      患者情報の取得
+      *
+      *    患者情報の取得
                INITIALIZE                   PTINF-REC 
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE     PTNYUINRRK-HOSPID   TO  PTINF-HOSPID
                MOVE     PTNYUINRRK-HOSPNUM  TO  PTINF-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
                MOVE     PTNYUINRRK-PTID     TO  PTINF-PTID
                PERFORM  900-PTINF-READ-SEC
-
+      *
                IF  FLG-PTINF = ZERO
                  AND  PTINF-TSTPTNUMKBN  NOT  =  "1"
-      *        患者情報にレコードが存在しないデータは抽出しない。
-      *        テスト患者番号区分 = 1(テスト患者)は対象外データとして取り扱う
-
-      ***        入院履歴番号をKEYにして、入院履歴枝番号のMIN値から
-      ***        対象となるレコード取得する(KEY5)
-      * 2008/04/09 公費単独時に集計されない不具合を修正START tanaka
-      *           INITIALIZE                      WRK-ZENHKNNUM
                  MOVE    LOW-VALUE           TO  WRK-ZENHKNNUM
-      * 2008/04/09 公費単独時に集計されない不具合を修正END
                  INITIALIZE                      PTNYUINRRK-M-REC
                  MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-      *****07/09/13  4.0対応  Satoh  START*****
-      *           MOVE    C100LNK-HOSPID       TO  PTNYUINRRK-M-HOSPID 
                  MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM 
-      *****07/09/13  4.0対応  Satoh  END*******
                  MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
       *
                  PERFORM  900-NYURRK-M-SELECT-SEC
       *
                  PERFORM  UNTIL   FLG-PTNYUINRRK-M  =   1
-      ***          指定期間(開始日)−初日在院者数の集計
+      *    指定期間(開始日)−初日在院者数の集計
                    IF    PTNYUINRRK-M-TENSTUYMD   >=   C100LNK-YMD1
                     AND PTNYUINRRK-M-TENNYUYMD    <   C100LNK-YMD1
-      * 20080402 H20年4月改正対応START tanaka
-      *                  PERFORM 320-SRYKA-GET-IDX-SEC
                         IF C100LNK-YMD1  <  "20080401"
                             PERFORM 320-SRYKA-GET-IDX-SEC
                         ELSE
                             PERFORM 330-SRYKA-GET-IDX-SEC
                         END-IF
-      * 20080402 H20年4月改正対応END
-      ***                 該当する保険がない場合は加算しない
+      *    該当する保険がない場合は加算しない
                       IF    IDX1    NOT  =  ZERO
                         ADD  1     TO  SUM-SRYKA-ZAN(IDX1)
                         ADD  1     TO  SUM-SRYKA-ZAN(IDX3)
                       END-IF
                    END-IF
-      ***  指定期間−入院者数の集計
+      *    指定期間−入院者数の集計
       *    集計対象年月のデータであるかをチェックする。 
                    IF  (PTNYUINRRK-M-TENNYUYMD  >=  C100LNK-YMD1)
                     AND (PTNYUINRRK-M-TENNYUYMD  <=  C100LNK-YMD2) 
                     AND ( COMB-HKNNUM NOT = WRK-ZENHKNNUM ) 
-      * 20080402 H20年4月改正対応START tanaka
-      *                PERFORM 320-SRYKA-GET-IDX-SEC
                       IF C100LNK-YMD1  <  "20080401"
                           PERFORM 320-SRYKA-GET-IDX-SEC
                       ELSE
                           PERFORM 330-SRYKA-GET-IDX-SEC
                       END-IF
-      * 20080402 H20年4月改正対応END
                       MOVE PTNYUINRRK-M-TENNYUYMD   TO  WRK-SRYYMD
                       PERFORM 320-SRYYMD-GET-IDX-SEC
-      ***                 該当する保険がない場合は加算しない
+      *    該当する保険がない場合は加算しない
                       IF    IDX1    NOT  =  ZERO
                         ADD  1     TO  SUM-NYUIN(IDX1 IDX6)
                         ADD  1     TO  SUM-NYUIN(IDX1 IDX5)
@@ -769,28 +691,16 @@
                         ADD  1     TO  SUM-NYUIN(IDX3 IDX5)
                       END-IF
                    END-IF
-      ***  前回、主保険の退避
+      *    前回、主保険の退避
                    MOVE    COMB-HKNNUM  TO  WRK-ZENHKNNUM
                    PERFORM  900-NYURRK-M-FETCH-SEC
                  END-PERFORM
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
                  PERFORM 900-M-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
-
-      ***  指定期間−退院者数の集計
-      *    集計対象年月のデータであるかをチェックする。 
-      ***        入院履歴番号をKEYにして、入院履歴枝番号のMAX値から
-      ***        対象となるレコード取得する(KEY4)
-      * 2008/04/09 公費単独時に集計されない不具合を修正START tanaka
-      *           INITIALIZE                      WRK-ZENHKNNUM
+      *
                  MOVE    LOW-VALUE           TO  WRK-ZENHKNNUM
-      * 2008/04/09 公費単独時に集計されない不具合を修正END
                  INITIALIZE                      PTNYUINRRK-M-REC
                  MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-      *****07/09/13  4.0対応  Satoh  START*****
-      *           MOVE    C100LNK-HOSPID      TO  PTNYUINRRK-M-HOSPID 
                  MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM 
-      *****07/09/13  4.0対応  Satoh  END*******
                  MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
       *
                  PERFORM  900-NYURRK-M2-SELECT-SEC
@@ -799,45 +709,28 @@
                    IF  (PTNYUINRRK-M-TENSTUYMD  >=  C100LNK-YMD1)
                     AND (PTNYUINRRK-M-TENSTUYMD  <=  C100LNK-YMD2) 
                     AND ( COMB-HKNNUM NOT = WRK-ZENHKNNUM ) 
-      * 20080402 H20年4月改正対応START tanaka
-      *                PERFORM 320-SRYKA-GET-IDX-SEC
                       IF C100LNK-YMD1  <  "20080401"
                           PERFORM 320-SRYKA-GET-IDX-SEC
                       ELSE
                           PERFORM 330-SRYKA-GET-IDX-SEC
                       END-IF
-      * 20080402 H20年4月改正対応END
                       MOVE PTNYUINRRK-M-TENSTUYMD   TO  WRK-SRYYMD
                       PERFORM 320-SRYYMD-GET-IDX-SEC
-      ***                 該当する保険がない場合は加算しない
+      *    該当する保険がない場合は加算しない
                       IF    IDX1    NOT  =  ZERO
                         ADD  1     TO  SUM-TAIIN(IDX1 IDX6)
                         ADD  1     TO  SUM-TAIIN(IDX1 IDX5)
                         ADD  1     TO  SUM-TAIIN(IDX3 IDX6)
                         ADD  1     TO  SUM-TAIIN(IDX3 IDX5)
-      *--- 2008/10/20  ADD  START ------------------------------------
                         ADD  1     TO  SUM-TOUZAN2(IDX1 IDX6)
                         ADD  1     TO  SUM-TOUZAN2(IDX3 IDX6)
-      *--- 2008/10/20  ADD  END ------------------------------------
                       END-IF
                    END-IF
-      * 20080826 退院日を在院日にカウントしない不具合を修正START
-      *--- 2008/10/20  DELETE  START ------------------------------------
-      *             IF  PTNYUINRRK-M-TENSTUYMD = PTNYUINRRK-M-TAIINYMD
-      *              AND (PTNYUINRRK-M-TENSTUYMD  >=  C100LNK-YMD1)
-      *              AND (PTNYUINRRK-M-TENSTUYMD  <=  C100LNK-YMD2) 
-      *                 ADD  1     TO  SUM-TOUZAN2(IDX1 IDX6)
-      *                 ADD  1     TO  SUM-TOUZAN2(IDX3 IDX6)
-      *             END-IF
-      *--- 2008/10/20  DELETE  END ------------------------------------
-      * 20080826 退院日を在院日にカウントしない不具合を修正END
-      ***  前回、診療科コードの退避
+      *    前回、診療科コードの退避
                    MOVE    COMB-HKNNUM  TO  WRK-ZENHKNNUM
                    PERFORM  900-NYURRK-M2-FETCH-SEC
                  END-PERFORM
-      *=== sarge対応 ADD By Takashima(2006/08/10) start
                  PERFORM 900-M2-DBCLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/08/10) end
                END-IF
                PERFORM  900-NYURRK-FETCH-SEC
            END-PERFORM
@@ -855,127 +748,83 @@
            MOVE SUM-SRYYMDIMAX     TO  IDX5
       *
            INITIALIZE                  PTNYUINRRK-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    C100LNK-HOSPID      TO  PTNYUINRRK-HOSPID 
            MOVE    C100LNK-HOSPNUM      TO  PTNYUINRRK-HOSPNUM 
-      *****07/09/13  4.0対応  Satoh  END*******
            MOVE    C100LNK-YMD2(1:6)   TO  PTNYUINRRK-NYUINYMD(1:6) 
            MOVE    "31"                TO  PTNYUINRRK-NYUINYMD(7:2) 
-
+      *
            MOVE    C100LNK-YMD1(1:6)   TO  PTNYUINRRK-TAIINYMD(1:6) 
            MOVE    "01"                TO  PTNYUINRRK-TAIINYMD(7:2) 
-
+      *
            PERFORM  900-NYURRK-SELECT-SEC
-
+      *
            PERFORM  UNTIL   FLG-PTNYUINRRK  =   1
-      ***      患者情報の取得
+      *    患者情報の取得
                INITIALIZE                   PTINF-REC 
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE     PTNYUINRRK-HOSPID   TO  PTINF-HOSPID
                MOVE     PTNYUINRRK-HOSPNUM   TO  PTINF-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*****
                MOVE     PTNYUINRRK-PTID     TO  PTINF-PTID
                PERFORM  900-PTINF-READ-SEC
-
+      *
                IF  FLG-PTINF = ZERO
                  AND  PTINF-TSTPTNUMKBN  NOT  =  "1"
-      *        患者情報にレコードが存在しないデータは抽出しない。
-      *        テスト患者番号区分 = 1(テスト患者)は対象外データとして取り扱う
-
-      ***        入院履歴番号をKEYにして、入院履歴枝番号のMIN値から
-      ***        対象となるレコード取得する(KEY5)
-      * 2008/04/09 公費単独時に集計されない不具合を修正START tanaka
-      *           INITIALIZE                      WRK-ZENHKNNUM
+      *
                  MOVE    LOW-VALUE           TO  WRK-ZENHKNNUM
-      * 2008/04/09 公費単独時に集計されない不具合を修正END
                  INITIALIZE                      PTNYUINRRK-M-REC
                  MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-      *****07/09/13  4.0対応  Satoh  START*****
-      *           MOVE    C100LNK-HOSPID      TO  PTNYUINRRK-M-HOSPID 
                  MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM 
-      *****07/09/13  4.0対応  Satoh  END*******
                  MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
       *
                  PERFORM  900-NYURRK-M-SELECT-SEC
       *
                  PERFORM  UNTIL   FLG-PTNYUINRRK-M  =   1
-      ***          指定期間(開始日)−月初在院者数の集計
+      *    指定期間(開始日)−月初在院者数の集計
                    IF  PTNYUINRRK-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6)
                     AND PTNYUINRRK-M-TENNYUYMD(1:6) < C100LNK-YMD1(1:6)
-      * 20080402 H20年4月改正対応START tanaka
-      *                PERFORM 320-SRYKA-GET-IDX-SEC
                       IF C100LNK-YMD1  <  "20080401"
                           PERFORM 320-SRYKA-GET-IDX-SEC
                       ELSE
                           PERFORM 330-SRYKA-GET-IDX-SEC
                       END-IF
-      * 20080402 H20年4月改正対応END
-      ***                 該当する保険がない場合は加算しない
+      *    該当する保険がない場合は加算しない
                       IF    IDX1    NOT  =  ZERO
                         ADD  1     TO  SUM-SRYKA-ZAN(IDX1)
                         ADD  1     TO  SUM-SRYKA-ZAN(IDX3)
                       END-IF
                    END-IF
-
-      ***  指定期間−入院者数の集計
+      *
+      *    指定期間−入院者数の集計
       *    集計対象年月のデータであるかをチェックする。 
                    IF (PTNYUINRRK-M-TENNYUYMD(1:6) >= C100LNK-YMD1(1:6))
                   AND (PTNYUINRRK-M-TENNYUYMD(1:6) <= C100LNK-YMD2(1:6))
                   AND ( COMB-HKNNUM NOT = WRK-ZENHKNNUM ) 
-      * 20080402 H20年4月改正対応START tanaka
-      *                PERFORM 320-SRYKA-GET-IDX-SEC
                       IF C100LNK-YMD1  <  "20080401"
                           PERFORM 320-SRYKA-GET-IDX-SEC
                       ELSE
                           PERFORM 330-SRYKA-GET-IDX-SEC
                       END-IF
-      * 20080402 H20年4月改正対応END
                       MOVE PTNYUINRRK-M-TENNYUYMD(1:6)  TO  WRK-SRYYM
                       PERFORM 320-SRYYM-GET-IDX-SEC
-      ***                 該当する保険がない場合は加算しない
+      *    該当する保険がない場合は加算しない
                       IF    IDX1    NOT  =  ZERO
                         ADD  1     TO  SUM-NYUIN(IDX1 IDX6)
                         ADD  1     TO  SUM-NYUIN(IDX1 IDX5)
                         ADD  1     TO  SUM-NYUIN(IDX3 IDX6)
                         ADD  1     TO  SUM-NYUIN(IDX3 IDX5)
-      *--- 2008/10/20  ADD  START ------------------------------------
                       ADD  1     TO  SUM-TOUZAN2(IDX1 IDX6)
                       ADD  1     TO  SUM-TOUZAN2(IDX3 IDX6)
-      *--- 2008/10/20  ADD  END ------------------------------------
                       END-IF
                    END-IF
-      * 20080826 退院日を在院日にカウントしない不具合を修正START
-      *--- 2008/10/20  DELETE  START ------------------------------------
-      *             IF  PTNYUINRRK-M-TENSTUYMD = PTNYUINRRK-M-TAIINYMD
-      *              AND (PTNYUINRRK-M-TENSTUYMD  >=  C100LNK-YMD1)
-      *              AND (PTNYUINRRK-M-TENSTUYMD  <=  C100LNK-YMD2) 
-      *                 ADD  1     TO  SUM-TOUZAN2(IDX1 IDX6)
-      *                 ADD  1     TO  SUM-TOUZAN2(IDX3 IDX6)
-      *             END-IF
-      *--- 2008/10/20  DELETE  END ------------------------------------
-      * 20080826 退院日を在院日にカウントしない不具合を修正END
-      ***  前回、主保険の退避
+      *    前回、主保険の退避
                    MOVE    COMB-HKNNUM  TO  WRK-ZENHKNNUM
                    PERFORM  900-NYURRK-M-FETCH-SEC
                  END-PERFORM
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
                  PERFORM 900-M-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
-
-      ***  指定期間−退院者数の集計
+      *
+      *    指定期間−退院者数の集計
       *    集計対象年月のデータであるかをチェックする。 
-      ***        入院履歴番号をKEYにして、入院履歴枝番号のMAX値から
-      ***        対象となるレコード取得する(KEY4)
-      * 2008/04/09 公費単独時に集計されない不具合を修正START tanaka
-      *           INITIALIZE                      WRK-ZENHKNNUM
                  MOVE    LOW-VALUE           TO  WRK-ZENHKNNUM
-      * 2008/04/09 公費単独時に集計されない不具合を修正END
                  INITIALIZE                      PTNYUINRRK-M-REC
                  MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-      *****07/09/13  4.0対応  Satoh  START*****
-      *           MOVE    C100LNK-HOSPID      TO  PTNYUINRRK-M-HOSPID 
                  MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM 
-      *****07/09/13  4.0対応  Satoh  END*******
                  MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
       *
                  PERFORM  900-NYURRK-M2-SELECT-SEC
@@ -984,17 +833,14 @@
                    IF (PTNYUINRRK-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6))
                   AND (PTNYUINRRK-M-TENSTUYMD(1:6) <= C100LNK-YMD2(1:6))
                   AND ( COMB-HKNNUM NOT = WRK-ZENHKNNUM ) 
-      * 20080402 H20年4月改正対応START tanaka
-      *                PERFORM 320-SRYKA-GET-IDX-SEC
                       IF C100LNK-YMD1  <  "20080401"
                           PERFORM 320-SRYKA-GET-IDX-SEC
                       ELSE
                           PERFORM 330-SRYKA-GET-IDX-SEC
                       END-IF
-      * 20080402 H20年4月改正対応END
                       MOVE PTNYUINRRK-M-TENSTUYMD(1:6)  TO  WRK-SRYYM
                       PERFORM 320-SRYYM-GET-IDX-SEC
-      ***                 該当する保険がない場合は加算しない
+      *    該当する保険がない場合は加算しない
                       IF    IDX1    NOT  =  ZERO
                         ADD  1     TO  SUM-TAIIN(IDX1 IDX6)
                         ADD  1     TO  SUM-TAIIN(IDX1 IDX5)
@@ -1002,13 +848,11 @@
                         ADD  1     TO  SUM-TAIIN(IDX3 IDX5)
                       END-IF
                    END-IF
-      ***  前回、主保険の退避
+      *    前回、主保険の退避
                    MOVE    COMB-HKNNUM  TO  WRK-ZENHKNNUM
                    PERFORM  900-NYURRK-M2-FETCH-SEC
                  END-PERFORM
-      *=== sarge対応 ADD By Takashima(2006/08/10) start
                  PERFORM 900-M2-DBCLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/08/10) end
                END-IF
                PERFORM  900-NYURRK-FETCH-SEC
            END-PERFORM
@@ -1033,9 +877,7 @@
            WHEN    SPACE
              MOVE      6      TO       IDX1
            WHEN    "980"
-      *--- 2010/02/09 ADD START ----------------------------------------
            WHEN    "900"  THRU  "919"
-      *--- 2010/02/09 ADD END ------------------------------------------
              MOVE      7      TO       IDX1
            WHEN    "971"
            WHEN    "973"
@@ -1062,7 +904,6 @@
        320-SRYKA-GET-IDX-EXT.
            EXIT.
       *
-      * 20080402 H20年4月改正対応START tanaka
       *****************************************************************
       *    診療科INDEX判別処理(H20年4月以降)
       *****************************************************************
@@ -1082,9 +923,7 @@
            WHEN    SPACE
              MOVE      5      TO       IDX1
            WHEN    "980"
-      *--- 2010/02/09 ADD START ----------------------------------------
            WHEN    "900"  THRU  "919"
-      *--- 2010/02/09 ADD END ------------------------------------------
              MOVE      6      TO       IDX1
            WHEN    "971"
            WHEN    "973"
@@ -1113,7 +952,6 @@
        320-SRYKA-GET-IDX-EXT.
            EXIT.
       *
-      * 20080402 H20年4月改正対応END
       *****************************************************************
       *    診療日INDEX判定処理
       *****************************************************************
@@ -1164,17 +1002,17 @@
       *
                INITIALIZE     C100N
       *
-      * 帳票タイトル
+      *    帳票タイトル
                MOVE "(保険別)  入  院  患  者  数  集  計  表"
                                       TO    C100N-MIDASHI
-      * 出力年月日
+      *    出力年月日
                MOVE    WRK-SYSYMDWH   TO    C100N-PRTYMD
-      * 集計対象期間開始日
+      *    集計対象期間開始日
                MOVE    WRK-YMD1WH     TO    C100N-SRYMD-FR  
-      * 集計対象期間終了日
+      *    集計対象期間終了日
                MOVE    WRK-YMD2WH(11:)
                                       TO    C100N-SRMD-TO 
-      * 集計単位 
+      *    集計単位 
                MOVE    "月  日"       TO    C100N-TANI  
       *
                ADD     1              TO    CNT-PAGE
@@ -1184,27 +1022,22 @@
                MOVE    1              TO    IDX3  
                PERFORM  UNTIL   IDX3 >      7
                            OR   IDX2 >      SUM-SRYKAMAX    
-      *--- 2009/04/21 DELETE START -------------------------------------
-      * 20080905 在院数の縦の加算合計を対応
-      *          INITIALIZE  SUM-GZAIIN(IDX3)
-      * 20080905 在院数の縦の加算合計を対応
-      *--- 2009/04/21 DELETE END ---------------------------------------
-      * 診療科名称を集計エリアに転送
+      *    診療科名称を集計エリアに転送
                 MOVE    SUM-SRYKANAME(IDX2)
                                        TO  C100N-SRYKA(IDX3)
-      * 件数名称を転送
+      *    件数名称を転送
                 MOVE    "入  院"   TO  C100N-KENSU-1(IDX3)
                 MOVE    "(転科 含む)"   TO  C100N-TENKA-1(IDX3)
                 MOVE    "退  院"   TO  C100N-KENSU-2(IDX3)
                 MOVE    "(転科 含む)"   TO  C100N-TENKA-2(IDX3)
                 MOVE    "在院中"       TO  C100N-KENSU-3(IDX3)
       *
-      * 初日の在院者数を集計エリアに転送
+      *    初日の在院者数を集計エリアに転送
            IF   FLG-ZAIIN =  ZERO
                 MOVE    SUM-SRYKA-ZAN(IDX2) TO  SUM-ZENZAN(IDX2 IDX5)
            END-IF
       *
-      * 日別集計数の集計値を転送
+      *    日別集計数の集計値を転送
                 MOVE  1                TO    IDX6
                 MOVE  IDX5             TO    IDX4
                 MOVE  SUM-SRYYMD(IDX4)(1:6)
@@ -1217,26 +1050,20 @@
                               WRK-PR-SRYYM )
                  IF IDX4   =     SUM-SRYYMDIMAX
                   MOVE  "計"     TO  C100N-MD(32)
-
+      *
                   MOVE  SUM-NYUIN(IDX2 IDX4) TO  WRK-Z9-5
                   MOVE  WRK-Z9-5 TO  C100N-11-CNT(IDX3 32)
                   MOVE  SUM-TAIIN(IDX2 IDX4) TO  WRK-Z9-5
                   MOVE  WRK-Z9-5 TO  C100N-12-CNT(IDX3 32)
-      * 20080905 在院数の縦の加算合計を対応START
-      *            MOVE  SPACE    TO  C100N-99-CNT(IDX3 32)
-      *--- 2009/04/21 CHANGE START -------------------------------------
-      *            MOVE  SUM-GZAIIN(IDX3)  TO  WRK-Z9-5
                   MOVE  SUM-GZAIIN(IDX2)  TO  WRK-Z9-5
-      *--- 2009/04/21 CHANGE END ---------------------------------------
                   MOVE  WRK-Z9-5  TO  C100N-99-CNT(IDX3 32)
-      * 20080905 在院数の縦の加算合計を対応END
                  ELSE                
                   MOVE  SUM-SRYYMD(IDX4)(5:2)  
                                  TO  C100N-MD(IDX6)(1:2)
                   MOVE  "/"      TO  C100N-MD(IDX6)(3:1)
                   MOVE  SUM-SRYYMD(IDX4)(7:2)
                                  TO  C100N-MD(IDX6)(4:2)
-
+      *
                   MOVE  SUM-NYUIN(IDX2 IDX4)  TO  WRK-Z9-5
                   MOVE  WRK-Z9-5 TO  C100N-11-CNT(IDX3 IDX6)
                   MOVE  SUM-TAIIN(IDX2 IDX4)  TO  WRK-Z9-5
@@ -1245,24 +1072,16 @@
                            SUM-ZENZAN(IDX2 IDX4) 
                          + SUM-NYUIN(IDX2 IDX4)
                          - SUM-TAIIN(IDX2 IDX4)
-      * 20080826 退院日を在院日にカウントしない不具合を修正START
                   MOVE   SUM-TOUZAN(IDX2 IDX4)  TO    WRK-ZAINISSU 
                   ADD    SUM-TOUZAN2(IDX2 IDX4)  TO    WRK-ZAINISSU
                   MOVE   WRK-ZAINISSU           TO    WRK-Z9-5
-      *            MOVE  SUM-TOUZAN(IDX2 IDX4) TO  WRK-Z9-5
-      * 20080826 退院日を在院日にカウントしない不具合を修正END
                   MOVE  WRK-Z9-5 TO  C100N-99-CNT(IDX3 IDX6)
-      * 20080905 在院数の縦の加算合計を対応
                   MOVE  WRK-Z9-5    TO   WRK-S9-5
-      *--- 2009/04/21 CHANGE START -------------------------------------
-      *            ADD   WRK-S9-5    TO   SUM-GZAIIN(IDX3)
                   ADD   WRK-S9-5    TO   SUM-GZAIIN(IDX2)
-      *--- 2009/04/21 CHANGE END ---------------------------------------
-      * 20080905 在院数の縦の加算合計を対応
                   COMPUTE   IDX9 =   IDX4     +   1  
                   MOVE  SUM-TOUZAN(IDX2 IDX4) 
                         TO           SUM-ZENZAN(IDX2 IDX9)
-
+      *
                  END-IF
                  ADD    1        TO  IDX4
                  ADD    1        TO  IDX6
@@ -1294,18 +1113,18 @@
       *
                INITIALIZE     C100N
       *
-      * 帳票タイトル
+      *    帳票タイトル
                MOVE "(保険別)  入  院  患  者  数  集  計  表"
                                       TO    C100N-MIDASHI
-      * 出力年月日
+      *    出力年月日
                MOVE    WRK-SYSYMDWH   TO    C100N-PRTYMD
-      * 集計対象期間開始日
+      *    集計対象期間開始日
                MOVE    WRK-YMD1WH(1:16)
                                       TO    C100N-SRYMD-FR  
-      * 集計対象期間終了日
+      *    集計対象期間終了日
                MOVE    WRK-YMD2WH(11:6)
                                       TO    C100N-SRMD-TO 
-      * 集計単位 
+      *    集計単位 
                MOVE    "  月"         TO    C100N-TANI  
       *
                ADD     1              TO    CNT-PAGE
@@ -1315,27 +1134,22 @@
                MOVE    1              TO    IDX3  
                PERFORM  UNTIL   IDX3 >      7
                            OR   IDX2 >      SUM-SRYKAMAX    
-      *--- 2009/04/21 DELETE START -------------------------------------
-      * 20080905 在院数の縦の加算合計を対応
-      *          INITIALIZE  SUM-GZAIIN(IDX3)
-      * 20080905 在院数の縦の加算合計を対応
-      *--- 2009/04/21 DELETE END ---------------------------------------
-      * 診療科名称を転送
+      *    診療科名称を転送
                 MOVE    SUM-SRYKANAME(IDX2)
                                        TO  C100N-SRYKA(IDX3)
-      * 件数名称を転送
+      *    件数名称を転送
                 MOVE    "入  院"   TO  C100N-KENSU-1(IDX3)
                 MOVE    "(転科 含む)"   TO  C100N-TENKA-1(IDX3)
                 MOVE    "退  院"   TO  C100N-KENSU-2(IDX3)
                 MOVE    "(転科 含む)"   TO  C100N-TENKA-2(IDX3)
                 MOVE    "在院中"       TO  C100N-KENSU-3(IDX3)
       *
-      * 月初の在院者数を集計エリアに転送
+      *    月初の在院者数を集計エリアに転送
            IF   FLG-ZAIIN =  ZERO
                 MOVE    SUM-SRYKA-ZAN(IDX2) TO  SUM-ZENZAN(IDX2 IDX5)
            END-IF
       *
-      * 月別集計数の集計値を転送
+      *    月別集計数の集計値を転送
                 MOVE  1                TO    IDX6
                 MOVE  IDX5             TO    IDX4
                 PERFORM UNTIL IDX4  >  SUM-SRYYMDIMAX
@@ -1346,14 +1160,8 @@
                   MOVE  WRK-Z9-5 TO  C100N-11-CNT(IDX3 32)
                   MOVE  SUM-TAIIN(IDX2 IDX4) TO  WRK-Z9-5
                   MOVE  WRK-Z9-5 TO  C100N-12-CNT(IDX3 32)
-      * 20080905 在院数の縦の加算合計を対応START
-      *            MOVE  SPACE    TO  C100N-99-CNT(IDX3 32)
-      *--- 2009/04/21 CHANGE START -------------------------------------
-      *            MOVE  SUM-GZAIIN(IDX3)  TO  WRK-Z9-5
                   MOVE  SUM-GZAIIN(IDX2)  TO  WRK-Z9-5
-      *--- 2009/04/21 CHANGE END ---------------------------------------
                   MOVE  WRK-Z9-5  TO  C100N-99-CNT(IDX3 32)
-      * 20080905 在院数の縦の加算合計を対応END
                  ELSE                
                   MOVE  SUM-SRYYMD(IDX4)(5:2)  
                                  TO  C100N-MD(IDX6)(4:2)
@@ -1365,20 +1173,12 @@
                            SUM-ZENZAN(IDX2 IDX4) 
                          + SUM-NYUIN(IDX2 IDX4)
                          - SUM-TAIIN(IDX2 IDX4)
-      * 20080826 退院日を在院日にカウントしない不具合を修正START
                   MOVE   SUM-TOUZAN(IDX2 IDX4)   TO    WRK-ZAINISSU 
                   ADD    SUM-TOUZAN2(IDX2 IDX4)  TO    WRK-ZAINISSU
                   MOVE   WRK-ZAINISSU            TO    WRK-Z9-5
-      *            MOVE  SUM-TOUZAN(IDX2 IDX4) TO  WRK-Z9-5
-      * 20080826 退院日を在院日にカウントしない不具合を修正END
                   MOVE  WRK-Z9-5 TO  C100N-99-CNT(IDX3 IDX6)
-      * 20080905 在院数の縦の加算合計を対応
                   MOVE  WRK-Z9-5    TO   WRK-S9-5
-      *--- 2009/04/21 CHANGE START -------------------------------------
-      *            ADD   WRK-S9-5 TO  SUM-GZAIIN(IDX3)
                   ADD   WRK-S9-5 TO  SUM-GZAIIN(IDX2)
-      *--- 2009/04/21 CHANGE END ---------------------------------------
-      * 20080905 在院数の縦の加算合計を対応
                   COMPUTE   IDX9 =   IDX4     +   1  
                   MOVE  SUM-TOUZAN(IDX2 IDX4) 
                         TO           SUM-ZENZAN(IDX2 IDX9)
@@ -1405,50 +1205,42 @@
       *    帳票印刷処理
       *****************************************************************
        340-PRINT-OUT-SEC         SECTION.
-      *    
-
-               INITIALIZE                  ORCSPRTAREA
-               MOVE    "INS"               TO  SPRT-MODE
-               MOVE    C100LNK-PRTKANRI-RENNUM
-                                           TO  SPRT-RENNUM
-               MOVE    C100LNK-PRTKANRI-TBL-KEY
-                                           TO  SPRT-TBL-KEY
-               MOVE    C100LNK-PRTKANRI-TBL-GROUP
-                                           TO  SPRT-TBL-GROUP
-               MOVE    C100LNK-PRTKANRI-SRYYM
-                                           TO  SPRT-SRYYM
-               MOVE    C100LNK-PRTKANRI-SKYYMD
-                                           TO  SPRT-SKYYMD
-               MOVE    C100LNK-PRTKANRI-SHELLID 
-                                           TO  SPRT-SHELLID
-               MOVE    C100LNK-PRTKANRI-SHORI-RENNUM
-                                           TO  SPRT-SHORI-RENNUM
-               MOVE    C100LNK-PRTKANRI-PRIORITY
-                                           TO  SPRT-PRIORITY
-      ***  20040916 MOTOHASI MONPEに変更
-      ***         MOVE   "A00000C100N"         TO  SPRT-PRTID
-               MOVE   "A00000C100N.red"         TO  SPRT-PRTID
-      ***  20040916 MOTOHASI MONPEに変更
-               MOVE   "(保険別)入院患者数集計表"
-                                           TO  SPRT-TITLE
-               MOVE    C100N                TO  SPRT-PRTDATA
-               MOVE    C100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-               MOVE    C100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-               MOVE    C100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-      ***  site-libを実行環境にする為コメントアウト
-      ***         MOVE    "1"          TO  SPRT-SITEKBN
-               CALL    "ORCSPRT"         USING
-                                         ORCSPRTAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
-               IF  SPRT-RETURN         =   ZERO
-                   CONTINUE
-               ELSE
-                   MOVE    "印刷ＤＢに更新できませんでした"
-                                       TO  WRK-RECEERR
-                   PERFORM 500-ERR-HENSYU-SEC                           
-               END-IF
+      *
+           INITIALIZE                  ORCSPRTAREA
+           MOVE    "INS"               TO  SPRT-MODE
+           MOVE    C100LNK-PRTKANRI-RENNUM
+                                       TO  SPRT-RENNUM
+           MOVE    C100LNK-PRTKANRI-TBL-KEY
+                                       TO  SPRT-TBL-KEY
+           MOVE    C100LNK-PRTKANRI-TBL-GROUP
+                                       TO  SPRT-TBL-GROUP
+           MOVE    C100LNK-PRTKANRI-SRYYM
+                                       TO  SPRT-SRYYM
+           MOVE    C100LNK-PRTKANRI-SKYYMD
+                                       TO  SPRT-SKYYMD
+           MOVE    C100LNK-PRTKANRI-SHELLID 
+                                       TO  SPRT-SHELLID
+           MOVE    C100LNK-PRTKANRI-SHORI-RENNUM
+                                       TO  SPRT-SHORI-RENNUM
+           MOVE    C100LNK-PRTKANRI-PRIORITY
+                                       TO  SPRT-PRIORITY
+           MOVE   "A00000C100N.red"         TO  SPRT-PRTID
+           MOVE   "(保険別)入院患者数集計表"
+                                       TO  SPRT-TITLE
+           MOVE    C100N                TO  SPRT-PRTDATA
+           MOVE    C100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
+           MOVE    C100LNK-PRTKANRI-OPID   TO  SPRT-OPID
+           MOVE    C100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
+           CALL    "ORCSPRT"         USING
+                                     ORCSPRTAREA
+                                     SPA-AREA
+           IF  SPRT-RETURN         =   ZERO
+               CONTINUE
+           ELSE
+               MOVE    "印刷ＤＢに更新できませんでした"
+                                   TO  WRK-RECEERR
+               PERFORM 500-ERR-HENSYU-SEC
+           END-IF
       *
            .
        340-PRINT-OUT-EXT.
@@ -1467,13 +1259,11 @@
                MOVE    WRK-RECEERR         TO  RECEERR-REC
                WRITE   RECEERR-REC
                CLOSE   RECEERR-FILE
-      *         
-      *        ジョブ管理開始処理
+      *
+      *    ジョブ管理開始処理
                MOVE    "JBE"           TO  SJOBKANRI-MODE
                INITIALIZE                  JOBKANRI-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
                MOVE    C100LNK-JOBID   TO  JOB-JOBID
                MOVE    C100LNK-SHELLID TO  JOB-SHELLID
                MOVE    WRK-RECEERR     TO  JOB-YOBI
@@ -1481,9 +1271,7 @@
                CALL    "ORCSJOB"       USING
                                        ORCSJOBKANRIAREA  
                                        JOBKANRI-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            END-IF
       *
            MOVE    1                   TO  FLG-END     
@@ -1500,18 +1288,14 @@
       *    ステップ管理終了処理
            MOVE    "STE"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      *****07/09/13  4.0対応  Satoh  START*****
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
            MOVE    C100LNK-JOBID   TO  JOB-JOBID
            MOVE    C100LNK-SHELLID TO  JOB-SHELLID
            MOVE    CNT-PAGE        TO  JOB-UPDCNT
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                    SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
       *
            PERFORM 900-DBDISCONNECT-SEC
       *
@@ -1559,30 +1343,18 @@
       *
            MOVE    PTNYUINRRK-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "PTNYUINRRK-KEY26"  TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"            USING
            MOVE    "tbl_ptnyuinrrk"         TO  MCP-TABLE
            MOVE    "key26"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"              USING
-      *****07/09/13  4.0対応  Satoh  END*****
                                            MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                     ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                            MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
           IF      MCP-RC           =   ZERO
                PERFORM 900-NYURRK-FETCH-SEC
            ELSE
                MOVE    1           TO    FLG-PTNYUINRRK
                MOVE    1           TO    FLG-END
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
-      *         PERFORM 900-NYURRK-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
-           END-IF        
+           END-IF
            .
        900-NYURRK-SELECT-EXT.
            EXIT.
@@ -1593,30 +1365,18 @@
        900-NYURRK-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "PTNYUINRRK-KEY26" TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"            USING
            MOVE    "tbl_ptnyuinrrk"       TO  MCP-TABLE
            MOVE    "key26"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"            USING
-      *****07/09/13  4.0対応  Satoh  END*****
                                           MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                    ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                           MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-PTNYUINRRK
                MOVE    MCPDATA-REC  TO  PTNYUINRRK-REC
       *    保険組合せマスター検索
                INITIALIZE                             HKNCOMBI-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE    PTNYUINRRK-HOSPID          TO  COMB-HOSPID
                MOVE    PTNYUINRRK-HOSPNUM          TO  COMB-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
                MOVE    PTNYUINRRK-PTID            TO  COMB-PTID
                MOVE    PTNYUINRRK-HKNCOMBINUM     TO  WRK-HKNCOMBI-G
                MOVE    WRK-HKNCOMBI               TO  COMB-HKNCOMBINUM
@@ -1624,9 +1384,6 @@
            ELSE
                MOVE    1            TO  FLG-PTNYUINRRK
                MOVE    1            TO  FLG-END
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
-      *         PERFORM 900-NYURRK-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
            END-IF  
            .
        900-NYURRK-FETCH-EXT.
@@ -1637,25 +1394,13 @@
       *****************************************************************
        900-NYURRK-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE  "DBCLOSE"          TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE  "PTNYUINRRK-KEY26" TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"            USING
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
            MOVE    "key26"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            .
        900-NYURRK-CLOSE-EXT.
            EXIT.
@@ -1667,29 +1412,17 @@
       *
            MOVE    PTNYUINRRK-M-REC    TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "PTNYUINRRK-KEY5"       TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"            USING
            MOVE    "tbl_ptnyuinrrk"        TO  MCP-TABLE
            MOVE    "key5"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"             USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                            MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                     ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                            MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                            SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
           IF      MCP-RC           =   ZERO
                PERFORM 900-NYURRK-M-FETCH-SEC
            ELSE
                MOVE    1           TO    FLG-PTNYUINRRK-M
                MOVE    1           TO    FLG-END
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
-      *         PERFORM 900-M-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
            END-IF        
            .
        900-NYURRK-M-SELECT-EXT.
@@ -1701,30 +1434,18 @@
        900-NYURRK-M-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "PTNYUINRRK-KEY5" TO   ORC-DBPATH
-      *     CALL    "ORCMCPSUB"            USING
            MOVE    "tbl_ptnyuinrrk"       TO  MCP-TABLE
            MOVE    "key5"                 TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"            USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                           MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                    ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                           MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                           SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-PTNYUINRRK-M
                MOVE    MCPDATA-REC  TO  PTNYUINRRK-M-REC
       *    保険組合せマスター検索
                INITIALIZE                             HKNCOMBI-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE    PTNYUINRRK-M-HOSPID        TO  COMB-HOSPID
                MOVE    PTNYUINRRK-M-HOSPNUM        TO  COMB-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
                MOVE    PTNYUINRRK-M-PTID          TO  COMB-PTID
                MOVE    PTNYUINRRK-M-HKNCOMBINUM   TO  WRK-HKNCOMBI-G
                MOVE    WRK-HKNCOMBI               TO  COMB-HKNCOMBINUM
@@ -1732,9 +1453,6 @@
            ELSE
                MOVE    1            TO  FLG-PTNYUINRRK-M
                MOVE    1            TO  FLG-END
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
-      *         PERFORM 900-M-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
            END-IF  
            .
        900-NYURRK-M-FETCH-EXT.
@@ -1745,29 +1463,16 @@
       *****************************************************************
        900-M-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE  "DBCLOSE"          TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE  "PTNYUINRRK-KEY5" TO   ORC-DBPATH
-      *     CALL  "ORCMCPSUB"            USING
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
            MOVE    "key5"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                  ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            .
        900-M-DBCLOSE-EXT.
            EXIT.
-      *
       *
       *****************************************************************
       *    入院履歴情報検索(入院履歴枝番号のMAX値取得:KEY4)
@@ -1776,64 +1481,40 @@
       *
            MOVE    PTNYUINRRK-M-REC    TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "PTNYUINRRK-KEY4"   TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"        USING
            MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
            MOVE    "key4"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                 ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
-          IF      MCP-RC           =   ZERO
+           IF      MCP-RC           =   ZERO
                PERFORM 900-NYURRK-M2-FETCH-SEC
            ELSE
                MOVE    1           TO    FLG-PTNYUINRRK-M2
                MOVE    1           TO    FLG-END
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
-      *         PERFORM 900-M2-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
            END-IF        
            .
        900-NYURRK-M2-SELECT-EXT.
            EXIT.
       *
       *****************************************************************
-      *     入院履歴情報検索(入院履歴枝番号のMAX値取得:KEY4)
+      *    入院履歴情報検索(入院履歴枝番号のMAX値取得:KEY4)
       *****************************************************************
        900-NYURRK-M2-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "PTNYUINRRK-KEY4"  TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"        USING
            MOVE    "tbl_ptnyuinrrk"   TO  MCP-TABLE
            MOVE    "key4"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                       MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-PTNYUINRRK-M2
                MOVE    MCPDATA-REC  TO  PTNYUINRRK-M-REC
       *    保険組合せマスター検索
                INITIALIZE                             HKNCOMBI-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE    PTNYUINRRK-M-HOSPID        TO  COMB-HOSPID
                MOVE    PTNYUINRRK-M-HOSPNUM       TO  COMB-HOSPNUM
-      *****07/09/13  4.0対応  Satoh  END*******
                MOVE    PTNYUINRRK-M-PTID          TO  COMB-PTID
                MOVE    PTNYUINRRK-M-HKNCOMBINUM   TO  WRK-HKNCOMBI-G
                MOVE    WRK-HKNCOMBI               TO  COMB-HKNCOMBINUM
@@ -1841,9 +1522,6 @@
            ELSE
                MOVE    1            TO  FLG-PTNYUINRRK-M2
                MOVE    1            TO  FLG-END
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
-      *         PERFORM 900-M2-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
            END-IF  
            .
        900-NYURRK-M2-FETCH-EXT.
@@ -1854,29 +1532,16 @@
       *****************************************************************
        900-M2-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE  "DBCLOSE"          TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE  "PTNYUINRRK-KEY4"  TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"        USING
            MOVE    "tbl_ptnyuinrrk" TO  MCP-TABLE
            MOVE    "key4"           TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"      USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                     MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                              ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                     MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                     SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            .
        900-M2-DBCLOSE-EXT.
            EXIT.
-      *
       *
       *****************************************************************
       *    保険組合せマスター読み込み
@@ -1885,38 +1550,20 @@
       *
            MOVE    HKNCOMBI-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "HKNCOMBI-KEY"       TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    "tbl_hkncombi"       TO  MCP-TABLE
-           MOVE    "key"                TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
-                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                               ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
-                                     MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-                                      SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
+           MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *            MOVE    "HKNCOMBI-KEY"      TO  ORC-DBPATH
-      *            CALL    "ORCMCPSUB"          USING
-                  MOVE    "tbl_hkncombi"       TO  MCP-TABLE
-                  MOVE    "key"              TO  MCP-PATHNAME
-                  CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
-                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                               ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
-                                     MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-                                      SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
+               MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+               MOVE    "key"               TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC     TO  HKNCOMBI-REC
                    MOVE    ZERO            TO  FLG-HKNCOMBI
@@ -1928,26 +1575,14 @@
                MOVE    1               TO  FLG-HKNCOMBI
                INITIALIZE                  HKNCOMBI-REC
            END-IF
-     *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "HKNCOMBI-KEY"       TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    "tbl_hkncombi"       TO  MCP-TABLE
-           MOVE    "key"                TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
-                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                               ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
-                                     MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-                                      SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
+           MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
       *
            .
        910-HKNCOMBI-READ-EXT.
@@ -1959,70 +1594,40 @@
        900-SRYACCT-READ-SEC         SECTION.
       *
            MOVE    SRYACCT-REC       TO  MCPDATA-REC
-           MOVE    "DBSELECT"            TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SRYACCT-KEY3"    TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"       USING
+           MOVE    "DBSELECT"        TO  MCP-FUNC
            MOVE    "tbl_sryacct"     TO  MCP-TABLE
            MOVE    "key3"            TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"       USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                      MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                               ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                      MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                       SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"             TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE    "SRYACCT-KEY3"    TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"       USING
                MOVE    "tbl_sryacct"     TO  MCP-TABLE
                MOVE    "key3"            TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"       USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                          MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                   ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                          MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                          SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
                IF      MCP-RC              =   ZERO
-                   MOVE    MCPDATA-REC   TO  SRYACCT-REC
-                   MOVE    ZERO                    TO  FLG-SRYACCT
+                   MOVE    MCPDATA-REC       TO  SRYACCT-REC
+                   MOVE    ZERO              TO  FLG-SRYACCT
                ELSE
-                   MOVE    1                   TO  FLG-SRYACCT
-                   INITIALIZE                  SRYACCT-REC
+                   MOVE    1                 TO  FLG-SRYACCT
+                   INITIALIZE                SRYACCT-REC
                END-IF
            ELSE
-               MOVE    1                   TO  FLG-SRYACCT
-               INITIALIZE                  SRYACCT-REC
+               MOVE    1                 TO  FLG-SRYACCT
+               INITIALIZE                SRYACCT-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE    "SRYACCT-KEY3"    TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"       USING
-               MOVE    "tbl_sryacct"     TO  MCP-TABLE
-               MOVE    "key3"            TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"       USING
-      *****07/09/13  4.0対応  Satoh  END*******
-                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                   ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
-                                         MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
-                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
+           MOVE    "DBCLOSECURSOR"   TO  MCP-FUNC
+           MOVE    "tbl_sryacct"     TO  MCP-TABLE
+           MOVE    "key3"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
       *
            .
        900-SRYACCT-READ-EXT.
@@ -2035,21 +1640,12 @@
       *
            MOVE    SRYACT-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SRYACT-KEY2"       TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"        USING
            MOVE    "tbl_sryact"        TO  MCP-TABLE
            MOVE    "key2"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                 ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
           IF      MCP-RC           =   ZERO
                MOVE    ZERO        TO  FLG-SRYACT
            ELSE
@@ -2066,21 +1662,12 @@
       *
            MOVE    SRYACT-REC           TO  MCPDATA-REC
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SRYACT-KEY2"        TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
            MOVE    "tbl_sryact"         TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                  ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-SRYACT
                MOVE    MCPDATA-REC  TO  SRYACT-REC
@@ -2097,25 +1684,13 @@
       *****************************************************************
        900-SRYACT-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE  "DBCLOSE"            TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE  "SRYACT-KEY2"        TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"          USING
            MOVE    "tbl_sryact"       TO  MCP-TABLE
            MOVE    "key2"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                       MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                       MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                       SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            .
        900-SRYACT-CLOSE-EXT.
            EXIT.
@@ -2127,38 +1702,20 @@
       *
            MOVE    WRK-SYSYMD          TO  ORC-DBYMD
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                 ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"         USING
                MOVE    "tbl_syskanri"      TO  MCP-TABLE
                MOVE    "key"             TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                            MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                     ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                            MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                            SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
                IF      MCP-RC              =   ZERO
                    MOVE    ZERO            TO  FLG-SYSKANRI
                ELSE
@@ -2168,25 +1725,13 @@
                MOVE    1               TO  FLG-SYSKANRI
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                 ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
       *
            .
        800-SYSKANRI-READ-EXT.
@@ -2199,38 +1744,20 @@
       *
            MOVE    WRK-SYSYMD          TO  ORC-DBYMD
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                 ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"         USING
                MOVE    "tbl_syskanri"      TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                            MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                     ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                            MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                            SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
                IF      MCP-RC              =   ZERO
                    MOVE    ZERO            TO  FLG-SYSKANRI2
                ELSE
@@ -2240,25 +1767,13 @@
                MOVE    1               TO  FLG-SYSKANRI2
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                  ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
       *
            .
        810-SYSKANRI-READ-EXT.
@@ -2269,31 +1784,19 @@
       *****************************************************************
        820-SYSKANRI-DBSELECT-SEC                 SECTION.
       *
-           MOVE    WRK-SYSYMD            TO  ORC-DBYMD
-           MOVE    SYS-1005-REC          TO  MCPDATA-REC
-           MOVE    "DBSELECT"                TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SYSKANRI-KEY2"     TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
+           MOVE    WRK-SYSYMD          TO  ORC-DBYMD
+           MOVE    SYS-1005-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
-           MOVE    "key2"               TO  MCP-PATHNAME
+           MOVE    "key2"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                 ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
-          IF      MCP-RC           =   ZERO
+           IF      MCP-RC           =   ZERO
                 PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
            END-IF        
            .
        820-SYSKANRI-DBSELECT-EXT.
@@ -2304,30 +1807,18 @@
       *****************************************************************
        820-SYSKANRI-DBFETCH-SEC                SECTION.
       *
-           MOVE    "DBFETCH"                  TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
+           MOVE    "DBFETCH"            TO  MCP-FUNC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                  ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            IF      MCP-RC           =   ZERO
-               MOVE    ZERO                   TO  FLG-SYSKANRI3
+               MOVE    ZERO                 TO  FLG-SYSKANRI3
                MOVE    MCPDATA-REC  TO  SYS-1005-REC
            ELSE
-               MOVE    1                           TO  FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/08/10) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/08/10) end
+               MOVE    1                    TO  FLG-SYSKANRI3
            END-IF  
            .
        820-SYSKANRI-DBFETCH-EXT.
@@ -2338,25 +1829,13 @@
       *****************************************************************
        820-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE  "DBCLOSE"                TO  MCP-FUNC
-           MOVE  "DBCLOSECURSOR"          TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key2"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
+           MOVE  "DBCLOSECURSOR"        TO  MCP-FUNC
+           MOVE  "tbl_syskanri"         TO  MCP-TABLE
+           MOVE  "key2"                 TO  MCP-PATHNAME
+           CALL  "ORCDBMAIN"            USING
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                  ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                         SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            .
        820-SYSKANRI-DBCLOSE-EXT.
            EXIT.
@@ -2368,38 +1847,20 @@
       *
            MOVE    PTINF-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
            MOVE    "tbl_ptinf"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                 ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *****07/09/13  4.0対応  Satoh  START*****
-      *         MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"         USING
                MOVE    "tbl_ptinf"         TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                            MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                     ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                            MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                            SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
       *
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  PTINF-REC
@@ -2413,25 +1874,13 @@
                INITIALIZE                  PTINF-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/10) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/10) end
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
            MOVE    "tbl_ptinf"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                 ORCMCPAREA
-      *****07/09/13  4.0対応  Satoh  END*******
                                        MCPDATA-REC
-      *****07/09/13  4.0対応  Satoh  START*****
                                        SPA-AREA
-      *****07/09/13  4.0対応  Satoh  END*******
       *
            .
        900-PTINF-READ-EXT.
@@ -2442,37 +1891,23 @@
       *****************************************************************
        100-DBOPEN-SEC                SECTION.
       *
-           MOVE    "DBOPEN"            TO  MCP-FUNC.
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBOPEN"             TO  MCP-FUNC.
+           MOVE    LOW-VALUE            TO  MCP-TABLE
+                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      *****07/09/13  4.0対応  Satoh  END*******
       *
-           MOVE    "DBSTART"           TO  MCP-FUNC.
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBSTART"            TO  MCP-FUNC.
+           MOVE    LOW-VALUE            TO  MCP-TABLE
+                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      *****07/09/13  4.0対応  Satoh  END*******
            .
        100-DBOPEN-EXT.
            EXIT.
@@ -2482,37 +1917,23 @@
       *****************************************************************
        900-DBDISCONNECT-SEC            SECTION.
       *
-           MOVE    "DBCOMMIT"          TO  MCP-FUNC.
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBCOMMIT"           TO  MCP-FUNC.
+           MOVE    LOW-VALUE            TO  MCP-TABLE
+                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      *****07/09/13  4.0対応  Satoh  END*******
       *
-           MOVE    "DBDISCONNECT"      TO  MCP-FUNC.
-      *****07/09/13  4.0対応  Satoh  START*****
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBDISCONNECT"       TO  MCP-FUNC.
+           MOVE    LOW-VALUE            TO  MCP-TABLE
+                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *****07/09/13  4.0対応  Satoh  END*******
                                         MCPAREA
-      *****07/09/13  4.0対応  Satoh  START*****
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      *****07/09/13  4.0対応  Satoh  END*******
            .
        900-DBCLOSE-EXT.
            EXIT.
