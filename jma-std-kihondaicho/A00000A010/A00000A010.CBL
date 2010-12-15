@@ -22,44 +22,12 @@
       *  サブシステム名    : 日次／月次帳票
       *  コンポーネント名  : 診療行為別使用頻度一覧表
       *  管理者            :
-      *  作成日付    作業者        記述
-      *  03/12/25    @@@@-半田     新規作成
-      *  04/01/30    @@@@-半田     「印字順序」の仕様変更対応
-      *  04/07/14    @@@@-本橋     入院診療行為情報抽出処理の不具合修正
-      *  04/07/23    @@@@-本橋     食事療養費、室料差額の回数集計処理を修正
-      *  04/07/27    @@@@-本橋     入院、外来の合計数量の集計処理を追加
-      *  04/09/14    @@@@-本橋     システム管理からの室料差額算出KEY変更
-      *                            MONPE化
-      *  04/11/08    @@@@-本橋     外泊(099999911)、室料差額(099999912)、
-      *                            食事療養費(099999913)、老人特定入院料
-      *                            (099999915)、選定入院料(099999916)を
-      *                            "90:入院"に集計するように修正
-      *                            095000000を"95:自費(税無)"、096000000を
-      *                             "96:自費(税有)"に集計するように修正
-      *  05/02/08    @@@@-鈴木     回数(量)小数点以下の桁を印字するように修正
-      *  05/10/17    @@@@-呉秀凡   DBアクセスMCPSUBへの変更
-      *  06/01/06    @@@@-呉秀凡   室料差額の設定
-      *  06/08/17    @@@@-高嶋     sarge対応
-      *  07/07/17    @@@@-田中     食事療養費の対応(099999918〜099999920)
-      *  07/08/28    @@@@-長屋     診療行為振り分け修正
-      *  07/09/21    @@@@-田中     4.0対応
-      *  07/11/05    @@@@-田中     きざみ値による点数の不具合を修正
-      *  08/01/21    @@@@-田中     入院診療行為の点数、回数の不具合を修正
-      *  08/04/02    @@@@-田中     H20年4月改正対応
-      *  08/04/18    @@@@-田中     診療行為区分の振り分けを修正
-      *  08/05/26    @@@@-田中     診療行為区分の振り分けを修正
-      *  08/09/02    @@@@-田中     ０回の診療行為時の不具合の修正
-      *  08/11/20    @@@@-田中     自費のフリー金額を集計するように変更
-      *  08/03/27    @@@@-田中     外泊時の回数カウント処理を修正
-      *  09/04/06    @@@@-田中     自費の数量入力時の不具合を修正
-      *  09/05/01    @@@@-田中     日報で出力可能に修正
-      *  09/05/01    @@@@-田中     全診療区分で出力時に区分ごとの合計を印字
-      *  09/06/18    @@@@-田中     日報出力の回数計算を修正
-      *  10/02/10    @@@@-田中     治験対応
-      *  10/03/08    @@@@-田中     集計対象範囲の指定を追加
-      *  10/07/02    @@@@-門間     食堂加算算定時の不具合を修正
-      *  10/07/16    @@@@-田中     病理診断を正しく集計するよう修正
-      *                            外泊（他医療機関受診３０％減）を算定時に、入院料を加算しない修正
+      *  作成日付    作業者       記述
+      *  03/12/25    @@@@-半田    新規作成
+      *****************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    10/12/13  コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -84,14 +52,12 @@
                                    RECORD  KEY     A010T2-KEY
                                    FILE    STATUS  IS  STS-PARA2.
       *
-      * 20080902 ０回の診療行為時の不具合の修正START
       *    診療行為別使用頻度一覧表ファイル３
            SELECT  A010T3-FILE     ASSIGN TO A010T3PARA
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     A010T3-KEY
                                    FILE    STATUS  IS  STS-PARA3.
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
        DATA                        DIVISION.
        FILE                        SECTION.
@@ -99,7 +65,7 @@
       *    エラーファイル
        FD  RECEERR-FILE.
        01  RECEERR-REC             PIC X(200).
-
+      *
       *    診療行為別使用頻度一覧表ファイル
        FD  A010T-FILE.
            COPY    "A00000A010TMP.INC".
@@ -110,12 +76,9 @@
                                    REPLACING  //A010T//
                                    BY         //A010T2//.
       *
-      * 20080902 ０回の診療行為時の不具合の修正START
       *    診療行為別使用頻度一覧表ファイル２
        FD  A010T3-FILE.
            COPY    "A00000A010TMP2.INC".
-      *
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
        WORKING-STORAGE             SECTION.
       *
@@ -123,14 +86,8 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-      * 20070921 4.0対応START t.tanaka
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      * 20070921 4.0対応END
       *    診療行為別使用頻度一覧表ファイル
        01  A010TPARA.
            03  FILLER   PIC  X(05) VALUE "/tmp/".
@@ -142,27 +99,20 @@
            03  A010T2PARA-FILENAME PIC  X(14) VALUE "A00000A010-OUT".
            03  FILLER              PIC  X(04) VALUE ".TMP".
       *
-      * 20080902 ０回の診療行為時の不具合の修正START
        01  A010T3PARA.
            03  FILLER   PIC  X(05) VALUE "/tmp/".
            03  A010T3PARA-FILENAME PIC  X(14) VALUE "A00000A010-OUT".
            03  FILLER              PIC  X(04) VALUE ".TMP".
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    診療行為別使用頻度一覧表 diaファイル
-      *--- 2010/03/08 CHANGE START -------------------------------------
-      *     COPY    "A00000A010.INC".
            COPY    "A00000A010V02.INC".
-      *--- 2010/03/08 CHANGE END ---------------------------------------
       *
       *    スパ領域
        01  STS-AREA.
            03  STS-RECEERR         PIC X(02).
            03  STS-PARA            PIC 9(02).
            03  STS-PARA2           PIC 9(02).
-      * 20080902 ０回の診療行為時の不具合の修正START
            03  STS-PARA3           PIC 9(02).
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    フラグ領域
        01  FLG-AREA.
@@ -188,10 +138,8 @@
            03  FLG-NG                   PIC 9(01).
            03  FLG-ATEND                PIC 9(01).
            03  FLG-INVALID              PIC 9(01).
-      * 20080902 ０回の診療行為時の不具合の修正START
-           03  FLG-INVALID2              PIC 9(01).
-           03  FLG-ATEND2                PIC 9(01).
-      * 20080902 ０回の診療行為時の不具合の修正END
+           03  FLG-INVALID2             PIC 9(01).
+           03  FLG-ATEND2               PIC 9(01).
            03  FLG-GAISW                PIC 9(01).
            03  FLG-NYUSW                PIC 9(01).
            03  FLG-OUTALL               PIC 9(01).
@@ -202,9 +150,7 @@
            03  FLG-NICDINV              PIC 9(01).
            03  FLG-GICDINV              PIC 9(01).
            03  FLG-SPACE                PIC 9(01).
-      *--- 2009/05/01 ADD START ----------------------------------------
            03  FLG-MEIKENSU             PIC 9(01).
-      *--- 2009/05/01 ADD END ------------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -230,50 +176,32 @@
            03  IDX5               PIC 9(02).
            03  IDX6               PIC 9(02).
            03  IDX                PIC 9(04).
-      ****2005/10/17  @@@@-BRAND  START
            03  IDX7               PIC 9(04).
-      ****2005/10/17  @@@@-BRAND  END
-      ****2006/01/07  @@@@-BRAND  START
            03  IIII               PIC 9(03).
            03  SSSS               PIC 9(03).
            03  ZZZZ               PIC 9(03).
-      ****2006/01/07  @@@@-BRAND  END
-      *--- 2009/03/27 ADD START ----------------------------------------
            03  IDX8               PIC 9(02).
-      *--- 2009/03/27 ADD END ------------------------------------------
       *
       *    パラメタ領域
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID         PIC 9(07).
            03  WRK-PARA-SHELLID       PIC X(08).
-      * 20070921 4.0対応START t.tanaka
-      *     03  WRK-PARA-HOSPID        PIC X(24).
            03  WRK-PARA-HOSPNUM        PIC 9(02).
-      * 20070921 4.0対応END
-      *--- 2009/05/01 CHANGE START -------------------------------------
-      *     03  WRK-PARA-PRTYM        PIC X(06).
            03  WRK-PARA-PRTYMD        PIC X(08).
-      *--- 2009/05/01 CHANGE END ---------------------------------------
-      *--- 2010/03/08 CHANGE START -------------------------------------
            03  WRK-PARA-PRTSTYMD      PIC X(08).
            03  WRK-PARA-PRTEDYMD      PIC X(08).
-      *--- 2010/03/08 CHANGE END ---------------------------------------
            03  WRK-PARA-OUTTYPE       PIC X(02).
            03  WRK-PARA-NYUGAIKBN     PIC X(01).
            03  WRK-PARA-PRSORT        PIC X(01).
            03  WRK-PARA-PRTLYMD       PIC X(08).
            03  WRK-PARA-PRTSYMD       PIC X(08).
-      *--- 2009/05/01 ADD START ----------------------------------------
            03  WRK-PARA-SYUKEIKBN     PIC X(01).
-      *--- 2009/05/01 ADD END ------------------------------------------
       *
       *    一時領域
        01  WRK-AREA.
-      *--- 2010/03/08 ADD START ----------------------------------------
            03  WRK-PARA-DENPPRTSTYMDWH   PIC X(22).
            03  WRK-PARA-DENPPRTEDYMDWH   PIC X(22).
-      *--- 2010/03/08 ADD END ------------------------------------------
            03  WRK-PARA-DENPPRTYMDWH PIC X(22).
            03  WRK-SYSYMDWH          PIC X(22).
       *
@@ -324,14 +252,12 @@
            03  WRK-Z9TEN             PIC ZZZZZZZZ9.99.
            03  WRK-Z9TEN2            PIC ZZZZZZZ9.99.
            03  WRK-Z9KAI             PIC ZZZZZZZ9.
-      *  2005/02/08 @@@@SUZUKI 小数点以下の桁を印字するために追加
            03  WRK-Z9KAI-1           PIC 9(09).
         03  WRK-Z9KAI-1Z          PIC ZZZZZZZZ9.
            03  WRK-Z9KAI-2           PIC 9(09).
            03  WRK-Z9KAI-2Z          PIC ZZZZ9.999.
            03  WRK-Z9KAI-2ZZ         PIC ZZZZZZ9.9.
            03  WRK-Z9KAI-2ZZZ        PIC ZZZZZ9.99.
-      *  2005/02/08 ここまで
            03  WRK-Z7                PIC ZZZ,ZZZ.
            03  WRK-Z5                PIC ZZZZ9.
            03  WRK-Z3                PIC ZZ9.
@@ -363,39 +289,27 @@
                05  WRK-SITURYOYEN    PIC 9(08)V9(02).
            03  WRK-KIZAMI            PIC S9(09).
            03  WRK-S-SRYYMD          PIC 9(08).
-      *--- 2009/05/01 ADD START ----------------------------------------
            03  WRK-DAY               PIC 9(02).
-      *--- 2009/05/01 ADD END ------------------------------------------
-      *--- 2010/03/08 CHANGE START -------------------------------------
            03  WRK-DAY1               PIC 9(02).
            03  WRK-DAY2               PIC 9(02).
-      *--- 2010/03/08 CHANGE END ---------------------------------------
       *
        01  SUM-AREA.
            03  SUM-T-AREA.
                05  SUM-T-TTEN        PIC 9(12)V9(02).
                05  SUM-T-TKIN        PIC 9(12)V9(02).
       *
-      *--- 2009/03/27 ADD END ------------------------------------------
        01  WRK-NYUINRYO-AREA.
            03  WRK-NYUINRYO-TBL        OCCURS 31.
                05  WRK-NYUINRYO         PIC 9(08).
                05  WRK-GAIHAKKBN        PIC 9(01).
-      *--- 2009/03/27 ADD END ------------------------------------------
-      *
-      *--- 2009/05/01 ADD START ----------------------------------------
       *
        01  SUM-PAGESKAREA.
            03  SUM-SKAREA.
                05  SUM-SKTTEN           PIC 9(12)V9(02).
                05  SUM-SKTKIN           PIC 9(12)V9(02).
-      *--- 2009/05/01 ADD END ------------------------------------------
       *
            COPY    "CPSHELLTBL.INC".
       *
-      * 20070921 4.0対応START t.tanaka
-      *     COPY    "ORCA-DBPATH".
-      * 20070921 4.0対応END
       *    診療種別名テーブル
            COPY    "CPORCSSRYSYU.INC".
       *
@@ -507,10 +421,8 @@
            COPY    "CPORCSPTID.INC".
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
-
       *    ＤＢ検索
            COPY    "MCPAREA".
-      *
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
@@ -582,19 +494,12 @@
                                                WRK-PARA-HOSPNUM
                                                RECEERR
                                                WRK-PARA-OUTTYPE
-      *--- 2009/05/01 CHANGE START -------------------------------------
-      *                                         WRK-PARA-PRTYM
                                                WRK-PARA-PRTYMD
-      *--- 2009/05/01 CHANGE END ---------------------------------------
                                                WRK-PARA-NYUGAIKBN
                                                WRK-PARA-PRSORT
-      *--- 2009/05/01 ADD START ----------------------------------------
                                                WRK-PARA-SYUKEIKBN
-      *--- 2009/05/01 ADD END ------------------------------------------
-      *--- 2010/03/08 ADD START ----------------------------------------
                                                WRK-PARA-PRTSTYMD
                                                WRK-PARA-PRTEDYMD
-      *--- 2010/03/08 ADD END ------------------------------------------
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
       *
@@ -619,14 +524,6 @@
            MOVE    WRK-HENYMDG           TO   WRK-SYSYMDWH
       *
       *    対象年月最終日取得
-      *--- 2010/03/08 CHANGE START -------------------------------------
-      *     INITIALIZE  WRK-SYMD
-      **--- 2009/05/01 CHANGE START -------------------------------------
-      **     MOVE    WRK-PARA-PRTYM        TO   WRK-SYMD(1:6)
-      *     MOVE    WRK-PARA-PRTYMD(1:6)  TO   WRK-SYMD(1:6)
-      **--- 2009/05/01 CHANGE END ---------------------------------------
-      *     PERFORM 31012-LASTDAY-GET-SEC
-      *     MOVE    WRK-SYMD              TO   WRK-PARA-PRTLYMD
            EVALUATE   WRK-PARA-SYUKEIKBN
              WHEN  "2"
                MOVE    WRK-PARA-PRTEDYMD     TO   WRK-PARA-PRTLYMD
@@ -640,20 +537,6 @@
            END-EVALUATE
       *
       *    対象年月初日取得
-      *     INITIALIZE  WRK-SYMD
-      **--- 2009/05/01 CHANGE START -------------------------------------
-      **     MOVE    WRK-PARA-PRTYM        TO   WRK-PARA-PRTSYMD(1:6)
-      *     MOVE    WRK-PARA-PRTYMD(1:6)  TO   WRK-PARA-PRTSYMD(1:6)
-      **--- 2009/05/01 CHANGE END ---------------------------------------
-      *     MOVE    "01"                  TO   WRK-PARA-PRTSYMD(7:2)
-      *--- 2009/05/01 ADD START ----------------------------------------
-      *    日報時対象日の取得
-      *     IF  WRK-PARA-SYUKEIKBN  =  1
-      *       MOVE    WRK-PARA-PRTYMD        TO   WRK-PARA-PRTLYMD
-      *       MOVE    WRK-PARA-PRTYMD        TO   WRK-PARA-PRTSYMD
-      *       MOVE    WRK-PARA-PRTYMD(7:2)   TO   WRK-DAY
-      *     END-IF
-      *--- 2009/05/01 ADD END ------------------------------------------
            EVALUATE   WRK-PARA-SYUKEIKBN
              WHEN  "2"
                MOVE    WRK-PARA-PRTSTYMD     TO   WRK-PARA-PRTSYMD
@@ -665,7 +548,6 @@
                MOVE    WRK-PARA-PRTYMD(1:6)  TO   WRK-PARA-PRTSYMD(1:6)
                MOVE    "01"                  TO   WRK-PARA-PRTSYMD(7:2)
            END-EVALUATE
-      *--- 2010/03/08 CHANGE END ---------------------------------------
       *    対象年月日編集
            IF   WRK-PARA-SYUKEIKBN  =  "2"
            
@@ -686,7 +568,6 @@
              PERFORM  31012-SEIWA-HEN-SEC
              MOVE    WRK-HENYMDG         TO   WRK-PARA-DENPPRTYMDWH
            END-IF
-      *--- 2010/03/08 CHANGE END ---------------------------------------
       *
       *    診療分類指定のチェック
            IF   WRK-PARA-OUTTYPE       =  SPACE
@@ -702,9 +583,7 @@
                  AND WRK-PARA-OUTTYPE   NOT =  "40"
                  AND WRK-PARA-OUTTYPE   NOT =  "50"
                  AND WRK-PARA-OUTTYPE   NOT =  "60"
-      * 20080402 H20年4月改正対応START tanaka
                  AND WRK-PARA-OUTTYPE   NOT =  "64"
-      * 20080402 H20年4月改正対応END
                  AND WRK-PARA-OUTTYPE   NOT =  "70"
                  AND WRK-PARA-OUTTYPE   NOT =  "71"
                  AND WRK-PARA-OUTTYPE   NOT =  "80"
@@ -714,13 +593,12 @@
                  AND WRK-PARA-OUTTYPE   NOT =  "95"
                  AND WRK-PARA-OUTTYPE   NOT =  "96"
                  AND WRK-PARA-OUTTYPE   NOT =  "99"
-      ***      出力区分入力値エラーの場合
+      *    出力区分入力値エラーの場合
                MOVE   1       TO    INP-STS
              END-IF
            END-IF
       *
       *    入外区分のチェック
-      *
            IF  WRK-PARA-NYUGAIKBN   =  SPACE
                OR  WRK-PARA-NYUGAIKBN   =  "3"
              MOVE   1       TO    FLG-NYUGAIALL
@@ -743,7 +621,6 @@
              MOVE   5      TO    INP-STS
            END-IF
       *
-      *--- 2010/03/08 ADD START ----------------------------------------
       *    開始、終了年月日チェック
            IF   WRK-PARA-PRTSTYMD(1:6)  NOT =  WRK-PARA-PRTEDYMD(1:6)
              MOVE    6      TO    INP-STS
@@ -753,7 +630,6 @@
              MOVE    7      TO    INP-STS
            END-IF
       *
-      *--- 2010/03/08 ADD END ------------------------------------------
       *
            INITIALIZE                SYS-5000-REC
            MOVE    "5000"            TO   SYS-5000-KANRICD
@@ -781,16 +657,6 @@
              END-IF
       *
       *    食事療養費(食堂加算)の算定判定
-      *--- 2010/07/02 DELETE START ------------------------------------
-      *       IF  SYS-5000-SHOKUKBN(2)  =  "2"
-      *         MOVE  SYS-5000-SHOKUCD(2) TO    TNS-SRYCD
-      *         PERFORM   910-TENSU-READ-SEC
-      *         ADD   TNS-TEN  TO   WRK-SYOKUJITEN1
-      *                             WRK-SYOKUJITEN2
-      *                             WRK-SYOKUJITEN3
-      *                             WRK-SYOKUJITEN4
-      *       END-IF
-      *--- 2010/07/02 DELETE START ------------------------------------
              PERFORM 820-SYSKANRI-DBCLOSE-SEC
            END-IF
       *    1:食事療養費のみ(WRK-SYOKUJITEN1)
@@ -856,7 +722,7 @@
            EXIT.
       *
       *****************************************************************
-      *   画面入力値エラー処理
+      *    画面入力値エラー処理
       *****************************************************************
        200-ERR-SEC                SECTION.
       *
@@ -870,7 +736,6 @@
              WHEN  5
                MOVE    "入力された印字順序に誤りがあります"
                            TO   A010-JOBMSG
-      *--- 2010/03/08 ADD START ----------------------------------------
              WHEN 6
                MOVE
                "入力する集計対象期間の範囲は同月内で指定をして下さい"
@@ -879,7 +744,6 @@
                MOVE
                "入力された集計対象期間の範囲指定に誤りがあります"
                            TO   A010-JOBMSG
-      *--- 2010/03/08 ADD END ------------------------------------------
            END-EVALUATE
       *
            PERFORM 330-TERM-HEN-SEC
@@ -905,17 +769,11 @@
            MOVE    WRK-PARA-HOSPNUM    TO   SRY-HOSPNUM
            MOVE    WRK-PTID            TO   SRY-PTID
            MOVE    WRK-SRYKA           TO   SRY-SRYKA
-      *--- 2010/03/08 CHANGE START -------------------------------------
-      *--- 2009/05/01 CHANGE START -------------------------------------
-      *     MOVE    WRK-PARA-PRTYM      TO   SRY-SRYYM
-      *     MOVE    WRK-PARA-PRTYMD(1:6)   TO   SRY-SRYYM
            IF   WRK-PARA-SYUKEIKBN  =  "2"
              MOVE    WRK-PARA-PRTSTYMD(1:6)   TO   SRY-SRYYM
            ELSE
              MOVE    WRK-PARA-PRTYMD(1:6)     TO   SRY-SRYYM
            END-IF
-      *--- 2009/05/01 CHANGE END ---------------------------------------
-      *--- 2010/03/08 CHANGE END -------------------------------------
            PERFORM   900-SRYACT-SELECT-SEC
            PERFORM   900-SRYACT-FETCH-SEC
            PERFORM   UNTIL   FLG-SRYACT =   1
@@ -962,22 +820,8 @@
                    MOVE      1           TO    FLG-KAIKEI
                  END-IF
       *
-      *--- 2010/03/08 START END ----------------------------------------
-      *--- 2009/05/01 ADD START ----------------------------------------
-      *           IF   WRK-PARA-SYUKEIKBN  =  SPACE
-      **--- 2009/05/01 ADD END ------------------------------------------
-      *             PERFORM  2003-A010PUT-SEC
-      **--- 2009/05/01 ADD START ----------------------------------------
-      *           ELSE
-      *             IF   ACCT-DAY(1 WRK-DAY)  >  0
-      *               PERFORM  2003-A010PUT-SEC
-      *             END-IF
-      *           END-IF
-      *--- 2010/02/10 ADD START ----------------------------------------
-      *--- 2009/05/01 ADD END ------------------------------------------
                  IF   ( ACCT-ZAIKBN  NOT =  1 )
                      AND  ( ACCT-ZAIKBN  NOT =  2 )
-      *--- 2010/02/10 ADD END ------------------------------------------
                    EVALUATE   WRK-PARA-SYUKEIKBN
                      WHEN  "2"
                        MOVE    WRK-PARA-PRTSYMD(7:2)     TO    WRK-DAY1
@@ -994,12 +838,9 @@
                        END-IF
                      WHEN  OTHER
                        PERFORM  2003-A010PUT-SEC
-      *--- 2010/02/10 ADD START ----------------------------------------
                    END-EVALUATE
                  END-IF
                END-IF
-      *--- 2010/02/10 ADD END ------------------------------------------
-      *--- 2010/03/08 CHANGE END ---------------------------------------
              END-IF
            END-PERFORM
       *
@@ -1015,10 +856,7 @@
       *    入院患者読み込み
            INITIALIZE              NYUIN-SRYACT-REC
            MOVE WRK-PARA-HOSPNUM   TO   NSRY-HOSPNUM
-      *--- 2009/05/01 CHANGE START -------------------------------------
            MOVE    WRK-PARA-PRTYMD(1:6)   TO   NSRY-SRYYM
-      *     MOVE    WRK-PARA-PRTYM         TO   NSRY-SRYYM
-      *--- 2009/05/01 CHANGE END ---------------------------------------
            PERFORM   900-NYUINACT-SELECT-SEC
            PERFORM   900-NYUINACT-FETCH-SEC
            MOVE   NSRY-PTID           TO   WRK-PTID
@@ -1067,40 +905,7 @@
                     MOVE      1             TO    FLG-NYUKAIKEI
                  END-IF
       *
-      *--- 2009/05/01 ADD START ----------------------------------------
-      *--- 2010/03/08 CHANGE START ---------------------------------------
                  EVALUATE   WRK-PARA-SYUKEIKBN
-      *--- 2009/05/01 ADD END ------------------------------------------
-      *             PERFORM   VARYING IDX8  FROM 1  BY 1
-      *                     UNTIL   IDX8  >  31
-      **    外泊日に食事などのフラグを消す
-      *               PERFORM   920-NYUINACCT-READ-SEC
-      *               IF   NACCT-DAY(IDX8)  >  0
-      *                 MOVE  WRK-PARA-PRTYMD(1:6) TO   WRK-S-SRYYMD(1:6)
-      *                 MOVE  IDX8                 TO   WRK-S-SRYYMD(7:2)
-      **
-      **    食事療養費、室料差額を区分けして
-      **    正確な回数、点数、金額を算出する
-      *                 IF  NSRY-SRYKBN = "97"
-      *                     AND (NSRY-SRYCD(IDX1) = "099999913"
-      *                     OR NSRY-SRYCD(IDX1) = "099999918"
-      *                     OR NSRY-SRYCD(IDX1) = "099999919"
-      *                     OR NSRY-SRYCD(IDX1) = "099999920")
-      **    食事療養費の回数算出
-      *                   PERFORM 2004-NA010PUT-SEC
-      *                 ELSE
-      *                   IF  NSRY-SRYKBN = "90"
-      *                      AND NSRY-SRYCD(IDX1) = "099999912"
-      **    室料差額の回数算出
-      *                     PERFORM 2005-NA010PUT-SEC
-      *                   ELSE
-      *                     PERFORM 2003-NA010PUT-SEC
-      *                   END-IF
-      *                 END-IF
-      *               END-IF
-      *             END-PERFORM
-      **--- 2009/05/01 ADD START ----------------------------------------
-      *           ELSE
                    WHEN  "2"
                      PERFORM  VARYING IDX8  FROM  WRK-DAY1  BY 1
                               UNTIL   IDX8  >  WRK-DAY2
@@ -1187,8 +992,6 @@
                        END-IF
                      END-PERFORM
                  END-EVALUATE
-      *--- 2009/05/01 ADD END ------------------------------------------
-      *--- 2010/03/08 CHANGE END ---------------------------------------
                END-IF
              END-IF
            END-PERFORM
@@ -1222,13 +1025,11 @@
        2003-ICDSYORI-SEC                SECTION.
       *
            IF  ICD-SRYCD NOT =     SPACE
-      ***   点数マスタ読込み
+      *    点数マスタ読込み
              MOVE      ICD-SRYCD    TO    TNS-SRYCD
              PERFORM   910-TENSU-READ-SEC
       *
              IF      FLG-TENSU      =     ZERO
-      ***     AND ( TNS-DATAKBN    =     1
-      ***       OR  TNS-DATAKBN    =     2 )
                PERFORM 2003-ICDA010PUT-SEC
              END-IF
            END-IF
@@ -1272,15 +1073,11 @@
            MOVE    TNS-TEN             TO   A010T3-TEN
            IF    A010T-OUTTYPE   =  "95"
              OR   A010T-OUTTYPE   =  "96"
-      *--- 2009/04/06 ADD START ----------------------------------------
              IF   TNS-TEN  =  ZERO
-      *--- 2009/04/06 ADD END ------------------------------------------
                MOVE    SRY-JIHIMONEY(IDX1)   TO   A010T-TEN
                MOVE    SRY-JIHIMONEY(IDX1)   TO   A010T-TEN2
                MOVE    SRY-JIHIMONEY(IDX1)   TO   A010T3-TEN
-      *--- 2009/04/06 ADD START ----------------------------------------
              END-IF
-      *--- 2009/04/06 ADD END ------------------------------------------
            END-IF
            IF   TNS-KZMCOMPSIKIBETU   =  1
              MOVE    TNS-TEN         TO   A010T-TEN2
@@ -1290,7 +1087,7 @@
                COMPUTE  WRK-KIZAMI  =  SRY-SRYSURYO(IDX1)  -  TNS-KZMKGN
              END-IF
              MOVE   1    TO   A010T-KZMWAKE
-
+      *
              PERFORM    UNTIL  WRK-KIZAMI  <=  0
                COMPUTE  WRK-KIZAMI  =  WRK-KIZAMI  -  TNS-KZM
                COMPUTE  A010T-TEN2  =  A010T-TEN2  +  TNS-KZMTEN
@@ -1313,96 +1110,6 @@
            MOVE    TNS-NAME           TO   A010T-NAME
            MOVE    TNS-NAME           TO   A010T3-NAME
       *
-      *--- 2010/03/08 CHANGE START -------------------------------------
-      *--- 2009/06/18 ADD START ----------------------------------------
-      *     IF   WRK-PARA-SYUKEIKBN  =  SPACE
-      **    月報
-      *--- 2009/06/18 ADD END ------------------------------------------
-      *       IF   A010T-OUTTYPE         =    "95"
-      *           OR  A010T-OUTTYPE         =    "96"
-      **    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      *         COMPUTE  WRK-ZAIKAISU =
-      *         SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
-      *         ADD    WRK-ZAIKAISU      TO   A010T-KAISU
-      *         MOVE   1                 TO   A010T-TANI
-      *         ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
-      *         MOVE   1                 TO   A010T3-TANI
-      *       ELSE
-      *         EVALUATE  TNS-TENSIKIBETU
-      *           WHEN  1
-      **    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      *             COMPUTE  WRK-ZAIKAISU =
-      *                     SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
-      *             ADD    WRK-ZAIKAISU     TO   A010T-KAISU
-      *             MOVE   1                TO   A010T-TANI
-      *             ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
-      *             MOVE   1                TO   A010T3-TANI
-      *           WHEN  3
-      *           WHEN  8
-      **    点数項目の場合は回数をデータ化する。
-      *             ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
-      *             MOVE   ZERO             TO   A010T-TANI
-      *             ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
-      *             MOVE   ZERO             TO   A010T3-TANI
-      *           WHEN  0
-      *           WHEN  4
-      *           WHEN  5
-      *           WHEN  6
-      *           WHEN  7
-      **    点数、金額以外の場合
-      *             MOVE   ZERO             TO   A010T-TEN
-      *             ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
-      *             MOVE   9                TO   A010T-TANI
-      *             MOVE   ZERO             TO   A010T3-TEN
-      *             ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
-      *             MOVE   9                TO   A010T3-TANI
-      *           END-EVALUATE
-      *       END-IF
-      **--- 2009/06/18 ADD START ----------------------------------------
-      *     ELSE
-      **    日報
-      *       IF   A010T-OUTTYPE         =    "95"
-      *           OR  A010T-OUTTYPE         =    "96"
-      **    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      *         COMPUTE  WRK-ZAIKAISU =
-      *         SRY-SRYSURYO(IDX1)  *  ACCT-DAY(1 WRK-DAY)
-      *         ADD    WRK-ZAIKAISU      TO   A010T-KAISU
-      *         MOVE   1                 TO   A010T-TANI
-      *         ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
-      *         MOVE   1                 TO   A010T3-TANI
-      *       ELSE
-      *         EVALUATE  TNS-TENSIKIBETU
-      *           WHEN  1
-      **    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-      *             COMPUTE  WRK-ZAIKAISU =
-      *                     SRY-SRYSURYO(IDX1)  *  ACCT-DAY(1 WRK-DAY)
-      *             ADD    WRK-ZAIKAISU     TO   A010T-KAISU
-      *             MOVE   1                TO   A010T-TANI
-      *             ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
-      *             MOVE   1                TO   A010T3-TANI
-      *           WHEN  3
-      *           WHEN  8
-      **      点数項目の場合は回数をデータ化する。
-      *             ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T-KAISU
-      *             MOVE   ZERO             TO   A010T-TANI
-      *             ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T3-KAISU
-      *             MOVE   ZERO             TO   A010T3-TANI
-      *           WHEN  0
-      *           WHEN  4
-      *           WHEN  5
-      *           WHEN  6
-      *           WHEN  7
-      **      点数、金額以外の場合
-      *             MOVE   ZERO             TO   A010T-TEN
-      *             ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T-KAISU
-      *             MOVE   9                TO   A010T-TANI
-      *             MOVE   ZERO             TO   A010T3-TEN
-      *             ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T3-KAISU
-      *             MOVE   9                TO   A010T3-TANI
-      *           END-EVALUATE
-      *       END-IF
-      *     END-IF
-      **--- 2009/06/18 ADD END ------------------------------------------
            EVALUATE   WRK-PARA-SYUKEIKBN
              WHEN  "2"
                IF   A010T-OUTTYPE  =  "95"
@@ -1529,8 +1236,6 @@
                  END-EVALUATE
                END-IF
            END-EVALUATE
-      *--- 2009/06/18 ADD END ------------------------------------------
-      *--- 2010/03/08 CHANGE END ---------------------------------------
       *
            IF   FLG-INVALID      =    ZERO
              INITIALIZE       FLG-INVALID
@@ -1712,21 +1417,11 @@
       *                 3:食事療養＋選択食、4:食事療養＋特食＋選択食)
            INITIALIZE   WRK-SYOKUJIKAISU
            INITIALIZE   WRK-SYOKUJIKAI
-      *--- 2010/03/08 CHANGE START -------------------------------------
-      *--- 2009/05/01 ADD START ----------------------------------------
-      *     IF   WRK-PARA-SYUKEIKBN  =  SPACE
-      **--- 2009/05/01 ADD END ------------------------------------------
-      *       MOVE   IDX8        TO   IIII
-      **--- 2009/05/01 ADD START ----------------------------------------
-      *     ELSE
-      *       MOVE   WRK-DAY     TO   IIII
-      *     END-IF
            IF   WRK-PARA-SYUKEIKBN  =  1
              MOVE   WRK-DAY     TO   IIII
            ELSE
              MOVE   IDX8        TO   IIII
            END-IF
-      *--- 2010/03/08 CHANGE END ---------------------------------------
            PERFORM  VARYING  ZZZZ  FROM  1  BY  1
                     UNTIL   ZZZZ  >  4
              COMPUTE   SSSS  =  IIII  *  3  -  2
@@ -1767,70 +1462,51 @@
              IF  WRK-SYOKUJIKAISU  NOT = 0
                INITIALIZE   A010T
                INITIALIZE   FLG-INVALID
-      * 20080902 ０回の診療行為時の不具合の修正START
                INITIALIZE   A010T3
                INITIALIZE   FLG-INVALID2
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    出力区分の設定
                PERFORM   2003-SET-OUTTYPE-SEC
       *
       *    入外区分の設定
                MOVE NSRY-NYUGAIKBN   TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE NSRY-NYUGAIKBN   TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
-      ***  20040727  @@@@-MOTOHASI  入外合計
                IF  WRK-PARA-NYUGAIKBN  =  "3"
                  MOVE "0"             TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
                  MOVE "0"             TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-IF
-      ***  ここまで
       *
       *    カナ名称
                IF   WRK-PARA-PRSORT  =     "2"
                    OR  WRK-PARA-PRSORT  =     "9"
                  MOVE TNS-KANANAME      TO    A010T-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正START
                  MOVE TNS-KANANAME      TO    A010T3-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-IF
       *
                MOVE NSRY-SRYCD(IDX1) TO    A010T-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE NSRY-SRYCD(IDX1) TO    A010T3-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
                MOVE IDX4             TO    A010T-BUNRUICD
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE IDX4             TO    A010T3-BUNRUICD
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
                READ A010T-FILE
                     KEY      IS      A010T-KEY
                     INVALID  KEY     MOVE  1  TO FLG-INVALID
                END-READ
-      * 20080902 ０回の診療行為時の不具合の修正START
                READ A010T3-FILE
                     KEY      IS      A010T3-KEY
                     INVALID  KEY     MOVE  1  TO FLG-INVALID2
                END-READ
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    (点数マスタ)点識別の設定
                MOVE TNS-TENSIKIBETU  TO    A010T-TENSIKIBETU
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE TNS-TENSIKIBETU  TO    A010T3-TENSIKIBETU
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    診療行為名称の設定
                EVALUATE  IDX4
                  WHEN  1
                    MOVE "01：食事療養のみ"            TO  A010T-NAME
-      *** 20070717食事療養費の修正START　T.Tanaka
                    EVALUATE NSRY-SRYCD(IDX1)
                      WHEN 099999918
                        MOVE "01：食事療養のみ(朝)"    TO  A010T-NAME
@@ -1839,7 +1515,6 @@
                      WHEN 099999920
                        MOVE "01：食事療養のみ(夕)"    TO  A010T-NAME
                    END-EVALUATE
-      *** 20070717食事療養費の修正END
                  WHEN  2
                    MOVE "02：食事療養＋特食"          TO  A010T-NAME
                  WHEN  3
@@ -1847,8 +1522,7 @@
                  WHEN  4
                    MOVE "04：食事療養＋特食＋選択食"  TO  A010T-NAME
                END-EVALUATE
-
-
+      *
       *    点数の設定
                EVALUATE  IDX4
                  WHEN  1
@@ -1860,33 +1534,21 @@
                  WHEN  4
                    MOVE WRK-SYOKUJITEN4     TO    A010T-TEN
                END-EVALUATE
-      *    回数の設定
       *
+      *    回数の設定
                EVALUATE  IDX4
                  WHEN  1
                    ADD  WRK-SYOKUJIKAISU1   TO   A010T-KAISU
-      *--- 2009/03/27 CHANGE START -------------------------------------
-      *             MOVE ZERO                TO   A010T-TANI
                    MOVE    1                TO   A010T-TANI
-      *--- 2009/03/27 CHANGE END ---------------------------------------
                  WHEN  2
                    ADD  WRK-SYOKUJIKAISU2   TO   A010T-KAISU
-      *--- 2009/03/27 CHANGE START -------------------------------------
-      *             MOVE ZERO                TO   A010T-TANI
                    MOVE    1                TO   A010T-TANI
-      *--- 2009/03/27 CHANGE END ---------------------------------------
                  WHEN  3
                    ADD  WRK-SYOKUJIKAISU3   TO   A010T-KAISU
-      *--- 2009/03/27 CHANGE START -------------------------------------
-      *             MOVE ZERO                TO   A010T-TANI
                    MOVE    1                TO   A010T-TANI
-      *--- 2009/03/27 CHANGE END ---------------------------------------
                  WHEN  4
                    ADD  WRK-SYOKUJIKAISU4   TO   A010T-KAISU
-      *--- 2009/03/27 CHANGE START -------------------------------------
-      *             MOVE ZERO                TO   A010T-TANI
                    MOVE    1                TO   A010T-TANI
-      *--- 2009/03/27 CHANGE END ---------------------------------------
                END-EVALUATE
       *
                IF   FLG-INVALID      =    ZERO
@@ -1902,7 +1564,6 @@
                          MOVE  1  TO FLG-INVALID
                  END-WRITE
                END-IF
-      * 20080902 ０回の診療行為時の不具合の修正START
                IF   FLG-INVALID2      =    ZERO
                  INITIALIZE       FLG-INVALID2
                  REWRITE A010T3
@@ -1916,7 +1577,6 @@
                          MOVE  1  TO FLG-INVALID2
                  END-WRITE
                END-IF
-      * 20080902 ０回の診療行為時の不具合の修正END
              END-IF
            END-PERFORM
       *
@@ -1924,97 +1584,68 @@
        2004-NA010PUT-EXT.
            EXIT.
       *****************************************************************
-      *    室料差額 診療行為回数一時ファイルヘの書込 2004/07/23
+      *    室料差額 診療行為回数一時ファイルヘの書込
       *****************************************************************
        2005-NA010PUT-SEC                SECTION.
       *
       *    区分けの設定(1〜30)
-      *
            INITIALIZE   WRK-SITURYOKAI-TBL
-      *--- 2010/03/08 CHANGE START -------------------------------------
-      *--- 2009/05/01 ADD START ----------------------------------------
-      *     IF   WRK-PARA-SYUKEIKBN  =  SPACE
-      **--- 2009/05/01 ADD END ------------------------------------------
-      *       MOVE   IDX8        TO   IIII
-      **--- 2009/05/01 ADD START ----------------------------------------
-      *     ELSE
-      *       MOVE   WRK-DAY     TO   IIII
-      *     END-IF
            IF   WRK-PARA-SYUKEIKBN  =  1
              MOVE   WRK-DAY     TO   IIII
            ELSE
              MOVE   IDX8        TO   IIII
            END-IF
-      *--- 2009/05/01 ADD END ------------------------------------------
-      *--- 2010/03/08 CHANGE END ---------------------------------------
            PERFORM VARYING ZZZZ FROM 1 BY 1
                    UNTIL  ZZZZ  >  30
              COMPUTE   SSSS  =  IIII  *  3  -  2
              IF  NACCT-DAY-TBL(SSSS:3)  =  ZZZZ
                ADD   1    TO   WRK-SITURYOKAI(ZZZZ)
-	         END-IF
-	       END-PERFORM
+             END-IF
+           END-PERFORM
       *
            PERFORM  VARYING      IDX5  FROM  1  BY   1
                     UNTIL        IDX5 > 30
-      ****2005/12/27 @@@@-BRAND  END
       *
       *    回数が0の場合は書き込まない
              IF  WRK-SITURYOKAI(IDX5)  NOT = 0
                INITIALIZE   A010T
                INITIALIZE   FLG-INVALID
-      * 20080902 ０回の診療行為時の不具合の修正START
                INITIALIZE   A010T3
                INITIALIZE   FLG-INVALID2
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    出力区分の設定
                PERFORM   2003-SET-OUTTYPE-SEC
       *
       *    入外区分の設定
                MOVE NSRY-NYUGAIKBN   TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE NSRY-NYUGAIKBN   TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
-      ***  20040727  @@@@-MOTOHASI  入外合計
                IF  WRK-PARA-NYUGAIKBN  =  "3"
                  MOVE "0"             TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
                  MOVE "0"             TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-IF
-      ***  ここまで
       *
       *    カナ名称
                IF   WRK-PARA-PRSORT  =     "2"
                    OR  WRK-PARA-PRSORT  =     "9"
                  MOVE TNS-KANANAME      TO    A010T-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正START
                  MOVE TNS-KANANAME      TO    A010T-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-IF
       *
                MOVE NSRY-SRYCD(IDX1) TO    A010T-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE NSRY-SRYCD(IDX1) TO    A010T3-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
                MOVE IDX5             TO    A010T-BUNRUICD
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE IDX5             TO    A010T3-BUNRUICD
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
                READ A010T-FILE
                  KEY      IS      A010T-KEY
                  INVALID  KEY     MOVE  1  TO FLG-INVALID
                END-READ
-      * 20080902 ０回の診療行為時の不具合の修正START
                READ A010T3-FILE
                  KEY      IS      A010T3-KEY
                  INVALID  KEY     MOVE  1  TO FLG-INVALID2
                END-READ
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    (点数マスタ)点識別の設定
                MOVE TNS-TENSIKIBETU  TO    A010T-TENSIKIBETU
@@ -2061,7 +1692,6 @@
                    MOVE "19：室料差額"            TO  WRK-NAME
                  WHEN  20
                    MOVE "20：室料差額"            TO  WRK-NAME
-      ****2005/12/27 @@@@-BRAND  START
                  WHEN  21
                    MOVE "21：室料差額"            TO  WRK-NAME
                  WHEN  22
@@ -2082,18 +1712,13 @@
                    MOVE "29：室料差額"            TO  WRK-NAME
                  WHEN  30
                    MOVE "30：室料差額"            TO  WRK-NAME
-      ****2005/12/27 @@@@-BRAND  END
                END-EVALUATE
       *
                MOVE WRK-SITURYOYEN(IDX5)  TO  WRK-Z7
                INITIALIZE        FLG-SPACE
                INITIALIZE        IDX6
-      ****2005/10/17  @@@@-BRAND START
-      *        PERFORM   UNTIL   FLG-SPACE =   1
-      *                    OR    IDX6  >= 20
                PERFORM   UNTIL   FLG-SPACE =   1
                          OR    IDX6  >= 7
-      ****2005/10/17  @@@@-BRAND END
                  ADD  1       TO    IDX6
                  IF   WRK-Z7(IDX6:1)   =  "0" OR "1" OR "2" OR "3" OR
                                           "4" OR "5" OR "6" OR "7" OR
@@ -2101,12 +1726,9 @@
                    MOVE    1    TO    FLG-SPACE
                  END-IF
                END-PERFORM
-      ****2005/10/17  @@@@-BRAND START
                INITIALIZE        IDX7
                COMPUTE  IDX7 = 8 - IDX6
-      *          MOVE WRK-Z7(IDX6:)         TO  WRK-NAME(13:)
                MOVE WRK-Z7(IDX6:IDX7)         TO  WRK-NAME(13:IDX7)
-      ****2005/10/17  @@@@-BRAND END
                MOVE WRK-NAME              TO  A010T-NAME
       *
                INITIALIZE        FLG-SPACE
@@ -2145,7 +1767,6 @@
                          MOVE  1  TO  FLG-INVALID
                  END-WRITE
                END-IF
-      * 20080902 ０回の診療行為時の不具合の修正START
                IF   FLG-INVALID2      =    ZERO
                  INITIALIZE       FLG-INVALID2
                  REWRITE A010T3
@@ -2159,7 +1780,6 @@
                        MOVE  1  TO FLG-INVALID2
                  END-WRITE
                END-IF
-      * 20080902 ０回の診療行為時の不具合の修正END
              END-IF
            END-PERFORM
       *
@@ -2173,98 +1793,69 @@
       *
            INITIALIZE   A010T
            INITIALIZE   FLG-INVALID
-      * 20080902 ０回の診療行為時の不具合の修正START
            INITIALIZE   A010T3
            INITIALIZE   FLG-INVALID2
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    出力区分の設定
            PERFORM   2003-SET-OUTTYPE-SEC
       *
       *    診療行為コードの設定
            MOVE ICD-SRYCD        TO    A010T-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正START
            MOVE ICD-SRYCD        TO    A010T3-SRYCD
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
            INITIALIZE    FLG-NICDINV
            INITIALIZE    FLG-GICDINV
       *
       *    入院データの未入力チェック
            MOVE "1"              TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
            MOVE "1"              TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
-      * 2004/01/29追加
       *    カナ名称
            IF   WRK-PARA-PRSORT  =     "2"
                OR   WRK-PARA-PRSORT  =     "9"
              MOVE TNS-KANANAME      TO    A010T-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正START
              MOVE TNS-KANANAME      TO    A010T3-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正END
            END-IF
-      * 2004/01/29追加
       *
            READ A010T-FILE
                 KEY      IS      A010T-KEY
-      * 20080902 ０回の診療行為時の不具合の修正START
-      *          INVALID  KEY     MOVE  1  TO FLG-NICDINV
-      * 20080902 ０回の診療行為時の不具合の修正END
            END-READ
-      * 20080902 ０回の診療行為時の不具合の修正START
            READ A010T3-FILE
                 KEY      IS      A010T3-KEY
                 INVALID  KEY     MOVE  1  TO FLG-NICDINV
            END-READ
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
       *    外来データの未入力チェック
            MOVE "2"              TO    A010T-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正START
            MOVE "2"              TO    A010T3-NYUGAIKBN
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
-      * 2004/01/29追加
       *    カナ名称
            IF   WRK-PARA-PRSORT  =     "2"
                OR  WRK-PARA-PRSORT  =     "9"
              MOVE TNS-KANANAME      TO    A010T-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正START
              MOVE TNS-KANANAME      TO    A010T3-KANANAME
-      * 20080902 ０回の診療行為時の不具合の修正END
            END-IF
-      * 2004/01/29追加
       *
            READ A010T-FILE
                 KEY      IS      A010T-KEY
-      * 20080902 ０回の診療行為時の不具合の修正START
-      *          INVALID  KEY     MOVE  1  TO FLG-GICDINV
-      * 20080902 ０回の診療行為時の不具合の修正END
            END-READ
-      * 20080902 ０回の診療行為時の不具合の修正START
            READ A010T3-FILE
                 KEY      IS      A010T3-KEY
                 INVALID  KEY     MOVE  1  TO FLG-GICDINV
            END-READ
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
            IF  FLG-NICDINV      =   1
                AND FLG-GICDINV      =   1
       *
       *    入院、外来共に未使用の場合は未使用としてデータを抽出する。
-      *
-      *        入外区分の設定
+      *    入外区分の設定
              MOVE "9"             TO    A010T-NYUGAIKBN
       *
-      * 2004/01/29追加
       *    カナ名称の設定
              IF   WRK-PARA-PRSORT  =    "2"
                  OR WRK-PARA-PRSORT  =    "9"
                MOVE TNS-KANANAME     TO    A010T-KANANAME
              END-IF
-      * 2004/01/29追加
       *
       *    (点数マスタ)点識別の設定
              MOVE TNS-TENSIKIBETU TO    A010T-TENSIKIBETU
@@ -2275,7 +1866,6 @@
       *    点数の設定
              MOVE TNS-TEN         TO    A010T-TEN
       *
-      * 2004/01/29追加
              IF   A010T-OUTTYPE      =     "95"
                  OR  A010T-OUTTYPE      =     "96"
                MOVE 1             TO    A010T-TANI
@@ -2298,7 +1888,6 @@
                    MOVE 9          TO    A010T-TANI
                END-EVALUATE
              END-IF
-      * 2004/01/29追加
       *
       *    回数の設定
              MOVE ZERO             TO    A010T-KAISU
@@ -2322,214 +1911,128 @@
              WHEN  "101000000"   THRU  "114999999"
       *    初診、再診、指導、在宅
                MOVE  "10"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "10"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      * 20080526 診療行為区分の振り分けを修正STRAT tanaka
                EVALUATE   TNS-SRYKBN
                  WHEN  "80"
                    MOVE  "80"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "80"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-EVALUATE
-      * 20080526 診療行為区分の振り分けを修正END
              WHEN  "610000000"   THRU  "619999999"
       *    内服薬
                MOVE  "21"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "21"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
              WHEN  "640000000"   THRU  "649999999"
       *    注射薬
                MOVE  "22"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "22"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
              WHEN  "660000000"   THRU  "669999999"
       *    外用薬
                MOVE  "23"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "23"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
              WHEN  "120000000"   THRU  "129999999"
       *    投薬
                MOVE  "29"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "29"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      * 20080526 診療行為区分の振り分けを修正STRAT tanaka
                EVALUATE   TNS-SRYKBN
                  WHEN    "11"
                  WHEN    "12"
                  WHEN    "13"
                  WHEN    "14"
                    MOVE   "10"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE   "10"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-EVALUATE
-      * 20080526 診療行為区分の振り分けを修正END
              WHEN  "130000000"   THRU  "139999999"
       *    注射、点滴
                MOVE  "30"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "30"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      * 20080418 診療行為区分の振り分けを修正START tanaka
                IF  TNS-SRYKBN = "50"
                  MOVE  "50"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                  MOVE  "50"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-IF
-      * 20080418 診療行為区分の振り分けを修正END
              WHEN  "140000000"   THRU  "149999999"
       *    処置
                MOVE  "40"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "40"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
              WHEN  "150000000"   THRU  "159999999"
       *    手術、麻酔
                MOVE  "50"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "50"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      * 20080418 診療行為区分の振り分けを修正START tanaka
                IF  TNS-SRYKBN = "40"
                  MOVE  "40"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                  MOVE  "40"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-IF
-      * 20080418 診療行為区分の振り分けを修正END
              WHEN  "160000000"   THRU  "169999999"
-      * 20080402 H20年4月改正対応START tanaka
-      *               MOVE  "60"    TO    A010T-OUTTYPE
       *    病理診断
-      *--- 2009/05/01 CHANGE START -------------------------------------
-      *--- 2010/03/08 CHANGE START -------------------------------------
-      *        IF  WRK-PARA-PRTYM  <  "200804"
                IF  WRK-PARA-PRTYMD  <  "20080401"
                    OR  ( WRK-PARA-PRTSTYMD  <  "20080401"
                    AND  WRK-PARA-PRTEDYMD  <  "20080401" )
                    AND  WRK-PARA-SYUKEIKBN  =  "2"
-      *--- 2009/05/01 CHANGE END ---------------------------------------
-      *--- 2010/03/08 CHANGE END ---------------------------------------
                  MOVE  "60"    TO    A010T-OUTTYPE
                  MOVE  "60"    TO    A010T3-OUTTYPE
                ELSE
-      *--- 2010/07/16 CHANGE START -------------------------------------
-      *           IF  TNS-KNSJISGRPKBN = 7
                  IF   TNS-SRYKBN  =  "64"
-      *--- 2010/07/16 CHANGE END ---------------------------------------
                    MOVE  "64"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "64"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  ELSE
       *    検査
                    MOVE  "60"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "60"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  END-IF
                END-IF
-      * 20080402 H20年4月改正対応END
              WHEN  "170000000"   THRU  "179999999"
       *    画像診断
                MOVE  "70"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "70"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
              WHEN  "700000000"   THRU  "700999999"
       *    フィルム
                MOVE  "71"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "71"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
              WHEN  "180000000"   THRU  "189999999"
       *    理学療法、リハビリ
                MOVE  "80"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "80"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      *20070828 診療行為振り分け修正 START
                IF  TNS-SRYKBN = "13"
                  MOVE  "10"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                  MOVE  "10"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-IF
-      *20070828 診療行為振り分け修正 END
              WHEN  "190000000"   THRU  "199999999"
       *    入院
                MOVE  "90"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "90"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      *20070828 診療行為振り分け修正 START
                IF  TNS-SRYKBN = "13"
                  MOVE  "10"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                  MOVE  "10"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                END-IF
-      *20070828 診療行為振り分け修正 END
              WHEN  "705000000"   THRU  "799999999"
       *    器材
                MOVE  "91"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "91"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
              WHEN  "059000001"   THRU  "059999999"
       *    その他材料
                MOVE  "92"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "92"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      ***  20041108  @@@@-MOTOHASI  変更
-      ***         WHEN  "095000001"   THRU  "095999999"
              WHEN  "095000000"   THRU  "095999999"
       *    自費消費税なし
                MOVE  "95"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "95"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      ***  20041108  @@@@-MOTOHASI  変更
-      ***         WHEN  "096000001"   THRU  "096999999"
              WHEN  "096000000"   THRU  "096999999"
       *    自費消費税あり
                MOVE  "96"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "96"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      ***         WHEN  "001000000"   THRU  "001000999"
              WHEN  "001000000"   THRU  "001999999"
              WHEN  "002000001"   THRU  "002999999"
              WHEN  "810000000"   THRU  "899999999"
-      *              用法、画像診断、撮影部位、コメント
+      *    用法、画像診断、撮影部位、コメント
                MOVE  "99"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "99"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
       *
-      ***  20041108  @@@@-MOTOHASI  追加
-      ***            外泊(099999911)、室料差額(099999912)、食事(099999913)
-      ***            老人特定入院料(099999915)、選定入院料(099999916)
+      *    外泊(099999911)、室料差額(099999912)、食事(099999913)
+      *    老人特定入院料(099999915)、選定入院料(099999916)
              WHEN  "099999911"   THRU  "099999913"
              WHEN  "099999915"   THRU  "099999916"
-      *** 20070717食事療養費の修正START　T.Tanaka
              WHEN  "099999918"   THRU  "099999920"
-      *** 20070717食事療養費の修正END
-      *              入院WRK-PRT-OUTTYPE
                MOVE  "90"    TO    A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                MOVE  "90"    TO    A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-
-      ***  20041108  @@@@-MOTOHASI  追加
       *
              WHEN  OTHER
       *    その他分類
@@ -2539,84 +2042,52 @@
                  WHEN    "13"
                  WHEN    "14"
                    MOVE  "10"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "10"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  WHEN    "40"
                    MOVE  "40"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "40"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  WHEN    "50"
                  WHEN    "54"
                    MOVE  "50"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "50"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  WHEN    "60"
                    MOVE  "60"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "60"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      * 20080402 H20年4月改正対応START tanaka
                  WHEN    "64"
                    MOVE  "64"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "64"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
-      * 20080402 H20年4月改正対応END
                  WHEN    "70"
                    MOVE  "70"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "70"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  WHEN    "80"
                    MOVE  "80"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "80"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  WHEN    "90"
                    MOVE  "90"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "90"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  WHEN    "95"
                    MOVE  "95"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "95"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  WHEN    "96"
                    MOVE  "96"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "96"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  WHEN    "99"
                    MOVE  "99"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                    MOVE  "99"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                  WHEN    OTHER
                    EVALUATE  TNS-YKZKBN
                      WHEN  1
                        MOVE  "21"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                        MOVE  "21"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                      WHEN  4
                        MOVE  "22"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                        MOVE  "22"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                      WHEN  6
                        MOVE  "23"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                        MOVE  "23"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                      WHEN  OTHER
                        MOVE  "99"  TO  A010T-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正START
                        MOVE  "99"  TO  A010T3-OUTTYPE
-      * 20080902 ０回の診療行為時の不具合の修正END
                    END-EVALUATE
                END-EVALUATE
            END-EVALUATE
@@ -3021,7 +2492,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3042,8 +2513,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
-
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-2
@@ -3087,7 +2557,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3108,7 +2578,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-3
@@ -3152,7 +2622,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3173,7 +2643,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-4
@@ -3217,7 +2687,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3238,7 +2708,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-5
@@ -3282,7 +2752,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3303,7 +2773,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-6
@@ -3347,7 +2817,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3368,7 +2838,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-7
@@ -3412,7 +2882,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3433,7 +2903,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-8
@@ -3477,7 +2947,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3498,7 +2968,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-9
@@ -3542,7 +3012,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3563,7 +3033,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-10
@@ -3607,7 +3077,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3628,7 +3098,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-11
@@ -3672,7 +3142,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3693,7 +3163,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-12
@@ -3737,7 +3207,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3758,7 +3228,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-13
@@ -3802,7 +3272,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3823,7 +3293,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-14
@@ -3867,7 +3337,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3888,7 +3358,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-15
@@ -3932,7 +3402,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -3953,7 +3423,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-16
@@ -3997,7 +3467,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4018,7 +3488,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-17
@@ -4062,7 +3532,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4083,7 +3553,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-18
@@ -4127,7 +3597,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4148,7 +3618,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-19
@@ -4192,7 +3662,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4213,7 +3683,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-20
@@ -4257,7 +3727,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4278,7 +3748,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-21
@@ -4322,7 +3792,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4343,7 +3813,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-22
@@ -4387,7 +3857,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4408,7 +3878,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-23
@@ -4452,7 +3922,7 @@
                 ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                 ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4473,7 +3943,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-24
@@ -4517,7 +3987,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4538,7 +4008,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-25
@@ -4582,7 +4052,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4603,7 +4073,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-26
@@ -4647,7 +4117,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4668,7 +4138,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-27
@@ -4712,7 +4182,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4733,7 +4203,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-28
@@ -4777,7 +4247,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4798,7 +4268,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-29
@@ -4842,7 +4312,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4863,7 +4333,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-30
@@ -4907,7 +4377,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4928,7 +4398,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            EVALUATE  NACCT-DAY-31
@@ -4972,7 +4442,7 @@
                ADD  1     TO   WRK-SITURYOKAI(19)
              WHEN 20
                ADD  1     TO   WRK-SITURYOKAI(20)
-      ****2006/01/06 @@@@-BRAND  START
+      *
              WHEN 21
                ADD  1     TO   WRK-SITURYOKAI(21)
              WHEN 22
@@ -4993,7 +4463,7 @@
                ADD  1     TO   WRK-SITURYOKAI(29)
              WHEN 30
                ADD  1     TO   WRK-SITURYOKAI(30)
-      ****2006/01/06 @@@@-BRNAD  END
+      *
            END-EVALUATE
       *
            .
@@ -5003,12 +4473,11 @@
       *    検査分類コードの判定(現在未使用)
       *****************************************************************
        2003-KENSABUNRUI-SEC                SECTION.
-
       *
            INITIALIZE             KENSASORT-REC
            MOVE  SRY-SRYCD(IDX1)  TO  KENSASORT-SRYCD
            PERFORM 940-KENSASORT-READ-SEC
-
+      *
            IF    FLG-KENSASORT    =   ZERO
              EVALUATE  KENSASORT-KNSBUNRUI
                WHEN 1
@@ -5117,25 +4586,17 @@
            ELSE
                MOVE  WRK-PARA-OUTTYPE   TO  A010T-OUTTYPE
            END-IF
-      * 2004/01/29変更
-      ***     IF  WRK-PARA-PRSORT  =  1
            IF   WRK-PARA-PRSORT  =  "8"
                AND WRK-PARA-PRSORT  =  "9"
-      * 2004/01/29変更
              MOVE  "9"                TO  A010T-NYUGAIKBN
            END-IF
-      *    抽出患者情報読み込み
       *
+      *    抽出患者情報読み込み
            START   A010T-FILE
                    KEY IS      >=  A010T-KEY
            END-START
            PERFORM UNTIL   FLG-ATEND =   1
              PERFORM 910-A010-READ-SEC
-      * 2004/01/29変更
-      ***         IF      FLG-ATEND       NOT =   1
-      ***          AND (( WRK-PARA-PRSORT NOT =  "1" )
-      ***           OR  ( WRK-PARA-PRSORT     =  "1"
-      ***            AND  A010T-NYUGAIKBN     =  "9" ))
              IF      FLG-ATEND       NOT =   1
                  AND (( WRK-PARA-PRSORT NOT =  "8" )
                  OR  ( WRK-PARA-PRSORT     =  "8"
@@ -5143,34 +4604,26 @@
                  AND (( WRK-PARA-PRSORT NOT =  "9" )
                  OR  ( WRK-PARA-PRSORT     =  "9"
                  AND  A010T-NYUGAIKBN     =  "9" ))
-      * 2004/01/29変更
-      *            レコード転送
+      *    レコード転送
                MOVE  A010T   TO  A010T2
       *
-      *            点数 × 回数
-      * 20080121 入院行為の不具合をを修正START  t.tanaka
+      *    点数 × 回数
                IF A010T-KZMWAKE = ZERO
-      * 20080121 入院行為の不具合をを修正END
                  COMPUTE    WRK-TEN =
                               A010T-TEN    *      A010T-KAISU
                  MOVE WRK-TEN            TO     A010T2-TTEN
-      * 20080121 入院行為の不具合をを修正START  t.tanaka
                ELSE
                  COMPUTE    WRK-TEN =
                             A010T-TEN2    *     A010T-KAISU
                  MOVE WRK-TEN            TO     A010T2-TTEN
                END-IF
-      * 20080121 入院行為の不具合をを修正END
-      *            明細印字順番号
+      *    明細印字順番号
                EVALUATE   WRK-PARA-PRSORT
                  WHEN   SPACE
                    COMPUTE     WRK-PRSORTNUM   =
                                 999999999.99   -   A010T-KAISU
                    MOVE WRK-PRSORTNUM  TO   A010T2-PRSORTNUM
-      * 2004/01/29変更
-      ***                 WHEN   "0"
                  WHEN   "1"
-      * 2004/01/29変更
                    COMPUTE    WRK-PRSORTNUM   =
                               999999999.99  -  WRK-TEN
                    MOVE WRK-PRSORTNUM  TO   A010T2-PRSORTNUM
@@ -5217,7 +4670,6 @@
            END-PERFORM
       *
       *合計総点数(総金額)
-      *
            MOVE  SUM-T-TTEN      TO    WRK-Z9TENGK
            MOVE  WRK-Z9TENGK     TO    A010-GKTTEN
            MOVE  SUM-T-TKIN      TO    WRK-Z9TENGK
@@ -5226,7 +4678,6 @@
            MOVE  "点"            TO    A010-GKTENTANI
            MOVE  "円"            TO    A010-GKYENTANI
       *
-
            PERFORM  330-TERM-HEN-SEC
       *
            CLOSE           A010T2-FILE
@@ -5239,7 +4690,7 @@
       *****************************************************************
        2007-SYORI-SEC                SECTION.
       *
-      * 診療行為分類のブレイクチェック
+      *    診療行為分類のブレイクチェック
            IF    A010T2-OUTTYPE      NOT =  WRK-OUTTYPE
              PERFORM  330-TERM-HEN-SEC
              MOVE     1             TO  IDX2
@@ -5248,7 +4699,7 @@
              MOVE  A010T2-NYUGAIKBN TO  WRK-NYUGAIKBN
            END-IF
       *
-      * 入外区分のブレイクチェック
+      *    入外区分のブレイクチェック
            IF    A010T2-NYUGAIKBN   NOT =   WRK-NYUGAIKBN
              PERFORM  330-TERM-HEN-SEC
              MOVE     1             TO IDX2
@@ -5256,27 +4707,20 @@
              MOVE  A010T2-NYUGAIKBN TO WRK-NYUGAIKBN
            END-IF
       *
-      * 明細数オーバーのチェック
+      *    明細数オーバーのチェック
            IF  IDX2     >          38
-      *--- 2009/05/01 ADD START ----------------------------------------
              MOVE     1             TO   FLG-MEIKENSU
-      *--- 2009/05/01 ADD END ------------------------------------------
              PERFORM  330-TERM-HEN-SEC
              MOVE     1     TO   IDX2
              INITIALIZE          A010
-      *--- 2009/05/01 ADD START ----------------------------------------
              INITIALIZE              FLG-MEIKENSU
-      *--- 2009/05/01 ADD END ------------------------------------------
            END-IF
       *
-      * 診療コード
+      *    診療コード
            MOVE A010T2-SRYCD     TO   A010-SRYCD(IDX2)
-      * 入力コード
       *
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE     WRK-PARA-HOSPID  TO  ICD-HOSPID
+      *    入力コード
            MOVE     WRK-PARA-HOSPNUM  TO  ICD-HOSPNUM
-      * 20070921 4.0対応END
            MOVE     A010T2-SRYCD     TO  ICD-SRYCD
            PERFORM  930-INPUTCD-SELECT-SEC
            PERFORM  930-INPUTCD-FETCH-SEC
@@ -5287,26 +4731,18 @@
                  MOVE "※"    TO   A010-INPMK(IDX2)
              END-IF
            END-IF
-      *=== sarge対応 ADD By Takashima(2006/09/16) start
            PERFORM  930-INPUTCD-CLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/09/16) end
-      * 診療行為名称
+      *    診療行為名称
            MOVE  A010T2-NAME         TO  A010-SRYNM(IDX2)
-      * 点数
-      * 20080121 入院診療行為の不具合を修正START t.tanaka
+      *    点数
            IF A010T2-KZMWAKE = ZERO
              MOVE  A010T2-TEN          TO  WRK-Z9TEN2
            ELSE
              MOVE  A010T2-TEN2          TO  WRK-Z9TEN2
            END-IF
-
+      *
            MOVE  WRK-Z9TEN2          TO  A010-TEN(IDX2)
-      * 20080121 入院診療行為の不具合を修正END
-      * 回数
-      ****
-      *  2005/02/08 @@@@-SUZUKI 小数点以下の桁を印字するため追加
-      *     MOVE  A010T2-KAISU        TO  WRK-Z9KAI
-      *     MOVE  WRK-Z9KAI           TO  A010-KAISU(IDX2)
+      *    回数
            IF    A010T2-KAISU(10:3)    = "000"
              MOVE  A010T2-KAISU(1:9)   TO  WRK-Z9KAI-1
              MOVE  WRK-Z9KAI-1         TO  WRK-Z9KAI-1Z
@@ -5326,48 +4762,32 @@
              END-IF
            END-IF
       *
-      *  2005/02/08 ここまで
-      ***
-      * 点数 × 回数
+      *    点数 × 回数
            MOVE  A010T2-TTEN         TO  WRK-Z9TEN
            MOVE  WRK-Z9TEN           TO  A010-TTEN(IDX2)
-      * 合計総点数(総金額)の加算処理
-      * 20040129 変更
-      ***     IF   A010T2-TENSIKIBETU   =   1
-      ***      OR  A010T2-OUTTYPE       =   "95"
-      ***      OR  A010T2-OUTTYPE       =   "96"
-      ***          ADD   A010T2-TTEN    TO  SUM-T-TKIN
-      * 点数単位
-      ***          MOVE  "円"           TO  A010-TENTANI(IDX2)
-      ***     ELSE
-      ***          ADD   A010T2-TTEN    TO  SUM-T-TTEN
-      ***     END-IF
+      *    合計総点数(総金額)の加算処理
+      *    点数単位
            EVALUATE  A010T2-TANI
              WHEN  ZERO
       *    単位が点数の場合
                ADD   A010T2-TTEN    TO  SUM-T-TTEN
-      *--- 2009/05/01 ADD START ----------------------------------------
                ADD   A010T2-TTEN    TO   SUM-SKTTEN
-      *--- 2009/05/01 ADD END ------------------------------------------
              WHEN  1
       *    単位が金額の場合
                ADD   A010T2-TTEN    TO  SUM-T-TKIN
-      *--- 2009/05/01 ADD START ----------------------------------------
                ADD   A010T2-TTEN    TO   SUM-SKTKIN
-      *--- 2009/05/01 ADD END ------------------------------------------
                MOVE  "円"           TO  A010-TENTANI(IDX2)
-     
+      *
              WHEN  9
       *    単位が点数、金額以外の場合
                MOVE  "＠"           TO  A010-TENTANI(IDX2)
            END-EVALUATE
-      * 20040129 変更
-      * 連番
+      *    連番
            ADD   1                   TO  WRK-PRDTLCNT
            MOVE  WRK-PRDTLCNT        TO  WRK-Z5
            MOVE  WRK-Z5              TO  A010-NUM(IDX2)
       *
-      * 印字明細数カウントアップ
+      *    印字明細数カウントアップ
            ADD   1                   TO  IDX2
       *
            .
@@ -5379,26 +4799,6 @@
       *****************************************************************
        330-TERM-HEN-SEC         SECTION.
       *
-      *--- 2010/03/08 CHANGE START -------------------------------------
-      *--- 2009/05/01 ADD START ----------------------------------------
-      *     IF  WRK-PARA-SYUKEIKBN  =  1
-      *       MOVE    WRK-PARA-DENPPRTYMDWH   TO   A010-SRYYMD
-      *       MOVE    SPACE                   TO   A010-SRYYM
-      *       MOVE    WRK-SYSYMDWH            TO   A010-SYSYMD
-      *     ELSE
-      **--- 2009/05/01 ADD END ------------------------------------------
-      *       INSPECT  WRK-PARA-DENPPRTYMDWH
-      *                REPLACING  CHARACTERS  BY  " "
-      *                AFTER  "月"
-      **
-      *       MOVE    WRK-PARA-DENPPRTYMDWH   TO   A010-SRYYM
-      **--- 2009/05/01 ADD START ----------------------------------------
-      *       MOVE    SPACE                   TO   A010-SRYYMD
-      **--- 2009/05/01 ADD END ------------------------------------------
-      *       MOVE    WRK-SYSYMDWH            TO   A010-SYSYMD
-      **--- 2009/05/01 ADD START ----------------------------------------
-      *     END-IF
-      *--- 2009/05/01 ADD END ------------------------------------------
            EVALUATE  WRK-PARA-SYUKEIKBN
              WHEN  "2"
                MOVE    WRK-PARA-DENPPRTSTYMDWH TO   A010-SRYSTYMD(1:22)
@@ -5418,7 +4818,6 @@
                MOVE    SPACE                   TO   A010-SRYYMD
                MOVE    WRK-SYSYMDWH            TO   A010-SYSYMD
            END-EVALUATE
-      *--- 2010/03/08 CHANGE END ---------------------------------------
       *
       *    ページ数
            ADD     1                       TO  CNT-PAGE
@@ -5455,10 +4854,8 @@
                MOVE  "手術・麻酔" TO  A010-OUTTYPE
              WHEN  "60"
                MOVE  "検査"       TO  A010-OUTTYPE
-      * 20080402 H20年4月改正対応START tanaka
              WHEN  "64"
                MOVE  "病理診断"   TO  A010-OUTTYPE
-      * 20080402 H20年4月改正対応END
              WHEN  "70"
                MOVE  "画像診断"   TO  A010-OUTTYPE
              WHEN  "71"
@@ -5491,14 +4888,11 @@
              WHEN  "9"
                MOVE  "未使用入力CD"  TO  A010-NYUGAIKBN
       *
-      ***  20040727  @@@@-MOTOHASI  入外合計
              WHEN  "0"
                MOVE  "入外合計"  TO  A010-NYUGAIKBN
-      ***  ここまで
       *
            END-EVALUATE
       *
-      *--- 2009/05/01 ADD START ----------------------------------------
       *    診療区分別小計
            IF   FLG-MEIKENSU  NOT =  1
              MOVE    SUM-SKTTEN              TO   WRK-Z9TENGK
@@ -5512,7 +4906,6 @@
              INITIALIZE    SUM-SKTTEN
              INITIALIZE    SUM-SKTKIN
            END-IF
-      *--- 2009/05/01 ADD END ------------------------------------------
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"                 TO  SPRT-MODE
            MOVE    LNK-PRTKANRI-RENNUM   TO  SPRT-RENNUM
@@ -5523,25 +4916,16 @@
            MOVE    LNK-PRTKANRI-SHELLID  TO  SPRT-SHELLID
            MOVE    LNK-PRTKANRI-SHORI-RENNUM  TO  SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY  TO  SPRT-PRIORITY
-      ***  20040914 MOTOHASI MONPEに変更
-      ***     MOVE   "A00000A010"          TO  SPRT-PRTID
-      *--- 2010/03/08 CHANGE START -------------------------------------
-      *     MOVE    "A00000A010.red"          TO   SPRT-PRTID
            MOVE    "A00000A010V02.red"       TO   SPRT-PRTID
-      *--- 2010/03/08 CHANGE END ---------------------------------------
-      ***  20040914 MOTOHASI MONPEに変更
            MOVE    "診療行為別使用頻度一覧"  TO  SPRT-TITLE
            MOVE    A010                TO  SPRT-PRTDATA
            MOVE    LNK-PRTKANRI-TERMID TO  SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID   TO  SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-      ***     MOVE    "1"                 TO  SPRT-SITEKBN
            CALL    "ORCSPRT"           USING
                                        ORCSPRTAREA
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
-
+      *
            IF      SPRT-RETURN         =   ZERO
              CONTINUE
            ELSE
@@ -5588,57 +4972,23 @@
       *****************************************************************
        800-SYSKANRI-READ-SEC           SECTION.
       *
-      ****2005/10/17 @@@@-BRAND  START
-      *     MOVE    WRK-SYSYMD          TO  ORC-DBYMD
-      ****2005/10/17 @@@@-BRAND  END
-           MOVE    "DBSELECT"          TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE  PATH-TBL-SYSKANRI-KEY10  TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      *
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"         USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"         USING
+           MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key10"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-                                       MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
-                                       MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
+                                        MCPAREA
+                                        MCPDATA-REC
                                         SPA-AREA
-      * 20070921 4.0対応END
       *
            IF      MCP-RC              =   ZERO
-             MOVE    "DBFETCH"           TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *        MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *         MOVE  PATH-TBL-SYSKANRI-KEY10  TO  MCP-PATH
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *        CALL    "ORCMCPSUB"          USING
-      *         CALL     "MCPSUB"          USING
+             MOVE    "DBFETCH"            TO  MCP-FUNC
              MOVE    "tbl_syskanri"       TO  MCP-TABLE
              MOVE    "key10"              TO  MCP-PATHNAME
              CALL    "ORCDBMAIN"          USING
-      ****2005/10/17 @@@@-BRAND  END
                                           MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                     ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
+      *
                                           MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                           SPA-AREA
-      * 20070921 4.0対応END
              IF      MCP-RC              =   ZERO
                MOVE    ZERO            TO  FLG-SYSKANRI
              ELSE
@@ -5648,33 +4998,13 @@
              MOVE    1               TO  FLG-SYSKANRI
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE  PATH-TBL-SYSKANRI-KEY10  TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key10"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070921 4.0対応END
       *
            .
        800-SYSKANRI-READ-EXT.
@@ -5685,45 +5015,19 @@
       *****************************************************************
        820-SYSKANRI-DBSELECT-SEC                 SECTION.
       *
-      ****2005/10/17 @@@@-BRAND  START
-      *     MOVE    WRK-SYSYMD           TO  ORC-DBYMD
-      ****2005/10/17 @@@@-BRAND  END
-      * 20080121 入院診療行為の点数、回数の不具合を修正START t.tanaka
            MOVE    SPA-HOSPNUM          TO  SYS-5000-HOSPNUM
-      * 20080121 入院診療行為の点数、回数の不具合を修正END
            MOVE    SYS-5000-REC         TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY2      TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *    CALL     "MCPSUB"          USING
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070921 4.0対応END
            IF      MCP-RC           =   ZERO
              PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
              MOVE    1               TO   FLG-SYSKANRI
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        820-SYSKANRI-DBSELECT-EXT.
@@ -5735,36 +5039,17 @@
        820-SYSKANRI-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY2      TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL     "ORCMCPSUB"         USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"         USING
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070921 4.0対応END
            IF      MCP-RC           =   ZERO
              MOVE    ZERO             TO  FLG-SYSKANRI
              MOVE    MCPDATA-REC      TO  SYS-5000-REC
            ELSE
              MOVE    1                TO  FLG-SYSKANRI
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        820-SYSKANRI-DBFETCH-EXT.
@@ -5775,80 +5060,34 @@
       *****************************************************************
        820-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE  "DBCLOSE"          TO  MCP-FUNC
-           MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SYSKANRI-KEY2"  TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY2  TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
-           MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key2"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
-                                        SPA-AREA
-      * 20070921 4.0対応END
+           MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE  "tbl_syskanri"       TO  MCP-TABLE
+           MOVE  "key2"               TO  MCP-PATHNAME
+           CALL  "ORCDBMAIN"          USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
            .
        820-SYSKANRI-DBCLOSE-EXT.
            EXIT.
-      *
       *
       *****************************************************************
       *    管理マスタ検索
       *****************************************************************
        830-SYSKANRI-DBSELECT-SEC                 SECTION.
       *
-      ****2005/10/17 @@@@-BRAND  START
-      *     MOVE    WRK-SYSYMD           TO  ORC-DBYMD
-      ****2005/10/17 @@@@-BRAND  END
-           MOVE    SYS-5113-REC         TO  MCPDATA-REC
-           MOVE    "DBSELECT"           TO  MCP-FUNC
-      ***  20040914  @@@@-MOTOHASI
-      ***     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SYSKANRI-KEY5"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY5      TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
+           MOVE    SYS-5113-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key5"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
            IF      MCP-RC     =   ZERO
              PERFORM 830-SYSKANRI-DBFETCH-SEC
            ELSE
              MOVE    1               TO   FLG-SYSKANRI
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 830-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        830-SYSKANRI-DBSELECT-EXT.
@@ -5860,40 +5099,17 @@
        830-SYSKANRI-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      ***  20040914  @@@@-MOTOHASI
-      ***     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SYSKANRI-KEY5"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY5      TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL     "ORCMCPSUB"         USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"         USING
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key5"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070921 4.0対応END
            IF      MCP-RC           =   ZERO
              MOVE    ZERO             TO  FLG-SYSKANRI
              MOVE    MCPDATA-REC      TO  SYS-5113-REC
            ELSE
              MOVE    1                TO  FLG-SYSKANRI
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 830-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        830-SYSKANRI-DBFETCH-EXT.
@@ -5904,40 +5120,16 @@
       *****************************************************************
        830-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE  "DBCLOSE"          TO  MCP-FUNC
-           MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ***  20040914  @@@@-MOTOHASI
-      ***     MOVE    "SYSKANRI-KEY2"  TO  ORC-DBPATH
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SYSKANRI-KEY5"  TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY5  TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
-           MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key5"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
-                                        SPA-AREA
-      * 20070921 4.0対応END
+           MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE  "tbl_syskanri"       TO  MCP-TABLE
+           MOVE  "key5"               TO  MCP-PATHNAME
+           CALL  "ORCDBMAIN"          USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
            .
        830-SYSKANRI-DBCLOSE-EXT.
            EXIT.
-      *
       *
       *****************************************************************
       *    診療行為情報検索
@@ -5967,19 +5159,13 @@
       *****************************************************************
        900-SRYACT-FETCH-SEC                SECTION.
       *
-           MOVE    "DBFETCH"        TO   MCP-FUNC
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACT-ST-KEY4     TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-           MOVE    "tbl_sryact"  TO  MCP-TABLE
-           MOVE    "st_key4"           TO  MCP-PATHNAME
+           MOVE    "DBFETCH"       TO   MCP-FUNC
+           MOVE    "tbl_sryact"    TO  MCP-TABLE
+           MOVE    "st_key4"       TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"     USING
-      * 20070921 4.0対応END
                                    MCPAREA
                                    MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                    SPA-AREA
-      * 20070921 4.0対応END
            IF      MCP-RC           =    ZERO
              MOVE    ZERO         TO   FLG-SRYACT
              MOVE    MCPDATA-REC  TO   SRYACT-REC
@@ -5996,22 +5182,13 @@
       *****************************************************************
        900-SRYACT-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE     "DBCLOSE"            TO  MCP-FUNC
-           MOVE     "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACT-ST-KEY4     TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-           MOVE    "tbl_sryact"  TO  MCP-TABLE
-           MOVE    "st_key4"     TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"   USING
-      * 20070921 4.0対応END
-                                 MCPAREA
-                                 MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
-                                 SPA-AREA
-      * 20070921 4.0対応END
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_sryact"         TO  MCP-TABLE
+           MOVE    "st_key4"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
            .
        900-SRYACT-CLOSE-EXT.
            EXIT.
@@ -6022,18 +5199,12 @@
       *
            MOVE    NYUIN-SRYACT-REC TO  MCPDATA-REC
            MOVE    "DBSELECT"       TO  MCP-FUNC
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-NYUINACT-ST-KEY1  TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-           MOVE    "tbl_nyuinact"  TO  MCP-TABLE
-           MOVE    "st_key1"           TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"     USING
-      * 20070921 4.0対応END
-                                       MCPAREA
-                                       MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
-                                       SPA-AREA
-      * 20070921 4.0対応END
+           MOVE    "tbl_nyuinact"   TO  MCP-TABLE
+           MOVE    "st_key1"        TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
            IF      MCP-RC           =   ZERO
              MOVE    ZERO        TO  FLG-NYUINACT
            ELSE
@@ -6049,18 +5220,13 @@
        900-NYUINACT-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"        TO  MCP-FUNC
-      *     MOVE    PATH-TBL-NYUINACT-ST-KEY1  TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_nyuinact"   TO  MCP-TABLE
            MOVE    "st_key1"        TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"      USING
-      * 20070921 4.0対応END
                                     MCPAREA
                                     MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                     SPA-AREA
-      * 20070921 4.0対応END
-
+      *
            IF      MCP-RC           =   ZERO
              MOVE    ZERO         TO  FLG-NYUINACT
              MOVE    MCPDATA-REC  TO  NYUIN-SRYACT-REC
@@ -6077,21 +5243,13 @@
       *****************************************************************
        900-NYUINACT-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE  "DBCLOSE"            TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      *     MOVE    PATH-TBL-NYUINACT-ST-KEY1  TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
-           MOVE    "tbl_nyuinact"     TO  MCP-TABLE
-           MOVE    "st_key1"          TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"        USING
-      * 20070921 4.0対応END
-                                          MCPAREA
-                                          MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
-                                          SPA-AREA
-      * 20070921 4.0対応END
+           MOVE  "tbl_nyuinact"       TO  MCP-TABLE
+           MOVE  "st_key1"            TO  MCP-PATHNAME
+           CALL  "ORCDBMAIN"          USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
            .
        900-NYUINACT-CLOSE-EXT.
            EXIT.
@@ -6103,29 +5261,12 @@
            MOVE    SPA-HOSPNUM      TO  ICD-HOSPNUM
            MOVE    INPUTCD-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"       TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "INPUTCD-ALL"    TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-INPUTCD-ALL    TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL     "ORCMCPSUB"         USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"         USING
            MOVE    "tbl_inputcd"    TO  MCP-TABLE
            MOVE    "all"            TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
-                                        SPA-AREA
-      * 20070921 4.0対応END
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
            IF   MCP-RC             =    ZERO
              MOVE    ZERO        TO  FLG-INPUTCD
            ELSE
@@ -6141,29 +5282,12 @@
        900-INPUTCD-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"        TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "INPUTCD-ALL"    TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-INPUTCD-ALL    TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL     "ORCMCPSUB"         USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"         USING
-           MOVE    "tbl_inputcd"        TO  MCP-TABLE
-           MOVE    "all"                TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
-                                        SPA-AREA
-      * 20070921 4.0対応END
+           MOVE    "tbl_inputcd"    TO  MCP-TABLE
+           MOVE    "all"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
            IF      MCP-RC       =   ZERO
              MOVE    ZERO         TO  FLG-INPUTCD
              MOVE    MCPDATA-REC  TO  INPUTCD-REC
@@ -6180,34 +5304,13 @@
       *****************************************************************
        900-INPUTCD-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE  "DBCLOSE"            TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE  "INPUTCD-ALL"        TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-INPUTCD-ALL    TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL  "ORCMCPSUB"              USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"         USING
-           MOVE    "tbl_inputcd"        TO  MCP-TABLE
-           MOVE    "all"                TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                   ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
-                                        SPA-AREA
-      * 20070921 4.0対応END
+           MOVE  "tbl_inputcd"        TO  MCP-TABLE
+           MOVE  "all"                TO  MCP-PATHNAME
+           CALL  "ORCDBMAIN"          USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
            .
        900-INPUTCD-CLOSE-EXT.
            EXIT.
@@ -6222,9 +5325,9 @@
            END-READ
            IF  FLG-OUTALL     =     1
              IF  WRK-PARA-OUTTYPE =      SPACE
+      *
       *    診療分類指定が未入力の場合は分類"99"を印字対象外とする。
       *    (診療分類指定が"0"の場合は分類"99"を印字対象とする。)
-      *
                IF    A010T-OUTTYPE     =   "99"
                  MOVE 1     TO     FLG-ATEND
                END-IF
@@ -6237,11 +5340,9 @@
            END-IF
       *
       *    件数集計
-      *
            IF   FLG-ATEND     NOT = 1
              ADD      1       TO  CNT-A010T
            END-IF
-
            .
        910-A010-READ-EXT.
            EXIT.
@@ -6269,99 +5370,38 @@
       *
            MOVE    SRYACCT-REC         TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SRYACCT-KEY"       TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACCT-KEY       TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
            MOVE    "tbl_sryacct"       TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
            IF  MCP-RC              =   ZERO
              MOVE    "DBFETCH"          TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *        MOVE    "SRYACCT-KEY"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACCT-KEY       TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *        CALL    "ORCMCPSUB"      USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
              MOVE    "tbl_sryacct"      TO  MCP-TABLE
              MOVE    "key"              TO  MCP-PATHNAME
              CALL    "ORCDBMAIN"        USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                           MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                   ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                           MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                           SPA-AREA
-      * 20070921 4.0対応END
              IF      MCP-RC              =   ZERO
-               MOVE    MCPDATA-REC     TO  SRYACCT-REC
-               MOVE    ZERO            TO  FLG-SRYACCT
+               MOVE    MCPDATA-REC        TO  SRYACCT-REC
+               MOVE    ZERO               TO  FLG-SRYACCT
              ELSE
-               INITIALIZE                  SRYACCT-REC
-      ****2005/10/17 @@@@-BRAND  START
-      *          MOVE    "1"             TO  FLG-SRYACCT
-                MOVE     1             TO  FLG-SRYACCT
-      ****2005/10/17 @@@@-BRAND  END
+               INITIALIZE                     SRYACCT-REC
+                MOVE     1                TO  FLG-SRYACCT
              END-IF
            ELSE
-      ****2005/10/17 @@@@-BRAND  START
-      *       MOVE   "1"          TO  FLG-SRYACCT
              MOVE    1           TO  FLG-SRYACCT
-      ****2005/10/17 @@@@-BRAND  END
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "SRYACCT-KEY"       TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACCT-KEY       TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"             USING
+           MOVE    "DBCLOSECURSOR"    TO  MCP-FUNC
            MOVE    "tbl_sryacct"      TO  MCP-TABLE
            MOVE    "key"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                       MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                       MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                       SPA-AREA
-      * 20070921 4.0対応END
            .
        910-SRYACCT-READ-EXT.
            EXIT.
@@ -6372,99 +5412,38 @@
       *
            MOVE    NYUINACCT-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "NYUINACCT-KEY"     TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-NYUINACCT-KEY     TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
            MOVE    "tbl_nyuinacct"     TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
            IF  MCP-RC              =   ZERO
-             MOVE    "DBFETCH"        TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *        MOVE    "NYUINACCT-KEY"  TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *         MOVE    PATH-TBL-NYUINACCT-KEY  TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *        CALL    "ORCMCPSUB"      USING
-      * 20070921 4.0対応START t.tanaka
-      *         CALL     "MCPSUB"      USING
+             MOVE    "DBFETCH"           TO  MCP-FUNC
              MOVE    "tbl_nyuinacct"     TO  MCP-TABLE
              MOVE    "key"               TO  MCP-PATHNAME
              CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
-                                       SPA-AREA
-      * 20070921 4.0対応END
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
              IF      MCP-RC           =   ZERO
                MOVE    MCPDATA-REC  TO  NYUINACCT-REC
                MOVE    ZERO         TO  FLG-NYUINACCT
              ELSE
                INITIALIZE               NYUINACCT-REC
-      ****2005/10/17 @@@@-BRAND  START
-      *            MOVE    "1"          TO  FLG-NYUINACCT
-               MOVE     1          TO  FLG-NYUINACCT
-      ****2005/10/17 @@@@-BRAND  END
+               MOVE     1           TO  FLG-NYUINACCT
              END-IF
            ELSE
-      ****2005/10/17 @@@@-BRAND  START
-      *       MOVE   "1"           TO  FLG-NYUINACCT
              MOVE    1            TO  FLG-NYUINACCT
-      ****2005/10/17 @@@@-BRAND  END
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"            TO  MCP-FUNC
-           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "NYUINACCT-KEY"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-NYUINACCT-KEY      TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
            MOVE    "tbl_nyuinacct"     TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
            .
        910-NYUINACCT-READ-EXT.
            EXIT.
@@ -6473,66 +5452,26 @@
       *****************************************************************
        910-TENSU-READ-SEC         SECTION.
       *
-      ****2006/01/06 @@@@-BRAND  START
-      *     MOVE    ZERO                TO  TNS-YUKOSTYMD
-      *     MOVE    ALL "9"             TO  TNS-YUKOEDYMD
-      * 20080121 入院行為の不具合をを修正START t.tanaka
-           MOVE    SPA-HOSPNUM     TO    TNS-HOSPNUM
-      * 20080121 入院行為の不具合をを修正END
+           MOVE    SPA-HOSPNUM         TO    TNS-HOSPNUM
            MOVE    WRK-PARA-PRTLYMD    TO  TNS-YUKOSTYMD
            MOVE    WRK-PARA-PRTSYMD    TO  TNS-YUKOEDYMD
-      ***2006/01/06 @@@@-BRAND  END
       *
            MOVE    TNS-TENSU-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "TENSU-KEY"         TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-TENSU-KEY         TO  MCP-PATH
-      * 20070921 4.0対応END
-      *     MOVE    LNK-PRTKANRI-SKYYMD TO  ORC-DBYMD
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
            MOVE    "tbl_tensu"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
            IF      MCP-RC              =   ZERO
-             MOVE    "DBFETCH"           TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *        MOVE    "TENSU-KEY"         TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *         MOVE    PATH-TBL-TENSU-KEY         TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      * 20070921 4.0対応START t.tanaka
-      *        CALL    "ORCMCPSUB"          USING
-      *         CALL     "MCPSUB"          USING
+             MOVE    "DBFETCH"          TO  MCP-FUNC
              MOVE    "tbl_tensu"        TO  MCP-TABLE
              MOVE    "key"              TO  MCP-PATHNAME
              CALL    "ORCDBMAIN"        USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                     ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
                                         MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070921 4.0対応END
              IF      MCP-RC              =   ZERO
                MOVE    MCPDATA-REC      TO  TNS-TENSU-REC
                MOVE    ZERO             TO  FLG-TENSU
@@ -6544,34 +5483,14 @@
              INITIALIZE                 TNS-TENSU-REC
              MOVE    1                  TO  FLG-TENSU
            END-IF
-
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "TENSU-KEY"         TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-TENSU-KEY     TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      * 20070921 4.0対応START t.tanaka
-      *    CALL    "ORCMCPSUB"          USING
-      *     CALL     "MCPSUB"          USING
            MOVE    "tbl_tensu"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
            .
        910-TENSU-READ-EXT.
            EXIT.
@@ -6582,30 +5501,12 @@
       *
            MOVE    INPUTCD-REC         TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "INPUTCD-KEY4"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-INPUTCD-KEY4      TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
            MOVE    "tbl_inputcd"       TO  MCP-TABLE
            MOVE    "key4"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
            IF      MCP-RC              =   ZERO
              MOVE    ZERO            TO  FLG-INPUTCD
            ELSE
@@ -6622,30 +5523,12 @@
        930-INPUTCD-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"           TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "INPUTCD-KEY4"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-INPUTCD-KEY4      TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"         USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
            MOVE    "tbl_inputcd"       TO  MCP-TABLE
            MOVE    "key4"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                            MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                    ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
                                            MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                            SPA-AREA
-      * 20070921 4.0対応END
            IF      MCP-RC              =   ZERO
              MOVE    MCPDATA-REC TO  INPUTCD-REC
              MOVE    ZERO        TO  FLG-INPUTCD
@@ -6662,31 +5545,13 @@
       *****************************************************************
        930-INPUTCD-CLOSE-SEC           SECTION.
       *
-      *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "INPUTCD-KEY4"      TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-INPUTCD-KEY4      TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_inputcd"       TO  MCP-TABLE
            MOVE    "key4"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
       *
            .
        930-INPUTCD-CLOSE-EXT.
@@ -6698,33 +5563,21 @@
       *
            MOVE    KENSASORT-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-KENSASORT-ST-KEY1     TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_kensasort"     TO  MCP-TABLE
            MOVE    "st_key1"           TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
                                        MCPAREA
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
              MOVE    "DBFETCH"           TO  MCP-FUNC
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-KENSASORT-ST-KEY1     TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
              MOVE    "tbl_kensasort"     TO  MCP-TABLE
              MOVE    "st_key1"           TO  MCP-PATHNAME
              CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
                                          MCPAREA
                                          MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                          SPA-AREA
-      * 20070921 4.0対応END
-
              IF      MCP-RC              =   ZERO
                MOVE    MCPDATA-REC     TO  KENSASORT-REC
                MOVE    ZERO            TO  FLG-KENSASORT
@@ -6734,22 +5587,14 @@
            ELSE
              MOVE    1                 TO  FLG-KENSASORT
            END-IF
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-KENSASORT-ST-KEY1     TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_kensasort"     TO  MCP-TABLE
            MOVE    "st_key1"           TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      * 20070921 4.0対応END
                                        MCPAREA
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
            .
        940-KENSASORT-READ-EXT.
            EXIT.
@@ -6760,55 +5605,21 @@
       *
            MOVE    PTNUM-REC         TO  MCPDATA-REC
            MOVE    "DBSELECT"        TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "PTNUM-KEY"         TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTNUM-KEY       TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
            MOVE    "tbl_ptnum"       TO  MCP-TABLE
            MOVE    "key"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"       USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                      MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                      MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                      SPA-AREA
-      * 20070921 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
-             MOVE    "DBFETCH"           TO  MCP-FUNC
-      ****2005/10/17 @@@@-BRAND  START
-      *        MOVE    "PTNUM-KEY"         TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *        MOVE    PATH-TBL-PTNUM-KEY       TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *        CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *         CALL     "MCPSUB"          USING
+             MOVE    "DBFETCH"         TO  MCP-FUNC
              MOVE    "tbl_ptnum"       TO  MCP-TABLE
              MOVE    "key"             TO  MCP-PATHNAME
              CALL    "ORCDBMAIN"       USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                   ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                        SPA-AREA
-      * 20070921 4.0対応END
              IF   MCP-RC       =   ZERO
                MOVE    MCPDATA-REC   TO  PTNUM-REC
                MOVE    ZERO          TO  FLG-PTNUM
@@ -6818,37 +5629,17 @@
            ELSE
              MOVE    1               TO  FLG-PTNUM
            END-IF
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *
            MOVE    "DBCLOSECURSOR"   TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      * 20070921 4.0対応START t.tanaka
-      *    MOVE    PATH-TBL-PTNUM-KEY       TO  MCP-PATH
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL     "MCPSUB"          USING
            MOVE    "tbl_ptnum"       TO  MCP-TABLE
            MOVE    "key"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"       USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                      MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
                                      MCPDATA-REC
-      * 20070921 4.0対応START t.tanaka
                                      SPA-AREA
-      * 20070921 4.0対応END
            .
        940-PTNUM-READ-EXT.
            EXIT.
-      *--- 2009/03/27 ADD START ----------------------------------------
       *****************************************************************
       *    入院診療会計情報検索
       *****************************************************************
@@ -6878,9 +5669,7 @@
                  END-IF
                  MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
                WHEN  4
-      *--- 2010/07/16 ADD START ----------------------------------------
                WHEN  5
-      *--- 2010/07/16 ADD END ------------------------------------------
                  MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
              END-EVALUATE
            END-IF
@@ -6916,7 +5705,6 @@
            .
        920-NYUINACCT-FETCH-EXT.
            EXIT.
-      *--- 2009/03/27 ADD END ------------------------------------------
       *****************************************************************
       *    終了　　処理
       *****************************************************************
@@ -6925,10 +5713,7 @@
       *    ステップ管理終了処理
            MOVE    "STE"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      * 20070921 4.0対応START t.tanaka
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      * 20070921 4.0対応END
-
            MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
            MOVE    WRK-PARA-SHELLID
                                    TO  JOB-SHELLID
@@ -6936,9 +5721,7 @@
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA
                                    JOBKANRI-REC
-      * 20070921 4.0対応START t.tanaka
                                    SPA-AREA
-      * 20070921 4.0対応END
       *
            PERFORM 900-DBDISCONNECT-SEC
       *
@@ -6951,49 +5734,23 @@
       *****************************************************************
        100-DBOPEN-SEC                SECTION.
       *
-           MOVE    "DBOPEN"            TO  MCP-FUNC.
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL    "MCPSUB"             USING
-           MOVE    LOW-VALUE           TO  MCP-TABLE
+           MOVE   "DBOPEN"             TO  MCP-FUNC.
+           MOVE   LOW-VALUE            TO  MCP-TABLE
                                            MCP-PATHNAME
-           CALL   "ORCDBMAIN"     USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
+           CALL   "ORCDBMAIN"          USING
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
-      * 20070921 4.0対応START t.tanaka
-      *                                  MCPDATA-REC.
                                        MCPDATA-REC
                                        SPA-AREA
                                        .
-      * 20070921 4.0対応END
-           MOVE    "DBSTART"           TO  MCP-FUNC.
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"         USING
-      * 20070921 4.0対応START t.tanaka
       *
-      *     CALL    "MCPSUB"           USING
+           MOVE    "DBSTART"           TO  MCP-FUNC.
            MOVE    LOW-VALUE           TO     MCP-TABLE
                                               MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                ORCMCPAREA
-
-      ****2005/10/17 @@@@-BRAND  END
-      * 20070921 4.0対応START t.tanaka
-      *                                  MCPDATA-REC.
                                        MCPDATA-REC
                                        SPA-AREA
                                        .
-      * 20070921 4.0対応END
            .
        100-DBOPEN-EXT.
            EXIT.
@@ -7004,46 +5761,22 @@
        900-DBDISCONNECT-SEC            SECTION.
       *
            MOVE    "DBCOMMIT"          TO  MCP-FUNC.
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL    "MCPSUB"             USING
-           MOVE    LOW-VALUE           TO     MCP-TABLE
-                                              MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
-                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
-      * 20070921 4.0対応START t.tanaka
-      *                                  MCPDATA-REC.
-                                        MCPDATA-REC
-                                        SPA-AREA
-                                        .
-      * 20070921 4.0対応END
-      *
-           MOVE    "DBDISCONNECT"       TO  MCP-FUNC.
-      ****2005/10/17 @@@@-BRAND  START
-      *    CALL    "ORCMCPSUB"          USING
-      * 20070921 4.0対応START t.tanaka
-      *     CALL    "MCPSUB"             USING
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      * 20070921 4.0対応END
-      ****2005/10/17 @@@@-BRAND  END
+           MOVE    LOW-VALUE           TO  MCP-TABLE
+                                           MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
                                        MCPAREA
-      ****2005/10/17 @@@@-BRAND  START
-      *                                 ORCMCPAREA
-      ****2005/10/17 @@@@-BRAND  END
-      * 20070921 4.0対応START t.tanaka
-      *                                  MCPDATA-REC.
                                        MCPDATA-REC
                                        SPA-AREA
-                                        .
-      * 20070921 4.0対応END
+                                       .
+      *
+           MOVE    "DBDISCONNECT"      TO  MCP-FUNC.
+           MOVE    LOW-VALUE           TO  MCP-TABLE
+                                           MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+                                       .
            .
        900-DBCLOSE-EXT.
            EXIT.

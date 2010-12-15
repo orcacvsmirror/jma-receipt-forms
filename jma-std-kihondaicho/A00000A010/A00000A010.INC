@@ -15,18 +15,16 @@
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
       ********************************************************************
+      *  プログラム修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    10/12/13  コメント履歴削除
+      ********************************************************************
        01  A010.
            03  A010-JOBMSG        PIC  X(60).
            03  A010-SYSYMD        PIC  X(22).
            03  A010-PAGE          PIC  X(05).
-      *--- 2010/02/19 CHANGE START -------------------------------------
-      *     03  A010-SRYYM         PIC  X(18).
-      *--- 2009/05/01 ADD START ----------------------------------------
-      *     03  A010-SRYYMD        PIC  X(22).
-      *--- 2009/05/01 ADD END ------------------------------------------
-           03  A010-SRYSTYMD        PIC  X(22).
-           03  A010-SRYEDYMD        PIC  X(22).
-      *--- 2010/02/19 CHANGE END ---------------------------------------
+           03  A010-SRYYM         PIC  X(18).
+           03  A010-SRYYMD        PIC  X(22).
            03  A010-OUTTYPE       PIC  X(40).
            03  A010-NYUGAIKBN     PIC  X(20).
            03  A010-SRYKA         PIC  X(30).
@@ -49,12 +47,10 @@
                05  A010-KAISU     PIC  X(09).
            03  A010-TTEN-TBL      OCCURS 38.
                05  A010-TTEN      PIC  X(12).
-      *--- 2009/05/01 ADD START ----------------------------------------
            03  A010-SKTTEN        PIC  X(13).
            03  A010-SKTKIN        PIC  X(13).
            03  A010-SKTENTANI     PIC  X(02).
            03  A010-SKYENTANI     PIC  X(02).
-      *--- 2009/05/01 ADD END ------------------------------------------
            03  A010-GKTTEN        PIC  X(13).
            03  A010-GKTKIN        PIC  X(13).
            03  A010-GKTENTANI     PIC  X(02).

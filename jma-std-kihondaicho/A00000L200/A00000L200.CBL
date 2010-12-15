@@ -22,22 +22,12 @@
       *  サブシステム名    : 月次帳票
       *  コンポーネント名  : 保険別総括表 
       *  管理者            : 
-      *  作成日付    作業者        記述
-      *  03/12/17    @@@@-有村     新規作成
+      *  作成日付    作業者       記述
+      *  03/12/17    @@@@-有村    新規作成
       *****************************************************************
       *  プログラム修正履歴
-      * Maj/Min/Rev	修正者	日付		内容
-      *  01.00.00       有村    04/02/04   抽出判定条件変更
-      *  01.00.01       本橋    04/09/14   MONPE化
-      *                 高嶋    06/08/18   sarge対応
-      *  07/09/21    @@@@-長屋     4.0対応
-      *  01.00.03       田中    08/04/24   H20年4月改正対応(後期高齢者)
-      *  01.00.04       田中    08/07/01   処理速度向上の修正
-      *  01.00.05       門間    09/02/23   SETTEI.TXTからINIへ拡張子の変更
-      *  01.00.06       門間    09/05/13   プログラムオプション対応(INIファイル)
-      *  01.00.07       田中    09/10/26   負担額の桁数を変更
-      *  01.00.08       田中    10/04/26   負担額の桁数を変更
-      *  01.00.09       田中    10/08/20   保険者番号の指定で＠の場合、公費単独が集計される不具合を修正
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    10/12/13  コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -55,14 +45,6 @@
       *    エラーファイル
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE START
-      ******  04/02/04 INS
-      *     SELECT  SETTEI-FILE   ASSIGN FILE-NAME
-      *                           ORGANIZATION   IS  LINE SEQUENTIAL
-      *                           ACCESS MODE    IS  SEQUENTIAL
-      *                           FILE   STATUS  IS  STS-SETTEI.
-      ******
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE END
       *
        DATA                        DIVISION.
        FILE                        SECTION.
@@ -74,41 +56,20 @@
 006900*    エラーファイル
        FD  RECEERR-FILE.
        01  RECEERR-REC             PIC X(200). 
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE START
-      ****** 04/02/04 INS
-      **    優先保険者番号ファイル
-      * FD  SETTEI-FILE.
-      * 01  SETTEI-PARA             PIC X(01). 
-      ******
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE END
       *
        WORKING-STORAGE             SECTION.
       *    印刷用データ 名称領域 
            COPY    "CPCOMMONPRT.INC".
       *
       *    エラーファイル 名称領域 
-      ***07/09/21 nagaya 4.0対応 start
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      ***07/09/21 nagaya 4.0対応 end
       *
       *    社保一時ファイル 名称領域
-      ***07/09/21 nagaya 4.0対応 start
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //L200TP//.
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //L200TP//.
-      ***07/09/21 nagaya 4.0対応 end
       *
-      *--- 2010/04/26 CHANGE START -------------------------------------
-      *     COPY    "A00000L200V02.INC".
            COPY    "A00000L200V03.INC".
-      *--- 2010/04/26 CHANGE END ---------------------------------------
       *
       *    スパ領域
        01  STS-AREA.
@@ -128,7 +89,6 @@
            03  FLG-PTINF                PIC 9(01).
            03  FLG-HKNJAINF             PIC 9(01).
            03  FLG-SYUNOU               PIC 9(01).
-      *     03  FLG-TENSU                PIC 9(01).
            03  FLG-PASS                 PIC 9(01).
            03  FLG-PRINT                PIC 9(01).
            03  FLG-ERR                  PIC 9(01).
@@ -138,7 +98,7 @@
            03  FLG-END                  PIC 9(01).
            03  FLG-SRYACCT              PIC 9(01).
            03  FLG-HKNCOMBI             PIC 9(01).
-           03  FLG-PTKOHINF        PIC 9(01).
+           03  FLG-PTKOHINF             PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -182,10 +142,8 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
-      ***07/09/21 nagaya 4.0対応 start
-      *     03  WRK-PARA-HOSPID       PIC X(24).
            03  WRK-PARA-HOSPNUM       PIC 9(02).
-      ***07/09/21 nagaya 4.0対応 end
+      *
       *    画面入力パラメタ
       *    対象診療年月
            03  WRK-PARA-SRYYM        PIC X(06).
@@ -194,10 +152,7 @@
       *    保険者番号
            03  WRK-PARA-HKNJANUM     PIC X(08).
       *    負担者番号
-      ***** 04/02/04 UPD
-      *     03  WRK-PARA-FTNJANUM     PIC X(08).
            03  WRK-PARA-FTNJANUM     PIC X(20).
-      *****
       *    本人・家族
            03  WRK-PARA-HONKZKKBN    PIC X(01).
       *    診療科
@@ -237,32 +192,24 @@
            03  WRK-OUT-INPUT         PIC X(200).
            03  WRK-KOHI-TBL.
                05  WRK-KOH1-KOHNUM   PIC X(03).
-      ***** 04/02/04 UPD
-      *         05  WRK-KOH1-FTNJANUM PIC X(08).
                05  WRK-KOH1-FTNJANUM PIC X(20).
-      *****
+      *
                05  WRK-KOH2-KOHNUM   PIC X(03).
-      ***** 04/02/04 UPD
-      *         05  WRK-KOH2-FTNJANUM PIC X(08).
                05  WRK-KOH2-FTNJANUM PIC X(20).
-      *****
-      ***** 04/02/04 INS
+      *
                05  WRK-KOH1-JKYSNUM  PIC X(20).
                05  WRK-KOH2-JKYSNUM  PIC X(20).
-      *****
+      *
            03  WRK-HKNJANUM          PIC X(08).
            03  WRK-HKNJANAME         PIC X(40).
            03  WRK-PATH              PIC X(64).
-      ***** 04/02/04 INS
+      *
            03  WRK-PATH2             PIC X(64).
            03  WRK-CHK-HKNJANUM      PIC X(08).
            03  WRK-CHK-FTNJANUM      PIC X(20).
       *    ファイル名称用エリア
            03  FILE-NAME             PIC X(512).
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD START
            03  SETTEI-PARA           PIC 9(01).
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD END
-      *****
       *
            03  WRK-GOKEI-AREA.
                05    WRK-GNISSU      PIC 9(04).
@@ -286,7 +233,6 @@
            03  WRK-Z13               PIC Z,ZZZ,ZZZ,ZZZ.
            03  WRK-Z14               PIC ZZ,ZZZ,ZZZ,ZZZ.
       *
-      *
       *    診療科名退避エリア
        01  SUM-AREA.
            03  SUM-SRYKAMAX                         PIC 9(03).
@@ -301,13 +247,7 @@
                05  KEY-O-NYUGAIKBN          PIC  X(01).
                05  KEY-O-SRYKA              PIC  X(02).
       *
-      *
-      *
            COPY    "CPSHELLTBL.INC".
-      *     
-      ***07/09/21 nagaya 4.0対応 start
-      *     COPY    "ORCA-DBPATH".
-      ***07/09/21 nagaya 4.0対応 end
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -319,7 +259,6 @@
       *    医療機関情報
            COPY    "CPSK1001.INC".
       *
-      *
       *    診療科目情報情報
            COPY    "CPSK1005.INC".
       *
@@ -328,7 +267,6 @@
       *
       *    出力先プリンタ名割り当て情報
            COPY  "CPSK1031.INC".
-      *
       *
       *    診療会計マスタ
        01  SRYACCT-REC.
@@ -354,7 +292,7 @@
        01  HKNNUM-REC.
            COPY    "CPHKNNUM.INC".
       *
-      *　　保険者情報
+      *    保険者情報
        01  HKNJAINF-REC.
            COPY    "CPHKNJAINF.INC".
       *
@@ -372,8 +310,6 @@
       *
        01  PRTDATA-REC.
            COPY    "CPPRTDATA.INC".          
-      *
-      *
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -400,20 +336,15 @@
       *    ＤＢ検索
            COPY    "MCPAREA".
       *
-      *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
-      ***** 04/02/04 INS
       *    ファイルディレクトリ位置指定サブ
            COPY    "CPMKPASS.INC".
-      *****
       *
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD START
       *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 ADD END
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -454,9 +385,7 @@
            INITIALIZE                  WRK-PARA
            INITIALIZE                  IDX-AREA
            INITIALIZE                  SUM-AREA
-      ***07/09/21 nagaya 4.0対応 start
            INITIALIZE                  SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -474,11 +403,8 @@
                                                LNK-PRTKANRI-PRTNM    
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      ***07/09/21 nagaya 4.0対応 start
-      *                                         WRK-PARA-HOSPID
                                                WRK-PARA-HOSPNUM
                                                RECEERR
-      ***07/09/21 nagaya 4.0対応 end
                                                WRK-PARA-SRYYM
                                                WRK-PARA-NYUGAIKBN
                                                WRK-PARA-HKNJANUM
@@ -486,17 +412,13 @@
                                                WRK-PARA-HONKZKKBN
                                                WRK-PARA-SRYKA
                                                WRK-PARA-SYUTURYOKU
-      ***07/09/21 nagaya 4.0対応 start
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
       *
       *    ステップ管理開始処理
            MOVE    "STS"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      ***07/09/21 nagaya 4.0対応 start
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
            MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
            MOVE    WRK-PARA-SHELLID
                                    TO  JOB-SHELLID
@@ -506,18 +428,11 @@
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
-      ***07/09/21 nagaya 4.0対応 start
                                    SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
       *
            MOVE    "L200TP"         TO  L200TP-FILE-ID
            MOVE    LNK-PRTKANRI-TERMID TO  L200TP-TERMID
-      ***07/09/21 nagaya 4.0対応 start
            MOVE    WRK-PARA-HOSPNUM    TO  L200TP-HOSPNUM
-      *
-      *     MOVE    "RECEERR"           TO  RECEERR-FILE-ID
-      *     MOVE    LNK-PRTKANRI-TERMID     TO  RECEERR-TERMID
-      ***07/09/21 nagaya 4.0対応 end
       *
            MOVE    WRK-PARA-SRYYM  TO  WRK-SRYYMD (1:6)
            MOVE    "01"                TO  WRK-SRYYMD (7:2)
@@ -540,15 +455,10 @@
       *    医療機関ＩＤ編集
            INITIALIZE                     SYS-1001-REC
            MOVE    "1001"         TO      SYS-1001-KANRICD
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE     "*"           TO      SYS-1001-KBNCD
            MOVE     "%"           TO      SYS-1001-KBNCD
-      ***07/09/21 nagaya 4.0対応 end
-      ***07/09/21 nagaya 4.0対応 start
            MOVE    SPA-HOSPNUM    TO      SYS-1001-HOSPNUM
            MOVE  WRK-PARA-PRTSYMD TO      SYS-1001-STYUKYMD
            MOVE  WRK-PARA-PRTLYMD TO      SYS-1001-EDYUKYMD
-      ***07/09/21 nagaya 4.0対応 end
            MOVE    SYS-1001-REC   TO      MCPDATA-REC
            PERFORM 900-SYSKANRI-INV-SEC
            IF     FLG-SYSKANRI        =   ZERO
@@ -565,20 +475,14 @@
                   PERFORM 500-ERR-HENSYU-SEC
            END-IF
       *
-      *
       *    出力先プリンタ名割り当て情報編集
            MOVE     SPACE         TO        SYS-1031-REC
            INITIALIZE                       SYS-1031-REC
-      ***07/09/21 nagaya 4.0対応 start
            MOVE     SPA-HOSPNUM   TO        SYS-1031-HOSPNUM
            MOVE  WRK-PARA-PRTSYMD TO        SYS-1031-STYUKYMD
            MOVE  WRK-PARA-PRTLYMD TO        SYS-1031-EDYUKYMD
-      ***07/09/21 nagaya 4.0対応 end
            MOVE     "1031"        TO        SYS-1031-KANRICD
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE     "*"           TO        SYS-1031-KBNCD
            MOVE     "%"           TO        SYS-1031-KBNCD
-      ***07/09/21 nagaya 4.0対応 end
            MOVE     SYS-1031-REC  TO        MCPDATA-REC
            PERFORM  900-SYSKANRI-INV-SEC
            IF       FLG-SYSKANRI        =   ZERO
@@ -587,14 +491,11 @@
                     INITIALIZE              SYS-1031-REC
            END-IF
       *
-      *
       *    診療科情報取得
              MOVE    "1005"                    TO   SYS-1005-KANRICD
-      ***07/09/21 nagaya 4.0対応 start
              MOVE     SPA-HOSPNUM              TO   SYS-1005-HOSPNUM
              MOVE    SPA-SRYYMD             TO  SYS-1005-STYUKYMD
                                                 SYS-1005-EDYUKYMD
-      ***07/09/21 nagaya 4.0対応 end
              MOVE    WRK-PARA-PRTLYMD  TO    WRK-SYMD
              PERFORM 820-SYSKANRI-DBSELECT-SEC
              MOVE   1        TO     IDX1 
@@ -606,23 +507,16 @@
                   END-IF  
                   PERFORM 820-SYSKANRI-DBFETCH-SEC
              END-PERFORM
-      *=== sarge対応 ADD By Takashima(2006/09/16) start
              PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/09/16) end
              SUBTRACT  1        FROM IDX1  
              MOVE  IDX1         TO   SUM-SRYKAMAX
       *
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 CHANGE START
-      ****** 04/02/04 INS
-      *     PERFORM  110-INI-FILE-SEC
-      ******
            INITIALIZE                      ORCSPRGOPTIONAREA
            MOVE    "A00000L200"        TO  ORCSPRGOPTION-PRGID
            MOVE    "SETTEI"            TO  ORCSPRGOPTION-IN-DATA
            CALL    "ORCSPRGOPTION"     USING   SPA-AREA
                                                ORCSPRGOPTIONAREA
            MOVE  ORCSPRGOPTION-OT-PARA(1:1)  TO  SETTEI-PARA
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 CHANGE END
       *
       *    システム日付セット
            MOVE  LNK-PRTKANRI-SKYYMD  TO  WRK-SYMD
@@ -635,39 +529,6 @@
            .
        100-INIT-EXT.
            EXIT.
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE START
-      *****************************************************************
-      *    対象設定ファイル読み込み処理  04/02/04 INS
-      *****************************************************************
-      * 110-INI-FILE-SEC                SECTION.
-      **
-      **    ファイルディレクトリ位置指定
-      *     INITIALIZE           ORCSMKPASSAREA
-      **--- (2009/02/23) line change start ------------------------------
-      **     MOVE  "data/SETTEI.TXT"     TO  MKPASS-IN-01
-      *     MOVE  "data/SETTEI.INI"     TO  MKPASS-IN-01
-      **--- (2009/02/23) line change start ------------------------------
-      *     CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
-      *     MOVE  MKPASS-OT-01  TO  FILE-NAME
-      **
-      **
-      *     INITIALIZE   SETTEI-PARA
-      **
-      *     OPEN  INPUT  SETTEI-FILE
-      **
-      *     READ SETTEI-FILE
-      *       AT END
-      *         MOVE      1   TO  SETTEI-PARA
-      *     END-READ
-      **
-      **
-      *     CLOSE SETTEI-FILE
-      **
-      *     .
-      * 110-INI-FILE-EXT.
-      *     EXIT.
-      *
-      *--- プログラムオプション対応(INIファイル) 2009/05/13 DELETE END
       *
       *****************************************************************
       *    パラメタチェック処理
@@ -794,9 +655,6 @@
       *    データ抽出
            PERFORM  2001-HKN-SYUKEI-SEC
       *
-      *    国保データ抽出
-      *     PERFORM  2001-KOKUHO-SEC
-      *
            CLOSE   L200TMP-FILE
       *
            .
@@ -808,74 +666,31 @@
       *****************************************************************
        2001-HKN-SYUKEI-SEC                SECTION.
       *
-      * 20080424  H20年4月改正対応START tanaka
-      *     PERFORM  VARYING  IDZ  FROM  1  BY  1
-      *              UNTIL    IDZ  >  2
            PERFORM  VARYING  IDZ  FROM  1  BY  1
                     UNTIL    IDZ  >  3
-      * 20080424  H20年4月改正対応END
              INITIALIZE        WRK-PATH
-      * 20080424  H20年4月改正対応START tanaka
-      *       IF    IDZ    =    1
-      *         MOVE    "SEIKYU-KEY3"  TO    WRK-PATH
-      *       ELSE
-      *         MOVE    "SEIKYU-KEY4"  TO    WRK-PATH
-      *       END-IF
              EVALUATE  IDZ
                WHEN  1
                  MOVE    "SEIKYU-KEY3"   TO    WRK-PATH
                WHEN  2
                  MOVE    "SEIKYU-KEY4"   TO    WRK-PATH
                WHEN  3
-      * 20080701 処理速度向上の修正 START
-      *           MOVE    "SEIKYU-ALL"    TO    WRK-PATH
                  MOVE    "SEIKYU-KEY60"    TO    WRK-PATH
-      * 20080701 処理速度向上の修正 START
              END-EVALUATE
-      * 20080424  H20年4月改正対応END
-      * 20080701 処理速度向上の修正 START
-      *       IF WRK-PATH =  "SEIKYU-ALL"
-      *           PERFORM  900-SEIKYU-SELECT-SEC
       *
-      *           PERFORM  UNTIL  FLG-END   =   1
+             PERFORM  900-SEIKYU-SELECT-SEC
       *
-      *        データ設定
-      *             IF  (RECE10-HKNNUM = "039"
-      *               OR  RECE10-HKNNUM = "040")
-      *               AND ((( RECE10-SRYYM    =   WRK-PARA-SRYYM)
-      *               AND (  RECE10-SKYKBN    NOT =  "0"      )
-      *               AND (( RECE10-SKYYM     =   "000000" )
-      *               OR  (  RECE10-SKYYM     =   WRK-PARA-SRYYM )))
-      *               OR  (( RECE10-SKYYM     =   WRK-PARA-SRYYM   )
-      *               AND (  RECE10-SKYKBN    NOT =  "0"      )))
-      *               
-      *               PERFORM 2001-DATA-SET1-SEC
-      *             END-IF
+             PERFORM  UNTIL  FLG-END   =   1
       *
-      *             PERFORM 900-SEIKYU-READ-SEC
-      *           END-PERFORM
+      *    データ設定
+               PERFORM 2001-DATA-SET1-SEC
       *
-      *           PERFORM  900-SEIKYU-CLOSE-SEC
-      *       ELSE
-      * 20080701 処理速度向上の修正 END
-                 PERFORM  900-SEIKYU-SELECT-SEC
+               PERFORM 900-SEIKYU-READ-SEC
+             END-PERFORM
       *
-                 PERFORM  UNTIL  FLG-END   =   1
+             PERFORM  900-SEIKYU-CLOSE-SEC
       *
-      *        データ設定
-                   PERFORM 2001-DATA-SET1-SEC
-      *
-                   PERFORM 900-SEIKYU-READ-SEC
-                 END-PERFORM
-      *
-      *
-                 PERFORM  900-SEIKYU-CLOSE-SEC
-      *
-      * 20080701 処理速度向上の修正 START
-      *       END-IF
-      * 20080701 処理速度向上の修正 END
            END-PERFORM
-      * 20080424  H20年4月改正対応END
       *
            .
        2001-HKN-SYUKEI-EXT.
@@ -963,11 +778,6 @@
       *    標準負担額
            MOVE    RECE10-SHOKUJIFTN(IDX)        TO   L200TMP-FTNGK
       *
-      ***** 04/02/04 DEL
-      **    負担者番号判定処理
-      *     IF    WRK-PARA-FTNJANUM  NOT  =  SPACE
-      *       PERFORM  2001-FTNJA-CHK-SEC
-      *     END-IF
       *    書き出し
            IF    FLG-PASS   =   ZERO
              WRITE    L200TMP-REC
@@ -985,23 +795,6 @@
       *
            INITIALIZE    WRK-KOHI-TBL
       *
-      ***** 04/02/04 DEL
-      *     PERFORM  900-SRYACCT-SELECT-SEC
-      **
-      *     PERFORM  UNTIL  FLG-SRYACCT  =  1
-      **
-      **    保険組み合わせ情報参照
-      *       PERFORM  930-HKNCOMBI-SET-SEC
-      **
-      **    公費併用チェック
-      *       PERFORM  2001-KOHI-HEIYOU-SEC
-      **
-      *       PERFORM  900-SRYACCT-FETCH-SEC
-      *     END-PERFORM
-      **
-      *     PERFORM  900-SRYACCT-CLOSE-SEC
-      *
-      ***** 04/02/04 INS
       *    負担者番号取得
            MOVE    ZERO    TO    FLG-PASS
            PERFORM  2001-KOHI-HEIYOU-SEC
@@ -1029,31 +822,10 @@
       *****************************************************************
        2001-KOHI-HEIYOU-SEC                SECTION.
       *
-      ***** 04/02/04 DEL
-      *     PERFORM VARYING IDY FROM    1   BY  1
-      *             UNTIL   IDY >       4   OR
-      *             COMB-KOHHKNNUM(IDY)      =   SPACE
-      *       IF    COMB-KOHHKNNUM(IDY)  NOT  =  "027" AND "972"
-      *         INITIALIZE                   PTKOHINF-REC
-      *         MOVE    COMB-HOSPID          TO  PTKOH-HOSPID
-      *         MOVE    COMB-PTID            TO  PTKOH-PTID
-      *         MOVE    COMB-KOHID (IDY)     TO  PTKOH-KOHID
-      *         PERFORM  940-PTKOHINF-READ-SEC
-      *         IF    COMB-KOHHKNNUM(IDY)(1:1)  =  "0"
-      *           MOVE    PTKOH-FTNJANUM      TO  WRK-KOH1-FTNJANUM
-      *         ELSE
-      *           MOVE    PTKOH-FTNJANUM      TO  WRK-KOH2-FTNJANUM
-      *         END-IF
-      *       END-IF
-      *     END-PERFORM
-      ***** 040204 INS
            IF      RECE10-KOHNUM(1)     NOT  =  SPACE
              INITIALIZE                 PTKOHINF-REC
              MOVE    "PTKOHINF-KEY6"    TO   WRK-PATH2
-      ***07/09/21 nagaya 4.0対応 start
-      *       MOVE    RECE10-HOSPID TO   PTKOH-HOSPID
              MOVE    RECE10-HOSPNUM TO   PTKOH-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
              MOVE    RECE10-PTID   TO   PTKOH-PTID
              MOVE    RECE10-KOHNUM(1)   TO
                                         PTKOH-KOHNUM
@@ -1069,10 +841,7 @@
            IF      RECE10-KOHNUM(2)     NOT  =  SPACE
              INITIALIZE                 PTKOHINF-REC
              MOVE    "PTKOHINF-KEY6"    TO   WRK-PATH2
-      ***07/09/21 nagaya 4.0対応 start
-      *       MOVE    RECE10-HOSPID TO   PTKOH-HOSPID
              MOVE    RECE10-HOSPNUM TO   PTKOH-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
              MOVE    RECE10-PTID   TO   PTKOH-PTID
              MOVE    RECE10-KOHNUM(2)   TO
                                         PTKOH-KOHNUM
@@ -1084,7 +853,6 @@
              MOVE     PTKOH-FTNJANUM    TO  WRK-KOH2-FTNJANUM
              MOVE     PTKOH-JKYSNUM     TO  WRK-KOH2-JKYSNUM
            END-IF
-      *****
       *
            .
        2001-KOHI-HEIYOU-EXT.
@@ -1096,20 +864,6 @@
        2001-FTNJA-CHK-SEC                SECTION.
       *
       *    負担者番号判定
-      ***** 04/02/04 DEL
-      *       PERFORM  VARYING  IDX  FROM  1  BY  1
-      *                UNTIL    IDX  >     8  OR
-      *                WRK-PARA-FTNJANUM(IDX:1)  =  SPACE  OR
-      *                FLG-PASS =    1
-      *         IF  WRK-PARA-FTNJANUM(IDX:1)  NOT  =  "*"  AND
-      *             WRK-PARA-FTNJANUM(IDX:1)  NOT  =
-      *                                  L200TMP-FTNJANUM1(IDX:1) AND
-      *                                  L200TMP-FTNJANUM2(IDX:1)
-      *                                     
-      *           MOVE    1    TO    FLG-PASS
-      *         END-IF
-      *       END-PERFORM
-      ***** 04/02/04 INS
       *    "@"はデータ有り、スペースはデータ無しを対象とする
            IF    WRK-PARA-FTNJANUM  =  SPACE  OR "@"
                IF  (WRK-PARA-FTNJANUM      =  SPACE  AND
@@ -1149,7 +903,7 @@
                PERFORM  2001-FTNJA-CHK2-SEC
              END-IF
            END-IF
-      *****
+      *
            .
        2001-FTNJA-CHK-EXT.
            EXIT.
@@ -1294,7 +1048,6 @@
                    MOVE   1     TO    FLG-PASS
                  END-IF
                END-PERFORM
-      *       END-IF
       *    設定ファイルが"２"の時は、受給者番号もチェックする
            IF    SETTEI-PARA    =    "2" AND
                  FLG-PASS       =     1
@@ -1354,9 +1107,7 @@
       *****************************************************************
        2002-PRINT-SEC                SECTION.
       *
-      ***07/09/21 nagaya 4.0対応 start
            INITIALIZE           L200TMP-REC
-      ***07/09/21 nagaya 4.0対応 end
            OPEN     INPUT       L200TMP-FILE
       *
            MOVE     ZERO        TO       FLG-PRINT
@@ -1375,9 +1126,7 @@
       *    帳票印刷処理
                PERFORM  330-PRINT-OUT-SEC
            END-PERFORM
-      ***07/09/21 nagaya 4.0対応 start
            CLOSE  L200TMP-FILE
-      ***07/09/21 nagaya 4.0対応 end
       *
            .
        2002-PRINT-EXT.
@@ -1418,13 +1167,9 @@
            MOVE    WRK-SRYYM        TO   L200-SRYYM
            MOVE    WRK-SEIYMD       TO   L200-SEIYMD
       *
-      *
-      ***  20040914 MOTOHASI MONPEに変更
-      ***     MOVE    WRK-PARA-HKNJANUM   TO  L200-GHKNJANUM
            MOVE    WRK-PARA-HKNJANUM   TO  WRK-MAE-INPUT
            PERFORM 2009-HENKAN-SEC
            MOVE    WRK-OUT-INPUT       TO  L200-GHKNJANUM
-      ***  20040914 MOTOHASI MONPEに変更
            MOVE    WRK-PARA-FTNJANUM   TO  L200-GFTNJANUM
       *
            .
@@ -1458,12 +1203,9 @@
       *    保険者番号
       *    公費単独の時は印字しない
              IF    L200TMP-HKNNUM  NOT  =  SPACE
-      ***  20040914 MOTOHASI MONPEに変更
-      ***         MOVE   L200TMP-HKNJANUM TO    L200-HKNJANUM(CNT-LINE)
                MOVE   L200TMP-HKNJANUM   TO    WRK-MAE-INPUT
                PERFORM 2009-HENKAN-SEC
                MOVE   WRK-OUT-INPUT      TO    L200-HKNJANUM(CNT-LINE)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    保険者名
       *    保険者マスタに登録されてない場合があるので番号を変換する
@@ -1494,16 +1236,12 @@
              END-IF
       *
       *    負担者番号
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE   L200TMP-FTNJANUM1 TO   L200-FTNJANUM1(CNT-LINE)
-      ***       MOVE   L200TMP-FTNJANUM2 TO   L200-FTNJANUM2(CNT-LINE)
              MOVE   L200TMP-FTNJANUM1 TO   WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE   WRK-OUT-INPUT     TO   L200-FTNJANUM1(CNT-LINE)
              MOVE   L200TMP-FTNJANUM2 TO   WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE   WRK-OUT-INPUT     TO   L200-FTNJANUM2(CNT-LINE)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    生年月日
              MOVE  L200TMP-TANJO         TO   WRK-SYMD
@@ -1523,14 +1261,10 @@
              END-EVALUATE
       *
       *    負担割合
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    L200TMP-KYURATE  TO   WRK-Z2
-      ***       MOVE    WRK-Z2           TO   L200-FUTANWARI(CNT-LINE)
              MOVE    L200TMP-KYURATE  TO   WRK-Z2
              MOVE    WRK-Z2           TO   WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT    TO   L200-FUTANWARI(CNT-LINE)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    診療年月
              IF    L200TMP-SRYYM  NOT  =   WRK-PARA-SRYYM
@@ -1541,68 +1275,40 @@
              END-IF
       *
       *    実日数
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    L200TMP-NISSU    TO    WRK-Z2
-      ***       MOVE    WRK-Z2           TO    L200-NISSU(CNT-LINE)
              MOVE    L200TMP-NISSU    TO    WRK-Z2
              MOVE    WRK-Z2           TO    WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT    TO    L200-NISSU(CNT-LINE)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    総点数
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    L200TMP-TENSU    TO    WRK-Z7
-      ***       MOVE    WRK-Z7           TO    L200-TENSU(CNT-LINE)
              MOVE    L200TMP-TENSU    TO    WRK-Z7
              MOVE    WRK-Z7           TO    WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT    TO    L200-TENSU(CNT-LINE)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    一部負担金
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    L200TMP-ITBFTN   TO    WRK-Z6
-      ***       MOVE    WRK-Z6           TO    L200-ITBFTN(CNT-LINE)
-      *--- 2009/10/26 CHANGE START -------------------------------------
-      *       MOVE    L200TMP-ITBFTN   TO    WRK-Z6
-      *       MOVE    WRK-Z6           TO    WRK-MAE-INPUT
              MOVE    L200TMP-ITBFTN   TO    WRK-Z7
              MOVE    WRK-Z7           TO    WRK-MAE-INPUT
-      *--- 2009/10/26 ADD CHANGE ---------------------------------------
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT    TO    L200-ITBFTN(CNT-LINE)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    食事日数
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    L200TMP-SNISSU   TO    WRK-Z2
-      ***       MOVE    WRK-Z2           TO    L200-SNISSU(CNT-LINE)
              MOVE    L200TMP-SNISSU   TO    WRK-Z2
              MOVE    WRK-Z2           TO    WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT    TO    L200-SNISSU(CNT-LINE)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    食事療養費
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    L200TMP-KINGK    TO    WRK-Z7
-      ***       MOVE    WRK-Z7           TO    L200-KINGK(CNT-LINE)
              MOVE    L200TMP-KINGK    TO    WRK-Z7
              MOVE    WRK-Z7           TO    WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT    TO    L200-KINGK(CNT-LINE)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    標準負担額
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    L200TMP-FTNGK    TO    WRK-Z6
-      ***       MOVE    WRK-Z6           TO    L200-FTNGK(CNT-LINE)
              MOVE    L200TMP-FTNGK    TO    WRK-Z6
              MOVE    WRK-Z6           TO    WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT    TO    L200-FTNGK(CNT-LINE)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    合計加算
              ADD    L200TMP-NISSU     TO    WRK-GNISSU
@@ -1611,7 +1317,6 @@
              ADD    L200TMP-SNISSU    TO    WRK-GSNISSU
              ADD    L200TMP-KINGK     TO    WRK-GKINGK
              ADD    L200TMP-FTNGK     TO    WRK-GFTNGK
-      *
       *
       *    レセプト明細読込
              PERFORM  900-TMP-READ-SEC
@@ -1642,12 +1347,8 @@
            MOVE    WRK-Z10           TO    L200-GTENSU
       *
       *    一部負担金
-      *--- 2010/04/26 CHANGE START -------------------------------------
-      *     MOVE    WRK-GITBFTN       TO    WRK-Z9
-      *     MOVE    WRK-Z9            TO    L200-GITBFTN
            MOVE    WRK-GITBFTN       TO    WRK-Z10
            MOVE    WRK-Z10           TO    L200-GITBFTN
-      *--- 2010/04/26 CHANGE END ---------------------------------------
       *
       *    食事日数
            MOVE    WRK-GSNISSU       TO    WRK-Z4
@@ -1675,39 +1376,24 @@
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"               TO  SPRT-MODE
            MOVE    LNK-PRTKANRI-RENNUM TO  SPRT-RENNUM
-           MOVE    LNK-PRTKANRI-TBL-KEY
-                                       TO  SPRT-TBL-KEY
+           MOVE    LNK-PRTKANRI-TBL-KEY  TO  SPRT-TBL-KEY
            MOVE    LNK-PRTKANRI-TBL-GROUP
                                        TO  SPRT-TBL-GROUP
            MOVE    LNK-PRTKANRI-SRYYM  TO  SPRT-SRYYM
            MOVE    LNK-PRTKANRI-SKYYMD TO  SPRT-SKYYMD
-           MOVE    LNK-PRTKANRI-SHELLID 
-                                       TO  SPRT-SHELLID
-           MOVE    LNK-PRTKANRI-SHORI-RENNUM
-                                       TO  SPRT-SHORI-RENNUM
-           MOVE    LNK-PRTKANRI-PRIORITY
-                                       TO  SPRT-PRIORITY
-      ***  20040914 MOTOHASI MONPEに変更
-      ***     MOVE   "A00000L200"         TO  SPRT-PRTID
-      *--- 2010/04/26 CHANGE START -------------------------------------
-      *     MOVE   "A00000L200V02.red"         TO  SPRT-PRTID
-           MOVE   "A00000L200V03.red"         TO  SPRT-PRTID
-      *--- 2010/04/26 CHANGE END ---------------------------------------
-      ***  20040914 MOTOHASI MONPEに変更
-           MOVE    "保険別患者台帳"
-                                     TO  SPRT-TITLE
-           MOVE    L200              TO  SPRT-PRTDATA
+           MOVE    LNK-PRTKANRI-SHELLID   TO  SPRT-SHELLID
+           MOVE    LNK-PRTKANRI-SHORI-RENNUM  TO  SPRT-SHORI-RENNUM
+           MOVE    LNK-PRTKANRI-PRIORITY  TO  SPRT-PRIORITY
+           MOVE    "A00000L200V03.red" TO  SPRT-PRTID
+           MOVE    "保険別患者台帳"    TO  SPRT-TITLE
+           MOVE    L200                TO  SPRT-PRTDATA
            MOVE    LNK-PRTKANRI-TERMID TO  SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID   TO  SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-      ***** site-libで動かすためにコメントアウト
-      ***     MOVE    "1"          TO  SPRT-SITEKBN
-      *****
+      *
            CALL    "ORCSPRT"           USING
                                        ORCSPRTAREA
-      ***07/09/21 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF      SPRT-RETURN         =   ZERO
                CONTINUE                    
            END-IF
@@ -1721,36 +1407,22 @@
       *****************************************************************
        900-SYSKANRI-INV-SEC         SECTION.
       *
-           MOVE    LNK-PRTKANRI-SKYYMD     TO  ORC-DBYMD
-           MOVE    "DBSELECT"          TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    "tbl_syskanri"      TO  MCP-TABLE
-           MOVE    "key"               TO  MCP-PATHNAME
+           MOVE    LNK-PRTKANRI-SKYYMD  TO  ORC-DBYMD
+           MOVE    "DBSELECT"           TO  MCP-FUNC
+           MOVE    "tbl_syskanri"       TO  MCP-TABLE
+           MOVE    "key"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
                                         MCPDATA-REC
-      ***07/09/21 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *         MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
-               MOVE    "tbl_syskanri"       TO  MCP-TABLE
+               MOVE    "tbl_syskanri"      TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
-                                            MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                      ORCMCPAREA
-                                            MCPDATA-REC
-                                            SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
                IF      MCP-RC              =   ZERO
                    MOVE    ZERO                TO  FLG-SYSKANRI
                ELSE
@@ -1760,23 +1432,13 @@
                MOVE    1                   TO  FLG-SYSKANRI
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/18) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/18) end
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key"               TO  MCP-PATHNAME
+           MOVE    "key"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
       *
            .
        900-SYSKANRI-INV-EXT.
@@ -1790,26 +1452,16 @@
            MOVE    WRK-SYMD              TO  ORC-DBYMD
            MOVE    SYS-1005-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"            TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_syskanri"        TO  MCP-TABLE
            MOVE    "key2"                TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
-                                        MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
-          IF      MCP-RC           =   ZERO
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+           IF      MCP-RC           =   ZERO
                 PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF        
            .
        820-SYSKANRI-DBSELECT-EXT.
@@ -1821,27 +1473,17 @@
        820-SYSKANRI-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF      MCP-RC           =   ZERO
                MOVE    ZERO                   TO  FLG-SYSKANRI3
                MOVE    MCPDATA-REC  TO  SYS-1005-REC
            ELSE
-               MOVE    1                           TO  FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
+               MOVE    1                      TO  FLG-SYSKANRI3
            END-IF  
            .
        820-SYSKANRI-DBFETCH-EXT.
@@ -1852,23 +1494,13 @@
       *****************************************************************
        820-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/18) start
-      *     MOVE  "DBCLOSE"                TO  MCP-FUNC
-           MOVE  "DBCLOSECURSOR"          TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/18) end
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY2"  TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    "tbl_syskanri"         TO  MCP-TABLE
-           MOVE    "key2"                 TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_syskanri"       TO  MCP-TABLE
+           MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            .
        820-SYSKANRI-DBCLOSE-EXT.
            EXIT.
@@ -1943,12 +1575,10 @@
                MOVE    WRK-RECEERR         TO  RECEERR-REC
                WRITE   RECEERR-REC
       *
-      *        ジョブ終了処理
+      *    ジョブ終了処理
                MOVE    "JBE"           TO  SJOBKANRI-MODE
                INITIALIZE                  JOBKANRI-REC
-      ***07/09/21 nagaya 4.0対応 start
                MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
                MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
                MOVE    WRK-PARA-SHELLID
                                        TO  JOB-SHELLID
@@ -1957,9 +1587,7 @@
                CALL    "ORCSJOB"       USING
                                        ORCSJOBKANRIAREA  
                                        JOBKANRI-REC
-      ***07/09/21 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            END-IF
       *
            CLOSE   RECEERR-FILE
@@ -1992,52 +1620,31 @@
       *    請求管理ＤＢ検索
            INITIALIZE                  RECE10-REC
       *
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE   SYS-1001-HOSPID       TO    RECE10-HOSPID.
-           MOVE   SYS-1001-HOSPNUM       TO    RECE10-HOSPNUM
+           MOVE   SYS-1001-HOSPNUM       TO  RECE10-HOSPNUM
            IF WRK-PATH = "SEIKYU-KEY4"
                 MOVE  "00000000"         TO  RECE10-XXSTHKNJANUM
                 MOVE  "99999999"         TO  RECE10-XXEDHKNJANUM
            END-IF
-      ***07/09/21 nagaya 4.0対応 end
            MOVE    WRK-PARA-SRYYM        TO  RECE10-SKYYM
            IF   WRK-PATH = "SEIKYU-KEY60"
-                MOVE    "6"                   TO  RECE10-TEISYUTUSAKI
+                MOVE    "6"              TO  RECE10-TEISYUTUSAKI
            END-IF
            MOVE    RECE10-REC            TO  MCPDATA-REC
            MOVE    "DBSELECT"            TO  MCP-FUNC
-      *     MOVE    "SEIKYU-KEY4"       TO  ORC-DBPATH
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    WRK-PATH            TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    "tbl_seikyu"         TO  MCP-TABLE
-      * 20080424  H20年4月改正対応START tanaka
-      *     IF WRK-PATH = "SEIKYU-KEY3"
-      *        MOVE    "key3"            TO  MCP-PATHNAME
-      *     ELSE
-      *        MOVE    "key4"            TO  MCP-PATHNAME
-      *     END-IF
+           MOVE    "tbl_seikyu"          TO  MCP-TABLE
+      *
            EVALUATE  WRK-PATH
              WHEN   "SEIKYU-KEY3"
-              MOVE    "key3"            TO  MCP-PATHNAME
+              MOVE    "key3"             TO  MCP-PATHNAME
              WHEN   "SEIKYU-KEY4"
-              MOVE    "key4"            TO  MCP-PATHNAME
-      * 20080701 処理速度向上の修正 START
-      *       WHEN   "SEIKYU-ALL"
-      *        MOVE    "all"            TO  MCP-PATHNAME
+              MOVE    "key4"             TO  MCP-PATHNAME
              WHEN   "SEIKYU-KEY60"
               MOVE    "key60"            TO  MCP-PATHNAME
-      * 20080701 処理速度向上の修正 END
            END-EVALUATE
-      * 20080424  H20年4月改正対応END
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF      MCP-RC              =   ZERO
                PERFORM 900-SEIKYU-READ-SEC
            ELSE
@@ -2051,45 +1658,24 @@
       *****************************************************************
        900-SEIKYU-READ-SEC           SECTION.
       *
-      *     MOVE    "SEIKYU-KEY4"       TO  ORC-DBPATH
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    WRK-PATH            TO  ORC-DBPATH
-      ***07/09/21 nagaya 4.0対応 end
-           MOVE    "DBFETCH"           TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
+           MOVE    "DBFETCH"            TO  MCP-FUNC
            MOVE    "tbl_seikyu"         TO  MCP-TABLE
-      * 20080424  H20年4月改正対応START tanaka
-      *     IF WRK-PATH = "SEIKYU-KEY3"
-      *        MOVE    "key3"            TO  MCP-PATHNAME
-      *     ELSE
-      *        MOVE    "key4"            TO  MCP-PATHNAME
-      *     END-IF
            EVALUATE  WRK-PATH
              WHEN   "SEIKYU-KEY3"
               MOVE    "key3"            TO  MCP-PATHNAME
              WHEN   "SEIKYU-KEY4"
               MOVE    "key4"            TO  MCP-PATHNAME
-      * 20080701 処理速度向上の修正 START
-      *       WHEN   "SEIKYU-ALL"
-      *       MOVE    "all"            TO  MCP-PATHNAME
              WHEN   "SEIKYU-KEY60"
-              MOVE    "key60"            TO  MCP-PATHNAME
-      * 20080701 処理速度向上の修正 END
+              MOVE    "key60"           TO  MCP-PATHNAME
            END-EVALUATE
-      * 20080424  H20年4月改正対応END
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF      MCP-RC              =   ZERO
-               MOVE    ZERO            TO  FLG-END
+               MOVE    ZERO                TO  FLG-END
                MOVE    MCPDATA-REC         TO  RECE10-REC
-      
+      *
       *        テスト患者のときは読み飛ばす
                MOVE    SPACE               TO  PTINF-REC
                INITIALIZE                      PTINF-REC
@@ -2125,31 +1711,13 @@
              MOVE    1    TO    FLG-PASS
            END-IF
       *
-      *    保険者番号判定
-      ***** 04/02/04 DEL
-      *     IF    WRK-PARA-HKNJANUM   NOT  =  SPACE
-      *       PERFORM  VARYING  IDX  FROM  1  BY  1
-      *                UNTIL    IDX  >     8  OR
-      *                WRK-PARA-HKNJANUM(IDX:1)  =  SPACE  OR
-      *                FLG-PASS =    1
-      *         IF  WRK-PARA-HKNJANUM(IDX:1)  NOT  =  "*"  AND
-      *             WRK-PARA-HKNJANUM(IDX:1)  NOT  =
-      *                                      RECE10-HKNJANUM(IDX:1)
-      *           MOVE    1    TO    FLG-PASS
-      *         END-IF
-      *       END-PERFORM
-      *     END-IF
-      ***** 04/02/04 INS @はデータのある患者を対象とする
-      *     SPACEは公費単独等で、保険を持たない患者が対象とする
+      *    SPACEは公費単独等で、保険を持たない患者が対象とする
             IF    WRK-PARA-HKNJANUM      =  SPACE OR 
                   WRK-PARA-HKNJANUM(1:1) =  "@"
               IF  (WRK-PARA-HKNJANUM   =  SPACE AND
                    RECE10-HKNJANUM NOT =  "00000000") OR
                   (WRK-PARA-HKNJANUM(1:1) = "@" AND
-      *--- 2010/08/20 CHANGE START -------------------------------------
-      *             RECE10-HKNJANUM     =  SPACE)
                    RECE10-HKNJANUM  =  "00000000")
-      *--- 2010/08/20 CHANGE END ---------------------------------------
                 MOVE    1     TO     FLG-PASS
               END-IF
             ELSE 
@@ -2158,21 +1726,17 @@
                    WRK-PARA-HKNJANUM(8:1) NOT = SPACE
                INITIALIZE                 PTKOHINF-REC
                MOVE    "PTKOHINF-KEY6"    TO   WRK-PATH2
-      ***07/09/21 nagaya 4.0対応 start
-      *         MOVE    RECE10-HOSPID TO   PTKOH-HOSPID
-               MOVE    RECE10-HOSPNUM TO   PTKOH-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
-               MOVE    RECE10-PTID   TO   PTKOH-PTID
-               MOVE    RECE10-RJNHKNNUM   TO
-                                          PTKOH-KOHNUM
-               MOVE    RECE10-SRYYM  TO   PTKOH-TEKSTYMD(1:6)
-                                          PTKOH-TEKEDYMD(1:6)
-               MOVE    "01"          TO   PTKOH-TEKEDYMD(7:2)
-               MOVE    "99"          TO   PTKOH-TEKSTYMD(7:2)
+               MOVE    RECE10-HOSPNUM     TO   PTKOH-HOSPNUM
+               MOVE    RECE10-PTID        TO   PTKOH-PTID
+               MOVE    RECE10-RJNHKNNUM   TO   PTKOH-KOHNUM
+               MOVE    RECE10-SRYYM       TO   PTKOH-TEKSTYMD(1:6)
+                                               PTKOH-TEKEDYMD(1:6)
+               MOVE    "01"               TO   PTKOH-TEKEDYMD(7:2)
+               MOVE    "99"               TO   PTKOH-TEKSTYMD(7:2)
                PERFORM  940-PTKOHINF-READ-SEC
-               MOVE     PTKOH-FTNJANUM  TO  WRK-CHK-HKNJANUM
+               MOVE     PTKOH-FTNJANUM    TO  WRK-CHK-HKNJANUM
              ELSE
-               MOVE     RECE10-HKNJANUM TO  WRK-CHK-HKNJANUM
+               MOVE     RECE10-HKNJANUM   TO  WRK-CHK-HKNJANUM
              END-IF
       *
              PERFORM  VARYING  IDX  FROM  1  BY  1
@@ -2222,42 +1786,20 @@
       *****************************************************************
        900-SEIKYU-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/18) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/18) end
-      *     MOVE    "SEIKYU-KEY4"       TO  ORC-DBPATH
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    WRK-PATH            TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE    "tbl_seikyu"         TO  MCP-TABLE
-      * 20080424  H20年4月改正対応START tanaka
-      *     IF WRK-PATH = "SEIKYU-KEY3"
-      *        MOVE    "key3"            TO  MCP-PATHNAME
-      *     ELSE
-      *        MOVE    "key4"            TO  MCP-PATHNAME
-      *     END-IF
            EVALUATE  WRK-PATH
              WHEN   "SEIKYU-KEY3"
               MOVE    "key3"            TO  MCP-PATHNAME
              WHEN   "SEIKYU-KEY4"
               MOVE    "key4"            TO  MCP-PATHNAME
-      * 20080701 処理速度向上の修正 START
-      *       WHEN   "SEIKYU-ALL"
-      *        MOVE    "all"            TO  MCP-PATHNAME
              WHEN   "SEIKYU-KEY60"
               MOVE    "key60"            TO  MCP-PATHNAME
-      * 20080701 処理速度向上の修正 END
            END-EVALUATE
-      * 20080424  H20年4月改正対応END
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            .
        900-SEIKYU-CLOSE-EXT.
            EXIT.
@@ -2268,41 +1810,24 @@
        900-PTINF-READ-SEC         SECTION.
       *
            INITIALIZE                      PTINF-REC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    WRK-PARA-HOSPID     TO  PTINF-HOSPID
            MOVE    WRK-PARA-HOSPNUM    TO  PTINF-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
            MOVE    WRK-PTID            TO  PTINF-PTID
            MOVE    PTINF-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_ptinf"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/21 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                ORCMCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *         MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
                 MOVE    "tbl_ptinf"         TO  MCP-TABLE
                 MOVE    "key"               TO  MCP-PATHNAME
                 CALL    "ORCDBMAIN"         USING
-      ***07/09/21 nagaya 4.0対応 end
                                             MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                     ORCMCPAREA
                                             MCPDATA-REC
                                             SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  PTINF-REC
                    MOVE    ZERO                TO  FLG-PTINF
@@ -2315,55 +1840,34 @@
                INITIALIZE                  PTINF-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/18) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/18) end
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_ptinf"         TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
-      *
       *
            .
        900-PTINF-READ-EXT.
            EXIT.
       *
       *****************************************************************
-      *   保険者情報セット
+      *    保険者情報セット
       *****************************************************************
        920-HKNJAINF-SET-SEC  SECTION.
       *
            INITIALIZE  HKNJAINF-REC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE  WRK-PARA-HOSPID      TO  HKNJA-HOSPID
            MOVE  WRK-PARA-HOSPNUM     TO  HKNJA-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
            MOVE  WRK-HKNJANUM         TO  HKNJA-HKNJANUM
            MOVE  HKNJAINF-REC         TO  MCPDATA-REC
            MOVE  "DBSELECT"           TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE  "HKNJAINF-KEY"       TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"          USING
            MOVE    "tbl_hknjainf"     TO  MCP-TABLE
            MOVE    "key"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      ***07/09/21 nagaya 4.0対応 end
                                       MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                               ORCMCPAREA
                                       MCPDATA-REC
                                       SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF  MCP-RC  =  ZERO
              MOVE  "HKNJAINF-KEY"       TO  ORC-DBPATH
              PERFORM  925-HKNJAINF-READ-SEC
@@ -2372,23 +1876,13 @@
            END-IF
       *
            INITIALIZE  MCPAREA
-      *=== sarge対応 UP By Takashima(2006/08/18) start
-      *     MOVE  "DBCLOSE"        TO  MCP-FUNC
-           MOVE  "DBCLOSECURSOR"  TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/18) end
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE  "HKNJAINF-KEY"       TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"      USING
-           MOVE    "tbl_hknjainf" TO  MCP-TABLE
-           MOVE    "key"          TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"    USING
-      ***07/09/21 nagaya 4.0対応 end
-                                  MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                            ORCMCPAREA
-                                  MCPDATA-REC
-                                  SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
+           MOVE    "DBCLOSECURSOR"  TO  MCP-FUNC
+           MOVE    "tbl_hknjainf"   TO  MCP-TABLE
+           MOVE    "key"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
       *
            .
        920-HKNJAINF-SET-EXT.
@@ -2399,27 +1893,21 @@
       *****************************************************************
        925-HKNJAINF-READ-SEC  SECTION.
       *
-           MOVE  "DBFETCH"  TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     CALL  "ORCMCPSUB"  USING
+           MOVE    "DBFETCH"          TO  MCP-FUNC
            MOVE    "tbl_hknjainf"     TO  MCP-TABLE
            MOVE    "key"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      ***07/09/21 nagaya 4.0対応 end
                                       MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                               ORCMCPAREA
                                       MCPDATA-REC
                                       SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF  MCP-RC  =  ZERO
-             MOVE  MCPDATA-REC  TO  HKNJAINF-REC
-             MOVE  ZERO         TO  FLG-HKNJAINF
-             MOVE  HKNJA-HKNJANAME   TO  WRK-HKNJANAME
+             MOVE  MCPDATA-REC          TO  HKNJAINF-REC
+             MOVE  ZERO                 TO  FLG-HKNJAINF
+             MOVE  HKNJA-HKNJANAME      TO  WRK-HKNJANAME
            ELSE
-             INITIALIZE  HKNJAINF-REC
-             MOVE  1              TO  FLG-HKNJAINF
-             MOVE  WRK-HKNJANUM   TO  WRK-HKNJANAME
+             INITIALIZE                 HKNJAINF-REC
+             MOVE  1                    TO  FLG-HKNJAINF
+             MOVE  WRK-HKNJANUM         TO  WRK-HKNJANAME
            END-IF
       *
            .
@@ -2432,44 +1920,26 @@
        930-HKNCOMBI-SET-SEC  SECTION.
       *
            INITIALIZE  HKNCOMBI-REC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE  ACCT-HOSPID          TO  COMB-HOSPID
            MOVE  ACCT-HOSPNUM         TO  COMB-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
            MOVE  ACCT-PTID            TO  COMB-PTID
            MOVE  ACCT-HKNCOMBI        TO  COMB-HKNCOMBINUM
            MOVE  HKNCOMBI-REC         TO  MCPDATA-REC
            MOVE  "DBSELECT"           TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE  "HKNCOMBI-KEY"      TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"          USING
            MOVE    "tbl_hkncombi"     TO  MCP-TABLE
            MOVE    "key"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      ***07/09/21 nagaya 4.0対応 end
                                       MCPAREA
                                       ORCMCPAREA
                                       MCPDATA-REC
-      ***07/09/21 nagaya 4.0対応 start
                                       SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF  MCP-RC  =  ZERO
-      ***07/09/21 nagaya 4.0対応 start
-      *       MOVE  "HKNCOMBI-KEY"  TO  ORC-DBPATH
              MOVE    "tbl_hkncombi"     TO  MCP-TABLE
              MOVE    "key"              TO  MCP-PATHNAME
-      ***07/09/21 nagaya 4.0対応 end
-             MOVE  "DBFETCH"  TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *       CALL  "ORCMCPSUB"  USING
-             CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
-                                MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                          ORCMCPAREA
-                                MCPDATA-REC
-                                SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
+             MOVE    "DBFETCH"          TO  MCP-FUNC
+             CALL    "ORCDBMAIN"        USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
              IF  MCP-RC  =  ZERO
                MOVE  MCPDATA-REC  TO  HKNCOMBI-REC
                MOVE  ZERO         TO  FLG-HKNCOMBI
@@ -2477,29 +1947,19 @@
                INITIALIZE  HKNCOMBI-REC
                MOVE  1            TO  FLG-HKNCOMBI
              END-IF
-
+      *
            ELSE
              MOVE    1            TO  FLG-HKNCOMBI
            END-IF
       *
            INITIALIZE  MCPAREA
-      *=== sarge対応 UP By Takashima(2006/08/18) start
-      *     MOVE  "DBCLOSE"        TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"  TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/18) end
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE  "HKNCOMBI-KEY"   TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"      USING
            MOVE    "tbl_hkncombi" TO  MCP-TABLE
            MOVE    "key"          TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
+           CALL    "ORCDBMAIN"    USING
                                   MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                            ORCMCPAREA
                                   MCPDATA-REC
                                   SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
       *
            .
        930-HKNCOMBI-SET-EXT.
@@ -2511,28 +1971,18 @@
        900-SRYACCT-SELECT-SEC         SECTION.
       *
            INITIALIZE                       SRYACCT-REC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    RECE10-HOSPID        TO  ACCT-HOSPID
            MOVE    RECE10-HOSPNUM       TO  ACCT-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
            MOVE    RECE10-PTID          TO  ACCT-PTID
            MOVE    RECE10-SRYYM         TO  ACCT-SRYYM
            MOVE    RECE10-NYUGAIKBN     TO  ACCT-NYUGAIKBN
            MOVE    SRYACCT-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "SRYACCT-KEY7"       TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_sryacct"        TO  MCP-TABLE
            MOVE    "key7"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF      MCP-RC               =   ZERO
                    MOVE  ZERO               TO FLG-SRYACCT
                    PERFORM   900-SRYACCT-FETCH-SEC
@@ -2549,19 +1999,12 @@
        900-SRYACCT-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"           TO  MCP-FUNC
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "SRYACCT-KEY7"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_sryacct"       TO  MCP-TABLE
            MOVE    "key7"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF      MCP-RC              =   ZERO
              MOVE    MCPDATA-REC     TO  SRYACCT-REC
              MOVE    ZERO            TO  FLG-SRYACCT
@@ -2583,23 +2026,13 @@
       *****************************************************************
        900-SRYACCT-CLOSE-SEC         SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/18) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/18) end
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    "SRYACCT-KEY7"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_sryacct"       TO  MCP-TABLE
            MOVE    "key7"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            .
        900-SRYACCT-CLOSE-EXT.
            EXIT.
@@ -2610,40 +2043,20 @@
       *
            MOVE    PTKOHINF-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      ***** 04/02/04 UPD
-      *     MOVE    "PTKOHINF-KEY"      TO  ORC-DBPATH
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    WRK-PATH2            TO  ORC-DBPATH
-      *****
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_ptkohinf"      TO  MCP-TABLE
            MOVE    "key6"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      ***** 04/02/04 UPD
-      *         MOVE    "PTKOHINF-KEY"      TO  ORC-DBPATH
-      ***07/09/21 nagaya 4.0対応 start
-      *         MOVE    WRK-PATH2            TO  ORC-DBPATH
-      *****
-      *         CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_ptkohinf"          TO  MCP-TABLE
            MOVE    "key6"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"             USING
-      ***07/09/21 nagaya 4.0対応 end
                                             MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                      ORCMCPAREA
                                             MCPDATA-REC
                                             SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC     TO  PTKOHINF-REC
                    MOVE    ZERO            TO  FLG-PTKOHINF
@@ -2653,27 +2066,14 @@
            ELSE
                MOVE    1               TO  FLG-PTKOHINF
            END-IF
-     *
-      *=== sarge対応 UP By Takashima(2006/08/18) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/18) end
-      ***** 04/02/04 UPD
-      *     MOVE    "PTKOHINF-KEY"      TO  ORC-DBPATH
-      ***07/09/21 nagaya 4.0対応 start
-      *     MOVE    WRK-PATH2            TO  ORC-DBPATH
-      ******
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_ptkohinf"      TO  MCP-TABLE
            MOVE    "key6"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/21 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
       *
            .
        940-PTKOHINF-READ-EXT.
@@ -2686,19 +2086,15 @@
       *    ステップ管理終了処理
            MOVE    "STE"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      ***07/09/21 nagaya 4.0対応 start
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      ***07/09/21 nagaya 4.0対応 end
            MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
            MOVE    WRK-PARA-SHELLID
                                    TO  JOB-SHELLID
            MOVE    CNT-PAGE        TO  JOB-UPDCNT
            CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
+                                   ORCSJOBKANRIAREA
                                    JOBKANRI-REC
-      ***07/09/21 nagaya 4.0対応 start
                                    SPA-AREA
-      ***07/09/21 nagaya 4.0対応 end
       *
            PERFORM 900-DBDISCONNECT-SEC
       *
@@ -2711,37 +2107,23 @@
       *****************************************************************
        100-DBOPEN-SEC                SECTION.
       *
-           MOVE    "DBOPEN"            TO  MCP-FUNC.
-      ***07/09/21 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBOPEN"             TO  MCP-FUNC.
+           MOVE    LOW-VALUE            TO  MCP-TABLE
+                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/21 nagaya 4.0対応 end
       *
-           MOVE    "DBSTART"           TO  MCP-FUNC.
-      ***07/09/21 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBSTART"            TO  MCP-FUNC.
+           MOVE    LOW-VALUE            TO  MCP-TABLE
+                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/21 nagaya 4.0対応 end
            .
        100-DBOPEN-EXT.
            EXIT.
@@ -2751,37 +2133,23 @@
       *****************************************************************
        900-DBDISCONNECT-SEC            SECTION.
       *
-           MOVE    "DBCOMMIT"          TO  MCP-FUNC.
-      ***07/09/21 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBCOMMIT"           TO  MCP-FUNC.
+           MOVE    LOW-VALUE            TO  MCP-TABLE
+                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/21 nagaya 4.0対応 end
       *
-           MOVE    "DBDISCONNECT"      TO  MCP-FUNC.
-      ***07/09/21 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
-           MOVE    LOW-VALUE            TO     MCP-TABLE
-                                               MCP-PATHNAME
+           MOVE    "DBDISCONNECT"       TO  MCP-FUNC.
+           MOVE    LOW-VALUE            TO  MCP-TABLE
+                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/21 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/21 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/21 nagaya 4.0対応 end
            .
        900-DBCLOSE-EXT.
            EXIT.
