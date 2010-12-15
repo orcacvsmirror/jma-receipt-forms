@@ -14,9 +14,10 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
-      *  プログラム修正履歴
-      *              @@@@-高嶋    06/11/09  自費、基本診療項目追加対応
-      *              @@@@-田中    08/03/27  H20年4月改正対応
+      ********************************************************************
+      *  コピー句修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    10/12/13  コメント履歴削除
       ********************************************************************
        01  D122.
               03  D122-TITLE.
@@ -33,8 +34,5 @@
                 05  D122-TDAY-G             OCCURS  17 TIMES.
                   07  D122-TDAY     PIC X(6).
                 05  D122-YOSO-G             OCCURS  17 TIMES.
-      * 20080327 H20年4月改正対応START tanaka
-      *            07  D122-YOSO-OCC         OCCURS  37 TIMES.
                   07  D122-YOSO-OCC         OCCURS  38 TIMES.
-      * 20080327 H20年4月改正対応END
                     09  D122-YOSO   PIC X(9).

@@ -22,15 +22,12 @@
       *  サブシステム名    : 日次帳票
       *  コンポーネント名  : 基本台帳制御処理
       *  管理者            : 
-      *  作成日付    作業者        記述
-      *  04/02/09    @@@@-半田     新規作成
-      *  04/09/22    @@@@-本橋     MONPE化
-      *  05/03/01    @@@@-鈴木     open-cobol 0.23への対応による変更
-      *  05/03/25    @@@@-本橋     複数診療科への対応による、
-      *                            再診数カウント処理追加
-      *  07/09/13    @@@@-田中     4.0対応
-      *  08/03/03    @@@@-田中     4.0対応漏れを修正
-      *  09/04/13    @@@@-門間     ０件印字対応（医師・地区別）
+      *  作成日付    作業者       記述
+      *  04/02/09    @@@@-半田    新規作成
+      *****************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    10/12/13  コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -53,14 +50,8 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-      * 20070913 4.0対応START t.tanaka
-      *     COPY    "CPCOMMONDAT2.INC"
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
-      * 20070913 4.0対応END
       *
       *    スパ領域
        01  STS-AREA.
@@ -120,10 +111,7 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
-      * 20070913 4.0対応START t.tanaka
-      *     03  WRK-PARA-HOSPID       PIC X(24).
            03  WRK-PARA-HOSPNUM       PIC X(24).
-      * 20070913 4.0対応END
       *
            03  WRK-PARA-PRTYPE       PIC X(01).
            03  WRK-PARA-YMD1         PIC X(08).
@@ -131,9 +119,7 @@
            03  WRK-PARA-NYUGAIKBN    PIC X(01).
            03  WRK-PARA-SRYKACD      PIC X(02).
            03  WRK-PARA-DRCD         PIC X(05).
-      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
            03  WRK-PARA-ZERO         PIC X(01).
-      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
       *
       *    一時領域
        01  WRK-AREA.
@@ -161,7 +147,7 @@
            03  WRK-HENYMDG           PIC X(22).
       *  
       *    郵便番号変換
-	   03  WRK-POSTMAEG.
+           03  WRK-POSTMAEG.
                05  WRK-POSTMAE1    PIC X(03).
                05  WRK-POSTMAE2    PIC X(04).
            03  WRK-POSTATOG.
@@ -171,9 +157,6 @@
       *
            03  WRK-PTID2             PIC X(10).
            03  WRK-SRYCD2            PIC X(10).
-      **** 20050301 open-cobol 0.23への対応 SUZUKI     
-      *     03  WRK-RENNUM            PIC 9(05).
-      **** 20050301 SUZUKI
            03  WRK-NYUGAIKBN         PIC X(01).
            03  WRK-NENREI            PIC 9(03).
            03  WRK-ADRS              PIC X(200).
@@ -188,10 +171,7 @@
            03  DEBUG-CNT             PIC 9(03).
       *
            COPY    "CPSHELLTBL.INC".
-      *     
-      * 20070913 4.0対応START t.tanaka
-      *     COPY    "ORCA-DBPATH".
-      * 20070913 4.0対応END
+      *
       *    診療種別名テーブル
            COPY    "CPORCSSRYSYU.INC".        
       *
@@ -213,24 +193,23 @@
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   ジョブ管理ＤＢ制御サブ
+      *    ジョブ管理ＤＢ制御サブ
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
            COPY    "CPORCSPRT.INC".          
       *
-      *   日付変換サブ
+      *    日付変換サブ
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   患者番号変換サブ
+      *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
-      *
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
@@ -280,28 +259,21 @@
                                                LNK-PRTKANRI-SHELLID
                                                LNK-PRTKANRI-PRIORITY
                                                LNK-PRTKANRI-TERMID
-                                               LNK-PRTKANRI-OPID    
-                                               LNK-PRTKANRI-PRTNM    
+                                               LNK-PRTKANRI-OPID
+                                               LNK-PRTKANRI-PRTNM
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      * 20070913 4.0対応START t.tanaka
-      *                                         WRK-PARA-HOSPID
                                                WRK-PARA-HOSPNUM
-      * 20070913 4.0対応END
                                                RECEERR
                                                WRK-PARA-PRTYPE
                                                WRK-PARA-YMD1
                                                WRK-PARA-YMD2
                                                WRK-PARA-NYUGAIKBN
                                                WRK-PARA-SRYKACD
-      * 20080303 4.0対応漏れを修正START tanaka
                                                WRK-PARA-DRCD
-      * 20080303 4.0対応漏れを修正END
-      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
                                                WRK-PARA-ZERO
-      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
            END-UNSTRING
-
+      *
            .
        100-INIT-EXT.
            EXIT.
@@ -335,89 +307,84 @@
       *
            MOVE  WRK-PARA-JOBID         TO    D100LNK-JOBID
            MOVE  WRK-PARA-SHELLID       TO    D100LNK-SHELLID
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE  WRK-PARA-HOSPID        TO    D100LNK-HOSPID
-           MOVE  WRK-PARA-HOSPNUM        TO    D100LNK-HOSPNUM
-      * 20070913 4.0対応END
+           MOVE  WRK-PARA-HOSPNUM       TO    D100LNK-HOSPNUM
            MOVE  WRK-PARA-YMD1          TO    D100LNK-YMD1
            MOVE  WRK-PARA-YMD2          TO    D100LNK-YMD2
            MOVE  WRK-PARA-NYUGAIKBN     TO    D100LNK-NYUGAIKBN
            MOVE  WRK-PARA-SRYKACD       TO    D100LNK-SRYKACD
            MOVE  WRK-PARA-DRCD          TO    D100LNK-DRCD
-      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD START
            MOVE  WRK-PARA-ZERO          TO    D100LNK-ZERO
-      *--- ０件印字対応（医師・地区別） 2009/04/13 ADD END
       *
       *    帳票別サブプログラムCALL
            EVALUATE  WRK-PARA-PRTYPE
                WHEN  SPACE
-      ***            (日報)
+      *              (日報)
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      基本台帳(入院日報)
+      *                        基本台帳(入院日報)
                           CALL "A00000D122" USING  A00000D100-LNK
                          WHEN  OTHER
-      ***                      基本台帳(外来日報)
+      *                        基本台帳(外来日報)
                           CALL "A00000D121" USING  A00000D100-LNK
                      END-EVALUATE
                WHEN  "0"
-      ***            (月報)
+      *              (月報)
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      基本台帳(入院月報)
+      *                        基本台帳(入院月報)
                           CALL "A00000D124" USING  A00000D100-LNK
                          WHEN  OTHER
-      ***                      基本台帳(外来月報)
+      *                        基本台帳(外来月報)
                           CALL "A00000D123" USING  A00000D100-LNK
                      END-EVALUATE
                WHEN  "1"
-      ***            (診療課別)
+      *              (診療課別)
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      基本台帳(入院・診療科別)
+      *                        基本台帳(入院・診療科別)
                           CALL "A00000D126" USING  A00000D100-LNK
                          WHEN  OTHER
-      ***                      基本台帳(外来・診療科別)
+      *                        基本台帳(外来・診療科別)
                           CALL "A00000D125" USING  A00000D100-LNK
                      END-EVALUATE
                WHEN  "2"
-      ***            (医師別)
+      *              (医師別)
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      基本台帳(入院・医師別)
+      *                        基本台帳(入院・医師別)
                           CALL "A00000D128" USING  A00000D100-LNK
                          WHEN  OTHER
-      ***                      基本台帳(外来・医師別)
+      *                        基本台帳(外来・医師別)
                           CALL "A00000D127" USING  A00000D100-LNK
                      END-EVALUATE
                WHEN  "3"
-      ***            (年齢別)
+      *              (年齢別)
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      基本台帳(入院・年齢別)
+      *                        基本台帳(入院・年齢別)
                           CALL "A00000D130" USING  A00000D100-LNK
                          WHEN  OTHER
-      ***                      基本台帳(外来・年齢別)
+      *                        基本台帳(外来・年齢別)
                           CALL "A00000D129" USING  A00000D100-LNK
                      END-EVALUATE
                WHEN  "4"
-      ***            (地区別)
+      *              (地区別)
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      基本台帳(入院・地区別)
+      *                        基本台帳(入院・地区別)
                           CALL "A00000D132" USING  A00000D100-LNK
                          WHEN  OTHER
-      ***                      基本台帳(外来・地区別)
+      *                        基本台帳(外来・地区別)
                           CALL "A00000D131" USING  A00000D100-LNK
                      END-EVALUATE
                WHEN  "5"
-      ***            (保険別)
+      *              (保険別)
                      EVALUATE  WRK-PARA-NYUGAIKBN
                          WHEN  "1"
-      ***                      基本台帳(入院・保険別)
+      *                        基本台帳(入院・保険別)
                           CALL "A00000D134" USING  A00000D100-LNK
                          WHEN  OTHER
-      ***                      基本台帳(外来・保険別)
+      *                        基本台帳(外来・保険別)
                           CALL "A00000D133" USING  A00000D100-LNK
                      END-EVALUATE
            END-EVALUATE

@@ -1,4 +1,4 @@
-      *******************************************************************
+      ******************************************************************
       * Project code name "ORCA"
       * 日医標準レセプトソフト（JMA standard receipt software）
       * Copyright(C) 2002 JMA (Japan Medical Association)
@@ -14,52 +14,21 @@
       * this licence along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
-      ********************************************************************
+      ******************************************************************
        IDENTIFICATION          DIVISION.
        PROGRAM-ID.             A00000D130.
-      *****************************************************************
+      ******************************************************************
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 月次帳票
       *  コンポーネント名  : 基本台帳 入院 年齢別
       *  管理者            : 
-      *  作成日付    作業者        記述
-      *  04/02/09    @@@@-半田     新規作成
-      *  04/03/25    @@@@-高橋     診療科用に修正
-      *  04/04/01    @@@@-高橋     預り金処理を修正
-      *  04/04/07    @@@@-高橋     DIAの変更に伴う修正
-      *  04/06/26    @@@@-高橋     保険外自費項目が無い場合の数値欄修正
-      *  04/09/22    @@@@-本橋     MONPE化
-      *  04/12/06    @@@@-本橋     有効期限が設定された医師コードにおいて
-      *                            シス管理より医師名が取得できない不具合を修正
-      *  05/03/02    @@@@-鈴木     open-cobol 0.23への対応
-      *  05/04/19    @@@@-本橋     日レセVer2.5.0 収納テーブル取得KEY追加
-      *                            への対応
-      *  05/09/16    @@@@-本橋     期限が切られた診療科が印字されない不具合修正
-      *                            ORCMCPSUB → MCPSUBに変更
-      *  05/12/30    @@@@-劉丹     入金とス消費税修正
-      *  06/08/17    @@@@-高嶋     sarge対応
-      *  06/11/14    @@@@-高嶋     自費、基本診療項目追加対応
-      *  07/07/11    @@@@-田中     生活療養費、生活負担額の修正
-      *  07/09/13    @@@@-田中     4.0対応,助成金額の修正,減免金額の追加
-      *  07/10/11    @@@@-田中     助成金額がマイナスになってしまう不具合を修正
-      *  07/10/24    @@@@-田中     入金額の重複を修正
-      *  08/02/26    @@@@-田中     4.0対応漏れ修正
-      *  08/04/01    @@@@-田中     H20年4月改正対応    
-      *  08/07/08    @@@@-田中     収納明細を更新した場合に、入金額が表示されない不具合の修正
-      *  09/04/16    @@@@-門間     プログラムオプション対応(INIファイル)
-      *  09/10/28    @@@@-田中     助成金額の端数処理を修正
-      *  09/12/24    @@@@-門間     収納情報の検索範囲を修正
-      *  10/02/22    @@@@-門間     自賠責保険(100%)の計算式を修正
-      *  10/06/29    @@@@-門間     労災・自賠責・公害保険の端数処理を修正
-      *  10/08/25    @@@@-田中     労災保険を使用時に保険内負担金の計算式を修正
-      *  10/09/28    @@@@-門間     預り金の集計処理を修正
-      *****************************************************************
+      *  作成日付    作業者       記述
+      *  04/02/09    @@@@-半田    新規作成
+      ******************************************************************
       *  プログラム修正履歴
-      * [ORCA]ver      日付        内容
-      * 2.8.0.ver3.30  2006/03/27  指定期間入院と退院と在院と病床数
-      *                            及びその他の修正
-      * 2.8.0.ver3.40  2006/04/24  登録病床数が記載
-      *****************************************************************
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    10/12/13  コメント履歴削除
+      ******************************************************************
       *
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -68,13 +37,6 @@
       *    エラーファイル
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
-      **    基本台帳用INIファイル
-      *     SELECT  D100I-FILE      ASSIGN  D100IPARA
-      *                             ORGANIZATION    SEQUENTIAL
-      *                             ACCESS  MODE    SEQUENTIAL
-      *                             FILE    STATUS  IS  STS-PARA.
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
       *
       *    基本台帳(入院・年齢別)用対象患者ファイル
            SELECT  D130PT-FILE     ASSIGN  D130PPARA
@@ -90,14 +52,6 @@
        FD  RECEERR-FILE.
        01  RECEERR-REC             PIC X(200). 
       *
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
-      **    基本台帳用INIファイル
-      * FD  D100I-FILE.
-      * 01  D100I. 
-      *     03  D100I-SRYCD         PIC X(09).
-      *     03  FILLER              PIC X(81).
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
-      *
       *    基本台帳(入院・年齢別)用対象患者ファイル
        FD  D130PT-FILE.
        01  D130P. 
@@ -110,24 +64,11 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-      * 20070913 4.0対応START t.tanaka
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      * 20070913 消費税END
       *
        01  D100IPARA.
            03  FILLER              PIC X(256) VALUE  SPACE.
-
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
-      * 01  D100INAME.
-      *     03  FILLER              PIC  X(05) VALUE  "data/".
-      *     03  FILLER              PIC  X(10) VALUE  "A00000D100".
-      *     03  FILLER              PIC  X(04) VALUE  ".INI".
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    診療日別受信患者ファイル
        01  D130PPARA.
@@ -135,13 +76,10 @@
            03  D130TPARA-FILENAME  PIC  X(12) VALUE "A00000D130PT".
            03  FILLER              PIC  X(04) VALUE ".TMP".
       *
-      * 基本台帳(入院・年齢別)DIA用コピー句
+      *    基本台帳(入院・年齢別)DIA用コピー句
            COPY    "A00000D130.INC".
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
            COPY    "A00000D1301.INC".
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
       *
-      *****
       *    スパ領域
        01  STS-AREA.
            03  STS-RECEERR         PIC X(02).
@@ -172,9 +110,7 @@
            03  FLG-INVALID         PIC 9(01).
            03  FLG-820SYS          PIC X(04).
            03  INP-STS             PIC 9(04).
-      *--- 2010/06/29 ADD START ----------------------------------------
            03  FLG-JIHI            PIC 9(01).
-      *--- 2010/06/29 ADD END   ----------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -196,9 +132,7 @@
            03  I4                PIC 9(04).
            03  I5                PIC 9(04).
            03  I6                PIC 9(04).
-      * 20040407 追加 Y.Takahashi
            03  I7                PIC 9(04).
-      */20040407 追加
            03  IDX1              PIC 9(04).
            03  IDX2              PIC 9(04).
            03  IDX3              PIC 9(04).
@@ -218,9 +152,7 @@
       *
            03  JIHIIDX           PIC 9(04).
            03  NG                PIC 9(04).
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
            03  IDX9              PIC 9(04).
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
       *
       *    一時領域
        01  WRK-AREA.
@@ -257,8 +189,6 @@
                05  WRK-AZUKARIMM     PIC 9(02).
                05  WRK-AZUKARIDD     PIC 9(02).
       *
-      *****03  WRK-IN                PIC X(01).
-      *
            03  WRK-SYUHKN-KBN        PIC 9(01).
            03  WRK-INI-AZUKARICD     PIC X(09).
            03  WRK-NYUTENTTLKBN      PIC 9(03).
@@ -273,10 +203,7 @@
            03  WRK-FTN               PIC S9(09).
       *
            03  WRK-JIHI2            PIC 9(08).
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      *     03  WRK-TJIHI-G       OCCURS  5.
            03  WRK-TJIHI-G       OCCURS  10.
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
                05  WRK-TJIHI        PIC X(12).
                05  WRK-TJIHI-FLG    PIC 9(01).
       *
@@ -314,7 +241,6 @@
             05 WRK-TMP-LMM       PIC 9(02).
             05 WRK-TMP-LDD       PIC 9(02).
       *
-      * 20040401 追加 Y.Takahashi 
            03  WRK-STARTYMD      PIC 9(08).
            03  WRK-LASTYMD       PIC 9(08).
            03  WRK-TABLECOL      PIC 9(02).
@@ -329,13 +255,11 @@
            03  WRK-JIHIMONEY     PIC 9(10).
            03  WRK-AZUKARI       PIC 9(10).
            03  WRK-NYU-PTID      PIC 9(10).
-      ****2006/03/27 @@@@-BRAND START
            03  WRK-SONISU            PIC 9(02).
            03  WRK-JINSUU            PIC 9(09).
            03  WRK-SOBYOSYO          PIC S9(11).
            03  WRK-SUM-NISU          PIC S9(09).
            03  WRK-CNT-MONTH         PIC 9(02).
-      ****2006/03/27 @@@@-BRAND END
            03  WRK-AGE-BIRTHDAY.
             05 WRK-AGE-BIRTHY    PIC 9(04).
             05 WRK-AGE-BIRTHM    PIC 9(02).
@@ -345,11 +269,8 @@
             05 WRK-AGE-SRYM      PIC 9(02).
             05 WRK-AGE-SRYD      PIC 9(02).
            03  WRK-AGE           PIC 9(04).
-      ****2005/12/30  @@@@-BRAND START
            03  WRK-SMEI-NYUHEN-MONEY  PIC S9(07).
            03  WRK-SUM-SYOHI          PIC S9(07).
-      ****2005/12/30  @@@@-BRAND END
-      ****2006/03/27 @@@@-BRAND START
            03  WRK-TMP1-YMD.
             05 WRK-TMP1-YY            PIC 9(04).
             05 WRK-TMP1-MM            PIC 9(02).
@@ -358,15 +279,9 @@
             05 WRK-TMP2-YY            PIC 9(04).
             05 WRK-TMP2-MM            PIC 9(02).
             05 WRK-TMP2-DD            PIC 9(02).
-      ****2006/03/27 @@@@-BRAND END
-      */20040401 追加
-      * 20071011追加 T.Tanaka
-      *--- 2009/10/28 ADD + DELETE START -------------------------------
-      *     03  WRK-GENMEN        PIC 9(09).
            03  WRK-HKNNAI            PIC 9(11).
            03  WRK-JOSEI             PIC 9(11).
-      *--- 2009/10/28 ADD + DELETE END ---------------------------------
-      * 20071011追加 
+      *
        01  SUM-AREA.
            03         SUM-AGEMAX        PIC  9(03).
            03         SUM-SRYKA-G.    
@@ -379,21 +294,13 @@
            03         SUM-PRFLG         PIC  9(01).
            03         SUM-TENKI-G       OCCURS   3.
              05       SUM-TENKI-MSG     PIC  X(22).
-      * 20040325 編集 Y.Takahashi 
            03         SUM-AGE-TBL     OCCURS  26.
              05       SUM-AGECOLMAX     PIC  9(03).
              05       SUM-AGENAME       PIC  X(12).
              05       SUM-BF-MISYU      PIC S9(11).
              05       SUM-SYUNOU-CNT    PIC  9(09).
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      *       05       SUM-YOSO-TBL      OCCURS   40.
-      * 20080401 H20年4月改正対応START tanaka
-      *       05       SUM-YOSO-TBL      OCCURS   49.
              05       SUM-YOSO-TBL      OCCURS   50.
-      * 20080401 H20年4月改正対応END
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
                07     SUM-YOSO          PIC S9(11).
-      */20040325 編集
       *
        01  WRK-CONS-AREA.
       *    自費保険番号 
@@ -402,16 +309,10 @@
            03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE   "971". 
       *    自賠責保険番号 
            03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973". 
-      * 20080401 H20年4月改正対応START tanaka
       *    公害保険番号 
            03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE   "975". 
-      * 20080401 H20年4月改正対応END
       *
            COPY    "CPSHELLTBL.INC".
-      *     
-      * 20070913 4.0対応START t.tanaka
-      *     COPY    "ORCA-DBPATH".         
-      * 20070913 消費税END
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -500,10 +401,8 @@
            COPY    "CPPTNYUINRRK.INC".
       *
       *    点数マスタ−
-      *01  TENSU-REC.
            COPY    "CPTENSU.INC".
       *
-      * 20040325 追加 Y.Takahashi   
       *    請求管理マスタ
            COPY    "CPRCF010.INC".
       *
@@ -512,13 +411,11 @@
            COPY    "CPPTNYUINRRK.INC"
            REPLACING  //PTNYUINRRK-// BY //PTNYUINRRK-M-//.
       *
-      */20040325 追加
-      *
       *****************************************************************
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   ジョブ管理ＤＢ制御サブ
+      *    ジョブ管理ＤＢ制御サブ
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
@@ -527,11 +424,11 @@
       *    ファイルデイレクトリ位置指定サブ
            COPY    "CPMKPASS.INC".
       *
-      *   日付変換サブ
+      *    日付変換サブ
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   患者番号変換サブ
+      *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
       *
       *    ＤＢ検索
@@ -541,10 +438,8 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD START
       *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD END
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -584,21 +479,15 @@
            INITIALIZE                  WRK-AREA
            INITIALIZE                  CNT-AREA
            INITIALIZE                  SUM-AREA
-      * 20070913 4.0対応START t.tanaka
            INITIALIZE                  SPA-AREA
-      * 20070913 消費税END
       *
            PERFORM 100-DBOPEN-SEC
-      * 20070913 4.0対応START t.tanaka
            MOVE    D100LNK-HOSPNUM     TO  SPA-HOSPNUM
-      * 20070913 消費税END
       *
       *    ステップ管理開始処理
            MOVE    "STS"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      * 20070913 消費税END
            MOVE    D100LNK-JOBID   TO  JOB-JOBID
            MOVE    D100LNK-SHELLID TO  JOB-SHELLID
            MOVE    "A00000D130"    TO  JOB-PGID
@@ -608,15 +497,8 @@
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
-      * 20070913 4.0対応START t.tanaka
                                    SPA-AREA
       *
-      *
-      *     MOVE    "RECEERR"       TO  RECEERR-FILE-ID
-      *     MOVE    D100LNK-PRTKANRI-TERMID
-      *                             TO  RECEERR-TERMID
-      *
-      * 20070913 消費税END
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
            .
@@ -645,34 +527,22 @@
            PERFORM 31012-SEIWA-HEN-SEC
            MOVE    WRK-HENYMDG         TO  WRK-SRYYMD2 
       *
-      * 20040330 追加 Y.Takahashi
            MOVE  D100LNK-YMD1    TO  WRK-STARTYMD
            MOVE  D100LNK-YMD2    TO  WRK-LASTYMD
-      */20040330 追加 
       *
       *    医療機関ＩＤ編集
            MOVE    SPACE               TO  SYS-1001-REC
            INITIALIZE                  SYS-1001-REC
            MOVE    "1001"              TO  SYS-1001-KANRICD
            MOVE    "*"                 TO  SYS-1001-KBNCD
-      ***  20050916  MOTO
-      ****2006/04/24 @@@@ START
-      *    MOVE  D100LNK-YMD1          TO  SYS-1001-EDYUKYMD
            MOVE  D100LNK-YMD2          TO  SYS-1001-EDYUKYMD
-      ****2006/04/24 @@@@ END
            MOVE  D100LNK-YMD2          TO  SYS-1001-STYUKYMD
-      ***  20050916  MOTO
-      * 20070913 4.0対応START t.tanaka
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
-      * 20070913 消費税END
            MOVE    SYS-1001-REC        TO  MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI        =   ZERO
                MOVE    MCPDATA-REC         TO  SYS-1001-REC
-      * 20070913 4.0対応START t.tanaka
-      *         MOVE    SYS-1001-HOSPID     TO  D100LNK-HOSPID
                MOVE    SYS-1001-HOSPNUM     TO  D100LNK-HOSPNUM
-      * 20070913 消費税END
                MOVE    SYS-1001-BEDSU      TO  WRK-SYS-BEDSU
                MOVE    SYS-1001-BEDSUIPN   TO  WRK-SYS-BEDSUIPN
            ELSE    
@@ -681,8 +551,7 @@
                PERFORM 500-ERR-HENSYU-SEC
            END-IF                                     
       *
-      * 画面入力パラメタ値のチェック
-      *
+      *    画面入力パラメタ値のチェック
       *    集計対象か期間のチェック
            IF   D100LNK-YMD1    >   D100LNK-YMD2
                 MOVE    10      TO  INP-STS 
@@ -704,19 +573,12 @@
       *    診療科コードのチェック
            IF  D100LNK-SRYKACD     NOT  =  SPACE
                INITIALIZE                      SYS-1005-REC
-      * 20070913 4.0対応START t.tanaka
                MOVE  SPA-HOSPNUM           TO  SYS-1005-HOSPNUM
-      * 20070913 4.0対応END
                MOVE    "1005"              TO  SYS-1005-KANRICD
                MOVE    D100LNK-SRYKACD     TO  SYS-1005-KBNCD
-      * 20040325 編集 Y.Takahashi
-      *         MOVE    D100LNK-YMD2        TO  WRK-SYMD
                MOVE    WRK-LASTYMD          TO  WRK-SYMD
-      */20040325 編集
-      ***  20050916  MOTO
                MOVE  D100LNK-YMD1          TO  SYS-1005-EDYUKYMD
                MOVE  D100LNK-YMD2          TO  SYS-1005-STYUKYMD
-      ***  20050916  MOTO
                MOVE    SYS-1005-REC        TO  MCPDATA-REC
                PERFORM 810-SYSKANRI-READ-SEC
                IF      FLG-SYSKANRI2        =  ZERO
@@ -734,21 +596,12 @@
       *    医師コードのチェック
            IF  D100LNK-DRCD        NOT  =  SPACE
                INITIALIZE                      SYS-1010-REC
-      * 20080226 4.0対応漏れ修正START t.tanaka
                MOVE    SPA-HOSPNUM           TO  SYS-1010-HOSPNUM
-      * 20080226 4.0対応漏れ修正END
                MOVE    "1010"              TO  SYS-1010-KANRICD
                MOVE    D100LNK-DRCD        TO  SYS-1010-KBNCD
-      * 20040325 編集 Y.Takahashi
-      *         MOVE    D100LNK-YMD2        TO  WRK-SYMD
-      ***  2004/12/06  MOTO
-      ***         MOVE    WRK-LASTYMD          TO  WRK-SYMD
                MOVE    WRK-LASTYMD          TO  WRK-SYSYMD
-      */20040325 編集
-      ***  20050916  MOTO
                MOVE  D100LNK-YMD1          TO  SYS-1010-EDYUKYMD
                MOVE  D100LNK-YMD2          TO  SYS-1010-STYUKYMD
-      ***  20050916  MOTO
                MOVE    SYS-1010-REC        TO  MCPDATA-REC
                PERFORM 810-SYSKANRI-READ-SEC
                IF      FLG-SYSKANRI2       =   ZERO
@@ -768,19 +621,12 @@
       *    区分21
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "11"                TO  SYS-1013-KBNCD
-      * 20040325 編集 Y.Takahashi
-      *         MOVE    D100LNK-YMD2        TO  WRK-SYMD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
-      */20040325 編集
-      ***  20050916  MOTO
            MOVE  D100LNK-YMD1          TO  SYS-1013-EDYUKYMD
            MOVE  D100LNK-YMD2          TO  SYS-1013-STYUKYMD
-      ***  20050916  MOTO
            MOVE    SYS-1013-REC        TO  MCPDATA-REC
            PERFORM 810-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI2        =   ZERO
@@ -794,19 +640,12 @@
       *    区分22
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "12"                TO  SYS-1013-KBNCD
-      * 20040325 編集 Y.Takahashi
-      *         MOVE    D100LNK-YMD2        TO  WRK-SYMD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
-      */20040325 編集
-      ***  20050916  MOTO
            MOVE  D100LNK-YMD1          TO  SYS-1013-EDYUKYMD
            MOVE  D100LNK-YMD2          TO  SYS-1013-STYUKYMD
-      ***  20050916  MOTO
            MOVE    SYS-1013-REC        TO  MCPDATA-REC
            PERFORM 810-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI2        =   ZERO
@@ -820,19 +659,12 @@
       *    区分23
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "13"                TO  SYS-1013-KBNCD
-      * 20040325 編集 Y.Takahashi
-      *         MOVE    D100LNK-YMD2        TO  WRK-SYMD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
-      */20040325 編集
-      ***  20050916  MOTO
            MOVE  D100LNK-YMD1          TO  SYS-1013-EDYUKYMD
            MOVE  D100LNK-YMD2          TO  SYS-1013-STYUKYMD
-      ***  20050916  MOTO
            MOVE    SYS-1013-REC        TO  MCPDATA-REC
            PERFORM 810-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI2        =   ZERO
@@ -846,19 +678,12 @@
       *    区分24
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "14"                TO  SYS-1013-KBNCD
-      * 20040325 編集 Y.Takahashi
-      *         MOVE    D100LNK-YMD2        TO  WRK-SYMD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
-      */20040325 編集
-      ***  20050916  MOTO
            MOVE  D100LNK-YMD1          TO  SYS-1013-EDYUKYMD
            MOVE  D100LNK-YMD2          TO  SYS-1013-STYUKYMD
-      ***  20050916  MOTO
            MOVE    SYS-1013-REC        TO  MCPDATA-REC
            PERFORM 810-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI2        =   ZERO
@@ -872,19 +697,12 @@
       *    区分25
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "15"                TO  SYS-1013-KBNCD
-      * 20040325 編集 Y.Takahashi
-      *         MOVE    D100LNK-YMD2        TO  WRK-SYMD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
-      */20040325 編集
-      ***  20050916  MOTO
            MOVE  D100LNK-YMD1          TO  SYS-1013-EDYUKYMD
            MOVE  D100LNK-YMD2          TO  SYS-1013-STYUKYMD
-      ***  20050916  MOTO
            MOVE    SYS-1013-REC        TO  MCPDATA-REC
            PERFORM 810-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI2        =   ZERO
@@ -894,14 +712,11 @@
            ELSE
                MOVE  SPACE             TO  WRK-TJIHI(5)
            END-IF                                     
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
       *
       *    区分16
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "16"                TO  SYS-1013-KBNCD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
@@ -920,9 +735,7 @@
       *    区分17
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "17"                TO  SYS-1013-KBNCD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
@@ -941,9 +754,7 @@
       *    区分18
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "18"                TO  SYS-1013-KBNCD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
@@ -962,9 +773,7 @@
       *    区分19
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "19"                TO  SYS-1013-KBNCD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
@@ -983,9 +792,7 @@
       *    区分10
            MOVE    SPACE               TO  SYS-1013-REC
            INITIALIZE                      SYS-1013-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "1013"              TO  SYS-1013-KANRICD
            MOVE    "10"                TO  SYS-1013-KBNCD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
@@ -1000,24 +807,16 @@
            ELSE
                MOVE  SPACE             TO  WRK-TJIHI(10)
            END-IF                                     
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
       *
       *    労災医療機関情報
            MOVE    SPACE                TO  SYS-4001-REC
            INITIALIZE                       SYS-4001-REC
-      * 20070913 4.0対応START t.tanaka
            MOVE  SPA-HOSPNUM            TO  SYS-4001-HOSPNUM
-      * 20070913 4.0対応END
            MOVE    "4001"               TO  SYS-4001-KANRICD
            MOVE    "*"                  TO  SYS-4001-KBNCD
-      * 20040325 編集 Y.Takahashi
-      *         MOVE    D100LNK-YMD2        TO  WRK-SYMD
            MOVE    WRK-LASTYMD         TO  WRK-SYMD
-      */20040325 編集
-      ***  20050916  MOTO
            MOVE  D100LNK-YMD1          TO  SYS-4001-EDYUKYMD
            MOVE  D100LNK-YMD2          TO  SYS-4001-STYUKYMD
-      ***  20050916  MOTO
            MOVE    SYS-4001-REC         TO  MCPDATA-REC
            PERFORM 810-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI2        =   ZERO
@@ -1073,22 +872,6 @@
       *    病床数の取得
            MOVE  WRK-SYS-BEDSU      TO  SUM-BEDSUIPN
       *
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE START
-      **    基本台帳用INIファイル情報抽出
-      *     INITIALIZE              ORCSMKPASSAREA
-      *     MOVE  D100INAME     TO  MKPASS-IN-01
-      *     CALL  "ORCSMKPASSSITE"  USING  ORCSMKPASSAREA
-      *     MOVE  MKPASS-OT-01  TO  D100IPARA
-      **
-      *     OPEN  INPUT D100I-FILE
-      *     INITIALIZE  D100I
-      *     READ  D100I-FILE
-      *     END-READ
-      *     CLOSE       D100I-FILE
-      *     IF     D100I-SRYCD   NOT =  SPACE
-      *       MOVE D100I-SRYCD       TO     WRK-INI-AZUKARICD
-      *     END-IF
-      *
       *    プログラムオプション取込み（預り金コード）
            INITIALIZE                      ORCSPRGOPTIONAREA
            MOVE    "A00000D100"        TO  ORCSPRGOPTION-PRGID
@@ -1098,18 +881,12 @@
            IF  ORCSPRGOPTION-OT-PARA(1:9)  NOT =  SPACE
              MOVE  ORCSPRGOPTION-OT-PARA(1:9)  TO  WRK-INI-AZUKARICD
            END-IF
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE END
       *
       *    点数マスタ読込み
            MOVE   WRK-INI-AZUKARICD TO     TNS-SRYCD
-      * 20080226 4.0対応漏れ修正START t.tanaka
            MOVE   SPA-HOSPNUM       TO     TNS-HOSPNUM
-      * 20080226 4.0対応漏れ修正END
            PERFORM   910-TENSU-READ-SEC
-      * 20040401 編集 Y.Takahashi
-      *     MOVE   TNS-GAITENTTLKBN  TO     WRK-GAITENTTLKBN
            MOVE   TNS-NYUTENTTLKBN  TO     WRK-NYUTENTTLKBN
-      */20040401 編集
       *
       *    基本台帳(入院・年齢別)用対象患者ファイル初期化
            OPEN  OUTPUT D130PT-FILE
@@ -1141,7 +918,7 @@
       *****************************************************************
        110-AGE-PARA-HENSYU-SEC                   SECTION.
       *
-      * 年齢順カラム作成
+      *    年齢順カラム作成
            MOVE   2               TO  SUM-AGECOLMAX(1)
            MOVE   "０〜２歳"      TO  SUM-AGENAME(1)  
            MOVE   5               TO  SUM-AGECOLMAX(2)
@@ -1176,7 +953,6 @@
        110-AGE-PARA-HENSYU-EXT.
            EXIT.
       *
-      *
       *****************************************************************
       *    主　　処理
       *****************************************************************
@@ -1208,72 +984,61 @@
        210-ERR-SEC                SECTION.
       *
            INITIALIZE                   D130
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
            INITIALIZE                   D1301
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
       *
            MOVE   "(入院・年齢別)"    TO    D130-SUBTITLE
            MOVE    WRK-SYSYMDWH   TO    D130-SYSYMD
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
            MOVE   "(入院・年齢別)"    TO    D1301-SUBTITLE
            MOVE    WRK-SYSYMDWH       TO    D1301-SYSYMD
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
       *
            EVALUATE INP-STS 
            WHEN 10
              MOVE
              "入力された集計対象期間の範囲指定に誤りがあります"
                                   TO    D130-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
              MOVE
              "入力された集計対象期間の範囲指定に誤りがあります"
                                   TO    D1301-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+      *
            WHEN 11
              MOVE
              "入力する集計対象期間の範囲は同年内で指定をして下さい"
                                   TO    D130-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
              MOVE
              "入力する集計対象期間の範囲は同年内で指定をして下さい"
                                   TO    D1301-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+      *
            WHEN 20
              MOVE
              "入力された入外区分の値に誤りがあります"
                                   TO    D130-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
              MOVE
              "入力された入外区分の値に誤りがあります"
                                   TO    D1301-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+      *
            WHEN 21
              MOVE
              "入力する集計対象期間の範囲は同年月内で指定をして下さい"
                                   TO    D130-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
              MOVE
              "入力する集計対象期間の範囲は同年月内で指定をして下さい"
                                   TO    D1301-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+      *
            WHEN 30
              MOVE
              "入力された診療科コードの値に誤りがあります"
                                   TO    D130-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
              MOVE
              "入力された診療科コードの値に誤りがあります"
                                   TO    D1301-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+      *
            WHEN 40
              MOVE
              "入力された医師コードの値に誤りがあります"
                                   TO    D130-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
              MOVE
              "入力された医師コードの値に誤りがあります"
                                   TO    D1301-JOBMSG
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
            END-EVALUATE
       *
            PERFORM 340-PRINT-OUT-SEC
@@ -1287,167 +1052,130 @@
       *****************************************************************
        310-NYURRK-CNT-SEC      SECTION.
       *
-          MOVE     1         TO   I3
-      * 
-          INITIALIZE                  PTNYUINRRK-REC
-      * 20070913 4.0対応START t.tanaka
-      *       MOVE  D100LNK-HOSPID   TO   PTNYUINRRK-HOSPID
-             MOVE  D100LNK-HOSPNUM   TO   PTNYUINRRK-HOSPNUM
-      * 20070913 消費税END
-          MOVE  WRK-LASTYMD      TO   PTNYUINRRK-NYUINYMD
-          MOVE  WRK-STARTYMD     TO   PTNYUINRRK-TAIINYMD
-      **     入院履歴により入院数、退院数、在院数を取得する。
-          PERFORM  900-NYURRK-SELECT-SEC
-          PERFORM  UNTIL   FLG-PTNYUINRRK  =   1
-      *      テスト患者処理
-             INITIALIZE                   PTINF-REC
-      * 20070913 4.0対応START t.tanaka
-      *          MOVE     PTNYUINRRK-HOSPID   TO  PTINF-HOSPID
-                MOVE     PTNYUINRRK-HOSPNUM   TO  PTINF-HOSPNUM
-      * 20070913 消費税END
-             MOVE     PTNYUINRRK-PTID     TO  PTINF-PTID
-             PERFORM  900-PTINF-READ-SEC
-             IF  FLG-PTINF = ZERO
-              AND  PTINF-TSTPTNUMKBN  NOT  =  "1"
+           MOVE     1         TO   I3
       *
-      *         履歴レコード初期化
-                INITIALIZE               WRK-NYURRK-G
-                INITIALIZE               PTNYUINRRK-M-REC
-                MOVE    PTNYUINRRK-PTID  
-                                     TO  PTNYUINRRK-M-PTID
-      * 20070913 4.0対応START t.tanaka
-      *            MOVE    D100LNK-HOSPID
-      *                                  TO  PTNYUINRRK-M-HOSPID
-                  MOVE    D100LNK-HOSPNUM
-                                        TO  PTNYUINRRK-M-HOSPNUM
-      * 20070913 消費税END
-                MOVE    PTNYUINRRK-RRKNUM
-                                     TO  PTNYUINRRK-M-RRKNUM
+           INITIALIZE                   PTNYUINRRK-REC
+           MOVE  D100LNK-HOSPNUM   TO   PTNYUINRRK-HOSPNUM
+           MOVE  WRK-LASTYMD       TO   PTNYUINRRK-NYUINYMD
+           MOVE  WRK-STARTYMD      TO   PTNYUINRRK-TAIINYMD
+      **   入院履歴により入院数、退院数、在院数を取得する。
+           PERFORM  900-NYURRK-SELECT-SEC
+           PERFORM  UNTIL   FLG-PTNYUINRRK  =   1
+      *       テスト患者処理
+              INITIALIZE                   PTINF-REC
+              MOVE     PTNYUINRRK-HOSPNUM  TO  PTINF-HOSPNUM
+              MOVE     PTNYUINRRK-PTID     TO  PTINF-PTID
+              PERFORM  900-PTINF-READ-SEC
+              IF  FLG-PTINF = ZERO
+               AND  PTINF-TSTPTNUMKBN  NOT  =  "1"
       *
-                PERFORM  900-NYURRK-M-SELECT-SEC
-                PERFORM  UNTIL   FLG-PTNYUINRRK-M  =   1
-      *               IF 連続レコード判定 科指定>全科が同じか？
-      *                                 医師指定>医師が同じか？
-      *                                   全指定>判定なし
-                  IF  ( (  SUM-DRCD    = "9999"
-                      OR   SUM-DRCD    = PTNYUINRRK-M-DRCD1(2:4) )
-                     AND ( SUM-SRYKACD = "99"
-                      OR   SUM-SRYKACD = PTNYUINRRK-M-NYUINKA ) )
-      **       レコード更新
-                       IF 0            = WRK-NYURRK-NYUYMD
-                          MOVE PTNYUINRRK-M-TENNYUYMD 
-                                        TO WRK-NYURRK-NYUYMD
-                       END-IF
-                       MOVE PTNYUINRRK-M-TENSTUYMD
-                                        TO WRK-NYURRK-STUYMD
-                  ELSE
-      *              カウント処理
-                      PERFORM  310-NYURRK-CNT-SUB-SEC
+      *          履歴レコード初期化
+                 INITIALIZE                     WRK-NYURRK-G
+                 INITIALIZE                     PTNYUINRRK-M-REC
+                 MOVE    PTNYUINRRK-PTID    TO  PTNYUINRRK-M-PTID
+                 MOVE    D100LNK-HOSPNUM    TO  PTNYUINRRK-M-HOSPNUM
+                 MOVE    PTNYUINRRK-RRKNUM  TO  PTNYUINRRK-M-RRKNUM
       *
-      *               履歴レコード初期化
-                      INITIALIZE       WRK-NYURRK-G
-                  END-IF
-                  PERFORM  900-NYURRK-M-FETCH-SEC
-                END-PERFORM
-      *=== sarge対応 ADD By Takashima(2006/09/16) start
-                PERFORM 900-M-DBCLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/09/16) end
+                 PERFORM  900-NYURRK-M-SELECT-SEC
+                 PERFORM  UNTIL   FLG-PTNYUINRRK-M  =   1
+                   IF  ( (  SUM-DRCD    = "9999"
+                       OR   SUM-DRCD    = PTNYUINRRK-M-DRCD1(2:4) )
+                      AND ( SUM-SRYKACD = "99"
+                       OR   SUM-SRYKACD = PTNYUINRRK-M-NYUINKA ) )
+      **                レコード更新
+                        IF 0            = WRK-NYURRK-NYUYMD
+                           MOVE PTNYUINRRK-M-TENNYUYMD 
+                                         TO WRK-NYURRK-NYUYMD
+                        END-IF
+                        MOVE PTNYUINRRK-M-TENSTUYMD
+                                         TO WRK-NYURRK-STUYMD
+                   ELSE
+      *                カウント処理
+                       PERFORM  310-NYURRK-CNT-SUB-SEC
       *
-      *         カウント処理
-                PERFORM  310-NYURRK-CNT-SUB-SEC
-      * 20040401 追加 Y.Takahashi
-                IF     PTNYUINRRK-PTID  NOT =  WRK-NYU-PTID
-      *               患者別に当日預り金を診療行為情報より取得する。
-                      PERFORM 320-AZUKARI-GET-SEC
-                END-IF
-                MOVE   PTNYUINRRK-PTID  TO  WRK-NYU-PTID
-      */20040401 追加 
+      *                履歴レコード初期化
+                       INITIALIZE       WRK-NYURRK-G
+                   END-IF
+                   PERFORM  900-NYURRK-M-FETCH-SEC
+                 END-PERFORM
+                 PERFORM 900-M-DBCLOSE-SEC
       *
-             END-IF
-             PERFORM  900-NYURRK-FETCH-SEC
-          END-PERFORM
-          PERFORM   900-NYURRK-CLOSE-SEC
+      *          カウント処理
+                 PERFORM  310-NYURRK-CNT-SUB-SEC
+                 IF     PTNYUINRRK-PTID  NOT =  WRK-NYU-PTID
+      *                患者別に当日預り金を診療行為情報より取得する。
+                       PERFORM 320-AZUKARI-GET-SEC
+                 END-IF
+                 MOVE   PTNYUINRRK-PTID  TO  WRK-NYU-PTID
       *
+              END-IF
+              PERFORM  900-NYURRK-FETCH-SEC
+           END-PERFORM
+           PERFORM   900-NYURRK-CLOSE-SEC
       *
-          PERFORM  VARYING  I3     FROM 1  BY  1
-                   UNTIL    I3     >=   SUM-AGEMAX
-      * 入院、退院、在院 合計
-               ADD  SUM-YOSO(I3 2)
-                    TO  SUM-YOSO (SUM-AGEMAX 2)
-               ADD  SUM-YOSO(I3 3)
-                    TO  SUM-YOSO (SUM-AGEMAX 3)
-      ****2006/03/27 @@@@-BRAND START
-      *         COMPUTE SUM-YOSO(I3 4)  =
-      *                 SUM-YOSO(I3 4) 
-      *              -  SUM-YOSO(I3 3)
-      ****2006/03/27 @@@@-BRAND END
-      *         ADD  SUM-YOSO(I3 4)
-      *              TO  SUM-YOSO (SUM-AGEMAX 4)
+           PERFORM  VARYING  I3     FROM 1  BY  1
+                    UNTIL    I3     >=   SUM-AGEMAX
+      *    入院、退院、在院 合計
+                ADD  SUM-YOSO(I3 2)
+                     TO  SUM-YOSO (SUM-AGEMAX 2)
+                ADD  SUM-YOSO(I3 3)
+                     TO  SUM-YOSO (SUM-AGEMAX 3)
       *
-          END-PERFORM
+           END-PERFORM
       *
-          .
+           .
        310-NYURRK-CNT-EXT.
-          EXIT.
+           EXIT.
       *
       *****************************************************************
       *    入院履歴集計サブ処理
       *****************************************************************
        310-NYURRK-CNT-SUB-SEC      SECTION.
       *
-            IF      0        <   WRK-NYURRK-NYUYMD
+           IF      0        <   WRK-NYURRK-NYUYMD
       *
-                MOVE  PTINF-BIRTHDAY   TO  WRK-AGE-BIRTHDAY
-                MOVE  WRK-LASTYMD      TO  WRK-AGE-SRYYMD
-      *          MOVE  WRK-NYURRK-SRYKA   TO  WRK-SRYKA
-                PERFORM  320-AGE-GROUPING-SEC
-                IF I3  <     SUM-AGEMAX
-                    IF  FLG-GET = ZERO
-                        MOVE   1   TO   FLG-GET
-                    END-IF
+               MOVE  PTINF-BIRTHDAY   TO  WRK-AGE-BIRTHDAY
+               MOVE  WRK-LASTYMD      TO  WRK-AGE-SRYYMD
+      *
+               PERFORM  320-AGE-GROUPING-SEC
+               IF I3  <     SUM-AGEMAX
+                   IF  FLG-GET = ZERO
+                       MOVE   1   TO   FLG-GET
+                   END-IF
+               END-IF
+      *
+      *    入院
+               IF    WRK-LASTYMD   >= WRK-NYURRK-NYUYMD   
+                AND  WRK-STARTYMD  <= WRK-NYURRK-NYUYMD
+                   ADD   1      TO   SUM-YOSO(I3 2)
+               END-IF
+      *
+      *    退院
+               IF    WRK-LASTYMD   >= WRK-NYURRK-STUYMD   
+                AND  WRK-STARTYMD  <= WRK-NYURRK-STUYMD
+                   ADD   1      TO   SUM-YOSO(I3 3)
+               END-IF
+      *
+                IF  WRK-NYURRK-NYUYMD <=  D100LNK-YMD1 AND
+                    WRK-NYURRK-STUYMD >= D100LNK-YMD1
+                  MOVE D100LNK-YMD1           TO WRK-TMP1-YMD
                 END-IF
-      *
-      * 入院
-                IF    WRK-LASTYMD   >= WRK-NYURRK-NYUYMD   
-                 AND  WRK-STARTYMD  <= WRK-NYURRK-NYUYMD
-                    ADD   1      TO   SUM-YOSO(I3 2)
+                IF  WRK-NYURRK-NYUYMD >= D100LNK-YMD1 AND
+                    WRK-NYURRK-STUYMD >= D100LNK-YMD1
+                  MOVE WRK-NYURRK-NYUYMD      TO WRK-TMP1-YMD
                 END-IF
-      *
-      * 退院
-                IF    WRK-LASTYMD   >= WRK-NYURRK-STUYMD   
-                 AND  WRK-STARTYMD  <= WRK-NYURRK-STUYMD
-                    ADD   1      TO   SUM-YOSO(I3 3)
+                IF  WRK-NYURRK-STUYMD >= D100LNK-YMD1 AND
+                    WRK-NYURRK-STUYMD >  D100LNK-YMD2
+                  MOVE D100LNK-YMD2           TO WRK-TMP2-YMD
                 END-IF
-      *
-      * 在院
-      ****2006/03/27 @@@@-BRAND START
-      *          IF    WRK-LASTYMD   >= WRK-NYURRK-NYUYMD   
-      *           AND  WRK-STARTYMD  <= WRK-NYURRK-STUYMD
-      *              ADD   1      TO   SUM-YOSO(I3 4)
-      *          END-IF
-      **
-      *
-                 IF  WRK-NYURRK-NYUYMD <=  D100LNK-YMD1 AND
-                     WRK-NYURRK-STUYMD >= D100LNK-YMD1
-                   MOVE D100LNK-YMD1           TO WRK-TMP1-YMD
-                 END-IF
-                 IF  WRK-NYURRK-NYUYMD >= D100LNK-YMD1 AND
-                     WRK-NYURRK-STUYMD >= D100LNK-YMD1
-                   MOVE WRK-NYURRK-NYUYMD      TO WRK-TMP1-YMD
-                 END-IF
-                 IF  WRK-NYURRK-STUYMD >= D100LNK-YMD1 AND
-                     WRK-NYURRK-STUYMD >  D100LNK-YMD2
-                   MOVE D100LNK-YMD2           TO WRK-TMP2-YMD
-                 END-IF
-                 IF  WRK-NYURRK-STUYMD >= D100LNK-YMD1 AND
-                     WRK-NYURRK-STUYMD <= D100LNK-YMD2
-                   MOVE WRK-NYURRK-STUYMD      TO WRK-TMP2-YMD
-                   COMPUTE WRK-TMP2-DD = WRK-TMP2-DD - 1
-                 END-IF
-                 COMPUTE SUM-YOSO(I3 4) = SUM-YOSO(I3 4)
-                                        + WRK-TMP2-DD + 1
-                                        - WRK-TMP1-DD
-      ****2006/03/27 @@@@-BRAND END
+                IF  WRK-NYURRK-STUYMD >= D100LNK-YMD1 AND
+                    WRK-NYURRK-STUYMD <= D100LNK-YMD2
+                  MOVE WRK-NYURRK-STUYMD      TO WRK-TMP2-YMD
+                  COMPUTE WRK-TMP2-DD = WRK-TMP2-DD - 1
+                END-IF
+                COMPUTE SUM-YOSO(I3 4) = SUM-YOSO(I3 4)
+                                       + WRK-TMP2-DD + 1
+                                       - WRK-TMP1-DD
       *
            END-IF
       *
@@ -1463,38 +1191,15 @@
            PERFORM  910-DBSELECT-SEC
            PERFORM  UNTIL      FLG-SYUNOU  = 1
       *
-            INITIALIZE         PTINF-REC 
-      * 20070913 4.0対応START t.tanaka
-      *      MOVE SYU-HOSPID TO PTINF-HOSPID
-            MOVE SYU-HOSPNUM TO PTINF-HOSPNUM
-      * 20070913 消費税END
-            MOVE SYU-PTID   TO PTINF-PTID
-            PERFORM 900-PTINF-READ-SEC
+             INITIALIZE         PTINF-REC 
+             MOVE SYU-HOSPNUM TO PTINF-HOSPNUM
+             MOVE SYU-PTID   TO PTINF-PTID
+             PERFORM 900-PTINF-READ-SEC
       *
-      *   集計対象年月のデータであるかをチェックする。 
-      * 20040325 削除 Y.Takahashi
-      *      IF      SYU-SRYYMD             >=  D100LNK-YMD1
-      *        AND   SYU-SRYYMD             <=  D100LNK-YMD2
-      *        AND   SYU-HOSPID              =  D100LNK-HOSPID
-      *        AND   SYU-CREATEKBN       NOT =  "3"
-      *        AND   SYU-DENPJTIKBN      NOT =  "3"
-      *        AND   SYU-NYUGAIKBN           =  "2"
-      *        AND ((WRK-SEL-SRYKACD         =  SPACE)
-      *         OR  (WRK-SEL-SRYKACD     NOT =  SPACE  AND
-      *              SYU-SRYKA               =  WRK-SEL-SRYKACD))
-      *        AND ((WRK-SEL-DRCD            =  SPACE)
-      *         OR  (WRK-SEL-DRCD        NOT =  SPACE  AND
-      *              SYU-DRCD                =  WRK-SEL-DRCD))
-      *        AND   FLG-PTINF               =  ZERO
-      *        AND   PTINF-TSTPTNUMKBN   NOT =  "1"   
-      */20040325 削除
-      * 20040325 追加 Y.Takahashi 入院・年齢別用に変更
-            IF      SYU-DENPPRTYMD         >=  WRK-STARTYMD
+      *    集計対象年月のデータであるかをチェックする。 
+             IF      SYU-DENPPRTYMD         >=  WRK-STARTYMD
               AND   SYU-DENPPRTYMD         <=  WRK-LASTYMD
-      * 20070913 4.0対応START t.tanaka
-      *        AND   SYU-HOSPID              =  D100LNK-HOSPID
               AND   SYU-HOSPNUM              =  D100LNK-HOSPNUM
-      * 20070913 消費税END
               AND   SYU-CREATEKBN       NOT =  "3"
               AND   SYU-DENPJTIKBN      NOT =  "3"
               AND   SYU-NYUGAIKBN           =  "1"
@@ -1506,12 +1211,6 @@
                     SYU-DRCD                =  WRK-SEL-DRCD))
               AND   FLG-PTINF               =  ZERO
               AND   PTINF-TSTPTNUMKBN   NOT =  "1"   
-      */20040325 追加
-      * 伝票作成区分 = 3(入院レセプト用ダミー)は対象外データとして取り扱う
-      * 伝票状態区分 = 3(請求取消)は対象外データとして取り扱う
-      * 患者情報にレコードが存在しないデータは抽出しない。
-      * テスト患者番号区分 = 1(テスト患者)は対象外データとして取り扱う
-      ***  20030704 収納情報抽出条件変更
       *
                MOVE  PTINF-BIRTHDAY   TO  WRK-AGE-BIRTHDAY
                MOVE  SYU-SRYYMD       TO  WRK-AGE-SRYYMD
@@ -1522,12 +1221,10 @@
                   END-IF
                   PERFORM 320-SYUNOU-CNT-SUB-SEC
                END-IF
-            ELSE
+             ELSE
                IF     SYU-DENPPRTYMD          <  WRK-STARTYMD
-      * 20070913 4.0対応START t.tanaka
-      *          AND   SYU-HOSPID              =  D100LNK-HOSPID
+      *
                 AND   SYU-HOSPNUM              =  D100LNK-HOSPNUM
-      * 20070913 消費税END
                 AND   SYU-CREATEKBN       NOT =  "3"
                 AND   SYU-DENPJTIKBN      NOT =  "3"
                 AND   SYU-NYUGAIKBN           =  "1"
@@ -1548,17 +1245,8 @@
                              SYU-SKYMONEY -  SYU-NYUKIN-TOTAL
                     ADD   WRK-MONEY
                           TO  SUM-BF-MISYU(I3)
-      ****2005/12/30  @@@@-BRAND  START
                     PERFORM 320-SYUMEI-CNT-SUB-SEC
-      ****2005/12/30  @@@@-BRAND  END
                  END-IF
-      *
-      * 20040330 削除 Y.Takahashi
-      *           COMPUTE  WRK-MONEY    =
-      *                    SYU-SKYMONEY -  SYU-NYUKIN-TOTAL
-      *           ADD  WRK-MONEY 
-      *                  TO  SUM-BF-MISYU  
-      */20040330 削除 
       *
                END-IF
             END-IF
@@ -1581,116 +1269,51 @@
            PERFORM  VARYING  I3     FROM 1  BY  1
                     UNTIL    I3     >=   SUM-AGEMAX
       *
-      * 20040329 削除 Y.Takahashi
-      ** 新患来院率
-      *              INITIALIZE                WRK-RATE
-      *                                        WRK-RATE2
-      *              COMPUTE  WRK-RATE =
-      *                       SUM-YOSO(I3 6) / SUM-YOSO(I3 5)
-      *              COMPUTE  WRK-RATE2 ROUNDED     =
-      *                       WRK-RATE  *  100
-      *              MOVE     WRK-RATE2    TO  WRK-RATE-Z9
-      *              MOVE     WRK-RATE-Z9  TO  SUM-YOSO(I3 7)
-      */20040329 削除 
-      *
-      ****2006/03/27 @@@@-BRAND START
-      * 病床数
+      *    病床数
                     MOVE    SUM-BEDSUIPN  TO  SUM-YOSO (I3 5)
-      *              COMPUTE SUM-YOSO(SUM-AGEMAX 5) =
-      *                      SUM-YOSO(SUM-AGEMAX 5) +
-      *                      SUM-YOSO(I3 5)
-      * 総日数
+      *    総日数
                     MOVE  D100LNK-YMD1          TO  WRK-TMP-YMD
                     MOVE  D100LNK-YMD2          TO  WRK-TMP-LYMD
                     COMPUTE  WRK-SONISU =
                                WRK-TMP-LDD - WRK-TMP-DD + 1
-      * 総床数
+      *    総床数
                     COMPUTE  WRK-SOBYOSYO =
                              SUM-YOSO (I3 5) * WRK-SONISU
-      ****2006/04/24 @@@@ START
-      *             MOVE  WRK-SOBYOSYO            TO  SUM-YOSO (I3 5)
-      ****2006/04/24 @@@@ END
                     COMPUTE SUM-YOSO(SUM-AGEMAX 5) =
                             SUM-YOSO(SUM-AGEMAX 5) +
                             SUM-YOSO(I3 5)
       *
-      ****2006/03/27 @@@@-BRAND END
-      * 稼働率
+      *    稼働率
                     INITIALIZE                WRK-RATE
                                               WRK-RATE2
                     COMPUTE  WRK-RATE =
                              SUM-YOSO (I3 4) /
-      ****2006/04/24 @@@@ START
-      *                      SUM-YOSO (I3 5)
                              WRK-SOBYOSYO
-      ****2006/04/24 @@@@ END
                     COMPUTE  WRK-RATE2 ROUNDED     =
                              WRK-RATE  *  100
                     MOVE     WRK-RATE2    TO  WRK-RATE-Z9
                     MOVE     WRK-RATE-Z9  TO  SUM-YOSO(I3 6)
       *
-      * 請求数
+      *    請求数
                     MOVE SUM-SYUNOU-CNT(I3) 
                          TO  SUM-YOSO (I3 8)
                     ADD  SUM-SYUNOU-CNT(I3)
                          TO  SUM-YOSO (SUM-AGEMAX 8)
       *
-      * 平均点
+      *    平均点
                     INITIALIZE                WRK-TEN
                     COMPUTE  WRK-TEN  ROUNDED      =
                              SUM-YOSO (I3 7) / 
                              SUM-YOSO (I3 8)
                     MOVE     WRK-TEN  TO  SUM-YOSO (I3 9)
       *
-      * 過日未収金残額
+      *    過日未収金残額
                     MOVE      SUM-BF-MISYU(I3)
                           TO  SUM-YOSO (I3 20)
                     ADD       SUM-BF-MISYU(I3)
                           TO  SUM-YOSO (SUM-AGEMAX 20)
-      * 20040330 削除 Y.Takahashi
-      *             COMPUTE  I4  =  I3   -  1
-      *             IF    I3     =  1
-      *                   MOVE      SUM-BF-MISYU
-      *                             TO  WRK-MONEY   
-      *             ELSE
-      *                   COMPUTE   WRK-MONEY   = 
-      *                                 SUM-YOSO (I4 20)
-      *                             +   SUM-YOSO (I4 22)
-      *             END-IF
-      *             MOVE  WRK-MONEY 
-      *                   TO  SUM-YOSO (I3 20)
-      */20040330 削除
       *
-      * 20040401 削除 Y.Takahashi
-      * 入金額
-      * 入金額から当日預り金を引き去る              
-      *             COMPUTE SUM-YOSO(I3 21) =
-      *             SUM-YOSO(I3 21) -
-      *             SUM-YOSO(I3 23)
-      *             COMPUTE SUM-YOSO(SUM-AGEMAX 21) =
-      *             SUM-YOSO(SUM-AGEMAX 21) -
-      *             SUM-YOSO(I3 23)
-      */20040401 削除
-      *
-      * 20040401 追加 Y.Takahashi
                     EVALUATE WRK-NYUTENTTLKBN
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      *                 WHEN  1
-      *                      MOVE 0   TO  SUM-YOSO(I3 36)
-      *                      MOVE 0   TO  SUM-YOSO(SUM-AGEMAX 36)
-      *                 WHEN  2
-      *                      MOVE 0   TO  SUM-YOSO(I3 37)
-      *                      MOVE 0   TO  SUM-YOSO(SUM-AGEMAX 37)
-      *                 WHEN  3
-      *                      MOVE 0   TO  SUM-YOSO(I3 38)
-      *                      MOVE 0   TO  SUM-YOSO(SUM-AGEMAX 38)
-      *                 WHEN  4
-      *                      MOVE 0   TO  SUM-YOSO(I3 39)
-      *                      MOVE 0   TO  SUM-YOSO(SUM-AGEMAX 39)
-      *                 WHEN  5
-      *                      MOVE 0   TO  SUM-YOSO(I3 40)
-      *                      MOVE 0   TO  SUM-YOSO(SUM-AGEMAX 40)
-      *-------------------------------------------------------------
                        WHEN  1
                             MOVE 0   TO  SUM-YOSO(I3 40)
                             MOVE 0   TO  SUM-YOSO(SUM-AGEMAX 40)
@@ -1721,103 +1344,11 @@
                        WHEN  10
                             MOVE 0   TO  SUM-YOSO(I3 49)
                             MOVE 0   TO  SUM-YOSO(SUM-AGEMAX 49)
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
                        END-EVALUATE
-      */20040401 追加
-      * 20040401 削除 Y.Takahashi
-      * 自費金額から当日預り金を引き去る
-      *             EVALUATE WRK-GAITENTTLKBN
-      *                WHEN  1                
-      *                      COMPUTE SUM-YOSO(I3 36) =
-      *                           SUM-YOSO(I3 36) -
-      *                           SUM-YOSO(I3 23)
-      *                      COMPUTE SUM-YOSO(SUM-AGEMAX 36) =
-      *                           SUM-YOSO(SUM-AGEMAX 36) -
-      *                           SUM-YOSO(I3 23)
-      *                WHEN  2                
-      *                      COMPUTE SUM-YOSO(I3 37) =
-      *                          SUM-YOSO(I3 37) -
-      *                          SUM-YOSO(I3 23)
-      *                      COMPUTE SUM-YOSO(SUM-AGEMAX 37) =
-      *                          SUM-YOSO(SUM-AGEMAX 37) -
-      *                          SUM-YOSO(I3 23)
-      *                WHEN  3                
-      *                      COMPUTE SUM-YOSO(I3 38) =
-      *                          SUM-YOSO(I3 38) -
-      *                          SUM-YOSO(I3 23)
-      *                      COMPUTE SUM-YOSO(SUM-AGEMAX 38) =
-      *                          SUM-YOSO(SUM-AGEMAX 38) -
-      *                          SUM-YOSO(I3 23)
-      *                WHEN  4                
-      *                      COMPUTE SUM-YOSO(I3 39) =
-      *                          SUM-YOSO(I3 39) -
-      *                          SUM-YOSO(I3 23)
-      *                      COMPUTE SUM-YOSO(SUM-AGEMAX 39) =
-      *                          SUM-YOSO(SUM-AGEMAX 39) -
-      *                          SUM-YOSO(I3 23)
-      *                WHEN  5                
-      *                      COMPUTE SUM-YOSO(I3 40) =
-      *                          SUM-YOSO(I3 40) -
-      *                          SUM-YOSO(I3 23)
-      *                      COMPUTE SUM-YOSO(SUM-AGEMAX 40) =
-      *                          SUM-YOSO(SUM-AGEMAX 40) -
-      *                          SUM-YOSO(I3 23)
-      *             END-EVALUATE
-      */20040401 削除
-      *--- 2009/10/28 DELETE START -------------------------------------
-      * 助成金額の算出              
-      *             COMPUTE WRK-MONEY =
-      *                     SUM-YOSO(I3 10) +
-      *                     SUM-YOSO(I3 11) +
-      *                     SUM-YOSO(I3 13) +
-      *                     SUM-YOSO(I3 14) +
-      ** 20070913 消費税削除START t.tanaka
-      **                     SUM-YOSO(I3 17) +
-      ** 20070913 消費税削除END
-      *                     SUM-YOSO(I3 18) 
-      ** 20071011 減免金額修正START t.tanaka
-      *             MOVE    SUM-YOSO(I3 15) TO WRK-GENMEN
-      *             COMPUTE WRK-GENMEN = WRK-GENMEN / 10
-      *             COMPUTE WRK-GENMEN = WRK-GENMEN * 10
-      ** 20071011 減免金額修正END
-      *             COMPUTE SUM-YOSO(I3 16) =
-      *                     WRK-MONEY -
-      ** 20071011減免金額修正START t.tanaka
-      **                     SUM-YOSO(I3 15) -
-      *                     WRK-GENMEN -
-      ** 20071011減免金額修正END
-      *                    SUM-YOSO(I3 19) 
-      *             COMPUTE SUM-YOSO(SUM-AGEMAX 16) =
-      *                     SUM-YOSO(SUM-AGEMAX 16) +
-      *                     SUM-YOSO(I3 16) 
-      *--- 2009/10/28 DELETE END ---------------------------------------
+      *
            END-PERFORM
       *
-      * 20040329 削除 Y.Takahashi
-      ** 新患来院率(計)
-      **
-      *     INITIALIZE                WRK-RATE
-      *                               WRK-RATE2
-      *     COMPUTE  WRK-RATE =
-      *              SUM-YOSO(SUM-AGEMAX 6) / 
-      *              SUM-YOSO(SUM-AGEMAX 5)
-      *     COMPUTE  WRK-RATE2 ROUNDED     =
-      *              WRK-RATE     *   100
-      *     MOVE     WRK-RATE2    TO  WRK-RATE-Z9
-      *     MOVE     WRK-RATE-Z9  TO  SUM-YOSO(SUM-AGEMAX 7)
-      */20040329 削除
-      *
-      * 稼働率
-      *     INITIALIZE        WRK-TEN
-      *     COMPUTE  WRK-TEN  ROUNDED      =
-      *              100                       * 
-      *              SUM-YOSO (SUM-AGEMAX 4) / 
-      *              SUM-YOSO (SUM-AGEMAX 5)
-      *     MOVE     WRK-TEN
-      *              TO  SUM-YOSO (SUM-AGEMAX 6)
-      *
-      * 平均点(計)
-      *
+      *    平均点(計)
            INITIALIZE        WRK-TEN
            COMPUTE  WRK-TEN  ROUNDED      =
                     SUM-YOSO (SUM-AGEMAX 7) / 
@@ -1825,7 +1356,7 @@
            MOVE     WRK-TEN
                     TO  SUM-YOSO (SUM-AGEMAX 9)
       *
-      * 過日未収金残額(計)
+      *    過日未収金残額(計)
       *
            .
        320-ETC-CNT-EXT.
@@ -1836,318 +1367,201 @@
       *****************************************************************
        320-SYUNOU-CNT-SUB-SEC      SECTION.
       *
-            INITIALIZE            FLG-INVALID     
-            MOVE SYU-SRYYMD   TO  D130P-SRYYMD
-            MOVE SYU-PTID     TO  D130P-PTID
-            READ D130PT-FILE
-                 KEY      IS      D130P-KEY  
-                 INVALID  KEY     MOVE  1  TO FLG-INVALID
-            END-READ
+           INITIALIZE            FLG-INVALID     
+           MOVE SYU-SRYYMD   TO  D130P-SRYYMD
+           MOVE SYU-PTID     TO  D130P-PTID
+           READ D130PT-FILE
+                KEY      IS      D130P-KEY  
+                INVALID  KEY     MOVE  1  TO FLG-INVALID
+           END-READ
       *
-            IF   FLG-INVALID      =     1 
-                 INITIALIZE       FLG-INVALID     
-                 WRITE D130P
-                        INVALID  KEY  
-                        MOVE  1  TO FLG-INVALID
-                 END-WRITE
-      * 20040401 削除 Y.Takahashi
-      *      当日預り金
-      *      患者別に当日預り金を診療行為情報より取得する。
-      *           PERFORM 911-SRY-SELECT-SEC
-      *           PERFORM 320-AZUKARI-GET-SUB-SEC
-      */20040401 削除
-            END-IF
+           IF   FLG-INVALID      =     1 
+                INITIALIZE       FLG-INVALID     
+                WRITE D130P
+                       INVALID  KEY  
+                       MOVE  1  TO FLG-INVALID
+                END-WRITE
+           END-IF
       *
-      *請求数のカウント
-          ADD     1       TO   SUM-SYUNOU-CNT(I3)
+      *    請求数のカウント
+           ADD     1       TO   SUM-SYUNOU-CNT(I3)
       *
-      *各週マスタの読込
-      *   保険組合情報
-          INITIALIZE                           HKNCOMBI-REC
-      * 20070913 消費税START t.tanaka
-      *    MOVE    SYU-HOSPID               TO  COMB-HOSPID
-          MOVE    SYU-HOSPNUM               TO  COMB-HOSPNUM
-      * 20070913 消費税END
-          MOVE    SYU-PTID                 TO  COMB-PTID
-          MOVE    SYU-HKNCOMBINUM          TO  COMB-HKNCOMBINUM
-          PERFORM 900-HKNCOMBI-READ-SEC
-      *   患者保険情報検索
-          INITIALIZE                           PTHKNINF-REC
-      * 20070913 消費税START t.tanaka
-      *    MOVE    SYU-HOSPID               TO  PTHKN-HOSPID
-          MOVE    SYU-HOSPNUM               TO  PTHKN-HOSPNUM
-      * 20070913 消費税END
-          MOVE    SYU-PTID                 TO  PTHKN-PTID
-          MOVE    COMB-HKNID               TO  PTHKN-HKNID
-          PERFORM 900-PTHKNINF-READ-SEC
-      *  保険番号情報読み込み
-          PERFORM 900-HKNNUM-READ-SEC
-          IF   FLG-HKNNUM  =   1
-      ***      該当レコードが存在しない場合は単価を10円に設定する。
-               MOVE 10     TO  HKN-TENTNK
-          END-IF
-          IF   SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
-           OR  SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM
-      * 20080401 H20年4月改正対応START tanaka
-           OR  SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM
-      * 20080401 H20年4月改正対応END
-      *        患者労災情報検索
-               INITIALIZE           PTRSIINF-REC
-      * 20070913 消費税START t.tanaka
-      *         MOVE SYU-HOSPID  TO  PTRSI-HOSPID
-               MOVE SYU-HOSPNUM  TO  PTRSI-HOSPNUM
-      * 20070913 消費税END
-               MOVE SYU-PTID    TO  PTRSI-PTID
-               MOVE COMB-HKNID  TO  PTRSI-HKNID
-               PERFORM 900-PTRSIINF-READ-SEC
-          END-IF
+      *    各週マスタの読込
+      *    保険組合情報
+           INITIALIZE                           HKNCOMBI-REC
+           MOVE    SYU-HOSPNUM               TO  COMB-HOSPNUM
+           MOVE    SYU-PTID                 TO  COMB-PTID
+           MOVE    SYU-HKNCOMBINUM          TO  COMB-HKNCOMBINUM
+           PERFORM 900-HKNCOMBI-READ-SEC
+      *    患者保険情報検索
+           INITIALIZE                           PTHKNINF-REC
+           MOVE    SYU-HOSPNUM               TO  PTHKN-HOSPNUM
+           MOVE    SYU-PTID                 TO  PTHKN-PTID
+           MOVE    COMB-HKNID               TO  PTHKN-HKNID
+           PERFORM 900-PTHKNINF-READ-SEC
+      *    保険番号情報読み込み
+           PERFORM 900-HKNNUM-READ-SEC
+           IF   FLG-HKNNUM  =   1
+      *         該当レコードが存在しない場合は単価を10円に設定する。
+                MOVE 10     TO  HKN-TENTNK
+           END-IF
+           IF   SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
+            OR  SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM
+            OR  SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM
+      *         患者労災情報検索
+                INITIALIZE           PTRSIINF-REC
+                MOVE SYU-HOSPNUM  TO  PTRSI-HOSPNUM
+                MOVE SYU-PTID    TO  PTRSI-PTID
+                MOVE COMB-HKNID  TO  PTRSI-HKNID
+                PERFORM 900-PTRSIINF-READ-SEC
+           END-IF
       *
-      *  合計保険点数初期化 
+      *    合計保険点数初期化 
                    MOVE   ZERO             TO  SYU-TOTAL-HKNTEN
-      *  診療科保険点数            
+      *    診療科保険点数            
                    ADD    SYU-SSU-HKNTEN   
                           TO  SUM-YOSO(I3 24)
                    ADD    SYU-SSU-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 24)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-SSU-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  指導料保険点数            
+      *    指導料保険点数            
                    ADD    SYU-SDO-HKNTEN
                           TO  SUM-YOSO (I3 25)
                    ADD    SYU-SDO-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 25)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-SDO-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  在宅料保険点数            
+      *    在宅料保険点数            
                    ADD    SYU-ZTK-HKNTEN
                           TO  SUM-YOSO (I3 26)
                    ADD    SYU-ZTK-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 26)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-ZTK-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  投薬料保険点数            
+      *    投薬料保険点数            
                    ADD    SYU-TYK-HKNTEN
                           TO  SUM-YOSO (I3 27)
                    ADD    SYU-TYK-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 27)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-TYK-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  注射料保険点数            
+      *    注射料保険点数            
                    ADD    SYU-CSY-HKNTEN
                           TO  SUM-YOSO (I3 28)
                    ADD    SYU-CSY-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 28)
-      ** 合計点数に加算FLG-SRYACT
+      **   合計点数に加算FLG-SRYACT
                    ADD    SYU-CSY-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  処置料保険点数            
+      *    処置料保険点数            
                    ADD    SYU-SYC-HKNTEN
                           TO  SUM-YOSO (I3 29)
                    ADD    SYU-SYC-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 29)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-SYC-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  手術料保険点数            
+      *    手術料保険点数            
                    ADD    SYU-SJT-HKNTEN
                           TO  SUM-YOSO (I3 30)
                    ADD    SYU-SJT-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 30)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-SJT-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      **
-      **  検査料保険点数            
-      *             ADD    SYU-KNS-HKNTEN
-      *                    TO  SUM-YOSO (I3 31)
-      *             ADD    SYU-KNS-HKNTEN   
-      *                    TO  SUM-YOSO(SUM-AGEMAX 31)
-      *** 合計点数に加算
-      *             ADD    SYU-KNS-HKNTEN
-      *                    TO  SYU-TOTAL-HKNTEN
-      **
-      **  X線料保険点数            
-      *             ADD    SYU-GZU-HKNTEN
-      *                    TO  SUM-YOSO (I3 32)
-      *             ADD    SYU-GZU-HKNTEN   
-      *                    TO  SUM-YOSO(SUM-AGEMAX 32)
-      *** 合計点数に加算
-      *             ADD    SYU-GZU-HKNTEN
-      *                    TO  SYU-TOTAL-HKNTEN
-      **
-      **  その他保険点数            
-      *             ADD    SYU-ETC-HKNTEN
-      *                    TO  SUM-YOSO (I3 33)
-      *             ADD    SYU-ETC-HKNTEN   
-      *                    TO  SUM-YOSO(SUM-AGEMAX 33)
-      *** 合計点数に加算
-      *             ADD    SYU-ETC-HKNTEN
-      *                    TO  SYU-TOTAL-HKNTEN
-      **
-      **  入院料
-      *             ADD    SYU-NYN-HKNTEN
-      *                    TO  SUM-YOSO (I3 34)
-      *             ADD    SYU-NYN-HKNTEN   
-      *                    TO  SUM-YOSO(SUM-AGEMAX 34)
-      *** 合計点数に加算
-      *             ADD    SYU-NYN-HKNTEN
-      *                    TO  SYU-TOTAL-HKNTEN
-      **
-      **  保険適用外金額            
-      *             ADD    SYU-TOTAL-TGMONEY       
-      *                    TO  SUM-YOSO (I3 35)
-      *             ADD    SYU-TOTAL-TGMONEY       
-      *                    TO  SUM-YOSO (SUM-AGEMAX 35)
-      *             ADD    SYU-TOTAL-TGMONEY-TAX
-      *                    TO  SUM-YOSO (I3 35)
-      *             ADD    SYU-TOTAL-TGMONEY-TAX
-      *                    TO  SUM-YOSO (SUM-AGEMAX 35)
-      **
-      **  自費１            
-      *             ADD    SYU-JIHI-1       
-      *                    TO  SUM-YOSO (I3 36)
-      *             ADD    SYU-JIHI-1
-      *                    TO  SUM-YOSO (SUM-AGEMAX 36)
-      *             ADD    SYU-JIHI-1-TAX
-      *                    TO  SUM-YOSO (I3 36)
-      *             ADD    SYU-JIHI-1-TAX
-      *                    TO  SUM-YOSO (SUM-AGEMAX 36)
-      **
-      **  自費２            
-      *             ADD    SYU-JIHI-2       
-      *                    TO  SUM-YOSO (I3 37)
-      *             ADD    SYU-JIHI-2
-      *                    TO  SUM-YOSO (SUM-AGEMAX 37)
-      *             ADD    SYU-JIHI-2-TAX
-      *                    TO  SUM-YOSO (I3 37)
-      *             ADD    SYU-JIHI-2-TAX
-      *                    TO  SUM-YOSO (SUM-AGEMAX 37)
-      **
-      **  自費３            
-      *             ADD    SYU-JIHI-3       
-      *                    TO  SUM-YOSO (I3 38)
-      *             ADD    SYU-JIHI-3
-      *                    TO  SUM-YOSO (SUM-AGEMAX 38)
-      *             ADD    SYU-JIHI-3-TAX
-      *                    TO  SUM-YOSO (I3 38)
-      *             ADD    SYU-JIHI-3-TAX
-      *                    TO  SUM-YOSO (SUM-AGEMAX 38)
-      **
-      **  自費４            
-      *             ADD    SYU-JIHI-4       
-      *                    TO  SUM-YOSO (I3 39)
-      *             ADD    SYU-JIHI-4
-      *                    TO  SUM-YOSO (SUM-AGEMAX 39)
-      *             ADD    SYU-JIHI-4-TAX
-      *                    TO  SUM-YOSO (I3 39)
-      *             ADD    SYU-JIHI-4-TAX
-      *                    TO  SUM-YOSO (SUM-AGEMAX 39)
-      **
-      **  自費５            
-      *             ADD    SYU-JIHI-5       
-      *                    TO  SUM-YOSO (I3 40)
-      *             ADD    SYU-JIHI-5
-      *                    TO  SUM-YOSO (SUM-AGEMAX 40)
-      *             ADD    SYU-JIHI-5-TAX
-      *                    TO  SUM-YOSO (I3 40)
-      *             ADD    SYU-JIHI-5-TAX
-      *                    TO  SUM-YOSO (SUM-AGEMAX 40)
-      *-----------------------------------------------------------
       *
-      *  麻酔点数            
+      *    麻酔点数            
                    ADD    SYU-MSI-HKNTEN
                           TO  SUM-YOSO (I3 31)
                    ADD    SYU-MSI-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 31)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-MSI-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  検査料保険点数            
+      *    検査料保険点数            
                    ADD    SYU-KNS-HKNTEN
                           TO  SUM-YOSO (I3 32)
                    ADD    SYU-KNS-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 32)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-KNS-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  X線料保険点数            
+      *    X線料保険点数            
                    ADD    SYU-GZU-HKNTEN
                           TO  SUM-YOSO (I3 33)
                    ADD    SYU-GZU-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 33)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-GZU-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  リハ点数            
+      *    リハ点数            
                    ADD    SYU-ETC-HKNTEN
                           TO  SUM-YOSO (I3 34)
                    ADD    SYU-ETC-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 34)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-ETC-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  精神科専門点数            
+      *    精神科専門点数            
                    ADD    SYU-SSN-HKNTEN
                           TO  SUM-YOSO (I3 35)
                    ADD    SYU-SSN-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 35)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-SSN-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  放射線治療点数            
+      *    放射線治療点数            
                    ADD    SYU-HOU-HKNTEN
                           TO  SUM-YOSO (I3 36)
                    ADD    SYU-HOU-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 36)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-HOU-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
-      * 20080401 H20年4月改正対応START tanaka
-      *  病理診断点数            
+      *    病理診断点数            
                    ADD    SYU-BYR-HKNTEN
                           TO  SUM-YOSO (I3 50)
                    ADD    SYU-BYR-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 50)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-BYR-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
-      * 20080401 H20年4月改正対応END
       *
-      *  入院料保険点数
+      *    入院料保険点数
                    ADD    SYU-NYN-HKNTEN
                           TO  SUM-YOSO (I3 37)
                    ADD    SYU-NYN-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 37)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-NYN-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  療養担当手当点数
+      *    療養担当手当点数
                    ADD    SYU-RYO-HKNTEN
                           TO  SUM-YOSO (I3 38)
                    ADD    SYU-RYO-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 38)
-      ** 合計点数に加算
+      **   合計点数に加算
                    ADD    SYU-RYO-HKNTEN
                           TO  SYU-TOTAL-HKNTEN
       *
-      *  保険適用外金額            
+      *    保険適用外金額            
                    ADD    SYU-TOTAL-TGMONEY       
                           TO  SUM-YOSO (I3 39)
                    ADD    SYU-TOTAL-TGMONEY       
@@ -2157,7 +1571,7 @@
                    ADD    SYU-TOTAL-TGMONEY-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 39)
       *
-      *  自費１            
+      *    自費１            
                    ADD    SYU-JIHI-1       
                           TO  SUM-YOSO (I3 40)
                    ADD    SYU-JIHI-1
@@ -2167,7 +1581,7 @@
                    ADD    SYU-JIHI-1-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 40)
       *
-      *  自費２            
+      *    自費２            
                    ADD    SYU-JIHI-2       
                           TO  SUM-YOSO (I3 41)
                    ADD    SYU-JIHI-2
@@ -2177,7 +1591,7 @@
                    ADD    SYU-JIHI-2-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 41)
       *
-      *  自費３            
+      *    自費３            
                    ADD    SYU-JIHI-3       
                           TO  SUM-YOSO (I3 42)
                    ADD    SYU-JIHI-3
@@ -2187,7 +1601,7 @@
                    ADD    SYU-JIHI-3-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 42)
       *
-      *  自費４            
+      *    自費４            
                    ADD    SYU-JIHI-4       
                           TO  SUM-YOSO (I3 43)
                    ADD    SYU-JIHI-4
@@ -2197,7 +1611,7 @@
                    ADD    SYU-JIHI-4-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 43)
       *
-      *  自費５            
+      *    自費５            
                    ADD    SYU-JIHI-5       
                           TO  SUM-YOSO (I3 44)
                    ADD    SYU-JIHI-5
@@ -2207,7 +1621,7 @@
                    ADD    SYU-JIHI-5-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 44)
       *
-      *  自費６            
+      *    自費６            
                    ADD    SYU-JIHI-6       
                           TO  SUM-YOSO (I3 45)
                    ADD    SYU-JIHI-6
@@ -2217,7 +1631,7 @@
                    ADD    SYU-JIHI-6-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 45)
       *
-      *  自費７            
+      *    自費７            
                    ADD    SYU-JIHI-7       
                           TO  SUM-YOSO (I3 46)
                    ADD    SYU-JIHI-7
@@ -2227,7 +1641,7 @@
                    ADD    SYU-JIHI-7-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 46)
       *
-      *  自費８            
+      *    自費８            
                    ADD    SYU-JIHI-8       
                           TO  SUM-YOSO (I3 47)
                    ADD    SYU-JIHI-8
@@ -2237,7 +1651,7 @@
                    ADD    SYU-JIHI-8-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 47)
       *
-      *  自費９            
+      *    自費９            
                    ADD    SYU-JIHI-9       
                           TO  SUM-YOSO (I3 48)
                    ADD    SYU-JIHI-9
@@ -2247,7 +1661,7 @@
                    ADD    SYU-JIHI-9-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 48)
       *
-      *  自費１０            
+      *    自費１０            
                    ADD    SYU-JIHI-10       
                           TO  SUM-YOSO (I3 49)
                    ADD    SYU-JIHI-10
@@ -2256,31 +1670,21 @@
                           TO  SUM-YOSO (I3 49)
                    ADD    SYU-JIHI-10-TAX
                           TO  SUM-YOSO (SUM-AGEMAX 49)
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
       *
-      * 保険内点数(合計保険点数)
+      *    保険内点数(合計保険点数)
                    ADD    SYU-TOTAL-HKNTEN
                           TO  SUM-YOSO (I3 7)
                    ADD    SYU-TOTAL-HKNTEN   
                           TO  SUM-YOSO(SUM-AGEMAX 7)
       *
-      *--- 2009/10/28 ADD START ----------------------------------------
                    INITIALIZE     WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
-      * 保険内負担金              
+      *    保険内負担金              
       *
-      *--- 2010/02/22 ADD START ----------------------------------------
-      *--- 2010/08/25 CHANGE START -------------------------------------
-      *             IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
-      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
-      *               OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
-      *               AND  PTRSI-JIBAISEIKBN  NOT  =  2
                    IF   ( (SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
                        AND  SYU-PTFTNRATE  NOT =  ZERO )
                        OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
                        OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
                        AND  PTRSI-JIBAISEIKBN  NOT  =  2
-      *--- 2010/08/25 CHANGE END ---------------------------------------
       *            労災初診金額金額
                         ADD  SYU-RSISHOSHIN-MONEY  
                                TO  SUM-YOSO(I3 10)
@@ -2315,7 +1719,6 @@
                                TO  SUM-YOSO(SUM-AGEMAX 10)
                         ADD    SYU-HKNTEKMONEY   TO   WRK-HKNNAI
                    ELSE
-      *--- 2010/02/22 ADD END   ----------------------------------------
       *            主保険分負担金額
       *
                    IF      SYU-SYUCOMPTOTAL  NOT = ZERO 
@@ -2323,94 +1726,40 @@
                                TO  SUM-YOSO(I3 10)
                            ADD SYU-SYUCOMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
                            MOVE    SYU-SYUCOMPTOTAL    TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH1COMPTOTAL NOT = ZERO
                            ADD SYU-KOH1COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD SYU-KOH1COMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
                            MOVE    SYU-KOH1COMPTOTAL   TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH2COMPTOTAL NOT = ZERO
                            ADD SYU-KOH2COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH2COMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
                            MOVE    SYU-KOH2COMPTOTAL   TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH3COMPTOTAL NOT = ZERO
                            ADD     SYU-KOH3COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH3COMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
                            MOVE    SYU-KOH3COMPTOTAL   TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
                    ELSE IF SYU-KOH3COMPTOTAL NOT = ZERO
                            ADD     SYU-KOH4COMPTOTAL
                                TO  SUM-YOSO(I3 10)
                            ADD     SYU-KOH4COMPTOTAL
                                TO  SUM-YOSO(SUM-AGEMAX 10)
-      *--- 2009/10/28 ADD START ----------------------------------------
                            MOVE    SYU-KOH4COMPTOTAL   TO   WRK-HKNNAI
-      *--- 2009/10/28 ADD END ------------------------------------------
                    END-IF 
                    END-IF 
                    END-IF 
                    END-IF 
                    END-IF
       *
-      *--- 2010/02/22 DELETE START -------------------------------------
-      *             IF ( SYU-SYUHKNNUM    =   WRK-CONS-ROUSAI-HKNNUM
-      ** 20080328 H20年4月改正対応START tanaka
-      **               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM )
-      *               OR SYU-SYUHKNNUM    =   WRK-CONS-JIBAI-HKNNUM 
-      *               OR SYU-SYUHKNNUM    =   WRK-CONS-KOGAI-HKNNUM )
-      ** 20080328 H20年4月改正対応END
-      *               AND PTRSI-JIBAISEIKBN    NOT  =  2
-      *            労災初診金額金額
-      *                  ADD  SYU-RSISHOSHIN-MONEY  
-      *                         TO  SUM-YOSO(I3 10)
-      *                  ADD  SYU-RSISHOSHIN-MONEY  
-      *                         TO  SUM-YOSO(SUM-AGEMAX 10)
-      **--- 2009/10/28 ADD START ----------------------------------------
-      *                  ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
-      **--- 2009/10/28 ADD END ------------------------------------------
-      **
-      **            労災再診金額金額
-      *                  ADD  SYU-RSISAISHIN-MONEY
-      *                         TO  SUM-YOSO(I3 10)
-      *                  ADD  SYU-RSISAISHIN-MONEY
-      *                         TO  SUM-YOSO(SUM-AGEMAX 10)
-      **--- 2009/10/28 ADD START ----------------------------------------
-      *                  ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
-      **--- 2009/10/28 ADD END ------------------------------------------
-      **
-      **            労災指導金額金額
-      *                  ADD  SYU-RSISDO-MONEY
-      *                         TO  SUM-YOSO(I3 10)
-      *                  ADD  SYU-RSISDO-MONEY
-      *                         TO  SUM-YOSO(SUM-AGEMAX 10)
-      **--- 2009/10/28 ADD START ----------------------------------------
-      *                  ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
-      **--- 2009/10/28 ADD END ------------------------------------------
-      **
-      **            労災その他金額金額
-      *                  ADD  SYU-RSIETC-MONEY
-      *                         TO  SUM-YOSO(I3 10)
-      *                  ADD  SYU-RSIETC-MONEY
-      *                         TO  SUM-YOSO(SUM-AGEMAX 10)
-      **--- 2009/10/28 ADD START ----------------------------------------
-      *                  ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
-      **--- 2009/10/28 ADD END ------------------------------------------
-      *--- 2010/02/22 DELETE END   -------------------------------------
                    END-IF
       *
-      * 保険外金額
+      *    保険外金額
                    COMPUTE WRK-JIHI    =
                            SYU-TOTAL-TGMONEY  
                        +   SYU-TOTAL-TGMONEY-TAX  
@@ -2420,65 +1769,42 @@
                           TO  SUM-YOSO(I3 11)
                    ADD    WRK-JIHI
                           TO  SUM-YOSO(SUM-AGEMAX 11)
-      * 食事負担額 12
+      *    食事負担額 12
                    COMPUTE WRK-FTN     =
                           SYU-RYOYOHI-SKJ
                       +   SYU-RYOYOHI-SKJ-JIHI
-      *** 070711追加START　T.Tanaka
                       +   SYU-RYOYOHI-LIFE
-      *** 追加END
                    ADD    WRK-FTN
                           TO  SUM-YOSO(I3 12)
                    ADD    WRK-FTN
                           TO  SUM-YOSO(SUM-AGEMAX 12)
-      * 標準負担額 13
+      *    標準負担額 13
                    COMPUTE WRK-FTN     =
                           SYU-SKYMONEY-SKJ-KEI
                       +   SYU-SKYMONEY-SKJ-JIHI-KEI
-      *** 070711追加START　T.Tanaka
                       +   SYU-SKYMONEY-LIFE-KEI
-      *** 追加END
                    ADD    WRK-FTN
                           TO  SUM-YOSO(I3 13)
                    ADD    WRK-FTN
                           TO  SUM-YOSO(SUM-AGEMAX 13)
-      * 室料差額 14
+      *    室料差額 14
                    ADD    SYU-RMSAGAKU
                           TO  SUM-YOSO(I3 14)
                    ADD    SYU-RMSAGAKU
                           TO  SUM-YOSO(SUM-AGEMAX 14)
-      * 20070913 減免金額追加START t.tanaka
-      * 減免金額
+      *    減免金額
                    ADD SYU-DISCOUNT-MONEY
                           TO  SUM-YOSO(I3 15)
                    ADD SYU-DISCOUNT-MONEY
                           TO  SUM-YOSO(SUM-AGEMAX 15)
-      * 20070913 減免金額追加END
-      *--- 2009/10/28 ADD START ----------------------------------------
       *    助成金額の算出
-      *--- 2010/06/29 CHANGE START -------------------------------------
-      *             COMPUTE  WRK-MONEY  =  WRK-HKNNAI  +  WRK-JIHI
                    COMPUTE  WRK-MONEY  =  WRK-HKNNAI
-      *--- 2010/06/29 CHANGE END   -------------------------------------
                                        +  SYU-CHOSEI  +  SYU-RMSAGAKU
                                        +  WRK-FTN
                    COMPUTE  WRK-JOSEI  =  WRK-MONEY
                                        -  SYU-DISCOUNT-MONEY
+      *
                    IF   SYU-DISCOUNT-MONEY  =  ZERO
-      *--- 2010/06/29 CHANGE START -------------------------------------
-      *               EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2
-      *                 WHEN  1
-      *                   COMPUTE  WRK-JOSEI  ROUNDED  =  WRK-JOSEI / 10
-      *                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10
-      *                 WHEN  2
-      *                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-      *                   COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 
-      *                 WHEN  3
-      *                   IF   WRK-JOSEI(11:1)  NOT =  0
-      *                     COMPUTE  WRK-JOSEI  =  WRK-JOSEI  /  10
-      *                     COMPUTE  WRK-JOSEI  =  WRK-JOSEI  *  10 + 10
-      *                   END-IF
-      *               END-EVALUATE
                      INITIALIZE  FLG-JIHI
                      EVALUATE  SYU-SYUHKNNUM
       *    労災
@@ -2597,7 +1923,6 @@
                        END-EVALUATE
                      END-EVALUATE
       *    減免有り
-      *--- 2010/06/29 CHANGE END   -------------------------------------
                    ELSE
                      EVALUATE  SYS-1001-DISCOUNT-HASU-KBN
                       WHEN  1
@@ -2614,74 +1939,51 @@
                      END-EVALUATE
                    END-IF
       *
-      *--- 2010/06/29 ADD START ----------------------------------------
                    IF  FLG-JIHI  NOT  =  1
                      COMPUTE  WRK-JOSEI  =  WRK-JOSEI  +  WRK-JIHI
                    END-IF
-      *--- 2010/06/29 ADD END   ----------------------------------------
       *    助成金額
                    COMPUTE  WRK-JOSEI  =  WRK-JOSEI  -  SYU-SKYMONEY
                    ADD    WRK-JOSEI    TO   SUM-YOSO(I3 16) 
                    ADD    WRK-JOSEI    TO   SUM-YOSO(SUM-AGEMAX 16)
-      *--- 2009/10/28 ADD END ------------------------------------------
-      ****2005/12/30  @@@@-BRAND START
-      * 消費税              
-      *             ADD    SYU-JIHI-TAX
-      *                    TO  SUM-YOSO(I3 17)
-      *             ADD    SYU-JIHI-TAX
-      *                    TO  SUM-YOSO(SUM-AGEMAX 17)
-      * 消費税
+      *    消費税
                    ADD    SYU-SKYMONEY-TAX-SAI
                           TO  SUM-YOSO(I3 17)
                    ADD    SYU-SKYMONEY-TAX-SAI
                           TO  SUM-YOSO(SUM-AGEMAX 17)
-      ****2005/12/30  @@@@-BRAND END
-      * 調整金              
+      *    調整金              
                    ADD    SYU-CHOSEI
                           TO  SUM-YOSO(I3 18)
                    ADD    SYU-CHOSEI
                           TO  SUM-YOSO(SUM-AGEMAX 18)
-      * 窓口請求金額              
+      *    窓口請求金額              
                    ADD    SYU-SKYMONEY
                           TO  SUM-YOSO(I3 19)
                    ADD    SYU-SKYMONEY
                           TO  SUM-YOSO(SUM-AGEMAX 19)
-      * 入金額(当日の診療に対する入金額)   
-      * 20071024 入金額の重複を修正START T.Tanaka
-      * 20080708 収納明細を更新した場合に、入金額が表示されない不具合の修正START
+      *    入金額(当日の診療に対する入金額)   
                    MOVE   ZERO  TO  FLG-SYUMEI
-      * 20080708 収納明細を更新した場合に、入金額が表示されない不具合の修正END
                    PERFORM  320-SYUMEI-SELECT-SEC
-      * 20080708 収納明細を更新した場合に、入金額が表示されない不具合の修正START
                    PERFORM  UNTIL  FLG-SYUMEI  = 1
-      * 20080708 収納明細を更新した場合に、入金額が表示されない不具合の修正END
                       IF     SMEI-NYUHEN-YMD <= D100LNK-YMD2
                        AND  SMEI-NYUHEN-YMD >= D100LNK-YMD1
-      * 20080708 収納明細を更新した場合に、入金額が表示されない不具合の修正START
-      *                    ADD    SYU-NYUKIN-TOTAL
                           ADD    SMEI-NYUHEN-MONEY
                                  TO  SUM-YOSO(I3 21)
-      *                    ADD    SYU-NYUKIN-TOTAL
                           ADD    SMEI-NYUHEN-MONEY
-      * 20080708 収納明細を更新した場合に、入金額が表示されない不具合の修正END
                                  TO  SUM-YOSO(SUM-AGEMAX 21)
                       END-IF
-      * 20080708 収納明細を更新した場合に、入金額が表示されない不具合の修正START
                    PERFORM  320-SYUMEI-FETCH-SEC
                    END-PERFORM 
-      * 20080708 収納明細を更新した場合に、入金額が表示されない不具合の修正END
                    PERFORM  320-SYUMEI-CLOSE-SEC
-      * 20071024 入金額の重複を修正END
-            
-      * 未収金残額              
+      *
+      *    未収金残額              
                    COMPUTE     WRK-MONEY        =
                                SYU-SKYMONEY     -    SYU-NYUKIN-TOTAL
                    ADD    WRK-MONEY
                           TO  SUM-YOSO(I3 22)
                    ADD    WRK-MONEY
                           TO  SUM-YOSO(SUM-AGEMAX 22)
-      * 20040401 追加 Y.Takahashi
-      * 入学額から当日預り金を引き去る
+      *    入学額から当日預り金を引き去る
                    EVALUATE WRK-NYUTENTTLKBN
                       WHEN  1
                             COMPUTE SUM-YOSO(I3 21) =
@@ -2729,19 +2031,19 @@
                                  SYU-JIHI-5                -
                                  SYU-JIHI-5-TAX
                    END-EVALUATE
-      */20040401 追加
       *
            .
        320-SYUNOU-CNT-SUB-EXT.
            EXIT.
       *
-      ****2005/12/30  @@@@-BRAND START
       *****************************************************************
       *    入金集計処理
       *****************************************************************
        320-SYUMEI-CNT-SUB-SEC      SECTION.
+      *
            MOVE  ZERO              TO  WRK-SMEI-NYUHEN-MONEY
            PERFORM  320-SYUMEI-SELECT-SEC
+      *
            PERFORM   UNTIL  FLG-SYUMEI = 1
              IF     SMEI-NYUHEN-YMD <= D100LNK-YMD2
                AND  SMEI-NYUHEN-YMD >= D100LNK-YMD1
@@ -2753,103 +2055,76 @@
              END-IF
              PERFORM  320-SYUMEI-FETCH-SEC
            END-PERFORM.
-      *=== sarge対応 ADD By Takashima(2006/09/16) start
            PERFORM  320-SYUMEI-CLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/09/16) end
+      *
            ADD  WRK-SMEI-NYUHEN-MONEY  TO  SUM-YOSO(I3 21)
            ADD   WRK-SMEI-NYUHEN-MONEY  TO  SUM-YOSO(SUM-AGEMAX 21)
            .
        320-SYUMEI-CNT-SUB-EXT.
            EXIT.
       *****************************************************************
-      *   入金  SELECT
+      *    入金  SELECT
       *****************************************************************
        320-SYUMEI-SELECT-SEC           SECTION.
-      * 20070913 消費税START t.tanaka
-      *     MOVE    SYU-HOSPID          TO  SMEI-HOSPID
+      *
            MOVE    SYU-HOSPNUM          TO  SMEI-HOSPNUM
-      * 20070913 消費税END
            MOVE    SYU-NYUGAIKBN       TO  SMEI-NYUGAIKBN
            MOVE    SYU-PTID            TO  SMEI-PTID
            MOVE    SYU-DENPNUM         TO  SMEI-DENPNUM
            MOVE    SYUMEI-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYUMEI-KEY7    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_syumei"             TO  MCP-TABLE
            MOVE    "key7"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                         MCPAREA
                                         MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                 PERFORM  320-SYUMEI-FETCH-SEC
            ELSE
                 MOVE  1                 TO  FLG-SYUMEI
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *          PERFORM  320-SYUMEI-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        320-SYUMEI-SELECT-EXT.
            EXIT.
       *****************************************************************
-      *   入金  FETCH
+      *    入金  FETCH
       *****************************************************************
        320-SYUMEI-FETCH-SEC             SECTION.
-            MOVE    "DBFETCH"           TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYUMEI-KEY7    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
+      *
+           MOVE    "DBFETCH"            TO  MCP-FUNC
            MOVE    "tbl_syumei"             TO  MCP-TABLE
            MOVE    "key7"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                         MCPAREA
                                         MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
-            IF      MCP-RC              =   ZERO
-                MOVE    ZERO            TO  FLG-SYUMEI
-                MOVE    MCPDATA-REC     TO  SYUMEI-REC
-            ELSE
-                MOVE    1               TO  FLG-SYUMEI
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *          PERFORM  320-SYUMEI-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
-            END-IF
+      *
+           IF      MCP-RC              =   ZERO
+               MOVE    ZERO            TO  FLG-SYUMEI
+               MOVE    MCPDATA-REC     TO  SYUMEI-REC
+           ELSE
+               MOVE    1               TO  FLG-SYUMEI
+           END-IF
             .
        320-SYUMEI-FETCH-EXT.
             EXIT.
       *****************************************************************
-      *  入金  CLOSE
+      *    入金  CLOSE
       *****************************************************************
        320-SYUMEI-CLOSE-SEC            SECTION.
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYUMEI-KEY7    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_syumei"             TO  MCP-TABLE
            MOVE    "key7"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                         MCPAREA
                                         MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
             .
        320-SYUMEI-SELECT-EXT.
             EXIT.
-      ****2005/12/30  @@@@-BRAND END
       *****************************************************************
       *    受診履歴情報集計サブ処理
       *****************************************************************
@@ -2858,10 +2133,7 @@
            IF    FLG-JYURRK       = ZERO
             AND  JYURRK-NYUGAIKBN = "2"
                  MOVE JYURRK-SRYYMD(7:2)  TO  IDX7G
-      * 20070913 消費税START t.tanaka
-      *           MOVE JYURRK-HOSPID       TO  ACCT-HOSPID  
                  MOVE JYURRK-HOSPNUM       TO  ACCT-HOSPNUM  
-      * 20070913 消費税END
                  MOVE JYURRK-NYUGAIKBN    TO  ACCT-NYUGAIKBN
                  MOVE JYURRK-PTID         TO  ACCT-PTID
                  MOVE JYURRK-SRYKA        TO  ACCT-SRYKA
@@ -2870,16 +2142,13 @@
                  PERFORM 900-SRYACCT-READ-SEC
                  IF      FLG-SRYACCT      =   ZERO
                    AND   ACCT-DAY(1 IDX7) >   ZERO
-      *  初診の件数としてカウントする。
+      *    初診の件数としてカウントする。
                          ADD  1  TO  SUM-YOSO(I3 2)
                          ADD  1  TO  SUM-YOSO(SUM-AGEMAX 2)
                          ADD  1  TO  SUM-YOSO(I3 5)
                          ADD  1  TO  SUM-YOSO(SUM-AGEMAX 5)
                  ELSE
-      * 20070913 消費税START t.tanaka
-      *                MOVE JYURRK-HOSPID TO  ACCT-HOSPID  
                       MOVE JYURRK-HOSPNUM TO  ACCT-HOSPNUM  
-      * 20070913 消費税END
                       MOVE JYURRK-NYUGAIKBN    TO  ACCT-NYUGAIKBN
                       MOVE JYURRK-PTID         TO  ACCT-PTID
                       MOVE JYURRK-SRYKA        TO  ACCT-SRYKA
@@ -2888,13 +2157,13 @@
                       PERFORM 900-SRYACCT-READ-SEC
                       IF  FLG-SRYACCT          =   ZERO
                       AND ACCT-DAY(1 IDX7)     >   ZERO
-      *  再診の件数としてカウントする。
+      *    再診の件数としてカウントする。
                          ADD  1  TO  SUM-YOSO(I3 3)
                          ADD  1  TO  SUM-YOSO(SUM-AGEMAX 3)
                          ADD  1  TO  SUM-YOSO(I3 5)
                          ADD  1  TO  SUM-YOSO(SUM-AGEMAX 5)
                       ELSE
-      *  その他件数としてカウントする。
+      *    その他件数としてカウントする。
                          ADD  1  TO  SUM-YOSO(I3 4)
                          ADD  1  TO  SUM-YOSO(SUM-AGEMAX 4)
                          ADD  1  TO  SUM-YOSO(I3 5)
@@ -2903,11 +2172,11 @@
                  END-IF
            END-IF
       *
-      * 新患件数
+      *    新患件数
            PERFORM  900-JYURRK-SELECT-SEC 
            IF       FLG-JYURRK       =   ZERO
              AND    JYURRK-SRYYMD    =   SYU-SRYYMD 
-      * 新患件数としてカウントする。
+      *    新患件数としてカウントする。
                     ADD  1  TO  SUM-YOSO(I3 6)
                     ADD  1  TO  SUM-YOSO(SUM-AGEMAX 6)
            END-IF 
@@ -2922,10 +2191,7 @@
        320-AZUKARI-GET-SEC      SECTION.
       *
            INITIALIZE                      SRYACT-REC
-      * 20070913 消費税START t.tanaka
-      *     MOVE   PTNYUINRRK-HOSPID    TO  SRY-HOSPID  
            MOVE   PTNYUINRRK-HOSPNUM    TO  SRY-HOSPNUM  
-      * 20070913 消費税END
            MOVE   "1"                  TO  SRY-NYUGAIKBN 
            MOVE   PTNYUINRRK-PTID      TO  SRY-PTID
            MOVE   WRK-INI-AZUKARICD    TO  SRY-SRYCD(1)
@@ -2933,10 +2199,7 @@
                                            SRY-SRYCD(3)
                                            SRY-SRYCD(4)
                                            SRY-SRYCD(5)
-      * 20040402 削除 Y.Takahashi
-      *     MOVE   I3                   TO  WRK-ACCT-IN
-      */20040402 削除
-      *    集計日範囲
+      *
            MOVE   WRK-STARTYMD(1:6)    TO  SRY-SRYYM
            MOVE   WRK-STARTYMD(7:2)    TO  WRK-ACCT-SDAY
            MOVE   WRK-LASTYMD(7:2)     TO  WRK-ACCT-EDAY
@@ -2949,22 +2212,15 @@
                  OR  (WRK-SEL-SRYKACD NOT =  SPACE 
                   AND WRK-SEL-SRYKACD     =  SRY-SRYKA ))
                      PERFORM VARYING IDX3  FROM  1 BY 1
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      *                       UNTIL   IDX3  >  5
-      *--- 20100928 CHANGE START ---------------------------------------
-      *                       UNTIL   IDX3  >  10
+      *
                              UNTIL   IDX3  >  5
-      *--- 20100928 CHANGE START ---------------------------------------
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+      *
                         IF   SRY-SRYCD(IDX3)    = WRK-INI-AZUKARICD
                          AND SRY-JIHIMONEY(IDX3) > ZERO
                              MOVE SRY-JIHIMONEY(IDX3)  
                                                 TO  WRK-JIHIMONEY
                              INITIALIZE             SRYACCT-REC
-      * 20070913 消費税START t.tanaka
-      *                       MOVE SRY-HOSPID    TO  ACCT-HOSPID  
                              MOVE SRY-HOSPNUM    TO  ACCT-HOSPNUM  
-      * 20070913 消費税END
                              MOVE SRY-NYUGAIKBN TO  ACCT-NYUGAIKBN
                              MOVE SRY-PTID      TO  ACCT-PTID
                              MOVE SRY-SRYKA     TO  ACCT-SRYKA
@@ -2977,14 +2233,9 @@
                                  PERFORM 320-AZUKARI-GET-SUB-SEC
                                  PERFORM 900-SRYACCT-FETCH-SEC
                              END-PERFORM
-      *=== sarge対応 ADD By Takashima(2006/09/16) start
                              PERFORM 900-SRYACCT-CLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/09/16) end
                         END-IF
                     END-PERFORM           
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *              PERFORM 900-SRYACCT-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
                END-IF
                PERFORM 911-SRY-FETCH-SEC
            END-PERFORM
@@ -2999,97 +2250,50 @@
       *****************************************************************
        320-AZUKARI-GET-SUB-SEC      SECTION.
       *
-        PERFORM VARYING  IDX4   FROM  WRK-ACCT-SDAY  BY 1
-                   UNTIL IDX4    >    WRK-ACCT-EDAY  
-            IF  ACCT-DAY(1 IDX4) >    ZERO
-                PERFORM VARYING  IDX5  FROM  2  BY 4
-                   UNTIL  IDX5   >    4
-                     IF  ACCT-DAY(IDX5 IDX4) > 0
-                         INITIALIZE          JYURRK-REC
-      * 20070913 消費税START t.tanaka
-      *                   MOVE ACCT-HOSPID     TO JYURRK-HOSPID
-                         MOVE ACCT-HOSPNUM     TO JYURRK-HOSPNUM
-      * 20070913 消費税END
-                         MOVE ACCT-PTID       TO JYURRK-PTID
-                         MOVE ACCT-NYUGAIKBN  TO JYURRK-NYUGAIKBN
-                         MOVE ACCT-SRYKA      TO JYURRK-SRYKA
-                         MOVE ACCT-SRYYM      TO JYURRK-SRYYMD(1:6)
-                         MOVE IDX4(3:2)       TO JYURRK-SRYYMD(7:2)
-                         MOVE IDX5            TO IDX6
-                         ADD      -1          TO IDX6
-                         MOVE IDX6            TO JYURRK-RENNUM
-                         MOVE ACCT-HKNCOMBI   TO JYURRK-HKNCOMBINUM
-                         PERFORM 900-JYURRK-DRCD-READ-SEC
-                         IF  ( WRK-SEL-DRCD     = SPACE
-                          OR ( WRK-SEL-DRCD NOT = SPACE
-                           AND WRK-SEL-DRCD     = JYURRK-DRCD(2:4)))
-                          AND  FLG-JYURRK       = ZERO
-      * 20040402 追加 Y.Takahashi
-                               MOVE  PTINF-BIRTHDAY
-                                                 TO  WRK-AGE-BIRTHDAY
-                               MOVE  JYURRK-SRYYMD    
-                                                 TO  WRK-AGE-SRYYMD
-                               PERFORM  320-AGE-GROUPING-SEC
-                               IF I3  <     SUM-AGEMAX
-                                  IF  FLG-GET = ZERO
-                                      MOVE   1   TO   FLG-GET
+           PERFORM VARYING  IDX4   FROM  WRK-ACCT-SDAY  BY 1
+                      UNTIL IDX4    >    WRK-ACCT-EDAY  
+               IF  ACCT-DAY(1 IDX4) >    ZERO
+                   PERFORM VARYING  IDX5  FROM  2  BY 4
+                      UNTIL  IDX5   >    4
+                        IF  ACCT-DAY(IDX5 IDX4) > 0
+                            INITIALIZE          JYURRK-REC
+                            MOVE ACCT-HOSPNUM     TO JYURRK-HOSPNUM
+                            MOVE ACCT-PTID       TO JYURRK-PTID
+                            MOVE ACCT-NYUGAIKBN  TO JYURRK-NYUGAIKBN
+                            MOVE ACCT-SRYKA      TO JYURRK-SRYKA
+                            MOVE ACCT-SRYYM      TO JYURRK-SRYYMD(1:6)
+                            MOVE IDX4(3:2)       TO JYURRK-SRYYMD(7:2)
+                            MOVE IDX5            TO IDX6
+                            ADD      -1          TO IDX6
+                            MOVE IDX6            TO JYURRK-RENNUM
+                            MOVE ACCT-HKNCOMBI   TO JYURRK-HKNCOMBINUM
+                            PERFORM 900-JYURRK-DRCD-READ-SEC
+                            IF  ( WRK-SEL-DRCD     = SPACE
+                             OR ( WRK-SEL-DRCD NOT = SPACE
+                              AND WRK-SEL-DRCD     = JYURRK-DRCD(2:4)))
+                             AND  FLG-JYURRK       = ZERO
+                                  MOVE  PTINF-BIRTHDAY
+                                                    TO  WRK-AGE-BIRTHDAY
+                                  MOVE  JYURRK-SRYYMD    
+                                                    TO  WRK-AGE-SRYYMD
+                                  PERFORM  320-AGE-GROUPING-SEC
+                                  IF I3  <     SUM-AGEMAX
+                                     IF  FLG-GET = ZERO
+                                         MOVE   1   TO   FLG-GET
+                                     END-IF
                                   END-IF
-                               END-IF
-                               MOVE  I3          TO   WRK-ACCT-IN
-      */20040402 追加
-                               COMPUTE WRK-AZUKARI =
-                               ACCT-DAY(IDX5 IDX4) * WRK-JIHIMONEY
-                               ADD  WRK-AZUKARI
-                                TO  SUM-YOSO(WRK-ACCT-IN 23)
-                               ADD  WRK-AZUKARI
-                                TO  SUM-YOSO(SUM-AGEMAX 23)
-                         END-IF
-                     END-IF
-                END-PERFORM
-            END-IF
-       END-PERFORM
-      *     PERFORM  UNTIL      FLG-SRYACT  = 1
-      **
-      **   集計対象のデータであるかをチェックする。 
-      ** 20040318  変更
-      ****      IF    FLG-SRYACT     =   ZERO
-      ****       AND  SRY-NYUGAIKBN  =   "2"
-      ****       AND  SRY-SRYKA      =   SUM-SRYKACD
-      *      IF    FLG-SRYACT      =   ZERO
-      *       AND  SRY-NYUGAIKBN   =   "1"
-      *       AND  SYU-SRYKA       =   SRY-SRYKA
-      **       AND (SUM-SRYKACD(I3) =   SRY-SRYKA
-      **        OR  SUM-SRYKACD(I3) =   "99")
-      ** 20040318  変更
-      *         MOVE SRY-HOSPID       TO  ACCT-HOSPID  
-      *         MOVE SRY-NYUGAIKBN    TO  ACCT-NYUGAIKBN
-      *         MOVE SRY-PTID         TO  ACCT-PTID
-      *         MOVE SRY-SRYKA        TO  ACCT-SRYKA
-      *         MOVE SRY-SRYYM        TO  ACCT-SRYYM
-      *         MOVE SRY-SRYKBN       TO  ACCT-SRYKBN
-      *         MOVE SRY-ZAINUM       TO  ACCT-ZAINUM
-      *         PERFORM  900-SRYACCT-READ2-SEC
-      *         MOVE SYU-SRYYMD(7:2)  TO  IDX7G
-      *
-      *         IF   FLG-SRYACCT          =   ZERO
-      *          AND ACCT-DAY(1 IDX7)     >   ZERO
-      *           PERFORM VARYING   IDX3        FROM 1  BY  1  
-      *                 UNTIL     IDX3        >    5
-      *            IF   SRY-SRYCD(IDX3)        =    WRK-INI-AZUKARICD
-      *             AND SRY-JIHIMONEY(IDX3)    >    ZERO
-      *   当日預り金
-      *                ADD  SRY-JIHIMONEY(IDX3)
-      *                     TO  SUM-YOSO(I3 23)
-      *                ADD  SRY-JIHIMONEY(IDX3)
-      *                     TO  SUM-YOSO(SUM-AGEMAX 23)
-      *            END-IF
-      *           END-PERFORM 
-      *         END-IF
-      *      END-IF
-      *      PERFORM 911-SRY-FETCH-SEC
-      *     END-PERFORM           
-      *     PERFORM 911-SRY-CLOSE-SEC
-      */20040401 削除 Y.Takahashi
+                                  MOVE  I3          TO   WRK-ACCT-IN
+                                  COMPUTE WRK-AZUKARI =
+                                  ACCT-DAY(IDX5 IDX4) * WRK-JIHIMONEY
+                                  ADD  WRK-AZUKARI
+                                   TO  SUM-YOSO(WRK-ACCT-IN 23)
+                                  ADD  WRK-AZUKARI
+                                   TO  SUM-YOSO(SUM-AGEMAX 23)
+                            END-IF
+                        END-IF
+                   END-PERFORM
+               END-IF
+           END-PERFORM
       *
            .
        320-AZUKARI-GET-SUB-EXT.
@@ -3100,23 +2304,22 @@
       *****************************************************************
        320-AGE-GROUPING-SEC      SECTION.
       *
-      * 年齢作成
-             COMPUTE  WRK-AGE  = 
-                      WRK-AGE-SRYY  -  WRK-AGE-BIRTHY
-             IF       WRK-AGE-SRYM  <  WRK-AGE-BIRTHM
-                 ADD  -1    TO   WRK-AGE
-             END-IF
+      *    年齢作成
+           COMPUTE  WRK-AGE  = 
+                    WRK-AGE-SRYY  -  WRK-AGE-BIRTHY
+           IF       WRK-AGE-SRYM  <  WRK-AGE-BIRTHM
+               ADD  -1    TO   WRK-AGE
+           END-IF
       *
-             MOVE  1             TO  I3
-             MOVE  SUM-AGEMAX    TO  I4
-             PERFORM  UNTIL  I3  >   I4
-      *                IF   SUM-AGECOLMAX(I3) >= WRK-AGE-BIRTHDAY(1:4)
-                      IF   SUM-AGECOLMAX(I3) >= WRK-AGE
-                           MOVE  ZERO   TO I4
-                      ELSE
-                           ADD   1      TO I3
-                      END-IF
-             END-PERFORM
+           MOVE  1             TO  I3
+           MOVE  SUM-AGEMAX    TO  I4
+           PERFORM  UNTIL  I3  >   I4
+                    IF   SUM-AGECOLMAX(I3) >= WRK-AGE
+                         MOVE  ZERO   TO I4
+                    ELSE
+                         ADD   1      TO I3
+                    END-IF
+           END-PERFORM
       *
              .
        320-AGE-GROUPING-EXT.
@@ -3127,22 +2330,16 @@
       *****************************************************************
        3201-PTHKNINF-HENSYU-SEC          SECTION.
       *
-      *   保険組合せ読み出し
+      *    保険組合せ読み出し
            INITIALIZE                  HKNCOMBI-REC
-      * 20070913 消費税START t.tanaka
-      *     MOVE    SYU-HOSPID        TO  COMB-HOSPID
            MOVE    SYU-HOSPNUM        TO  COMB-HOSPNUM
-      * 20070913 消費税END
            MOVE    SYU-PTID          TO  COMB-PTID
            MOVE    SYU-HKNCOMBINUM   TO  COMB-HKNCOMBINUM
            PERFORM 900-HKNCOMBI-READ-SEC
            IF      FLG-HKNCOMBI        =   ZERO
       *    患者保険情報読み込み       
                INITIALIZE                    PTHKNINF-REC
-      * 20070913 消費税START t.tanaka
-      *         MOVE    SYU-HOSPID        TO  PTHKN-HOSPID
                MOVE    SYU-HOSPNUM        TO  PTHKN-HOSPNUM
-      * 20070913 消費税END
                MOVE    SYU-PTID          TO  PTHKN-PTID
                MOVE    COMB-HKNID        TO  PTHKN-HKNID
                PERFORM 900-PTHKNINF-READ-SEC
@@ -3157,14 +2354,11 @@
        3202-PTHKNINF-HENSYU-SEC          SECTION.
       *
       *    患者保険情報読み込み       
-            INITIALIZE                    PTHKNINF-REC
-      * 20070913 消費税START t.tanaka
-      *      MOVE    PTNYUINRRK-HOSPID TO  PTHKN-HOSPID
-            MOVE    PTNYUINRRK-HOSPNUM TO  PTHKN-HOSPNUM
-      * 20070913 消費税END
-            MOVE    PTNYUINRRK-PTID   TO  PTHKN-PTID
-            MOVE    COMB-HKNID        TO  PTHKN-HKNID
-            PERFORM 900-PTHKNINF-READ-SEC
+           INITIALIZE                    PTHKNINF-REC
+           MOVE    PTNYUINRRK-HOSPNUM TO  PTHKN-HOSPNUM
+           MOVE    PTNYUINRRK-PTID   TO  PTHKN-PTID
+           MOVE    COMB-HKNID        TO  PTHKN-HKNID
+           PERFORM 900-PTHKNINF-READ-SEC
            .
        3202-PTHKNINF-HENSYU-EXT.
            EXIT.
@@ -3172,298 +2366,190 @@
       *****************************************************************
       *    帳票編集サブ処理                                           *
       *****************************************************************
-      * 
        330-TERM-HEN-SEC         SECTION.
       *
-            INITIALIZE                   D130
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-            INITIALIZE                   D1301
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-      * 帳票サブタイトル
-            MOVE   "(入院・年齢別)"      TO  D130-SUBTITLE
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-            MOVE   "(入院・年齢別)"      TO  D1301-SUBTITLE
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-      * 対象範囲期間
-            MOVE   WRK-SRYYMD1       TO  D130-FRYMD
-            MOVE   WRK-SRYYMD2       TO  D130-TOYMD
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-            MOVE   WRK-SRYYMD1       TO  D1301-FRYMD
-            MOVE   WRK-SRYYMD2       TO  D1301-TOYMD
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-      * 診療科名称
-            MOVE   SUM-SRYKANAME     TO  D130-SRYKA
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-            MOVE   SUM-SRYKANAME     TO  D1301-SRYKA
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-      * 医師名称
-            MOVE   SUM-DRNAME        TO  D130-DRNAME
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-            MOVE   SUM-DRNAME        TO  D1301-DRNAME
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-      * 帳票出力年月日
-            MOVE   WRK-SYSYMDWH      TO  D130-SYSYMD  
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-            MOVE   WRK-SYSYMDWH      TO  D1301-SYSYMD  
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-      * 転帰テキスト 
-            MOVE   SUM-TENKI-MSG(1)  TO  D130-TENKI(1)
-            MOVE   SUM-TENKI-MSG(2)  TO  D130-TENKI(2)
-            MOVE   SUM-TENKI-MSG(3)  TO  D130-TENKI(3)
+           INITIALIZE                   D130
+           INITIALIZE                   D1301
+      *    帳票サブタイトル
+           MOVE   "(入院・年齢別)"      TO  D130-SUBTITLE
+           MOVE   "(入院・年齢別)"      TO  D1301-SUBTITLE
+      *    対象範囲期間
+           MOVE   WRK-SRYYMD1       TO  D130-FRYMD
+           MOVE   WRK-SRYYMD2       TO  D130-TOYMD
+           MOVE   WRK-SRYYMD1       TO  D1301-FRYMD
+           MOVE   WRK-SRYYMD2       TO  D1301-TOYMD
+      *    診療科名称
+           MOVE   SUM-SRYKANAME     TO  D130-SRYKA
+           MOVE   SUM-SRYKANAME     TO  D1301-SRYKA
+      *    医師名称
+           MOVE   SUM-DRNAME        TO  D130-DRNAME
+           MOVE   SUM-DRNAME        TO  D1301-DRNAME
+      *    帳票出力年月日
+           MOVE   WRK-SYSYMDWH      TO  D130-SYSYMD  
+           MOVE   WRK-SYSYMDWH      TO  D1301-SYSYMD  
+      *    転帰テキスト 
+           MOVE   SUM-TENKI-MSG(1)  TO  D130-TENKI(1)
+           MOVE   SUM-TENKI-MSG(2)  TO  D130-TENKI(2)
+           MOVE   SUM-TENKI-MSG(3)  TO  D130-TENKI(3)
       * 
-      * 入院の自費タイトル設定
-            PERFORM  VARYING  IDX2   FROM 1  BY  1
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      *               UNTIL    IDX2   >    5 
-      *         MOVE  WRK-TJIHI(IDX2) TO  D130-TJIHI(IDX2)
-                     UNTIL    IDX2   >    10 
-               MOVE  WRK-TJIHI(IDX2) TO  D1301-TJIHI(IDX2)
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-            END-PERFORM
+      *    入院の自費タイトル設定
+           PERFORM  VARYING  IDX2   FROM 1  BY  1
+                    UNTIL    IDX2   >    10 
+              MOVE  WRK-TJIHI(IDX2) TO  D1301-TJIHI(IDX2)
+           END-PERFORM
       *
-            MOVE     1        TO           I3
-            IF       SUM-AGEMAX    >     14
-                     MOVE     13       TO   I5
-            ELSE
-                     MOVE     SUM-AGEMAX   TO   I5
-            END-IF         
+           MOVE     1        TO           I3
+           IF       SUM-AGEMAX    >     14
+                    MOVE     13       TO   I5
+           ELSE
+                    MOVE     SUM-AGEMAX   TO   I5
+           END-IF         
       *
-      * テーブル設定
-            PERFORM    UNTIL    I3     >     SUM-AGEMAX
-              PERFORM  VARYING  I6     FROM  1  BY  1
-                       UNTIL    I6     >     I5
-                          OR    I3     >     SUM-AGEMAX
-               IF    I3       =        SUM-AGEMAX
-                     MOVE     "計"
-                              TO  D130-TAGE(14)
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-                     MOVE     "計"
-                              TO  D1301-TAGE(14)
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-               ELSE 
-                     MOVE     SUM-AGENAME(I3)
-                              TO  D130-TAGE(I6)
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-                     MOVE     SUM-AGENAME(I3)
-                              TO  D1301-TAGE(I6)
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-               END-IF
-      * 20040407 修正 Y.Takahashi
-      *         PERFORM VARYING  I4     FROM  1  BY  1
-      *                 UNTIL    I4     >     40
-               PERFORM VARYING  I4     FROM  2  BY  1
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      *                 UNTIL    I4     >     40
-      * 20080401 H20年4月改正対応START tanaka
-      *                 UNTIL    I4     >     49
-                       UNTIL    I4     >     50
-      * 20080401 H20年4月改正対応END
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-                       COMPUTE I7  =   I4   -  1
-      */20040407 修正
-                       IF     I3       =     SUM-AGEMAX
-                           IF   I4  =  1
-                            OR  I4  =  4
-                            OR  I4  =  5
-                            OR  I4  =  6
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      ** 20040626 追加 Y.Takahashi 保険外自費が無い場合は数値は空白
-      *                    OR ( I4               = 36 
-      *                     AND WRK-TJIHI-FLG(1) = ZERO )
-      *                    OR ( I4               = 37
-      *                     AND WRK-TJIHI-FLG(2) = ZERO )
-      *                    OR ( I4               = 38
-      *                     AND WRK-TJIHI-FLG(3) = ZERO )
-      *                    OR ( I4               = 39
-      *                     AND WRK-TJIHI-FLG(4) = ZERO )
-      *                    OR ( I4               = 40
-      *                     AND WRK-TJIHI-FLG(5) = ZERO )
-      **/20040626 
-      ** 20040407 修正 Y.Takahashi
-      **                          MOVE   SPACE
-      **                                 TO  D130-YOSO(14 I4)
-      *                          MOVE   SPACE
-      *                                 TO  D130-YOSO(14 I7)
-      **/20040407 修正
-      *------------------------------------------------------------
-                          OR ( I4               = 40 
-                           AND WRK-TJIHI-FLG(1) = ZERO )
-                          OR ( I4               = 41
-                           AND WRK-TJIHI-FLG(2) = ZERO )
-                          OR ( I4               = 42
-                           AND WRK-TJIHI-FLG(3) = ZERO )
-                          OR ( I4               = 43
-                           AND WRK-TJIHI-FLG(4) = ZERO )
-                          OR ( I4               = 44
-                           AND WRK-TJIHI-FLG(5) = ZERO )
-                          OR ( I4               = 45
-                           AND WRK-TJIHI-FLG(6) = ZERO )
-                          OR ( I4               = 46
-                           AND WRK-TJIHI-FLG(7) = ZERO )
-                          OR ( I4               = 47
-                           AND WRK-TJIHI-FLG(8) = ZERO )
-                          OR ( I4               = 48
-                           AND WRK-TJIHI-FLG(9) = ZERO )
-                          OR ( I4               = 49
-                           AND WRK-TJIHI-FLG(10) = ZERO )
-                              IF  I7   >   37
-      * 20080401 H20年4月改正対応START tanaka
-      *                            COMPUTE  IDX9  =   I7   -  37 
-      *                            MOVE   SPACE
-      *                                   TO  D1301-YOSO(14 IDX9)
-                                  IF I7  =  49
-                                      COMPUTE  IDX9  =   I7   -  11
-                                      MOVE     SPACE
-                                               TO  D130-YOSO(14 IDX9)
-                                  ELSE
-                                      COMPUTE  IDX9  =   I7   -  37 
-                                      MOVE     SPACE
-                                               TO  D1301-YOSO(14 IDX9)
-                                  END-IF
-      * 20080401 H20年4月改正対応END
-                              ELSE
-                                  MOVE   SPACE
-                                         TO  D130-YOSO(14 I7)
-                              END-IF
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-                           ELSE
-                              MOVE     SUM-YOSO(I3 I4)
-                                       TO  WRK-S9
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      ** 20040407 修正 Y.Takahashi
-      **                        MOVE     WRK-S9
-      **                                 TO  D130-YOSO(14 I4)
-      *                        MOVE     WRK-S9
-      *                                 TO  D130-YOSO(14 I7)
-      **/20040407 修正
-                              IF  I7   >   37
-      * 20080401 H20年4月改正対応START tanaka
-      *                            COMPUTE  IDX9  =   I7   -  37 
-      *                            MOVE     WRK-S9
-      *                                     TO  D1301-YOSO(14 IDX9)
-                                  IF I7  =  49
-                                     COMPUTE  IDX9  =   I7   -  11
-                                      MOVE     WRK-S9
-                                           TO  D130-YOSO(14 IDX9)
-                                  ELSE
-                                     COMPUTE  IDX9  =   I7   -  37 
-                                      MOVE     WRK-S9
-                                           TO  D1301-YOSO(14 IDX9)
-                                   END-IF
-      * 20080401 H20年4月改正対応END
-                              ELSE
-                                  MOVE     WRK-S9
-                                           TO  D130-YOSO(14 I7)
-                              END-IF
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-                           END-IF
-                       ELSE
+      *    テーブル設定
+           PERFORM    UNTIL    I3     >     SUM-AGEMAX
+             PERFORM  VARYING  I6     FROM  1  BY  1
+                      UNTIL    I6     >     I5
+                         OR    I3     >     SUM-AGEMAX
+              IF    I3       =        SUM-AGEMAX
+                    MOVE     "計"
+                             TO  D130-TAGE(14)
+                    MOVE     "計"
+                             TO  D1301-TAGE(14)
+              ELSE 
+                    MOVE     SUM-AGENAME(I3)
+                             TO  D130-TAGE(I6)
+                    MOVE     SUM-AGENAME(I3)
+                             TO  D1301-TAGE(I6)
+              END-IF
+      *
+              PERFORM VARYING  I4     FROM  2  BY  1
+                      UNTIL    I4     >     50
+                      COMPUTE I7  =   I4   -  1
+                      IF     I3       =     SUM-AGEMAX
                           IF   I4  =  1
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      ** 20040626 追加 Y.Takahashi 保険外自費が無い場合は数値は空白
-      *                    OR ( I4               = 36 
-      *                     AND WRK-TJIHI-FLG(1) = ZERO )
-      *                    OR ( I4               = 37
-      *                     AND WRK-TJIHI-FLG(2) = ZERO )
-      *                    OR ( I4               = 38
-      *                     AND WRK-TJIHI-FLG(3) = ZERO )
-      *                    OR ( I4               = 39
-      *                     AND WRK-TJIHI-FLG(4) = ZERO )
-      *                    OR ( I4               = 40
-      *                     AND WRK-TJIHI-FLG(5) = ZERO )
-      **/20040626 
-      ** 20040407 修正 Y.Takahashi
-      **                        MOVE    SPACE
-      **                             TO  D130-YOSO(I6 I4)
-      *                        MOVE    SPACE
-      *                             TO  D130-YOSO(I6 I7)
-      **/20040407 修正
-      *-----------------------------------------------------------
-                          OR ( I4               = 40 
-                           AND WRK-TJIHI-FLG(1) = ZERO )
-                          OR ( I4               = 41
-                           AND WRK-TJIHI-FLG(2) = ZERO )
-                          OR ( I4               = 42
-                           AND WRK-TJIHI-FLG(3) = ZERO )
-                          OR ( I4               = 43
-                           AND WRK-TJIHI-FLG(4) = ZERO )
-                          OR ( I4               = 44
-                           AND WRK-TJIHI-FLG(5) = ZERO )
-                          OR ( I4               = 45
-                           AND WRK-TJIHI-FLG(6) = ZERO )
-                          OR ( I4               = 46
-                           AND WRK-TJIHI-FLG(7) = ZERO )
-                          OR ( I4               = 47
-                           AND WRK-TJIHI-FLG(8) = ZERO )
-                          OR ( I4               = 48
-                           AND WRK-TJIHI-FLG(9) = ZERO )
-                          OR ( I4               = 49
-                           AND WRK-TJIHI-FLG(10) = ZERO )
-                              IF  I7   >   37
-      * 20080401 H20年4月改正対応START tanaka   
-      *                            COMPUTE  IDX9  =   I7   -  37 
-      *                            MOVE    SPACE
-      *                                 TO  D1301-YOSO(I6 IDX9)
-                                  IF I7  =  49
-                                      COMPUTE  IDX9  =   I7   -  11
-                                      MOVE     SPACE
-                                              TO  D130-YOSO(I6 IDX9)
-                                  ELSE
-                                      COMPUTE  IDX9  =   I7   -  37
-                                      MOVE     SPACE
-                                              TO  D1301-YOSO(I6 IDX9)
-                                  END-IF
-      * 20080401 H20年4月改正対応END
-                              ELSE
-                                  MOVE    SPACE
-                                       TO  D130-YOSO(I6 I7)
-                              END-IF
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+                           OR  I4  =  4
+                           OR  I4  =  5
+                           OR  I4  =  6
+                         OR ( I4               = 40 
+                          AND WRK-TJIHI-FLG(1) = ZERO )
+                         OR ( I4               = 41
+                          AND WRK-TJIHI-FLG(2) = ZERO )
+                         OR ( I4               = 42
+                          AND WRK-TJIHI-FLG(3) = ZERO )
+                         OR ( I4               = 43
+                          AND WRK-TJIHI-FLG(4) = ZERO )
+                         OR ( I4               = 44
+                          AND WRK-TJIHI-FLG(5) = ZERO )
+                         OR ( I4               = 45
+                          AND WRK-TJIHI-FLG(6) = ZERO )
+                         OR ( I4               = 46
+                          AND WRK-TJIHI-FLG(7) = ZERO )
+                         OR ( I4               = 47
+                          AND WRK-TJIHI-FLG(8) = ZERO )
+                         OR ( I4               = 48
+                          AND WRK-TJIHI-FLG(9) = ZERO )
+                         OR ( I4               = 49
+                          AND WRK-TJIHI-FLG(10) = ZERO )
+                             IF  I7   >   37
+                                 IF I7  =  49
+                                     COMPUTE  IDX9  =   I7   -  11
+                                     MOVE     SPACE
+                                              TO  D130-YOSO(14 IDX9)
+                                 ELSE
+                                     COMPUTE  IDX9  =   I7   -  37 
+                                     MOVE     SPACE
+                                              TO  D1301-YOSO(14 IDX9)
+                                 END-IF
+                             ELSE
+                                 MOVE   SPACE
+                                        TO  D130-YOSO(14 I7)
+                             END-IF
+      *
                           ELSE
-                              MOVE     SUM-YOSO(I3 I4)
-                                       TO  WRK-S9
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-      ** 20040407 修正 Y.Takahashi
-      **                        MOVE     WRK-S9
-      **                                 TO  D130-YOSO(I6 I4)
-      *                        MOVE     WRK-S9
-      *                                 TO  D130-YOSO(I6 I7)
-      **/20040407 修正
-                              IF  I7   >   37
-      * 20080401 H20年4月改正対応START tanaka   
-      *                            COMPUTE  IDX9  =   I7   -  37 
-      *                            MOVE     WRK-S9
-      *                                     TO  D1301-YOSO(I6 IDX9)
-                                  IF I7  =  49
-                                      COMPUTE  IDX9  =   I7   -  11
-                                      MOVE     WRK-S9
-                                              TO  D130-YOSO(I6 IDX9)
-                                  ELSE
-                                      COMPUTE  IDX9  =   I7   -  37
-                                      MOVE     WRK-S9
-                                              TO  D1301-YOSO(I6 IDX9)
+                             MOVE     SUM-YOSO(I3 I4)
+                                      TO  WRK-S9
+                             IF  I7   >   37
+                                 IF I7  =  49
+                                    COMPUTE  IDX9  =   I7   -  11
+                                     MOVE     WRK-S9
+                                          TO  D130-YOSO(14 IDX9)
+                                 ELSE
+                                    COMPUTE  IDX9  =   I7   -  37 
+                                     MOVE     WRK-S9
+                                          TO  D1301-YOSO(14 IDX9)
                                   END-IF
-      * 20080401 H20年4月改正対応END
-                              ELSE
-                                  MOVE     WRK-S9
-                                           TO  D130-YOSO(I6 I7)
-                              END-IF
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+                             ELSE
+                                 MOVE     WRK-S9
+                                          TO  D130-YOSO(14 I7)
+                             END-IF
                           END-IF
-                       END-IF
-               END-PERFORM 
-               ADD   1        TO       I3
+      *
+                      ELSE
+                         IF   I4  =  1
+                         OR ( I4               = 40 
+                          AND WRK-TJIHI-FLG(1) = ZERO )
+                         OR ( I4               = 41
+                          AND WRK-TJIHI-FLG(2) = ZERO )
+                         OR ( I4               = 42
+                          AND WRK-TJIHI-FLG(3) = ZERO )
+                         OR ( I4               = 43
+                          AND WRK-TJIHI-FLG(4) = ZERO )
+                         OR ( I4               = 44
+                          AND WRK-TJIHI-FLG(5) = ZERO )
+                         OR ( I4               = 45
+                          AND WRK-TJIHI-FLG(6) = ZERO )
+                         OR ( I4               = 46
+                          AND WRK-TJIHI-FLG(7) = ZERO )
+                         OR ( I4               = 47
+                          AND WRK-TJIHI-FLG(8) = ZERO )
+                         OR ( I4               = 48
+                          AND WRK-TJIHI-FLG(9) = ZERO )
+                         OR ( I4               = 49
+                          AND WRK-TJIHI-FLG(10) = ZERO )
+                             IF  I7   >   37
+                                 IF I7  =  49
+                                     COMPUTE  IDX9  =   I7   -  11
+                                     MOVE     SPACE
+                                             TO  D130-YOSO(I6 IDX9)
+                                 ELSE
+                                     COMPUTE  IDX9  =   I7   -  37
+                                     MOVE     SPACE
+                                             TO  D1301-YOSO(I6 IDX9)
+                                 END-IF
+                             ELSE
+                                 MOVE    SPACE
+                                      TO  D130-YOSO(I6 I7)
+                             END-IF
+      *
+                         ELSE
+                             MOVE     SUM-YOSO(I3 I4)
+                                      TO  WRK-S9
+                             IF  I7   >   37
+                                 IF I7  =  49
+                                     COMPUTE  IDX9  =   I7   -  11
+                                     MOVE     WRK-S9
+                                             TO  D130-YOSO(I6 IDX9)
+                                 ELSE
+                                     COMPUTE  IDX9  =   I7   -  37
+                                     MOVE     WRK-S9
+                                             TO  D1301-YOSO(I6 IDX9)
+                                 END-IF
+                             ELSE
+                                 MOVE     WRK-S9
+                                          TO  D130-YOSO(I6 I7)
+                             END-IF
+                         END-IF
+                      END-IF
               END-PERFORM 
+              ADD   1        TO       I3
+             END-PERFORM 
       *
+             PERFORM 340-PRINT-OUT-SEC
+             MOVE    14        TO     I5
+             INITIALIZE               D130-DATA
+             INITIALIZE               D1301-DATA
       *
-              PERFORM 340-PRINT-OUT-SEC
-              MOVE    14        TO     I5
-              INITIALIZE               D130-DATA
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-              INITIALIZE               D1301-DATA
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
-      *
-            END-PERFORM 
+           END-PERFORM 
       *
            .
        330-TERM-HEN-EXT.
@@ -3474,84 +2560,72 @@
       * 
        340-PRINT-OUT-SEC          SECTION.
       *
-      *       帳票ページ番号
-               ADD     1                   TO  CNT-PAGE
-               MOVE    CNT-PAGE            TO  WRK-PAGE
-               MOVE    WRK-PAGE            TO  D130-PAGE
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-               ADD     1                   TO  CNT-PAGE
-               MOVE    CNT-PAGE            TO  WRK-PAGE
-               MOVE    WRK-PAGE            TO  D1301-PAGE
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
+      *    帳票ページ番号
+           ADD     1                   TO  CNT-PAGE
+           MOVE    CNT-PAGE            TO  WRK-PAGE
+           MOVE    WRK-PAGE            TO  D130-PAGE
       *
-               INITIALIZE                  ORCSPRTAREA
-               MOVE    "INS"               TO  SPRT-MODE
-               MOVE    D100LNK-PRTKANRI-RENNUM
-                                           TO  SPRT-RENNUM
-               MOVE    D100LNK-PRTKANRI-TBL-KEY
-                                           TO  SPRT-TBL-KEY
-               MOVE    D100LNK-PRTKANRI-TBL-GROUP
-                                           TO  SPRT-TBL-GROUP
-               MOVE    D100LNK-PRTKANRI-SRYYM
-                                           TO  SPRT-SRYYM
-               MOVE    D100LNK-PRTKANRI-SKYYMD
-                                           TO  SPRT-SKYYMD
-               MOVE    D100LNK-PRTKANRI-SHELLID 
-                                           TO  SPRT-SHELLID
-               MOVE    D100LNK-PRTKANRI-SHORI-RENNUM
-                                           TO  SPRT-SHORI-RENNUM
-               MOVE    D100LNK-PRTKANRI-PRIORITY
-                                           TO  SPRT-PRIORITY
-      ***  20040922 MOTOHASI MONPEに変更
-      ***         MOVE   "A00000D130"             TO  SPRT-PRTID
-      * 20080401 H20年4月改正対応START tanaka
-      *         MOVE   "A00000D130.red"             TO  SPRT-PRTID
-               IF  D100LNK-YMD1  <  "20080401"
-                   MOVE   "A00000D130O.red"     TO  SPRT-PRTID
-               ELSE
-                   MOVE   "A00000D130N.red"     TO  SPRT-PRTID
-               END-IF
-      * 20080401 H20年4月改正対応END
-      ***  20040922 MOTOHASI MONPEに変更
+           ADD     1                   TO  CNT-PAGE
+           MOVE    CNT-PAGE            TO  WRK-PAGE
+           MOVE    WRK-PAGE            TO  D1301-PAGE
+      *
+           INITIALIZE                  ORCSPRTAREA
+           MOVE    "INS"               TO  SPRT-MODE
+           MOVE    D100LNK-PRTKANRI-RENNUM
+                                       TO  SPRT-RENNUM
+           MOVE    D100LNK-PRTKANRI-TBL-KEY
+                                       TO  SPRT-TBL-KEY
+           MOVE    D100LNK-PRTKANRI-TBL-GROUP
+                                       TO  SPRT-TBL-GROUP
+           MOVE    D100LNK-PRTKANRI-SRYYM
+                                       TO  SPRT-SRYYM
+           MOVE    D100LNK-PRTKANRI-SKYYMD
+                                       TO  SPRT-SKYYMD
+           MOVE    D100LNK-PRTKANRI-SHELLID 
+                                       TO  SPRT-SHELLID
+           MOVE    D100LNK-PRTKANRI-SHORI-RENNUM
+                                       TO  SPRT-SHORI-RENNUM
+           MOVE    D100LNK-PRTKANRI-PRIORITY
+                                       TO  SPRT-PRIORITY
+      *
+           IF  D100LNK-YMD1  <  "20080401"
+               MOVE   "A00000D130O.red"     TO  SPRT-PRTID
+           ELSE
+               MOVE   "A00000D130N.red"     TO  SPRT-PRTID
+           END-IF
+      *
+           MOVE    "基本台帳(入院・年齢別)"    TO  SPRT-TITLE
+           MOVE    D130                        TO  SPRT-PRTDATA
+           MOVE    D100LNK-PRTKANRI-TERMID     TO  SPRT-TERMID
+           MOVE    D100LNK-PRTKANRI-OPID       TO  SPRT-OPID
+           MOVE    D100LNK-PRTKANRI-PRTNM      TO  SPRT-PRTNM
+           CALL    "ORCSPRT"                   USING
+                                               ORCSPRTAREA
+                                               SPA-AREA
+      *
+           IF  SPRT-RETURN         =   ZERO
+               MOVE   "A00000D1301.red"            TO  SPRT-PRTID
                MOVE    "基本台帳(入院・年齢別)"    TO  SPRT-TITLE
-               MOVE    D130                    TO  SPRT-PRTDATA
-               MOVE    D100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-               MOVE    D100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-               MOVE    D100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-      ***  site-libを実行環境にする為コメントアウト
-      ***         MOVE    "1"          TO  SPRT-SITEKBN
-               CALL    "ORCSPRT"         USING
-                                         ORCSPRTAREA
-      * 20070913 消費税START t.tanaka
-                                         SPA-AREA
-      * 20070913 消費税END
+               MOVE    D1301                       TO  SPRT-PRTDATA
+               MOVE    D100LNK-PRTKANRI-TERMID     TO  SPRT-TERMID
+               MOVE    D100LNK-PRTKANRI-OPID       TO  SPRT-OPID
+               MOVE    D100LNK-PRTKANRI-PRTNM      TO  SPRT-PRTNM
+               CALL    "ORCSPRT"                   USING
+                                                   ORCSPRTAREA
+                                                   SPA-AREA
                IF  SPRT-RETURN         =   ZERO
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) start
-                   MOVE   "A00000D1301.red"            TO  SPRT-PRTID
-                   MOVE    "基本台帳(入院・年齢別)"    TO  SPRT-TITLE
-                   MOVE    D1301                   TO  SPRT-PRTDATA
-                   MOVE    D100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-                   MOVE    D100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-                   MOVE    D100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-                   CALL    "ORCSPRT"         USING
-                                             ORCSPRTAREA
-      * 20070913 消費税START t.tanaka
-                                         SPA-AREA
-      * 20070913 消費税END
-                   IF  SPRT-RETURN         =   ZERO
-                       CONTINUE
-                   ELSE
-                       MOVE    "印刷ＤＢに更新できませんでした"
-                                           TO  WRK-RECEERR
-                       PERFORM 500-ERR-HENSYU-SEC                 
-                   END-IF
-      *=== 自費、基本診療項目追加対応 By Takashima(2006/11/14) end
                    CONTINUE
                ELSE
                    MOVE    "印刷ＤＢに更新できませんでした"
                                        TO  WRK-RECEERR
-                   PERFORM 500-ERR-HENSYU-SEC                           
+                   PERFORM 500-ERR-HENSYU-SEC                 
                END-IF
+               CONTINUE
+           ELSE
+               MOVE    "印刷ＤＢに更新できませんでした"
+                                   TO  WRK-RECEERR
+               PERFORM 500-ERR-HENSYU-SEC                           
+           END-IF
       *
            .
        340-PRINT-OUT-EXT.
@@ -3575,9 +2649,7 @@
       *        ジョブ管理開始処理
                MOVE    "JBE"           TO  SJOBKANRI-MODE
                INITIALIZE                  JOBKANRI-REC
-      * 20070913 消費税START t.tanaka
-           MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      * 20070913 消費税END
+               MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
                MOVE    D100LNK-JOBID   TO  JOB-JOBID
                MOVE    D100LNK-SHELLID TO  JOB-SHELLID
                MOVE    WRK-RECEERR     TO  JOB-YOBI
@@ -3585,9 +2657,7 @@
                CALL    "ORCSJOB"       USING
                                        ORCSJOBKANRIAREA  
                                        JOBKANRI-REC
-      * 20070913 消費税START t.tanaka
                                          SPA-AREA
-      * 20070913 消費税END
            END-IF
       *
            MOVE    1                   TO  FLG-END     
@@ -3604,18 +2674,14 @@
       *    ステップ管理終了処理
            MOVE    "STE"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      * 20070913 消費税START t.tanaka
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      * 20070913 消費税END
            MOVE    D100LNK-JOBID   TO  JOB-JOBID
            MOVE    D100LNK-SHELLID TO  JOB-SHELLID
            MOVE    CNT-PAGE        TO  JOB-UPDCNT
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
-      * 20070913 消費税START t.tanaka
                                         SPA-AREA
-      * 20070913 消費税END
       *
            PERFORM 900-DBDISCONNECT-SEC
       *
@@ -3663,54 +2729,24 @@
       *
            INITIALIZE                 SYUNOU-REC
       *
-      ***  2005/04/19  MOTO  日レセ Ver2.5.0 KEY変更
-      * 20070913 消費税START t.tanaka
-      *     MOVE    D100LNK-HOSPID   TO   SYU-HOSPID
            MOVE    D100LNK-HOSPNUM   TO   SYU-HOSPNUM
-      * 20070913 消費税END
-           MOVE    "1"              TO   SYU-NYUGAIKBN
-      ****2006/03/27 @@@@-BRAND START
-      * 20071024 入金額の重複を修正START T.Tanaka
-          MOVE    "00000000"       TO   SYU-SRYYMD
-      *     MOVE    D100LNK-YMD1     TO   SYU-SRYYMD
-      * 20071024 入金額の重複を修正END 
-      *    MOVE    "99999999"       TO   SYU-UPSRYYMD
-      *--- 2009/12/24 CHANGE START -------------------------------------
-      *     MOVE    D100LNK-YMD2     TO   SYU-UPSRYYMD
+           MOVE    "1"               TO   SYU-NYUGAIKBN
+           MOVE    "00000000"        TO   SYU-SRYYMD
            MOVE    "99999999"       TO   SYU-UPSRYYMD
-      *--- 2009/12/24 CHANGE START -------------------------------------
-      ****2006/03/27 @@@@-BRAND END
-      ***  2005/04/19  MOTO  日レセ Ver2.5.0 KEY変更
       *
            MOVE    SYUNOU-REC     TO  MCPDATA-REC
            MOVE    "DBSELECT"     TO  MCP-FUNC
-      ***  2005/04/19  MOTO  日レセ Ver2.5.0 KEY変更
-      ***  MOVE    "SYUNOU-ALL"   TO  ORC-DBPATH
-      ***  CALL    "ORCMCPSUB"          USING
-      ***                               MCPAREA
-      ***                               ORCMCPAREA
-      ***                               MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYUNOU-ST-KEY1    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_syunou"             TO  MCP-TABLE
            MOVE    "st_key1"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
-      ***  2005/04/19  MOTO  日レセ Ver2.5.0 KEY変更
-          IF      MCP-RC              =   ZERO
+      *
+           IF      MCP-RC              =   ZERO
                PERFORM 910-DBFETCH-SEC
            ELSE
                MOVE    1            TO  FLG-SYUNOU
-      ***         MOVE    1            TO   FLG-END
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 910-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF        
            .
        910-DBSELECT-EXT.
@@ -3722,34 +2758,18 @@
        910-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"        TO  MCP-FUNC
-      ***  2005/04/19  MOTO  日レセ Ver2.5.0 KEY変更
-      ***     MOVE    "SYUNOU-ALL"     TO  ORC-DBPATH
-      ***     CALL    "ORCMCPSUB"          USING
-      ***                                  MCPAREA
-      ***                                  ORCMCPAREA
-      ***                                  MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYUNOU-ST-KEY1    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_syunou"             TO  MCP-TABLE
            MOVE    "st_key1"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
-      ***  2005/04/19  MOTO  日レセ Ver2.5.0 KEY変更
+      *
            IF      MCP-RC              =   ZERO
                MOVE    ZERO         TO  FLG-SYUNOU
                MOVE    MCPDATA-REC  TO  SYUNOU-REC
            ELSE
                MOVE    1            TO  FLG-SYUNOU
-      ***         MOVE    1           TO  FLG-END
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 910-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF  
            .
        910-DBFETCH-EXT.
@@ -3760,29 +2780,13 @@
       *****************************************************************
        910-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"        TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"  TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      ***  2005/04/19  MOTO  日レセ Ver2.5.0 KEY変更
-      ***     MOVE    "SYUNOU-ALL"     TO  ORC-DBPATH
-      ***     CALL    "ORCMCPSUB"          USING
-      ***                                  MCPAREA
-      ***                                  ORCMCPAREA
-      ***                                  MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYUNOU-ST-KEY1    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_syunou"             TO  MCP-TABLE
            MOVE    "st_key1"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
-      ***  2005/04/19  MOTO  日レセ Ver2.5.0 KEY変更
            .
        910-DBCLOSE-EXT.
            EXIT.
@@ -3792,34 +2796,22 @@
       *****************************************************************
        800-SYSKANRI-READ-SEC           SECTION.
       *
-      ***     MOVE    WRK-SYSYMD          TO  ORC-DBYMD
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY10    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_syskanri"             TO  MCP-TABLE
            MOVE    "key10"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY10    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_syskanri"             TO  MCP-TABLE
                MOVE    "key10"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF      MCP-RC              =   ZERO
                    MOVE    ZERO            TO  FLG-SYSKANRI
                ELSE
@@ -3829,22 +2821,13 @@
                MOVE    1               TO  FLG-SYSKANRI
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY10    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_syskanri"             TO  MCP-TABLE
            MOVE    "key10"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        800-SYSKANRI-READ-EXT.
@@ -3855,34 +2838,22 @@
       *****************************************************************
        810-SYSKANRI-READ-SEC           SECTION.
       *
-      ***     MOVE    WRK-SYSYMD          TO  ORC-DBYMD
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY10    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_syskanri"             TO  MCP-TABLE
            MOVE    "key10"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY10    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_syskanri"             TO  MCP-TABLE
                MOVE    "key10"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF      MCP-RC              =   ZERO
                    MOVE    ZERO            TO  FLG-SYSKANRI2
                ELSE
@@ -3892,22 +2863,13 @@
                MOVE    1               TO  FLG-SYSKANRI2
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SYSKANRI-KEY10    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_syskanri"             TO  MCP-TABLE
            MOVE    "key10"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        810-SYSKANRI-READ-EXT.
@@ -3920,32 +2882,21 @@
       *
            MOVE    PTINF-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTINF-KEY  TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_ptinf"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"            TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTINF-KEY  TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_ptinf"             TO  MCP-TABLE
                MOVE    "key"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  PTINF-REC
                    MOVE    ZERO                TO  FLG-PTINF
@@ -3958,22 +2909,13 @@
                INITIALIZE                  PTINF-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"            TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTINF-KEY  TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_ptinf"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        900-PTINF-READ-EXT.
@@ -3986,32 +2928,21 @@
       *
            MOVE    PTHKNINF-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTHKNINF-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_pthkninf"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTHKNINF-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_pthkninf"             TO  MCP-TABLE
                MOVE    "key"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  PTHKNINF-REC
                    MOVE    ZERO                TO  FLG-PTHKNINF
@@ -4024,22 +2955,13 @@
                INITIALIZE                  PTHKNINF-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTHKNINF-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_pthkninf"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        900-PTHKNINF-READ-EXT.
@@ -4052,32 +2974,21 @@
       *
            MOVE    PTRSIINF-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTRSIINF-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_ptrsiinf"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"       TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTRSIINF-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_ptrsiinf"             TO  MCP-TABLE
                MOVE    "key"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF      MCP-RC          =   ZERO
                    MOVE    MCPDATA-REC TO  PTRSIINF-REC
                    MOVE    ZERO        TO  FLG-PTRSIINF
@@ -4090,22 +3001,13 @@
                INITIALIZE                  PTRSIINF-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTRSIINF-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_ptrsiinf"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        900-PTRSIINF-READ-EXT.
@@ -4121,34 +3023,21 @@
       *
            MOVE    TNS-TENSU-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      ***     MOVE    D100LNK-PRTKANRI-SKYYMD
-      ***                                 TO  ORC-DBYMD
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-TENSU-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_tensu"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-TENSU-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_tensu"             TO  MCP-TABLE
                MOVE    "key"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  TNS-TENSU-REC
                    MOVE    ZERO                TO  FLG-TENSU
@@ -4160,23 +3049,14 @@
                INITIALIZE                  TNS-TENSU-REC
                MOVE    1                   TO  FLG-TENSU
            END-IF
-      
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
+      *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-TENSU-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_tensu"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
            .
        910-TENSU-READ-EXT.
            EXIT.
@@ -4186,42 +3066,28 @@
        900-JYURRK-READ-SEC         SECTION.
       *
            INITIALIZE                 JYURRK-REC
-      * 20070913 消費税START t.tanaka
-      *     MOVE    SYU-HOSPID     TO  JYURRK-HOSPID  
            MOVE    SYU-HOSPNUM     TO  JYURRK-HOSPNUM  
-      * 20070913 消費税END
            MOVE    SYU-PTID       TO  JYURRK-PTID  
            MOVE    SYU-NYUGAIKBN  TO  JYURRK-NYUGAIKBN  
            MOVE    SYU-DENPNUM    TO  JYURRK-DENPNUM  
       *
            MOVE    JYURRK-REC     TO  MCPDATA-REC
            MOVE    "DBSELECT"     TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY6    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_jyurrk"             TO  MCP-TABLE
            MOVE    "key6"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF  MCP-RC             =   ZERO
                MOVE    "DBFETCH"      TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY6    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_jyurrk"             TO  MCP-TABLE
                MOVE    "key6"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF  MCP-RC             =   ZERO
                    MOVE    MCPDATA-REC  TO  JYURRK-REC
                    MOVE    ZERO         TO  FLG-JYURRK
@@ -4234,22 +3100,13 @@
                INITIALIZE                   JYURRK-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY6    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_jyurrk"             TO  MCP-TABLE
            MOVE    "key6"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        900-JYURRK-READ-EXT.
@@ -4261,10 +3118,7 @@
        900-JYURRK-SELECT-SEC              SECTION.
       *
            INITIALIZE                  JYURRK-REC
-      * 20070913 消費税START t.tanaka
-      *     MOVE    SYU-HOSPID      TO  JYURRK-HOSPID  
            MOVE    SYU-HOSPNUM      TO  JYURRK-HOSPNUM  
-      * 20070913 消費税END
            MOVE    SYU-PTID        TO  JYURRK-PTID  
            MOVE    SYU-NYUGAIKBN   TO  JYURRK-NYUGAIKBN  
            MOVE    "00000000"      TO  JYURRK-SRYYMD  
@@ -4272,25 +3126,17 @@
       *
            MOVE    JYURRK-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"      TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY14    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_jyurrk"             TO  MCP-TABLE
            MOVE    "key14"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
           IF      MCP-RC           =    ZERO
                PERFORM 900-JYURRK-FETCH-SEC
            ELSE
                MOVE    1           TO   FLG-JYURRK
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 900-JYURRK-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        900-JYURRK-SELECT-EXT.
@@ -4302,26 +3148,18 @@
        900-JYURRK-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"        TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY14    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_jyurrk"             TO  MCP-TABLE
            MOVE    "key14"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    ZERO          TO  FLG-JYURRK
                MOVE    MCPDATA-REC   TO  JYURRK-REC
            ELSE
                MOVE    1             TO  FLG-JYURRK
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 900-JYURRK-CLOSE-EXT
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        900-JYURRK-FETCH-EXT.
@@ -4332,22 +3170,13 @@
       *****************************************************************
        900-JYURRK-CLOSE-SEC                SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"        TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"  TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY14    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_jyurrk"             TO  MCP-TABLE
            MOVE    "key14"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
            .
        900-JYURRK-CLOSE-EXT.
            EXIT.
@@ -4359,58 +3188,42 @@
       *
            MOVE    PTNYUINRRK-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *    MOVE    PATH-TBL-PTNYUINRRK-KEY26    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_ptnyuinrrk"             TO  MCP-TABLE
            MOVE    "key26"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC           =   ZERO
                PERFORM 900-NYURRK-FETCH-SEC
            ELSE
                MOVE    1           TO    FLG-PTNYUINRRK
                MOVE    1           TO    FLG-END
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 900-NYURRK-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        900-NYURRK-SELECT-EXT.
            EXIT.
       *
       *****************************************************************
-      *     入院履歴情報検索
+      *    入院履歴情報検索
       *****************************************************************
        900-NYURRK-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *    MOVE    PATH-TBL-PTNYUINRRK-KEY26    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_ptnyuinrrk"             TO  MCP-TABLE
            MOVE    "key26"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-PTNYUINRRK
                MOVE    MCPDATA-REC  TO  PTNYUINRRK-REC
            ELSE
                MOVE    1            TO  FLG-PTNYUINRRK
                MOVE    1            TO  FLG-END
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 900-NYURRK-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        900-NYURRK-FETCH-EXT.
@@ -4421,22 +3234,13 @@
       *****************************************************************
        900-NYURRK-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE  "DBCLOSE"          TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *    MOVE    PATH-TBL-PTNYUINRRK-KEY26    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_ptnyuinrrk"             TO  MCP-TABLE
            MOVE    "key26"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
            .
        900-NYURRK-CLOSE-EXT.
            EXIT.
@@ -4448,26 +3252,18 @@
       *
            MOVE    PTNYUINRRK-M-REC    TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTNYUINRRK-KEY5    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_ptnyuinrrk"             TO  MCP-TABLE
            MOVE    "key5"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC           =   ZERO
                PERFORM 900-NYURRK-M-FETCH-SEC
            ELSE
                MOVE    1           TO    FLG-PTNYUINRRK-M
                MOVE    1           TO    FLG-END
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 900-M-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        900-NYURRK-M-SELECT-EXT.
@@ -4479,27 +3275,19 @@
        900-NYURRK-M-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTNYUINRRK-KEY5    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_ptnyuinrrk"             TO  MCP-TABLE
            MOVE    "key5"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-PTNYUINRRK-M
                MOVE    MCPDATA-REC  TO  PTNYUINRRK-M-REC
            ELSE
                MOVE    1            TO  FLG-PTNYUINRRK-M
                MOVE    1            TO  FLG-END
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 900-M-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        900-NYURRK-M-FETCH-EXT.
@@ -4510,22 +3298,13 @@
       *****************************************************************
         900-M-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *      MOVE  "DBCLOSE"          TO  MCP-FUNC
-            MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-PTNYUINRRK-KEY5    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
+           MOVE    "DBCLOSECURSOR"    TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"             TO  MCP-TABLE
            MOVE    "key5"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
             .
         900-M-DBCLOSE-EXT.
             EXIT.
@@ -4537,25 +3316,17 @@
       *
            MOVE    SRYACT-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"      TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACT-KEY7    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_sryact"             TO  MCP-TABLE
            MOVE    "key7"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
-          IF      MCP-RC           =    ZERO
+      *
+           IF      MCP-RC           =    ZERO
                PERFORM 911-SRY-FETCH-SEC
            ELSE
                MOVE    1           TO   FLG-SRYACT
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 911-SRY-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        911-SRY-SELECT-EXT.
@@ -4567,26 +3338,18 @@
        911-SRY-FETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"        TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACT-KEY7    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_sryact"             TO  MCP-TABLE
            MOVE    "key7"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    ZERO          TO  FLG-SRYACT
                MOVE    MCPDATA-REC   TO  SRYACT-REC
            ELSE
                MOVE    1             TO  FLG-SRYACT
-      *=== sarge対応 DEL By Takashima(2006/09/16) start
-      *         PERFORM 911-SRY-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/16) end
            END-IF
            .
        911-SRY-FETCH-EXT.
@@ -4597,22 +3360,13 @@
       *****************************************************************
        911-SRY-CLOSE-SEC                SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"        TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"  TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACT-KEY7    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_sryact"             TO  MCP-TABLE
            MOVE    "key7"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
            .
        911-SRY-CLOSE-EXT.
            EXIT.
@@ -4624,32 +3378,21 @@
       *
            MOVE    HKNCOMBI-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-HKNCOMBI-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_hkncombi"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-HKNCOMBI-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_hkncombi"             TO  MCP-TABLE
                MOVE    "key"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  HKNCOMBI-REC
                    MOVE    ZERO                TO  FLG-HKNCOMBI
@@ -4662,22 +3405,13 @@
                INITIALIZE                  HKNCOMBI-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-HKNCOMBI-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_hkncombi"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        900-HKNCOMBI-READ-EXT.
@@ -4689,45 +3423,28 @@
        900-HKNNUM-READ-SEC                 SECTION.
       *
            INITIALIZE                 HKNNUM-REC
-      * 20070913 消費税START t.tanaka
-      *     MOVE    SYU-HOSPID     TO  HKN-HOSPID  
            MOVE    SYU-HOSPNUM     TO  HKN-HOSPNUM  
-      * 20070913 消費税END
            MOVE    SYU-SYUHKNNUM  TO  HKN-HKNNUM  
-      * 20040325 編集 Y.Takahashi
-      *     MOVE    D100LNK-YMD2   TO  HKN-TEKSTYMD
            MOVE    WRK-LASTYMD    TO  HKN-TEKSTYMD
-      */20040325 編集
            MOVE    ALL "9"        TO  HKN-TEKEDYMD
       *
            MOVE    HKNNUM-REC     TO  MCPDATA-REC
            MOVE    "DBSELECT"     TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-HKNNUM-KEY5    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_hknnum"             TO  MCP-TABLE
            MOVE    "key5"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF  MCP-RC             =   ZERO
                MOVE    "DBFETCH"       TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-HKNNUM-KEY5    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_hknnum"             TO  MCP-TABLE
            MOVE    "key5"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF      MCP-RC          =  ZERO
                    MOVE    MCPDATA-REC TO  HKNNUM-REC
                    MOVE    ZERO        TO  FLG-HKNNUM
@@ -4738,22 +3455,13 @@
                MOVE    1               TO  FLG-HKNNUM
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-HKNNUM-KEY5    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_hknnum"             TO  MCP-TABLE
            MOVE    "key5"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        900-HKNNUM-READ-EXT.
@@ -4766,33 +3474,22 @@
       *
            MOVE    SRYACCT-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"       TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACCT-KEY3    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_sryacct"             TO  MCP-TABLE
            MOVE    "key3"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"             TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACCT-KEY3    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_sryacct"             TO  MCP-TABLE
                MOVE    "key3"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
-           IF      MCP-RC              =   ZERO
+               IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC   TO  SRYACCT-REC
                    MOVE    ZERO          TO  FLG-SRYACCT
                ELSE
@@ -4804,60 +3501,40 @@
                INITIALIZE                  SRYACCT-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACCT-KEY3    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_sryacct"             TO  MCP-TABLE
            MOVE    "key3"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        900-SRYACCT-READ-EXT.
            EXIT.
       *
       *****************************************************************
-      *    受診履歴情報読込処理                   20040401 Y.Takahashi
+      *    受診履歴情報読込処理
       *****************************************************************
        900-JYURRK-DRCD-READ-SEC         SECTION.
       *
            MOVE    JYURRK-REC     TO  MCPDATA-REC
            MOVE    "DBSELECT"     TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY19    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_jyurrk"             TO  MCP-TABLE
            MOVE    "key19"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF  MCP-RC             =   ZERO
                MOVE    "DBFETCH"      TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY19    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
                MOVE    "tbl_jyurrk"             TO  MCP-TABLE
                MOVE    "key19"                  TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
                IF  MCP-RC             =   ZERO
                    MOVE    MCPDATA-REC  TO  JYURRK-REC
                    MOVE    ZERO         TO  FLG-JYURRK
@@ -4870,46 +3547,32 @@
                INITIALIZE                   JYURRK-REC
            END-IF
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-JYURRK-KEY19    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_jyurrk"             TO  MCP-TABLE
            MOVE    "key19"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        900-JYURRK-DRCD-READ-EXT.
            EXIT.
       *
       *****************************************************************
-      *    診療会計情報  検索                    20040401 Y.Takahashi
+      *    診療会計情報  検索
       *****************************************************************
        900-SRYACCT-SELECT-SEC         SECTION.
       *
            MOVE    SRYACCT-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"       TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACCT-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_sryacct"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    ZERO         TO  FLG-SRYACCT
            ELSE
@@ -4921,24 +3584,19 @@
            EXIT.
       *
       *****************************************************************
-      *    診療会計情報FETCH                      20040401 Y.Takahashi
+      *    診療会計情報FETCH
       *****************************************************************
        900-SRYACCT-FETCH-SEC         SECTION.
       *
            MOVE    SRYACCT-REC     TO  MCPDATA-REC
            MOVE    "DBFETCH"       TO  MCP-FUNC
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACCT-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_sryacct"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
+      *
            IF      MCP-RC              =   ZERO
                MOVE    MCPDATA-REC   TO  SRYACCT-REC
                MOVE    ZERO                    TO  FLG-SRYACCT
@@ -4951,26 +3609,17 @@
            EXIT.
       *
       *****************************************************************
-      *    診療会計情報CLOSE                      20040401 Y.Takahashi
+      *    診療会計情報CLOSE
       *****************************************************************
        900-SRYACCT-CLOSE-SEC         SECTION.
       *
-      *=== sarge対応 UP By Takashima(2006/08/17) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== sarge対応 UP By Takashima(2006/08/17) end
-      * 20070913 4.0対応START t.tanaka
-      *     MOVE    PATH-TBL-SRYACCT-KEY    TO  MCP-PATH
-      *     CALL    "MCPSUB"             USING
            MOVE    "tbl_sryacct"             TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 4.0対応END
                                           MCPAREA
                                           MCPDATA-REC
-      * 20070913 4.0対応START t.tanaka
                                         SPA-AREA
-      * 20070913 4.0対応END
       *
            .
        900-SRYACCT-CLOSE-EXT.
@@ -4981,35 +3630,23 @@
       *****************************************************************
        100-DBOPEN-SEC                SECTION.
       *
-           MOVE    "DBOPEN"            TO  MCP-FUNC.
-      * 20070913 消費税START t.tanaka
-      *     CALL    "MCPSUB"             USING
+           MOVE    "DBOPEN"             TO  MCP-FUNC.
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 消費税END
                                         MCPAREA
-      * 20070913 消費税START t.tanaka
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      * 20070913 消費税END
       *
-           MOVE    "DBSTART"           TO  MCP-FUNC.
-      * 20070913 消費税START t.tanaka
-      *     CALL    "MCPSUB"             USING
+           MOVE    "DBSTART"            TO  MCP-FUNC.
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 消費税END
                                         MCPAREA
-      * 20070913 消費税START t.tanaka
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      * 20070913 消費税END
            .
        100-DBOPEN-EXT.
            EXIT.
@@ -5019,35 +3656,23 @@
       *****************************************************************
        900-DBDISCONNECT-SEC            SECTION.
       *
-           MOVE    "DBCOMMIT"          TO  MCP-FUNC.
-      * 20070913 消費税START t.tanaka
-      *     CALL    "MCPSUB"             USING
+           MOVE    "DBCOMMIT"           TO  MCP-FUNC.
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 消費税END
                                         MCPAREA
-      * 20070913 消費税START t.tanaka
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      * 20070913 消費税END
       *
-           MOVE    "DBDISCONNECT"      TO  MCP-FUNC.
-      * 20070913 消費税START t.tanaka
-      *     CALL    "MCPSUB"             USING
+           MOVE    "DBDISCONNECT"       TO  MCP-FUNC.
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      * 20070913 消費税END
                                         MCPAREA
-      * 20070913 消費税START t.tanaka
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      * 20070913 消費税END
            .
        900-DBCLOSE-EXT.
            EXIT.
