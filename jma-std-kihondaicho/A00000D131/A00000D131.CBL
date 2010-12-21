@@ -28,6 +28,8 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-田中    10/12/13  コメント履歴削除
+      *              @@@@-門間    10/12/15  初診、再診、その他の判定条件を変更
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -132,6 +134,10 @@
            03  FLG-DATEKBN2        PIC 9(01).
            03  FLG-SRYKARRK        PIC 9(01).
            03  FLG-JIHI            PIC 9(01).
+      *--- 20101215 ADD START ------------------------------------------
+           03  FLG-ACCTEND         PIC 9(01).
+           03  FLG-JYURRK3         PIC 9(01).
+      *--- 20101215 ADD END   ------------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -1187,66 +1193,62 @@
            PERFORM  910-DBSELECT-SEC
            PERFORM  UNTIL      FLG-SYUNOU  = 1
       *
-            INITIALIZE         PTINF-REC
-            MOVE SYU-HOSPNUM TO PTINF-HOSPNUM
-            MOVE SYU-PTID   TO PTINF-PTID
-            PERFORM 900-PTINF-READ-SEC
+           INITIALIZE         PTINF-REC
+           MOVE SYU-HOSPNUM TO PTINF-HOSPNUM
+           MOVE SYU-PTID   TO PTINF-PTID
+           PERFORM 900-PTINF-READ-SEC
       *
-      *   集計対象年月のデータであるかをチェックする。
-            IF      SYU-SRYYMD             >=  D100LNK-YMD1
-              AND   SYU-SRYYMD             <=  D100LNK-YMD2
-              AND   SYU-HOSPNUM             =  D100LNK-HOSPNUM
-              AND   SYU-CREATEKBN       NOT =  "3"
-              AND   SYU-DENPJTIKBN      NOT =  "3"
-              AND   SYU-NYUGAIKBN           =  "2"
-              AND ((WRK-SEL-SRYKACD         =  SPACE)
-               OR  (WRK-SEL-SRYKACD     NOT =  SPACE
-              AND   SYU-SRYKA               =  WRK-SEL-SRYKACD))
-              AND ((WRK-SEL-DRCD            =  SPACE)
-               OR  (WRK-SEL-DRCD        NOT =  SPACE
-              AND   SYU-DRCD                =  WRK-SEL-DRCD))
-              AND   FLG-PTINF               =  ZERO
-              AND   PTINF-TSTPTNUMKBN   NOT =  "1"
-      *    伝票作成区分 = 3(入院レセプト用ダミー)は対象外データとして取り扱う
-      *    伝票状態区分 = 3(請求取消)は対象外データとして取り扱う
-      *    患者情報にレコードが存在しないデータは抽出しない。
-      *    テスト患者番号区分 = 1(テスト患者)は対象外データとして取り扱う
+      *    集計対象年月のデータであるかをチェックする。
+             IF      SYU-SRYYMD             >=  D100LNK-YMD1
+               AND   SYU-SRYYMD             <=  D100LNK-YMD2
+               AND   SYU-HOSPNUM             =  D100LNK-HOSPNUM
+               AND   SYU-CREATEKBN       NOT =  "3"
+               AND   SYU-DENPJTIKBN      NOT =  "3"
+               AND   SYU-NYUGAIKBN           =  "2"
+               AND ((WRK-SEL-SRYKACD         =  SPACE)
+                OR  (WRK-SEL-SRYKACD     NOT =  SPACE
+               AND   SYU-SRYKA               =  WRK-SEL-SRYKACD))
+               AND ((WRK-SEL-DRCD            =  SPACE)
+                OR  (WRK-SEL-DRCD        NOT =  SPACE
+               AND   SYU-DRCD                =  WRK-SEL-DRCD))
+               AND   FLG-PTINF               =  ZERO
+               AND   PTINF-TSTPTNUMKBN   NOT =  "1"
       *
-               MOVE  PTINF-HOME-POST TO  WRK-POST
-               PERFORM  320-POST-GROUPING-SEC
-               IF I3  <     SUM-TIKUMAX
-                  IF  FLG-GET = ZERO
-                       MOVE   1   TO   FLG-GET
-                  END-IF
-      *
-                  PERFORM 320-SYUNOU-CNT-SUB-SEC
-               END-IF
-            ELSE
-               IF     SYU-SRYYMD              <  WRK-STARTYMD
-                AND   SYU-HOSPNUM              =  D100LNK-HOSPNUM
-                AND   SYU-CREATEKBN       NOT =  "3"
-                AND   SYU-DENPJTIKBN      NOT =  "3"
-                AND   SYU-NYUGAIKBN           =  "2"
-                AND ((WRK-SEL-SRYKACD         =  SPACE)
-                 OR  (WRK-SEL-SRYKACD     NOT =  SPACE
-                AND   SYU-SRYKA               =  WRK-SEL-SRYKACD))
-                AND ((WRK-SEL-DRCD            =  SPACE)
-                 OR  (WRK-SEL-DRCD        NOT =  SPACE
-                AND   SYU-DRCD                =  WRK-SEL-DRCD))
-                AND   FLG-PTINF               =  ZERO
-                AND   PTINF-TSTPTNUMKBN   NOT =  "1"
-      *    範囲指定期間前未収金の集計
-                   MOVE  PTINF-HOME-POST  TO  WRK-POST
-                   PERFORM  320-POST-GROUPING-SEC
-                   IF I3  <     SUM-TIKUMAX
-                       COMPUTE  WRK-MONEY    =
-                                SYU-SKYMONEY -  SYU-NYUKIN-TOTAL
-                       ADD   WRK-MONEY   TO  SUM-BF-MISYU(I3)
-                    PERFORM 320-SYUMEI-CNT-SUB-SEC
+                MOVE  PTINF-HOME-POST TO  WRK-POST
+                PERFORM  320-POST-GROUPING-SEC
+                IF I3  <     SUM-TIKUMAX
+                   IF  FLG-GET = ZERO
+                        MOVE   1   TO   FLG-GET
                    END-IF
-               END-IF
-            END-IF
-            PERFORM 910-DBFETCH-SEC
+      *
+                   PERFORM 320-SYUNOU-CNT-SUB-SEC
+                END-IF
+             ELSE
+                IF     SYU-SRYYMD              <  WRK-STARTYMD
+                 AND   SYU-HOSPNUM              =  D100LNK-HOSPNUM
+                 AND   SYU-CREATEKBN       NOT =  "3"
+                 AND   SYU-DENPJTIKBN      NOT =  "3"
+                 AND   SYU-NYUGAIKBN           =  "2"
+                 AND ((WRK-SEL-SRYKACD         =  SPACE)
+                  OR  (WRK-SEL-SRYKACD     NOT =  SPACE
+                 AND   SYU-SRYKA               =  WRK-SEL-SRYKACD))
+                 AND ((WRK-SEL-DRCD            =  SPACE)
+                  OR  (WRK-SEL-DRCD        NOT =  SPACE
+                 AND   SYU-DRCD                =  WRK-SEL-DRCD))
+                 AND   FLG-PTINF               =  ZERO
+                 AND   PTINF-TSTPTNUMKBN   NOT =  "1"
+      *    範囲指定期間前未収金の集計
+                    MOVE  PTINF-HOME-POST  TO  WRK-POST
+                    PERFORM  320-POST-GROUPING-SEC
+                    IF I3  <     SUM-TIKUMAX
+                        COMPUTE  WRK-MONEY    =
+                                 SYU-SKYMONEY -  SYU-NYUKIN-TOTAL
+                        ADD   WRK-MONEY   TO  SUM-BF-MISYU(I3)
+                     PERFORM 320-SYUMEI-CNT-SUB-SEC
+                    END-IF
+                END-IF
+             END-IF
+             PERFORM 910-DBFETCH-SEC
            END-PERFORM
            PERFORM 910-DBCLOSE-SEC
       *
@@ -2136,27 +2138,74 @@
              MOVE    JYURRK-PTID         TO  ACCT-PTID
              MOVE    JYURRK-SRYKA        TO  ACCT-SRYKA
              MOVE    JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
-             MOVE    "11"                TO  ACCT-SRYKBN
-      *    診療会計情報SELECT(KEY=3)
-             MOVE    SRYACCT-REC       TO  MCPDATA-REC
-             MOVE    "DBSELECT"        TO  MCP-FUNC
-             MOVE    "tbl_sryacct"        TO   MCP-TABLE
-             MOVE    "key3"               TO   MCP-PATHNAME
-             CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
+      *--- 20101215 DELETE START ---------------------------------------
+      *      MOVE "11"                    TO  ACCT-SRYKBN
+      *--- 20101215 DELETE END   ---------------------------------------
+             MOVE    SRYACCT-REC         TO  MCPDATA-REC
+             MOVE    "DBSELECT"          TO  MCP-FUNC
+             MOVE    "tbl_sryacct"       TO   MCP-TABLE
+      *--- 20101215 CHANGE START ---------------------------------------
+      *       MOVE    "key3"              TO   MCP-PATHNAME
+             MOVE    "key2"              TO   MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
              IF   MCP-RC  =  ZERO
                MOVE    "DBFETCH"        TO   MCP-FUNC
                MOVE    "tbl_sryacct"    TO   MCP-TABLE
-               MOVE    "key3"           TO   MCP-PATHNAME
+      *--- 20101215 CHANGE START ---------------------------------------
+      *         MOVE    "key3"           TO   MCP-PATHNAME
+               MOVE    "key2"           TO   MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
                CALL    "ORCDBMAIN"      USING
                                         MCPAREA
                                         MCPDATA-REC
-                                       SPA-AREA
+                                        SPA-AREA
                IF    MCP-RC         =   ZERO
                  MOVE  MCPDATA-REC  TO  SRYACCT-REC
                  MOVE  ZERO         TO  FLG-SRYACCT
+      *--- 20101215 ADD START ------------------------------------------
+      *    同月に   初診が2回目以降の時のデータを取得
+                 INITIALIZE  FLG-ACCTEND
+                 PERFORM  UNTIL  FLG-ACCTEND  =  1
+                   IF  JYURRK-ZAINUM(1)       =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(2)   =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(3)   =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(4)   =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(5)   =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(6)   =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(7)   =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(8)   =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(9)   =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(10)  =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(11)  =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(12)  =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(13)  =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(14)  =  ACCT-ZAINUM
+                       OR  JYURRK-ZAINUM(15)  =  ACCT-ZAINUM
+                     MOVE    MCPDATA-REC       TO   SRYACCT-REC
+                     MOVE    ZERO              TO   FLG-SRYACCT
+                     MOVE    1                 TO   FLG-ACCTEND
+                   ELSE
+                     MOVE    "DBFETCH"         TO   MCP-FUNC
+                     MOVE    "tbl_sryacct"     TO   MCP-TABLE
+                     MOVE    "key2"            TO   MCP-PATHNAME
+                     CALL    "ORCDBMAIN"       USING
+                                               MCPAREA
+                                               MCPDATA-REC
+                                               SPA-AREA
+                     IF   MCP-RC  =  ZERO
+                       MOVE    MCPDATA-REC     TO   SRYACCT-REC
+                       MOVE    ZERO            TO   FLG-SRYACCT
+                     ELSE
+                       MOVE    1               TO   FLG-ACCTEND
+                     END-IF
+                   END-IF
+                 END-PERFORM
+      *--- 20101215 ADD END   ------------------------------------------
                ELSE
                  MOVE  1            TO  FLG-SRYACCT
                  INITIALIZE             SRYACCT-REC
@@ -2165,49 +2214,60 @@
                MOVE  1            TO  FLG-SRYACCT
                INITIALIZE             SRYACCT-REC
              END-IF
-      *    初診データ探索処理
-             MOVE    ZERO    TO    FLG-INPUT
-             PERFORM   UNTIL   FLG-SRYACCT  =  1
-               IF  ACCT-DAY(1 IDX7)   >   ZERO
-      *    初診データが見つかったら入力フラグをオン
-                 MOVE  1   TO   FLG-INPUT
-               END-IF
-      *    診療会計情報FETCH
-               MOVE    SRYACCT-REC     TO  MCPDATA-REC
-               MOVE    "DBFETCH"       TO  MCP-FUNC
-               MOVE    "tbl_sryacct"        TO  MCP-TABLE
-               MOVE    "key3"             TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"     USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                        SPA-AREA
-               IF     MCP-RC     =   ZERO
-                  MOVE   MCPDATA-REC   TO   SRYACCT-REC
-                  MOVE   ZERO          TO   FLG-SRYACCT
-               ELSE
-                  MOVE   1             TO   FLG-SRYACCT
-                  INITIALIZE                SRYACCT-REC
-               END-IF
-             END-PERFORM
+      *--- 20101215 DELETE START ---------------------------------------
+      **    初診データ探索処理
+      *       MOVE    ZERO    TO    FLG-INPUT
+      *       PERFORM   UNTIL   FLG-SRYACCT  =  1
+      *         IF  ACCT-DAY(1 IDX7)   >   ZERO
+      **    初診データが見つかったら入力フラグをオン
+      *           MOVE  1   TO   FLG-INPUT
+      *         END-IF
+      **    診療会計情報FETCH
+      *         MOVE    SRYACCT-REC     TO  MCPDATA-REC
+      *         MOVE    "DBFETCH"       TO  MCP-FUNC
+      *         MOVE    "tbl_sryacct"        TO  MCP-TABLE
+      *         MOVE    "key3"             TO  MCP-PATHNAME
+      *         CALL    "ORCDBMAIN"     USING
+      *                                 MCPAREA
+      *                                 MCPDATA-REC
+      *                                  SPA-AREA
+      *         IF     MCP-RC     =   ZERO
+      *            MOVE   MCPDATA-REC   TO   SRYACCT-REC
+      *            MOVE   ZERO          TO   FLG-SRYACCT
+      *         ELSE
+      *            MOVE   1             TO   FLG-SRYACCT
+      *            INITIALIZE                SRYACCT-REC
+      *         END-IF
+      *       END-PERFORM
+      *--- 20101215 DELETE END   ---------------------------------------
       *    診療会計情報CLOSE
              MOVE    "DBCLOSECURSOR"   TO   MCP-FUNC
              MOVE    "tbl_sryacct"     TO   MCP-TABLE
-             MOVE    "key3"            TO   MCP-PATHNAME
+      *--- 20101215 CHANGE START ---------------------------------------
+      *       MOVE    "key3"            TO   MCP-PATHNAME
+             MOVE    "key2"            TO   MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
              CALL    "ORCDBMAIN"       USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-      *    入力フラグがオンの場合、診療会計終了フラグを切る
-             IF   FLG-INPUT       =   1
-                MOVE   ZERO      TO  FLG-SRYACCT
-             END-IF
+      *--- 20101215 DELETE START ---------------------------------------
+      **    入力フラグがオンの場合、診療会計終了フラグを切る
+      *       IF   FLG-INPUT       =   1
+      *          MOVE   ZERO      TO  FLG-SRYACCT
+      *       END-IF
+      *--- 20101215 DELETE END   ---------------------------------------
       *
              IF      FLG-SRYACCT      =   ZERO
-               AND   JYURRK-RENNUM       =  1
-               AND   JYURRK-SRYKBN(1)     >  "00"
+      *--- 20101215 CHANGE START ---------------------------------------
+      *         AND   JYURRK-RENNUM        =  1
+      *         AND   JYURRK-SRYKBN(1)     >  "00"
+               AND   ACCT-DAY(1 IDX7)     >   ZERO
+               AND   ACCT-SRYKBN          =  "11"
+      *--- 20101215 CHANGE END   ---------------------------------------
                AND  (JYURRK-DOUJI-RENNUM  =  0  OR
                      JYURRK-DOUJI-RENNUM  =  1)
-      *  初診の件数としてカウントする。
+      *    初診の件数としてカウントする。
                ADD  1  TO  SUM-YOSO(I3 2)
                ADD  1  TO  SUM-YOSO(SUM-TIKUMAX 2)
                ADD  1  TO  SUM-YOSO(I3 5)
@@ -2248,6 +2308,7 @@
                                    MCPAREA
                                    MCPDATA-REC
                                  SPA-AREA
+      *
                PERFORM  VARYING  IDX11  FROM 1  BY 1
                         UNTIL   IDX11  >  15
                  MOVE   JYURRK-ZAINUM(IDX11)    TO   ACCT-ZAINUM
@@ -2256,7 +2317,9 @@
                  MOVE    JYURRK-PTID         TO   ACCT-PTID
                  MOVE    JYURRK-SRYKA        TO   ACCT-SRYKA
                  MOVE    JYURRK-SRYYMD(1:6)  TO   ACCT-SRYYM
-                 MOVE    "12"                TO   ACCT-SRYKBN
+      *--- 20101215 DELETE START ---------------------------------------
+      *           MOVE   "12"                 TO   ACCT-SRYKBN
+      *--- 20101215 DELETE END   ---------------------------------------
                  MOVE    SRYACCT-REC      TO   MCPDATA-REC
                  MOVE    "DBSELECT"       TO   MCP-FUNC
                  MOVE    "tbl_sryacct"    TO   MCP-TABLE
@@ -2265,6 +2328,7 @@
                                           MCPAREA
                                           MCPDATA-REC
                                           SPA-AREA
+      *
                  IF      MCP-RC    =   ZERO
                    MOVE    "DBFETCH"      TO   MCP-FUNC
                    MOVE    "tbl_sryacct"  TO   MCP-TABLE
@@ -2302,22 +2366,28 @@
                    MOVE    16               TO   IDX11
                  END-IF
                END-PERFORM
-               INITIALIZE               SRYACT-REC
-               MOVE    ACCT-HOSPNUM     TO  SRY-HOSPNUM
-               MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
-               MOVE    ACCT-PTID       TO  SRY-PTID
-               MOVE    ACCT-SRYKA      TO  SRY-SRYKA
-               MOVE    ACCT-SRYYM      TO  SRY-SRYYM
-               MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
-               PERFORM 900-SRYACT-SELECT-SEC
-               PERFORM 900-SRYACT-FETCH-SEC
-               PERFORM 900-SRYACT-CLOSE-SEC
       *
-               IF  FLG-SRYACCT          =   ZERO
+      *--- 20101215 DELETE START ---------------------------------------
+      *         INITIALIZE               SRYACT-REC
+      *         MOVE    ACCT-HOSPNUM     TO  SRY-HOSPNUM
+      *         MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
+      *         MOVE    ACCT-PTID       TO  SRY-PTID
+      *         MOVE    ACCT-SRYKA      TO  SRY-SRYKA
+      *         MOVE    ACCT-SRYYM      TO  SRY-SRYYM
+      *         MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
+      *         PERFORM 900-SRYACT-SELECT-SEC
+      *         PERFORM 900-SRYACT-FETCH-SEC
+      *         PERFORM 900-SRYACT-CLOSE-SEC
+      *--- 20101215 DELETE END   ---------------------------------------
+      *
+               IF  FLG-SRYACCT              =   ZERO
                    AND ACCT-DAY(1 IDX7)     >   ZERO
-                   AND   ( SRY-SRYCD (1)(1:3) =
-                          "112" OR "099" OR "101" )
-                   AND   JYURRK-SRYKBN (1) >  "00"
+      *--- 20101215 CHANGE START ---------------------------------------
+      *             AND   ( SRY-SRYCD (1)(1:3) = 
+      *                    "112" OR "099" OR "101" )
+      *             AND   JYURRK-SRYKBN(1)   >  "00"
+                   AND   ACCT-SRYKBN        =  "12"
+      *--- 20101215 CHANGE END   ---------------------------------------
       *
       *    再診の件数としてカウントする。
                  ADD  1  TO  SUM-YOSO(I3 3)
@@ -2720,11 +2790,13 @@
            MOVE    D100LNK-PRTKANRI-SHELLID       TO  SPRT-SHELLID
            MOVE    D100LNK-PRTKANRI-SHORI-RENNUM  TO  SPRT-SHORI-RENNUM
            MOVE    D100LNK-PRTKANRI-PRIORITY      TO  SPRT-PRIORITY
+      *
            IF  D100LNK-YMD1  <  "20080401"
                MOVE   "A00000D131O.red"       TO  SPRT-PRTID
            ELSE
                MOVE   "A00000D131N.red"       TO  SPRT-PRTID
            END-IF
+      *
            MOVE    "基本台帳(外来・地区別)"    TO  SPRT-TITLE
            MOVE    D131                    TO  SPRT-PRTDATA
            MOVE    D100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
@@ -2733,6 +2805,7 @@
            CALL    "ORCSPRT"         USING
                                      ORCSPRTAREA
                                    SPA-AREA
+      *
            IF  SPRT-RETURN         =   ZERO
              MOVE   "A00000D1311.red"            TO  SPRT-PRTID
              MOVE    "基本台帳(外来・地区別)"    TO  SPRT-TITLE
