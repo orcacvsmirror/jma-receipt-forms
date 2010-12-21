@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -955,8 +956,11 @@
                   MOVE  WRK-Z9-5 TO  C100N-12-CNT(IDX3 IDX6)
                   MOVE  SUM-TOUZAN(IDX2 IDX4) TO  WRK-Z9-5
                   MOVE  WRK-Z9-5 TO  C100N-99-CNT(IDX3 IDX6)
-                  MOVE  WRK-Z9-5    TO   WRK-S9-5
-                  ADD   WRK-S9-5    TO   SUM-GZAIIN(IDX2)
+      *--- 20101215 DELETE START ---------------------------------------
+      *            MOVE  WRK-Z9-5    TO   WRK-S9-5
+      *            ADD   WRK-S9-5    TO   SUM-GZAIIN(IDX2)
+                  ADD   SUM-TOUZAN(IDX2 IDX4)   TO   SUM-GZAIIN(IDX2)
+      *--- 20101215 DELETE END   ---------------------------------------
                  END-IF
                  ADD    1        TO  IDX4
                  ADD    1        TO  IDX6
@@ -1044,8 +1048,11 @@
                     MOVE  WRK-Z9-5 TO  C100N-12-CNT(IDX3 IDX6)
                     MOVE  SUM-TOUZAN(IDX2 IDX4) TO  WRK-Z9-5
                     MOVE  WRK-Z9-5 TO  C100N-99-CNT(IDX3 IDX6)
-                    MOVE  WRK-Z9-5 TO  WRK-S9-5
-                    ADD   WRK-S9-5 TO  SUM-GZAIIN(IDX2)
+      *--- 20101215 DELETE START ---------------------------------------
+      *              MOVE  WRK-Z9-5 TO  WRK-S9-5
+      *              ADD   WRK-S9-5 TO  SUM-GZAIIN(IDX2)
+                    ADD   SUM-TOUZAN(IDX2 IDX4)   TO   SUM-GZAIIN(IDX2)
+      *--- 20101215 DELETE END   ---------------------------------------
                   END-IF
                   ADD    1        TO  IDX4
                   ADD    1        TO  IDX6

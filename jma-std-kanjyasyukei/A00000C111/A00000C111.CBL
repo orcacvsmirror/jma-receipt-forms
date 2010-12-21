@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -960,8 +961,11 @@
                   ADD    SUM-TOUZAN2(IDX2 IDX4)  TO   WRK-ZAINISSU
                   MOVE   WRK-ZAINISSU            TO   WRK-Z9-5
                   MOVE  WRK-Z9-5 TO  C100N-99-CNT(IDX3 IDX6)
-                  MOVE  WRK-Z9-5    TO   WRK-S9-5
-                  ADD   WRK-S9-5    TO   SUM-GZAIIN(IDX2)
+      *--- 20101215 CHANGE START ---------------------------------------
+      *            MOVE  WRK-Z9-5    TO   WRK-S9-5
+      *            ADD   WRK-S9-5    TO   SUM-GZAIIN(IDX2)
+                  ADD   WRK-ZAINISSU    TO   SUM-GZAIIN(IDX2)
+      *--- 20101215 CHANGE START ---------------------------------------
                       COMPUTE   IDX9 =   IDX4     +   1  
                   MOVE  SUM-TOUZAN(IDX2 IDX4) 
                         TO           SUM-ZENZAN(IDX2 IDX9)
@@ -1061,8 +1065,11 @@
                   ADD    SUM-TOUZAN2(IDX2 IDX4)  TO    WRK-ZAINISSU
                   MOVE   WRK-ZAINISSU            TO    WRK-Z9-5
                   MOVE  WRK-Z9-5 TO  C100N-99-CNT(IDX3 IDX6)
-                  MOVE  WRK-Z9-5 TO  WRK-S9-5
-                  ADD   WRK-S9-5 TO  SUM-GZAIIN(IDX2)
+      *--- 20101215 CHANGE START ---------------------------------------
+      *            MOVE  WRK-Z9-5 TO  WRK-S9-5
+      *            ADD   WRK-S9-5 TO  SUM-GZAIIN(IDX2)
+                  ADD   WRK-ZAINISSU    TO   SUM-GZAIIN(IDX2)
+      *--- 20101215 CHANGE END   ---------------------------------------
                   COMPUTE   IDX9 =   IDX4     +   1
                   MOVE  SUM-TOUZAN(IDX2 IDX4) 
                         TO           SUM-ZENZAN(IDX2 IDX9)
