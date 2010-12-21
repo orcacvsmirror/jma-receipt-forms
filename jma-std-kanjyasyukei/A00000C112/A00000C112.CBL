@@ -28,6 +28,8 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
+      *                                     初診、再診、その他の判定条件を変更
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -638,19 +640,27 @@
                          MOVE JYURRK-PTID         TO  ACCT-PTID
                          MOVE JYURRK-SRYKA        TO  ACCT-SRYKA
                          MOVE JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
-                         MOVE "11"                TO  ACCT-SRYKBN
-                         MOVE  SRYACCT-REC      TO  MCPDATA-REC
-                         MOVE  "DBSELECT"       TO  MCP-FUNC
+      *--- 20101215 DELETE START ---------------------------------------
+      *                   MOVE "11"                TO  ACCT-SRYKBN
+      *--- 20101215 DELETE END   ---------------------------------------
+                         MOVE    SRYACCT-REC      TO  MCPDATA-REC
+                         MOVE    "DBSELECT"       TO  MCP-FUNC
                          MOVE    "tbl_sryacct"    TO  MCP-TABLE
-                         MOVE    "key3"         TO  MCP-PATHNAME
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                   MOVE    "key3"           TO  MCP-PATHNAME
+                         MOVE    "key2"           TO  MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
                          CALL    "ORCDBMAIN"      USING
                                                     MCPAREA
                                                     MCPDATA-REC
                                                     SPA-AREA
                          IF      MCP-RC         =   ZERO
-                             MOVE  "DBFETCH"    TO  MCP-FUNC
+                             MOVE    "DBFETCH"      TO  MCP-FUNC
                              MOVE    "tbl_sryacct"  TO  MCP-TABLE
-                             MOVE    "key3"         TO  MCP-PATHNAME
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                       MOVE    "key3"         TO  MCP-PATHNAME
+                             MOVE    "key2"         TO  MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
                              CALL    "ORCDBMAIN"    USING
                                                     MCPAREA
                                                     MCPDATA-REC
@@ -681,7 +691,10 @@
                                  ELSE
                                    MOVE  "DBFETCH"      TO  MCP-FUNC
                                    MOVE  "tbl_sryacct"  TO  MCP-TABLE
-                                   MOVE  "key3"         TO  MCP-PATHNAME
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                             MOVE    "key3"       TO  MCP-PATHNAME
+                                   MOVE    "key2"       TO  MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
                                    CALL  "ORCDBMAIN"    USING
                                                         MCPAREA
                                                         MCPDATA-REC
@@ -704,7 +717,10 @@
                          END-IF
                          MOVE  "DBCLOSECURSOR"  TO  MCP-FUNC
                          MOVE    "tbl_sryacct"  TO  MCP-TABLE
-                         MOVE    "key3"         TO  MCP-PATHNAME
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                   MOVE    "key3"         TO  MCP-PATHNAME
+                         MOVE    "key2"         TO  MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
                          CALL    "ORCDBMAIN"    USING
                                                 MCPAREA
                                                 MCPDATA-REC
@@ -745,59 +761,63 @@
                                                      MCPDATA-REC
                                                      SPA-AREA
       *
-                       IF  JYURRK-RENNUM  NOT = 1
-                         INITIALIZE                  SRYACCT-REC
-                         MOVE    JYURRK-HOSPNUM      TO   ACCT-HOSPNUM
-                         MOVE    JYURRK-NYUGAIKBN    TO   ACCT-NYUGAIKBN
-                         MOVE    JYURRK-PTID         TO   ACCT-PTID
-                         MOVE    JYURRK-SRYKA        TO   ACCT-SRYKA
-                         MOVE    JYURRK-SRYYMD(1:6)  TO   ACCT-SRYYM
-                         MOVE    JYURRK-ZAINUM       TO   ACCT-ZAINUM
-      *
-                         MOVE    SRYACCT-REC         TO   MCPDATA-REC
-                         MOVE    "DBSELECT"          TO   MCP-FUNC
-                         MOVE    "tbl_sryacct"       TO   MCP-TABLE
-                         MOVE    "key5"              TO   MCP-PATHNAME
-                         CALL    "ORCDBMAIN"         USING
-                                                     MCPAREA
-                                                     MCPDATA-REC
-                                                     SPA-AREA
-      *
-                         IF   MCP-RC   =   ZERO
-                           MOVE    "DBFETCH"         TO   MCP-FUNC
-                           MOVE    "tbl_sryacct"     TO   MCP-TABLE
-                           MOVE    "key5"            TO   MCP-PATHNAME
-                           CALL    "ORCDBMAIN"       USING
-                                                     MCPAREA
-                                                     MCPDATA-REC
-                                                     SPA-AREA
-                           IF   MCP-RC   =   ZERO
-                             MOVE    MCPDATA-REC     TO   SRYACCT-REC
-                             MOVE    ZERO            TO   FLG-SRYACCT
-                           ELSE     
-                             MOVE    1               TO   FLG-SRYACCT
-                             INITIALIZE              SRYACCT-REC
-                           END-IF
-                         ELSE
-                           MOVE  1                   TO   FLG-SRYACCT
-                           INITIALIZE                SRYACCT-REC
-                         END-IF
-      *
-                         MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
-                         MOVE    "tbl_sryacct"       TO   MCP-TABLE
-                         MOVE    "key5"              TO   MCP-PATHNAME
-                         CALL    "ORCDBMAIN"         USING
-                                                     MCPAREA
-                                                     MCPDATA-REC
-                                                     SPA-AREA
-                        END-IF
-      *
-                       IF  JYURRK-HKNKBN  =  "0"
+      *--- 20101215 DELETE START ---------------------------------------
+      *                 IF  JYURRK-RENNUM  NOT = 1
+      *                   INITIALIZE                  SRYACCT-REC
+      *                   MOVE    JYURRK-HOSPNUM      TO   ACCT-HOSPNUM
+      *                   MOVE    JYURRK-NYUGAIKBN    TO   ACCT-NYUGAIKBN
+      *                   MOVE    JYURRK-PTID         TO   ACCT-PTID
+      *                   MOVE    JYURRK-SRYKA        TO   ACCT-SRYKA
+      *                   MOVE    JYURRK-SRYYMD(1:6)  TO   ACCT-SRYYM
+      *                   MOVE    JYURRK-ZAINUM       TO   ACCT-ZAINUM
+      **
+      *                   MOVE    SRYACCT-REC         TO   MCPDATA-REC
+      *                   MOVE    "DBSELECT"          TO   MCP-FUNC
+      *                   MOVE    "tbl_sryacct"       TO   MCP-TABLE
+      *                   MOVE    "key5"              TO   MCP-PATHNAME
+      *                   CALL    "ORCDBMAIN"         USING
+      *                                               MCPAREA
+      *                                               MCPDATA-REC
+      *                                               SPA-AREA
+      **
+      *                   IF   MCP-RC   =   ZERO
+      *                     MOVE    "DBFETCH"         TO   MCP-FUNC
+      *                     MOVE    "tbl_sryacct"     TO   MCP-TABLE
+      *                     MOVE    "key5"            TO   MCP-PATHNAME
+      *                     CALL    "ORCDBMAIN"       USING
+      *                                               MCPAREA
+      *                                               MCPDATA-REC
+      *                                               SPA-AREA
+      *                     IF   MCP-RC   =   ZERO
+      *                       MOVE    MCPDATA-REC     TO   SRYACCT-REC
+      *                       MOVE    ZERO            TO   FLG-SRYACCT
+      *                     ELSE     
+      *                       MOVE    1               TO   FLG-SRYACCT
+      *                       INITIALIZE              SRYACCT-REC
+      *                     END-IF
+      *                   ELSE
+      *                     MOVE  1                   TO   FLG-SRYACCT
+      *                     INITIALIZE                SRYACCT-REC
+      *                   END-IF
+      **
+      *                   MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
+      *                   MOVE    "tbl_sryacct"       TO   MCP-TABLE
+      *                   MOVE    "key5"              TO   MCP-PATHNAME
+      *                   CALL    "ORCDBMAIN"         USING
+      *                                               MCPAREA
+      *                                               MCPDATA-REC
+      *                                               SPA-AREA
+      *                  END-IF
+      **
+      *                 IF  JYURRK-HKNKBN  =  "0"
+      *--- 20101215 DELETE END   ---------------------------------------
       *
                          IF      FLG-SRYACCT         =  ZERO
                              AND   ACCT-DAY(1 IDX7)    >  ZERO
-                             AND   JYURRK-RENNUM       =  1
-                             AND   JYURRK-SRYKBN(1)  >  "00"
+      *--- 20101215 DELETE START ---------------------------------------
+      *                       AND   JYURRK-RENNUM       =  1
+      *                       AND   JYURRK-SRYKBN(1)  >  "00"
+      *--- 20101215 DELETE END   ---------------------------------------
                              AND   ACCT-SRYKBN  =  "11"
                              AND   (JYURRK-DOUJI-RENNUM  =  1  
                              OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
@@ -820,7 +840,9 @@
                              MOVE JYURRK-PTID         TO  ACCT-PTID
                              MOVE JYURRK-SRYKA        TO  ACCT-SRYKA
                              MOVE JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
-                             MOVE "12"  TO  ACCT-SRYKBN
+      *--- 20101215 DELETE START ---------------------------------------
+      *                       MOVE   "12"              TO   ACCT-SRYKBN
+      *--- 20101215 DELETE END   ---------------------------------------
                              MOVE  SRYACCT-REC        TO  MCPDATA-REC
                              MOVE  "DBSELECT"         TO  MCP-FUNC
                              MOVE    "tbl_sryacct"    TO  MCP-TABLE
@@ -867,22 +889,27 @@
                              END-IF
                            END-PERFORM
       *
-                           INITIALIZE               SRYACT-REC
-                           MOVE    ACCT-HOSPNUM     TO  SRY-HOSPNUM
-                           MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
-                           MOVE    ACCT-PTID       TO  SRY-PTID
-                           MOVE    ACCT-SRYKA      TO  SRY-SRYKA
-                           MOVE    ACCT-SRYYM      TO  SRY-SRYYM
-                           MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
-                           PERFORM 900-SRYACT-SELECT-SEC
-                           PERFORM 900-SRYACT-FETCH-SEC
-                           PERFORM 900-SRYACT-CLOSE-SEC
+      *--- 20101215 DELETE START ---------------------------------------
+      *                     INITIALIZE               SRYACT-REC
+      *                     MOVE    ACCT-HOSPNUM     TO  SRY-HOSPNUM
+      *                     MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
+      *                     MOVE    ACCT-PTID       TO  SRY-PTID
+      *                     MOVE    ACCT-SRYKA      TO  SRY-SRYKA
+      *                     MOVE    ACCT-SRYYM      TO  SRY-SRYYM
+      *                     MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
+      *                     PERFORM 900-SRYACT-SELECT-SEC
+      *                     PERFORM 900-SRYACT-FETCH-SEC
+      *                     PERFORM 900-SRYACT-CLOSE-SEC
+      *--- 20101215 DELETE END   ---------------------------------------
       *
                            IF     FLG-SRYACCT           =  ZERO
                             AND   ACCT-DAY(1 IDX7)      >  ZERO
-                            AND   ( SRY-SRYCD (1)(1:3) = 
-                                   "112" OR "099" OR "101" )
-                            AND   SRY-SRYKBN   =   "12"
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                      AND   ( SRY-SRYCD (1)(1:3) = 
+      *                             "112" OR "099" OR "101" )
+      *                      AND   SRY-SRYKBN   =   "12"
+                            AND   ACCT-SRYKBN   =   "12"
+      *--- 20101215 CHANGE END   ---------------------------------------
       *
       *    再診の件数としてカウントする。
                               MOVE JYURRK-DRCD   TO  WRK-DRCD
@@ -908,122 +935,125 @@
                              END-IF
                            END-IF
                          END-IF
-                       ELSE
       *
-                         IF      FLG-SRYACCT           =  ZERO
-                           AND   ACCT-DAY(1 IDX7)      >  ZERO
-                           AND   JYURRK-SRYKBN(1)      >  "00"
-                           AND   ACCT-SRYKBN           =  "11"
-                           AND   (JYURRK-DOUJI-RENNUM  =  1  
-                           OR    JYURRK-DOUJI-RENNUM   =  ZERO)  
-      *    初診の件数としてカウントする。
-                           MOVE  JYURRK-DRCD           TO  WRK-DRCD
-                           PERFORM 320-SRYKA-GET-IDX-SEC
-                           MOVE  JYURRK-SRYYMD         TO  WRK-SRYYMD
-                           PERFORM 320-SRYYMD-GET-IDX-SEC
-                           ADD     1  TO  SUM-SYOSHIN(IDX1 IDX6)
-                           ADD     1  TO  SUM-SYOSHIN(IDX1 IDX5)
-                           ADD     1  TO  SUM-SYOSHIN(IDX3 IDX6)
-                           ADD     1  TO  SUM-SYOSHIN(IDX3 IDX5)
-                           MOVE   JYURRK-DENPNUM  TO   WRK-DENPNUM
-                         ELSE
-      *
-                         PERFORM  VARYING  IDX10 FROM  1  BY  1
-                                  UNTIL    IDX10   >  15
-                           MOVE  JYURRK-ZAINUM(IDX10) TO  ACCT-ZAINUM
-                           MOVE  JYURRK-HOSPNUM       TO  ACCT-HOSPNUM
-                           MOVE  JYURRK-NYUGAIKBN     TO  ACCT-NYUGAIKBN
-                           MOVE  JYURRK-PTID          TO  ACCT-PTID
-                           MOVE  JYURRK-SRYKA         TO  ACCT-SRYKA
-                           MOVE  JYURRK-SRYYMD(1:6)   TO  ACCT-SRYYM
-                           MOVE  SRYACCT-REC          TO  MCPDATA-REC
-                           MOVE  "DBSELECT"           TO  MCP-FUNC
-                           MOVE  "tbl_sryacct"        TO  MCP-TABLE
-                           MOVE  "key5"               TO  MCP-PATHNAME
-                           CALL  "ORCDBMAIN"          USING
-                                                      MCPAREA
-                                                      MCPDATA-REC
-                                                      SPA-AREA
-                           IF     MCP-RC              =  ZERO
-                             MOVE   "DBFETCH"         TO  MCP-FUNC
-                             MOVE    "tbl_sryacct"    TO  MCP-TABLE
-                             MOVE    "key5"           TO  MCP-PATHNAME
-                             CALL    "ORCDBMAIN"      USING
-                                                      MCPAREA
-                                                      MCPDATA-REC
-                                                      SPA-AREA
-                             IF     MCP-RC            =  ZERO
-                               MOVE MCPDATA-REC       TO  SRYACCT-REC
-                               MOVE ZERO              TO  FLG-SRYACCT
-                             ELSE
-                               MOVE   1               TO  FLG-SRYACCT
-                               INITIALIZE                 SRYACCT-REC
-                             END-IF
-                           ELSE
-                             MOVE    1                TO  FLG-SRYACCT
-                             INITIALIZE                    SRYACCT-REC
-                           END-IF
-      *
-                           MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-                           MOVE    "tbl_sryacct"      TO  MCP-TABLE
-                           MOVE    "key5"             TO  MCP-PATHNAME
-                           CALL    "ORCDBMAIN"        USING
-                                                      MCPAREA
-                                                      MCPDATA-REC
-                                                      SPA-AREA
-      *
-                           IF  IDX11 <  15
-                             COMPUTE   IDX11   =   IDX10  +   1
-                             IF   JYURRK-ZAINUM(IDX11)  =  ZERO
-                               MOVE    16             TO   IDX10
-                             END-IF
-                           END-IF
-                           IF   ACCT-SRYKBN   =  "12"
-                             MOVE    16               TO   IDX10
-                           END-IF
-                         END-PERFORM
-                           INITIALIZE               SRYACT-REC
-                           MOVE    ACCT-HOSPNUM    TO  SRY-HOSPNUM
-                           MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
-                           MOVE    ACCT-PTID       TO  SRY-PTID
-                           MOVE    ACCT-SRYKA      TO  SRY-SRYKA
-                           MOVE    ACCT-SRYYM      TO  SRY-SRYYM
-                           MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
-                           PERFORM 900-SRYACT-SELECT-SEC
-                           PERFORM 900-SRYACT-FETCH-SEC
-                           PERFORM 900-SRYACT-CLOSE-SEC
-      *
-                           IF     FLG-SRYACCT           =  ZERO
-                            AND   ACCT-DAY(1 IDX7)      >  ZERO
-                            AND   ( SRY-SRYCD (1)(1:3) = 
-                                   "112" OR "099" OR "101" )
-                            AND   ACCT-SRYKBN           =  "12"
-      *
-      *    再診の件数としてカウントする。
-                              MOVE JYURRK-DRCD   TO  WRK-DRCD
-                              PERFORM 320-SRYKA-GET-IDX-SEC
-                              MOVE JYURRK-SRYYMD  TO  WRK-SRYYMD
-                              PERFORM 320-SRYYMD-GET-IDX-SEC
-                              ADD     1  TO  SUM-SAISHIN(IDX1 IDX6)
-                              ADD     1  TO  SUM-SAISHIN(IDX1 IDX5)
-                              ADD     1  TO  SUM-SAISHIN(IDX3 IDX6)
-                              ADD     1  TO  SUM-SAISHIN(IDX3 IDX5)
-                              MOVE   JYURRK-DENPNUM  TO   WRK-DENPNUM
-                           ELSE
-      *    その他の件数としてカウントする。
-                             IF  FLG-JYURRK2  =  1
-                               MOVE JYURRK-DRCD   TO  WRK-DRCD
-                               PERFORM 320-SRYKA-GET-IDX-SEC
-                               MOVE JYURRK-SRYYMD  TO  WRK-SRYYMD
-                               PERFORM 320-SRYYMD-GET-IDX-SEC
-                               ADD     1  TO  SUM-ETC(IDX1 IDX6)
-                               ADD     1  TO  SUM-ETC(IDX1 IDX5)
-                               ADD     1  TO  SUM-ETC(IDX3 IDX6)
-                               ADD     1  TO  SUM-ETC(IDX3 IDX5)
-                             END-IF
-                           END-IF
-                         END-IF
-                       END-IF
+      *--- 20101215 DELETE START ---------------------------------------
+      *                 ELSE
+      **
+      *                   IF      FLG-SRYACCT           =  ZERO
+      *                     AND   ACCT-DAY(1 IDX7)      >  ZERO
+      *                     AND   JYURRK-SRYKBN(1)      >  "00"
+      *                     AND   ACCT-SRYKBN           =  "11"
+      *                     AND   (JYURRK-DOUJI-RENNUM  =  1  
+      *                     OR    JYURRK-DOUJI-RENNUM   =  ZERO)  
+      **    初診の件数としてカウントする。
+      *                     MOVE  JYURRK-DRCD           TO  WRK-DRCD
+      *                     PERFORM 320-SRYKA-GET-IDX-SEC
+      *                     MOVE  JYURRK-SRYYMD         TO  WRK-SRYYMD
+      *                     PERFORM 320-SRYYMD-GET-IDX-SEC
+      *                     ADD     1  TO  SUM-SYOSHIN(IDX1 IDX6)
+      *                     ADD     1  TO  SUM-SYOSHIN(IDX1 IDX5)
+      *                     ADD     1  TO  SUM-SYOSHIN(IDX3 IDX6)
+      *                     ADD     1  TO  SUM-SYOSHIN(IDX3 IDX5)
+      *                     MOVE   JYURRK-DENPNUM  TO   WRK-DENPNUM
+      *                   ELSE
+      **
+      *                   PERFORM  VARYING  IDX10 FROM  1  BY  1
+      *                            UNTIL    IDX10   >  15
+      *                     MOVE  JYURRK-ZAINUM(IDX10) TO  ACCT-ZAINUM
+      *                     MOVE  JYURRK-HOSPNUM       TO  ACCT-HOSPNUM
+      *                     MOVE  JYURRK-NYUGAIKBN     TO  ACCT-NYUGAIKBN
+      *                     MOVE  JYURRK-PTID          TO  ACCT-PTID
+      *                     MOVE  JYURRK-SRYKA         TO  ACCT-SRYKA
+      *                     MOVE  JYURRK-SRYYMD(1:6)   TO  ACCT-SRYYM
+      *                     MOVE  SRYACCT-REC          TO  MCPDATA-REC
+      *                     MOVE  "DBSELECT"           TO  MCP-FUNC
+      *                     MOVE  "tbl_sryacct"        TO  MCP-TABLE
+      *                     MOVE  "key5"               TO  MCP-PATHNAME
+      *                     CALL  "ORCDBMAIN"          USING
+      *                                                MCPAREA
+      *                                                MCPDATA-REC
+      *                                                SPA-AREA
+      *                     IF     MCP-RC              =  ZERO
+      *                       MOVE   "DBFETCH"         TO  MCP-FUNC
+      *                       MOVE    "tbl_sryacct"    TO  MCP-TABLE
+      *                       MOVE    "key5"           TO  MCP-PATHNAME
+      *                       CALL    "ORCDBMAIN"      USING
+      *                                                MCPAREA
+      *                                                MCPDATA-REC
+      *                                                SPA-AREA
+      *                       IF     MCP-RC            =  ZERO
+      *                         MOVE MCPDATA-REC       TO  SRYACCT-REC
+      *                         MOVE ZERO              TO  FLG-SRYACCT
+      *                       ELSE
+      *                         MOVE   1               TO  FLG-SRYACCT
+      *                         INITIALIZE                 SRYACCT-REC
+      *                       END-IF
+      *                     ELSE
+      *                       MOVE    1                TO  FLG-SRYACCT
+      *                       INITIALIZE                    SRYACCT-REC
+      *                     END-IF
+      **
+      *                     MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
+      *                     MOVE    "tbl_sryacct"      TO  MCP-TABLE
+      *                     MOVE    "key5"             TO  MCP-PATHNAME
+      *                     CALL    "ORCDBMAIN"        USING
+      *                                                MCPAREA
+      *                                                MCPDATA-REC
+      *                                                SPA-AREA
+      **
+      *                     IF  IDX11 <  15
+      *                       COMPUTE   IDX11   =   IDX10  +   1
+      *                       IF   JYURRK-ZAINUM(IDX11)  =  ZERO
+      *                         MOVE    16             TO   IDX10
+      *                       END-IF
+      *                     END-IF
+      *                     IF   ACCT-SRYKBN   =  "12"
+      *                       MOVE    16               TO   IDX10
+      *                     END-IF
+      *                   END-PERFORM
+      *                     INITIALIZE               SRYACT-REC
+      *                     MOVE    ACCT-HOSPNUM    TO  SRY-HOSPNUM
+      *                     MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
+      *                     MOVE    ACCT-PTID       TO  SRY-PTID
+      *                     MOVE    ACCT-SRYKA      TO  SRY-SRYKA
+      *                     MOVE    ACCT-SRYYM      TO  SRY-SRYYM
+      *                     MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
+      *                     PERFORM 900-SRYACT-SELECT-SEC
+      *                     PERFORM 900-SRYACT-FETCH-SEC
+      *                     PERFORM 900-SRYACT-CLOSE-SEC
+      **
+      *                     IF     FLG-SRYACCT           =  ZERO
+      *                      AND   ACCT-DAY(1 IDX7)      >  ZERO
+      *                      AND   ( SRY-SRYCD (1)(1:3) = 
+      *                             "112" OR "099" OR "101" )
+      *                      AND   ACCT-SRYKBN           =  "12"
+      **
+      **    再診の件数としてカウントする。
+      *                        MOVE JYURRK-DRCD   TO  WRK-DRCD
+      *                        PERFORM 320-SRYKA-GET-IDX-SEC
+      *                        MOVE JYURRK-SRYYMD  TO  WRK-SRYYMD
+      *                        PERFORM 320-SRYYMD-GET-IDX-SEC
+      *                        ADD     1  TO  SUM-SAISHIN(IDX1 IDX6)
+      *                        ADD     1  TO  SUM-SAISHIN(IDX1 IDX5)
+      *                        ADD     1  TO  SUM-SAISHIN(IDX3 IDX6)
+      *                        ADD     1  TO  SUM-SAISHIN(IDX3 IDX5)
+      *                        MOVE   JYURRK-DENPNUM  TO   WRK-DENPNUM
+      *                     ELSE
+      **    その他の件数としてカウントする。
+      *                       IF  FLG-JYURRK2  =  1
+      *                         MOVE JYURRK-DRCD   TO  WRK-DRCD
+      *                         PERFORM 320-SRYKA-GET-IDX-SEC
+      *                         MOVE JYURRK-SRYYMD  TO  WRK-SRYYMD
+      *                         PERFORM 320-SRYYMD-GET-IDX-SEC
+      *                         ADD     1  TO  SUM-ETC(IDX1 IDX6)
+      *                         ADD     1  TO  SUM-ETC(IDX1 IDX5)
+      *                         ADD     1  TO  SUM-ETC(IDX3 IDX6)
+      *                         ADD     1  TO  SUM-ETC(IDX3 IDX5)
+      *                       END-IF
+      *                     END-IF
+      *                   END-IF
+      *                 END-IF
+      *--- 20101215 DELETE END   ---------------------------------------
                   END-IF
                END-IF
                PERFORM  900-JYURRK-FETCH-SEC
@@ -1070,19 +1100,27 @@
                          MOVE JYURRK-PTID         TO  ACCT-PTID
                          MOVE JYURRK-SRYKA        TO  ACCT-SRYKA
                          MOVE JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
-                         MOVE "11"                TO  ACCT-SRYKBN
-                         MOVE  SRYACCT-REC      TO  MCPDATA-REC
-                         MOVE  "DBSELECT"       TO  MCP-FUNC
-                         MOVE    "tbl_sryacct"         TO  MCP-TABLE
-                         MOVE    "key3"           TO  MCP-PATHNAME
-                         CALL    "ORCDBMAIN"           USING
+      *--- 20101215 DELETE START ---------------------------------------
+      *                   MOVE "11"                TO  ACCT-SRYKBN
+      *--- 20101215 DELETE END   ---------------------------------------
+                         MOVE    SRYACCT-REC        TO  MCPDATA-REC
+                         MOVE    "DBSELECT"         TO  MCP-FUNC
+                         MOVE    "tbl_sryacct"      TO  MCP-TABLE
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                   MOVE    "key3"             TO  MCP-PATHNAME
+                         MOVE    "key2"             TO  MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
+                         CALL    "ORCDBMAIN"        USING
                                                     MCPAREA
                                                     MCPDATA-REC
                                                     SPA-AREA
                          IF      MCP-RC         =   ZERO
                              MOVE  "DBFETCH"    TO  MCP-FUNC
                              MOVE    "tbl_sryacct"     TO  MCP-TABLE
-                             MOVE    "key3"            TO  MCP-PATHNAME
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                       MOVE    "key3"            TO  MCP-PATHNAME
+                             MOVE    "key2"            TO  MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
                              CALL    "ORCDBMAIN"       USING
                                                        MCPAREA
                                                        MCPDATA-REC
@@ -1113,7 +1151,10 @@
                                  ELSE
                                    MOVE  "DBFETCH"      TO  MCP-FUNC
                                    MOVE  "tbl_sryacct"  TO  MCP-TABLE
-                                   MOVE    "key3"       TO  MCP-PATHNAME
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                             MOVE    "key3"       TO  MCP-PATHNAME
+                                   MOVE    "key2"       TO  MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
                                    CALL  "ORCDBMAIN"    USING
                                                         MCPAREA
                                                         MCPDATA-REC
@@ -1136,7 +1177,10 @@
                          END-IF
                          MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
                          MOVE    "tbl_sryacct"    TO  MCP-TABLE
-                         MOVE    "key3"           TO  MCP-PATHNAME
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                   MOVE    "key3"           TO  MCP-PATHNAME
+                         MOVE    "key2"           TO  MCP-PATHNAME
+      *--- 20101215 CHANGE END   ---------------------------------------
                          CALL    "ORCDBMAIN"      USING
                                                   MCPAREA
                                                   MCPDATA-REC
@@ -1177,60 +1221,65 @@
                                                      MCPDATA-REC
                                                      SPA-AREA
       *
-                         IF  JYURRK-RENNUM  NOT = 1
+      *--- 20101215 DELETE START ---------------------------------------
+      *                   IF  JYURRK-RENNUM  NOT = 1
+      **
+      *                     INITIALIZE                SRYACCT-REC
+      *                     MOVE  JYURRK-HOSPNUM      TO  ACCT-HOSPNUM
+      *                     MOVE  JYURRK-NYUGAIKBN    TO  ACCT-NYUGAIKBN
+      *                     MOVE  JYURRK-PTID         TO  ACCT-PTID
+      *                     MOVE  JYURRK-SRYKA        TO  ACCT-SRYKA
+      *                     MOVE  JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
+      *                     MOVE  JYURRK-ZAINUM       TO  ACCT-ZAINUM
+      **
+      *                     MOVE  SRYACCT-REC         TO  MCPDATA-REC
+      *                     MOVE  "DBSELECT"          TO  MCP-FUNC
+      *                     MOVE  "tbl_sryacct"       TO  MCP-TABLE
+      *                     MOVE  "key5"              TO  MCP-PATHNAME
+      *                     CALL  "ORCDBMAIN"         USING
+      *                                                 MCPAREA
+      *                                                 MCPDATA-REC
+      *                                                 SPA-AREA
+      **
+      *                     IF   MCP-RC   =   ZERO
+      *                       MOVE  "DBFETCH"         TO  MCP-FUNC
+      *                       MOVE  "tbl_sryacct"     TO  MCP-TABLE
+      *                       MOVE  "key5"            TO  MCP-PATHNAME
+      *                       CALL  "ORCDBMAIN"       USING
+      *                                                 MCPAREA
+      *                                                 MCPDATA-REC
+      *                                                 SPA-AREA
+      *                       IF   MCP-RC   =   ZERO
+      *                         MOVE  MCPDATA-REC     TO  SRYACCT-REC
+      *                         MOVE  ZERO            TO  FLG-SRYACCT
+      *                       ELSE
+      *                         MOVE  1               TO  FLG-SRYACCT
+      *                         INITIALIZE              SRYACCT-REC
+      *                       END-IF
+      *                     ELSE
+      *                       MOVE  1                 TO  FLG-SRYACCT
+      *                       INITIALIZE              SRYACCT-REC
+      *                     END-IF
+      **
+      *                     MOVE  "DBCLOSECURSOR"     TO  MCP-FUNC
+      *                     MOVE  "tbl_sryacct"       TO  MCP-TABLE
+      *                     MOVE  "key5"              TO  MCP-PATHNAME
+      *                     CALL  "ORCDBMAIN"         USING
+      *                                               MCPAREA
+      *                                               MCPDATA-REC
+      *                                               SPA-AREA
+      **
+      *                   END-IF
+      **
+      *                 IF  JYURRK-HKNKBN  =  "0"
+      *--- 20101215 DELETE END   ---------------------------------------
       *
-                           INITIALIZE                SRYACCT-REC
-                           MOVE  JYURRK-HOSPNUM      TO  ACCT-HOSPNUM
-                           MOVE  JYURRK-NYUGAIKBN    TO  ACCT-NYUGAIKBN
-                           MOVE  JYURRK-PTID         TO  ACCT-PTID
-                           MOVE  JYURRK-SRYKA        TO  ACCT-SRYKA
-                           MOVE  JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
-                           MOVE  JYURRK-ZAINUM       TO  ACCT-ZAINUM
-      *
-                           MOVE  SRYACCT-REC         TO  MCPDATA-REC
-                           MOVE  "DBSELECT"          TO  MCP-FUNC
-                           MOVE  "tbl_sryacct"       TO  MCP-TABLE
-                           MOVE  "key5"              TO  MCP-PATHNAME
-                           CALL  "ORCDBMAIN"         USING
-                                                       MCPAREA
-                                                       MCPDATA-REC
-                                                       SPA-AREA
-      *
-                           IF   MCP-RC   =   ZERO
-                             MOVE  "DBFETCH"         TO  MCP-FUNC
-                             MOVE  "tbl_sryacct"     TO  MCP-TABLE
-                             MOVE  "key5"            TO  MCP-PATHNAME
-                             CALL  "ORCDBMAIN"       USING
-                                                       MCPAREA
-                                                       MCPDATA-REC
-                                                       SPA-AREA
-                             IF   MCP-RC   =   ZERO
-                               MOVE  MCPDATA-REC     TO  SRYACCT-REC
-                               MOVE  ZERO            TO  FLG-SRYACCT
-                             ELSE
-                               MOVE  1               TO  FLG-SRYACCT
-                               INITIALIZE              SRYACCT-REC
-                             END-IF
-                           ELSE
-                             MOVE  1                 TO  FLG-SRYACCT
-                             INITIALIZE              SRYACCT-REC
-                           END-IF
-      *
-                           MOVE  "DBCLOSECURSOR"     TO  MCP-FUNC
-                           MOVE  "tbl_sryacct"       TO  MCP-TABLE
-                           MOVE  "key5"              TO  MCP-PATHNAME
-                           CALL  "ORCDBMAIN"         USING
-                                                     MCPAREA
-                                                     MCPDATA-REC
-                                                     SPA-AREA
-      *
-                         END-IF
-      *
-                       IF  JYURRK-HKNKBN  =  "0"
                          IF      FLG-SRYACCT         =  ZERO
                            AND   ACCT-DAY(1 IDX7)    >  ZERO
-                           AND   JYURRK-RENNUM       =  1
-                           AND   JYURRK-SRYKBN(1)  >  "00"
+      *--- 20101215 DELETE START ---------------------------------------
+      *                     AND   JYURRK-RENNUM       =  1
+      *                     AND   JYURRK-SRYKBN(1)  >  "00"
+      *--- 20101215 DELETE END   ---------------------------------------
                            AND   ACCT-SRYKBN  =  "11"
                            AND   (JYURRK-DOUJI-RENNUM  =  1  
                            OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
@@ -1254,7 +1303,9 @@
                              MOVE JYURRK-PTID         TO  ACCT-PTID
                              MOVE JYURRK-SRYKA        TO  ACCT-SRYKA
                              MOVE JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
-                             MOVE "12"  TO  ACCT-SRYKBN
+      *--- 20101215 DELETE START ---------------------------------------
+      *                       MOVE   "12"              TO   ACCT-SRYKBN
+      *--- 20101215 DELETE END   ---------------------------------------
                              MOVE  SRYACCT-REC        TO  MCPDATA-REC
                              MOVE  "DBSELECT"         TO  MCP-FUNC
                              MOVE    "tbl_sryacct"    TO  MCP-TABLE
@@ -1302,22 +1353,27 @@
                                MOVE    16               TO   IDX10
                              END-IF
                            END-PERFORM
-                           INITIALIZE               SRYACT-REC
-                           MOVE    ACCT-HOSPNUM     TO  SRY-HOSPNUM
-                           MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
-                           MOVE    ACCT-PTID       TO  SRY-PTID
-                           MOVE    ACCT-SRYKA      TO  SRY-SRYKA
-                           MOVE    ACCT-SRYYM      TO  SRY-SRYYM
-                           MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
-                           PERFORM 900-SRYACT-SELECT-SEC
-                           PERFORM 900-SRYACT-FETCH-SEC
-                           PERFORM 900-SRYACT-CLOSE-SEC
+      *--- 20101215 DELETE START ---------------------------------------
+      *                     INITIALIZE               SRYACT-REC
+      *                     MOVE    ACCT-HOSPNUM     TO  SRY-HOSPNUM
+      *                     MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
+      *                     MOVE    ACCT-PTID       TO  SRY-PTID
+      *                     MOVE    ACCT-SRYKA      TO  SRY-SRYKA
+      *                     MOVE    ACCT-SRYYM      TO  SRY-SRYYM
+      *                     MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
+      *                     PERFORM 900-SRYACT-SELECT-SEC
+      *                     PERFORM 900-SRYACT-FETCH-SEC
+      *                     PERFORM 900-SRYACT-CLOSE-SEC
+      *--- 20101215 DELETE END   ---------------------------------------
       *
                            IF     FLG-SRYACCT           =  ZERO
                             AND   ACCT-DAY(1 IDX7)      >  ZERO
-                            AND   ( SRY-SRYCD (1)(1:3) = 
-                                   "112" OR "099" OR "101" )
-                            AND   SRY-SRYKBN   =   "12"
+      *--- 20101215 CHANGE START ---------------------------------------
+      *                      AND   ( SRY-SRYCD (1)(1:3) = 
+      *                             "112" OR "099" OR "101" )
+      *                      AND   SRY-SRYKBN   =   "12"
+                            AND   ACCT-SRYKBN   =   "12"
+      *--- 20101215 CHANGE END   ---------------------------------------
       *
       *    再診の件数としてカウントする。
                               MOVE JYURRK-DRCD   TO  WRK-DRCD
@@ -1343,120 +1399,123 @@
                              END-IF
                            END-IF
                          END-IF
-                       ELSE
       *
-                         IF      FLG-SRYACCT           =  ZERO
-                           AND   ACCT-DAY(1 IDX7)      >  ZERO
-                           AND   JYURRK-SRYKBN(1)      >  "00"
-                           AND   ACCT-SRYKBN           =  "11"
-                           AND   (JYURRK-DOUJI-RENNUM  =  1
-                           OR    JYURRK-DOUJI-RENNUM   =  ZERO)
-      *    初診の件数としてカウントする。
-                           MOVE  JYURRK-DRCD           TO  WRK-DRCD
-                           PERFORM 320-SRYKA-GET-IDX-SEC
-                           MOVE  JYURRK-SRYYMD(1:6)    TO  WRK-SRYYM
-                           PERFORM 320-SRYYM-GET-IDX-SEC
-                           ADD     1  TO  SUM-SYOSHIN(IDX1 IDX6)
-                           ADD     1  TO  SUM-SYOSHIN(IDX1 IDX5)
-                           ADD     1  TO  SUM-SYOSHIN(IDX3 IDX6)
-                           ADD     1  TO  SUM-SYOSHIN(IDX3 IDX5)
-                           MOVE  JYURRK-DENPNUM        TO  WRK-DENPNUM
-                         ELSE
-      *
-                         PERFORM  VARYING  IDX10 FROM  1  BY  1
-                                  UNTIL    IDX10   >  15
-                           MOVE  JYURRK-ZAINUM(IDX10) TO  ACCT-ZAINUM
-                           MOVE  JYURRK-HOSPNUM       TO  ACCT-HOSPNUM
-                           MOVE  JYURRK-NYUGAIKBN     TO  ACCT-NYUGAIKBN
-                           MOVE  JYURRK-PTID          TO  ACCT-PTID
-                           MOVE  JYURRK-SRYKA         TO  ACCT-SRYKA
-                           MOVE  JYURRK-SRYYMD(1:6)   TO  ACCT-SRYYM
-                           MOVE  SRYACCT-REC          TO  MCPDATA-REC
-                           MOVE  "DBSELECT"           TO  MCP-FUNC
-                           MOVE  "tbl_sryacct"        TO  MCP-TABLE
-                           MOVE  "key5"               TO  MCP-PATHNAME
-                           CALL  "ORCDBMAIN"          USING
-                                                      MCPAREA
-                                                      MCPDATA-REC
-                                                      SPA-AREA
-                           IF     MCP-RC              =  ZERO
-                             MOVE   "DBFETCH"         TO  MCP-FUNC
-                             MOVE    "tbl_sryacct"    TO  MCP-TABLE
-                             MOVE    "key5"           TO  MCP-PATHNAME
-                             CALL    "ORCDBMAIN"      USING
-                                                      MCPAREA
-                                                      MCPDATA-REC
-                                                      SPA-AREA
-                             IF     MCP-RC            =  ZERO
-                               MOVE MCPDATA-REC       TO  SRYACCT-REC
-                               MOVE ZERO              TO  FLG-SRYACCT
-                             ELSE
-                               MOVE   1               TO  FLG-SRYACCT
-                               INITIALIZE                 SRYACCT-REC
-                             END-IF
-                           ELSE
-                             MOVE    1                TO  FLG-SRYACCT
-                             INITIALIZE                    SRYACCT-REC
-                           END-IF
-      *
-                           MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
-                           MOVE    "tbl_sryacct"      TO  MCP-TABLE
-                           MOVE    "key5"             TO  MCP-PATHNAME
-                           CALL    "ORCDBMAIN"        USING
-                                                      MCPAREA
-                                                      MCPDATA-REC
-                                                      SPA-AREA
-      *
-                           IF  IDX11 <  15
-                             COMPUTE   IDX11   =   IDX10  +   1
-                             IF   JYURRK-ZAINUM(IDX11)  =  ZERO
-                               MOVE    16             TO   IDX10
-                             END-IF
-                           END-IF
-                           IF   ACCT-SRYKBN   =  "12"
-                             MOVE    16               TO   IDX10
-                           END-IF
-                         END-PERFORM
-                           INITIALIZE               SRYACT-REC
-                           MOVE    ACCT-HOSPNUM    TO  SRY-HOSPNUM
-                           MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
-                           MOVE    ACCT-PTID       TO  SRY-PTID
-                           MOVE    ACCT-SRYKA      TO  SRY-SRYKA
-                           MOVE    ACCT-SRYYM      TO  SRY-SRYYM
-                           MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
-                           PERFORM 900-SRYACT-SELECT-SEC
-                           PERFORM 900-SRYACT-FETCH-SEC
-                           PERFORM 900-SRYACT-CLOSE-SEC
-                           IF     FLG-SRYACCT           =  ZERO
-                            AND   ACCT-DAY(1 IDX7)      >  ZERO
-                            AND   ( SRY-SRYCD (1)(1:3) = 
-                                   "112" OR "099" OR "101" )
-                             AND   ACCT-SRYKBN           =  "12"
-      *    再診の件数としてカウントする。
-                              MOVE JYURRK-DRCD          TO  WRK-DRCD
-                              PERFORM 320-SRYKA-GET-IDX-SEC
-                              MOVE JYURRK-SRYYMD(1:6)   TO  WRK-SRYYM
-                              PERFORM 320-SRYYM-GET-IDX-SEC
-                              ADD     1  TO  SUM-SAISHIN(IDX1 IDX6)
-                              ADD     1  TO  SUM-SAISHIN(IDX1 IDX5)
-                              ADD     1  TO  SUM-SAISHIN(IDX3 IDX6)
-                              ADD     1  TO  SUM-SAISHIN(IDX3 IDX5)
-                              MOVE   JYURRK-DENPNUM     TO  WRK-DENPNUM
-                           ELSE
-      *    その他の件数としてカウントする。
-                             IF  FLG-JYURRK2  =  1
-                               MOVE JYURRK-DRCD         TO  WRK-DRCD
-                               PERFORM 320-SRYKA-GET-IDX-SEC
-                               MOVE JYURRK-SRYYMD(1:6)  TO  WRK-SRYYM
-                               PERFORM 320-SRYYM-GET-IDX-SEC
-                               ADD     1  TO  SUM-ETC(IDX1 IDX6)
-                               ADD     1  TO  SUM-ETC(IDX1 IDX5)
-                               ADD     1  TO  SUM-ETC(IDX3 IDX6)
-                               ADD     1  TO  SUM-ETC(IDX3 IDX5)
-                             END-IF
-                           END-IF
-                         END-IF
-                       END-IF
+      *--- 20101215 DELETE START ---------------------------------------
+      *                 ELSE
+      **
+      *                   IF      FLG-SRYACCT           =  ZERO
+      *                     AND   ACCT-DAY(1 IDX7)      >  ZERO
+      *                     AND   JYURRK-SRYKBN(1)      >  "00"
+      *                     AND   ACCT-SRYKBN           =  "11"
+      *                     AND   (JYURRK-DOUJI-RENNUM  =  1
+      *                     OR    JYURRK-DOUJI-RENNUM   =  ZERO)
+      **    初診の件数としてカウントする。
+      *                     MOVE  JYURRK-DRCD           TO  WRK-DRCD
+      *                     PERFORM 320-SRYKA-GET-IDX-SEC
+      *                     MOVE  JYURRK-SRYYMD(1:6)    TO  WRK-SRYYM
+      *                     PERFORM 320-SRYYM-GET-IDX-SEC
+      *                     ADD     1  TO  SUM-SYOSHIN(IDX1 IDX6)
+      *                     ADD     1  TO  SUM-SYOSHIN(IDX1 IDX5)
+      *                     ADD     1  TO  SUM-SYOSHIN(IDX3 IDX6)
+      *                     ADD     1  TO  SUM-SYOSHIN(IDX3 IDX5)
+      *                     MOVE  JYURRK-DENPNUM        TO  WRK-DENPNUM
+      *                   ELSE
+      **
+      *                   PERFORM  VARYING  IDX10 FROM  1  BY  1
+      *                            UNTIL    IDX10   >  15
+      *                     MOVE  JYURRK-ZAINUM(IDX10) TO  ACCT-ZAINUM
+      *                     MOVE  JYURRK-HOSPNUM       TO  ACCT-HOSPNUM
+      *                     MOVE  JYURRK-NYUGAIKBN     TO  ACCT-NYUGAIKBN
+      *                     MOVE  JYURRK-PTID          TO  ACCT-PTID
+      *                     MOVE  JYURRK-SRYKA         TO  ACCT-SRYKA
+      *                     MOVE  JYURRK-SRYYMD(1:6)   TO  ACCT-SRYYM
+      *                     MOVE  SRYACCT-REC          TO  MCPDATA-REC
+      *                     MOVE  "DBSELECT"           TO  MCP-FUNC
+      *                     MOVE  "tbl_sryacct"        TO  MCP-TABLE
+      *                     MOVE  "key5"               TO  MCP-PATHNAME
+      *                     CALL  "ORCDBMAIN"          USING
+      *                                                MCPAREA
+      *                                                MCPDATA-REC
+      *                                                SPA-AREA
+      *                     IF     MCP-RC              =  ZERO
+      *                       MOVE   "DBFETCH"         TO  MCP-FUNC
+      *                       MOVE    "tbl_sryacct"    TO  MCP-TABLE
+      *                       MOVE    "key5"           TO  MCP-PATHNAME
+      *                       CALL    "ORCDBMAIN"      USING
+      *                                                MCPAREA
+      *                                                MCPDATA-REC
+      *                                                SPA-AREA
+      *                       IF     MCP-RC            =  ZERO
+      *                         MOVE MCPDATA-REC       TO  SRYACCT-REC
+      *                         MOVE ZERO              TO  FLG-SRYACCT
+      *                       ELSE
+      *                         MOVE   1               TO  FLG-SRYACCT
+      *                         INITIALIZE                 SRYACCT-REC
+      *                       END-IF
+      *                     ELSE
+      *                       MOVE    1                TO  FLG-SRYACCT
+      *                       INITIALIZE                    SRYACCT-REC
+      *                     END-IF
+      **
+      *                     MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
+      *                     MOVE    "tbl_sryacct"      TO  MCP-TABLE
+      *                     MOVE    "key5"             TO  MCP-PATHNAME
+      *                     CALL    "ORCDBMAIN"        USING
+      *                                                MCPAREA
+      *                                                MCPDATA-REC
+      *                                                SPA-AREA
+      **
+      *                     IF  IDX11 <  15
+      *                       COMPUTE   IDX11   =   IDX10  +   1
+      *                       IF   JYURRK-ZAINUM(IDX11)  =  ZERO
+      *                         MOVE    16             TO   IDX10
+      *                       END-IF
+      *                     END-IF
+      *                     IF   ACCT-SRYKBN   =  "12"
+      *                       MOVE    16               TO   IDX10
+      *                     END-IF
+      *                   END-PERFORM
+      *                     INITIALIZE               SRYACT-REC
+      *                     MOVE    ACCT-HOSPNUM    TO  SRY-HOSPNUM
+      *                     MOVE    ACCT-NYUGAIKBN  TO  SRY-NYUGAIKBN
+      *                     MOVE    ACCT-PTID       TO  SRY-PTID
+      *                     MOVE    ACCT-SRYKA      TO  SRY-SRYKA
+      *                     MOVE    ACCT-SRYYM      TO  SRY-SRYYM
+      *                     MOVE    ACCT-ZAINUM     TO  SRY-ZAINUM
+      *                     PERFORM 900-SRYACT-SELECT-SEC
+      *                     PERFORM 900-SRYACT-FETCH-SEC
+      *                     PERFORM 900-SRYACT-CLOSE-SEC
+      *                     IF     FLG-SRYACCT           =  ZERO
+      *                      AND   ACCT-DAY(1 IDX7)      >  ZERO
+      *                      AND   ( SRY-SRYCD (1)(1:3) = 
+      *                             "112" OR "099" OR "101" )
+      *                       AND   ACCT-SRYKBN           =  "12"
+      **    再診の件数としてカウントする。
+      *                        MOVE JYURRK-DRCD          TO  WRK-DRCD
+      *                        PERFORM 320-SRYKA-GET-IDX-SEC
+      *                        MOVE JYURRK-SRYYMD(1:6)   TO  WRK-SRYYM
+      *                        PERFORM 320-SRYYM-GET-IDX-SEC
+      *                        ADD     1  TO  SUM-SAISHIN(IDX1 IDX6)
+      *                        ADD     1  TO  SUM-SAISHIN(IDX1 IDX5)
+      *                        ADD     1  TO  SUM-SAISHIN(IDX3 IDX6)
+      *                        ADD     1  TO  SUM-SAISHIN(IDX3 IDX5)
+      *                        MOVE   JYURRK-DENPNUM     TO  WRK-DENPNUM
+      *                     ELSE
+      **    その他の件数としてカウントする。
+      *                       IF  FLG-JYURRK2  =  1
+      *                         MOVE JYURRK-DRCD         TO  WRK-DRCD
+      *                         PERFORM 320-SRYKA-GET-IDX-SEC
+      *                         MOVE JYURRK-SRYYMD(1:6)  TO  WRK-SRYYM
+      *                         PERFORM 320-SRYYM-GET-IDX-SEC
+      *                         ADD     1  TO  SUM-ETC(IDX1 IDX6)
+      *                         ADD     1  TO  SUM-ETC(IDX1 IDX5)
+      *                         ADD     1  TO  SUM-ETC(IDX3 IDX6)
+      *                         ADD     1  TO  SUM-ETC(IDX3 IDX5)
+      *                       END-IF
+      *                     END-IF
+      *                   END-IF
+      *                 END-IF
+      *--- 20101215 DELETE END   ---------------------------------------
                    END-IF
                END-IF
                PERFORM  900-JYURRK-FETCH-SEC
