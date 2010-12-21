@@ -27,7 +27,8 @@
       *****************************************************************
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
-      *  01.00.01    @@@@-門間    10/12/13  コメント履歴削除
+      *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -340,8 +341,10 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *--- 20101215 DELETE START ---------------------------------------
       *    ファイルディレクトリ位置指定サブ
-           COPY    "CPMKPASS.INC".
+      *     COPY    "CPMKPASS.INC".
+      *--- 20101215 DELETE END   ---------------------------------------
       *
       *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
@@ -949,7 +952,9 @@
                    MOVE   1     TO    FLG-PASS
                  END-IF
                END-PERFORM
-      *       END-IF
+      *--- 20101215 ADD START ------------------------------------------
+             END-IF
+      *--- 20101215 ADD END   ------------------------------------------
       *    設定ファイルが"２"の時は、受給者番号もチェックする
            IF    SETTEI-PARA    =    "2" AND
                  FLG-PASS       =     1
@@ -1048,6 +1053,9 @@
                    MOVE   1     TO    FLG-PASS
                  END-IF
                END-PERFORM
+      *--- 20101215 ADD START ------------------------------------------
+             END-IF
+      *--- 20101215 ADD END   ------------------------------------------
       *    設定ファイルが"２"の時は、受給者番号もチェックする
            IF    SETTEI-PARA    =    "2" AND
                  FLG-PASS       =     1
@@ -1627,7 +1635,10 @@
            END-IF
            MOVE    WRK-PARA-SRYYM        TO  RECE10-SKYYM
            IF   WRK-PATH = "SEIKYU-KEY60"
-                MOVE    "6"              TO  RECE10-TEISYUTUSAKI
+      *--- 20101215 CHANGE START ---------------------------------------
+      *          MOVE    "6"              TO  RECE10-TEISYUTUSAKI
+                MOVE    6                TO  RECE10-TEISYUTUSAKI
+      *--- 20101215 CHANGE END   ---------------------------------------
            END-IF
            MOVE    RECE10-REC            TO  MCPDATA-REC
            MOVE    "DBSELECT"            TO  MCP-FUNC

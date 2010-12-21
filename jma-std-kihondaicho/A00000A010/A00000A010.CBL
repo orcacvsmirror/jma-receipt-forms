@@ -27,7 +27,8 @@
       *****************************************************************
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
-      *  01.00.01    @@@@-門間    10/12/13  コメント履歴削除
+      *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1319,9 +1320,11 @@
            MOVE    TNS-TEN              TO   A010T-TEN
            MOVE    TNS-TEN              TO   A010T3-TEN
       *
-
       *    外泊の入院料計算
-           IF   NSRY-SRYCD  =  "099999911"
+      *--- 20101215 CHANGE START ---------------------------------------
+      *     IF   NSRY-SRYCD  =  "099999911"
+           IF   NSRY-SRYCD(IDX1)  =  "099999911"
+      *--- 20101215 CHANGE END   ---------------------------------------
       *    外泊の種類選択
              MOVE    9                  TO   A010T-TANI
                                              A010T3-TANI
@@ -1963,9 +1966,14 @@
                END-IF
              WHEN  "160000000"   THRU  "169999999"
       *    病理診断
-               IF  WRK-PARA-PRTYMD  <  "20080401"
+      *--- 20101215 CHANGE START ---------------------------------------
+      *         IF   WRK-PARA-PRTYMD  <  "20080401"
+      *             OR  ( WRK-PARA-PRTSTYMD  <  "20080401"
+      *             AND  WRK-PARA-PRTEDYMD  <  "20080401" )
+               IF  ( WRK-PARA-PRTYMD  <  "20080401"
                    OR  ( WRK-PARA-PRTSTYMD  <  "20080401"
-                   AND  WRK-PARA-PRTEDYMD  <  "20080401" )
+                   AND  WRK-PARA-PRTEDYMD  <  "20080401" ) )
+      *--- 20101215 CHANGE END   ---------------------------------------
                    AND  WRK-PARA-SYUKEIKBN  =  "2"
                  MOVE  "60"    TO    A010T-OUTTYPE
                  MOVE  "60"    TO    A010T3-OUTTYPE
