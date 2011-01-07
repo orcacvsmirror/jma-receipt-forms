@@ -15,12 +15,16 @@
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
       ********************************************************************
+      *  コピー句修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
+      ********************************************************************
        01  M01TMP-REC.
               03  M01TMP-KEY.
                   05  M01TMP-HOSPNUM         PIC  9(02).
                   05  M01TMP-NYUGAIKBN       PIC  X(01).
                   05  M01TMP-SRYKA           PIC  X(02).
-              03  M01TMP-SRY-TBL OCCURS 46.
+              03  M01TMP-SRY-TBL             OCCURS 47.
                   05  M01TMP-KENSU           PIC  9(06).
                   05  M01TMP-NISSU           PIC  9(04).
                   05  M01TMP-TENSU           PIC  9(09).

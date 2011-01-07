@@ -15,16 +15,18 @@
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
       ********************************************************************
+      *  コピー句修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
+      ********************************************************************
        01  M01.
               03  M01-PAGE               PIC  X(03).
               03  M01-SRYYM              PIC  X(16).
               03  M01-SYSYMD             PIC  X(22).
               03  M01-NYUGAI             PIC  X(04).
               03  M01-SRYKANAME          PIC  X(20).
-      * 20080317 H20年4月改正対応START tanaka
               03  M01-NENREIKBN          PIC  X(18)  OCCURS 2.
               03  M01-NENREIKBN2         PIC  X(12)  OCCURS 2.
-      * 20080317 H20年4月改正対応END
               03  M01-MEISAI-TBL OCCURS 46.
                   05  M01-KENSU          PIC  X(06).
                   05  M01-NISSU          PIC  X(04).

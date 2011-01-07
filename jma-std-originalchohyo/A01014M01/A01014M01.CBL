@@ -24,29 +24,11 @@
       *  管理者            : 
       *  作成日付    作業者        記述
       *  03/09/12    @@@@-有村     新規作成
-      *  03/10/27    @@@@-有村     検査・在宅・往診の点数集計方法修正
-      *  04/09/09    @@@@-本橋     MONPE化
-      *  05/06/06    @@@@-本橋     労災・自賠の点単価が正確に取得されて
-      *                            いなかった不具合を修正
-      *  05/10/17    @@@@-劉丹     DBアクセスMCPSUBへの変更と
-      *                            Open-cobol0.23への対応
-      *  07/06/28    @@@@-佐藤     リハビリ計上修正
-      *  07/09/21    @@@@-大竹     Ver4.0対応
       *****************************************************************
       *  プログラム修正履歴
-      * Maj/Min/Rev  修正者     日付      内容
-      *  01.00.01  BRAND-呉秀凡 06/03/09  入院の欄に点数、医療収益の列に集計される
-      *  01.00.02  @@@@-吉川  06/09/04  sarge対応
-      *  01.00.03  @@@@-内田  07/02/06  診療行為区分９８を印字対象外とする
-      *  01.00.04  @@@@-田中  07/12/13  往診・在宅の判定条件を修正
-      *                                 入院の点数・件数の不具合を修正
-      *  01.00.05  @@@@-田中  08/03/17  H20年4月改正対応
-      *  01.00.06  @@@@-田中  08/08/14  検査と在宅の点数と回数の計算式を修正
-      *  01.00.07  @@@@-田中  08/08/25  診療行為画面から入院料を入力すると重複してしまう不具合を修正
-      *  01.00.08  @@@@-田中  09/02/12  入院料・室料差額・食事の件数・日数を修正
-      *  01.00.09  @@@@-田中  09/12/14  病理診断の欄を追加
-      *                                 病理診断の集計先をその他欄から病理診断欄へ
-      ********************************************************************
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
+      *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
        INPUT-OUTPUT                SECTION.
@@ -79,24 +61,15 @@
            COPY    "CPCOMMONPRT.INC".
       *
       *    エラーファイル 名称領域 
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
       *    請求書一時ファイル 名称領域
            COPY    "CPCOMMONDAT2.INC"
                                    REPLACING  //RECE01PARA//
                                    BY         //M01TP//.
       *
-      *--- 2009/12/15 CHANGE START -------------------------------------
-      *     COPY    "A01014M01.INC".
            COPY    "A01014M01V02.INC".
-      *--- 2009/12/15 CHANGE END ---------------------------------------
       *
       *    スパ領域
        01  STS-AREA.
@@ -119,9 +92,7 @@
            03  FLG-SRYACCT              PIC 9(01).
            03  FLG-PTINF                PIC 9(01).
            03  FLG-SYUNOU               PIC 9(01).
-      ****2006/03/09 @@@@-BRAND  START
            03  FLG-SYUNOU1              PIC 9(01).
-      ****2006/03/09 @@@@-BRAND  END
            03  FLG-NYUIN                PIC 9(01).
            03  FLG-TENSU                PIC 9(01).
            03  FLG-M01TMP               PIC 9(01).
@@ -154,9 +125,7 @@
       *
       *    添字領域
        01  IDX-AREA.
-      ****2006/03/09 @@@@-BRAND  START
            03  IIII               PIC 9(01).
-      ****2006/03/09 @@@@-BRAND  END
            03  IDX                PIC 9(01).
            03  IDX1               PIC 9(04).
            03  IDX2               PIC 9(04).
@@ -180,11 +149,8 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     03  WRK-PARA-HOSPID     PIC X(24).
            03  WRK-PARA-HOSPNUM    PIC 9(02).
            03  RECEERR             PIC X(100).
-      *=== 4.0対応 By Otake(2007/09/21) end
       *    対象診療年月
            03  WRK-PARA-SRYYM        PIC X(06).
       *    診療科
@@ -229,9 +195,7 @@
            03  WRK-MONEY             PIC 9(08).
            03  WRK-JIHIKBN           PIC X(02).
            03  WRK-CHK-PTID          PIC 9(10).
-      *--- 2009/02/12 ADD START ----------------------------------------
            03  WRK-CHK-PTID2         PIC 9(10).
-      *--- 2009/02/12 ADD END ------------------------------------------
            03  WRK-CHK-SRYKA         PIC X(02).
            03  WRK-CHK-DRCD          PIC X(05).
            03  WRK-CHK-KBN1          PIC X(01).
@@ -274,17 +238,10 @@
            03  WRK-Z11               PIC ZZZ,ZZZ,ZZZ.
            03  WRK-Z13               PIC Z,ZZZ,ZZZ,ZZZ.
            03  WRK-Z14               PIC ZZ,ZZZ,ZZZ,ZZZ.
-      * 20071213 入院の点数・件数の不具合を修正START t.tanaka
            03  WRK-DENPJTIKBN        PIC 9(01). 
-      * 20071213 入院の点数・件数の不具合を修正END
-      * 20080801 検査と在宅の点数と回数の計算式を修正START
            03  WRK-ZAINUM            PIC 9(08).
-      * 20080801 検査と在宅の点数と回数の計算式を修正END
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正START
            03  WRK-ZENPTID           PIC 9(10).
            03  WRK-TENSU3            PIC 9(09).
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
-      *
       *
       *    診療科名退避エリア
        01  SUM-AREA.
@@ -297,7 +254,6 @@
            03  WRK-NYUIN-TBL.
                05  WRK-NYUIN-DAY    PIC  9(01) OCCURS 31.
       *
-      *
       *    室料差額退避エリア
        01  WRK-ROOM-SAGAKU-TBL.
           03  WRK-ROOM-MAX           PIC 9(02).
@@ -305,14 +261,7 @@
              05  WRK-ROOM-CD         PIC 9(03).
              05  WRK-ROOM-SGK        PIC 9(05).
       *
-      *
-      *
-      *
            COPY    "CPSHELLTBL.INC".
-      *     
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     COPY    "ORCA-DBPATH".         
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -323,7 +272,6 @@
       *
       *    医療機関情報
            COPY    "CPSK1001.INC".
-      *
       *
       *    診療科目情報情報
            COPY    "CPSK1005.INC".
@@ -340,7 +288,6 @@
       *    出力先プリンタ名割り当て情報
            COPY  "CPSK1031.INC".
       *
-      *
       *    診療会計マスタ
        01  SRYACCT-REC.
            COPY    "CPSRYACCT.INC".
@@ -349,17 +296,13 @@
        01  SRYACT-REC.
            COPY    "CPSRYACT.INC".
       *
-      ****2006/03/09 @@@@-BRAND  START
        01  NYUINACCT-REC.
            COPY    "CPNYUINACCT.INC".
-      ****2006/03/09 @@@@-BRAND  END
       *
-      *--- 2009/02/12 ADD START ----------------------------------------
       *    入院会計マスタ２
        01  NYUINACCT2-REC.
            COPY    "CPNYUINACCT.INC"   REPLACING  //NACCT-//
                                        BY         //NACCT2-//.
-      *--- 2009/02/12 ADD END ------------------------------------------
       *
       *    患者入院履歴情報
        01  PTNYUINRRK-REC.
@@ -372,13 +315,11 @@
       *    室料差額情報
            COPY  "CPSK5113.INC".
       *
-      *
       *    患者マスタ
        01  PTINF-REC.
            COPY    "CPPTINF.INC".
       *
       *    点数マスタ
-      * 01  TNS-TENSU-REC.
            COPY    "CPTENSU.INC".
       *
       *    検査ソートマスタ
@@ -393,7 +334,6 @@
        01  HKNNUM-REC.
            COPY    "CPHKNNUM.INC".
       *
-      *
       *    ジョブ管理マスタ
        01  JOBKANRI-REC.
            COPY    "CPJOBKANRI.INC".
@@ -403,8 +343,6 @@
       *
        01  PRTDATA-REC.
            COPY    "CPPRTDATA.INC".          
-      *
-      *
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -433,15 +371,11 @@
       *
       *
            COPY    "MCPDATA.INC".
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     COPY    "CPORCMCP.INC".
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            COPY    "COMMON-SPA".
       *
       *    保険年齢パラメタ
            COPY    "CPORCSAGECHK.INC".
-
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -484,9 +418,7 @@
            INITIALIZE                  SUM-AREA
            INITIALIZE                  WRK-ROOM-SAGAKU-TBL
            INITIALIZE                  WRK-NYUIN-AREA
-      *=== 4.0対応 By Otake(2007/09/21) start
            INITIALIZE                  SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -504,25 +436,18 @@
                                                LNK-PRTKANRI-PRTNM    
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                         WRK-PARA-HOSPID
                                                WRK-PARA-HOSPNUM
                                                RECEERR
-      *=== 4.0対応 By Otake(2007/09/21) end
                                                WRK-PARA-SRYYM
                                                WRK-PARA-SRYKA
                                                WRK-PARA-DRCD
-      *=== 4.0対応 By Otake(2007/09/21) start
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
       *    ステップ管理開始処理
            MOVE    "STS"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
            MOVE    WRK-PARA-SHELLID
                                    TO  JOB-SHELLID
@@ -532,18 +457,11 @@
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                    SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            MOVE    WRK-PARA-HOSPNUM    TO  M01TP-HOSPNUM
            MOVE    "M01TP"             TO  M01TP-FILE-ID
            MOVE    LNK-PRTKANRI-TERMID TO  M01TP-TERMID
-      *
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    "RECEERR"       TO  RECEERR-FILE-ID
-      *     MOVE    LNK-PRTKANRI-TERMID  TO  RECEERR-TERMID
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            MOVE    WRK-PARA-SRYYM  TO  WRK-SRYYMD (1:6)
            MOVE    "01"                TO  WRK-SRYYMD (7:2)
@@ -567,13 +485,9 @@
            INITIALIZE                     SYS-1001-REC
            MOVE    "1001"         TO      SYS-1001-KANRICD
            MOVE    "*"            TO      SYS-1001-KBNCD
-      ****2005/10/17 @@@@-BRAND  START
            MOVE  WRK-PARA-PRTSYMD  TO     SYS-1001-EDYUKYMD
            MOVE  WRK-PARA-PRTLYMD  TO     SYS-1001-STYUKYMD
-      ****2005/10/17 @@@@-BRAND  END
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    SYS-1001-REC   TO      MCPDATA-REC
            PERFORM 900-SYSKANRI-INV-SEC
            IF     FLG-SYSKANRI        =   ZERO
@@ -590,19 +504,14 @@
                PERFORM 500-ERR-HENSYU-SEC
            END-IF
       *
-      *
       *    出力先プリンタ名割り当て情報編集
            MOVE     SPACE         TO        SYS-1031-REC
            INITIALIZE                       SYS-1031-REC
            MOVE     "1031"        TO        SYS-1031-KANRICD
            MOVE     "*"           TO        SYS-1031-KBNCD
-      ****2005/10/17 @@@@-BRAND  START
            MOVE  WRK-PARA-PRTSYMD  TO     SYS-1031-EDYUKYMD
            MOVE  WRK-PARA-PRTLYMD  TO     SYS-1031-STYUKYMD
-      ****2005/10/17 @@@@-BRAND  END
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM         TO  SYS-1031-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE     SYS-1031-REC  TO        MCPDATA-REC
            PERFORM  900-SYSKANRI-INV-SEC
            IF       FLG-SYSKANRI        =   ZERO
@@ -611,19 +520,14 @@
                INITIALIZE              SYS-1031-REC
            END-IF
       *
-      ***  20050606  MOTO
       *    自賠責点数単価取得
            MOVE     SPACE         TO        SYS-4001-REC
            INITIALIZE                       SYS-4001-REC
            MOVE     "4001"        TO        SYS-4001-KANRICD
            MOVE     "*"           TO        SYS-4001-KBNCD
-      ****2005/10/17 @@@@-BRAND  START
            MOVE  WRK-PARA-PRTSYMD  TO     SYS-4001-EDYUKYMD
            MOVE  WRK-PARA-PRTLYMD  TO     SYS-4001-STYUKYMD
-      ****2005/10/17 @@@@-BRAND  END
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM         TO  SYS-4001-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE     SYS-4001-REC  TO        MCPDATA-REC
            PERFORM  900-SYSKANRI-INV-SEC
            IF       FLG-SYSKANRI        =   ZERO
@@ -636,18 +540,13 @@
            ELSE
                MOVE    12                     TO  WRK-JIBAITNK
            END-IF
-      ***  20050606  MOTO
       *
       *    診療科別印刷
            MOVE    "1005"                    TO   SYS-1005-KANRICD
            MOVE    WRK-PARA-PRTLYMD  TO    WRK-SYMD
-      ****2005/10/17 @@@@-BRAND  START
            MOVE  WRK-PARA-PRTSYMD  TO     SYS-1005-EDYUKYMD
            MOVE  WRK-PARA-PRTLYMD  TO     SYS-1005-STYUKYMD
-      ****2005/10/17 @@@@-BRAND  END
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM         TO  SYS-1005-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            PERFORM 820-SYSKANRI-DBSELECT-SEC
            MOVE   1        TO     IDX1 
            PERFORM  UNTIL  FLG-SYSKANRI3 = 1
@@ -660,21 +559,14 @@
            END-PERFORM
            SUBTRACT  1        FROM IDX1  
            MOVE  IDX1         TO   SUM-SRYKAMAX
-      *=== sarge対応 ADD By Takashima(2006/09/17) start
            PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/09/17) end
-      *
       *
       *    全室料差額取得
            INITIALIZE                  SYS-5113-REC
            MOVE    "5113"              TO  SYS-5113-KANRICD
-      ****2005/10/17 @@@@-BRAND  START
            MOVE  WRK-PARA-PRTSYMD  TO     SYS-5113-EDYUKYMD
            MOVE  WRK-PARA-PRTLYMD  TO     SYS-5113-STYUKYMD
-      ****2005/10/17 @@@@-BRAND  END
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM         TO  SYS-5113-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            PERFORM  900-SYS-SELECT-SEC
            PERFORM  900-SYS-FETCH-SEC
            PERFORM  VARYING  IDX4  FROM  1  BY  1
@@ -700,7 +592,6 @@
            PERFORM 31012-SEIWA-HEN-SEC
            MOVE  WRK-HENYMDG  TO  WRK-SEIYMD
       *
-      *
            .
        100-INIT-EXT.
            EXIT.
@@ -708,7 +599,6 @@
       *    主　　処理
       *****************************************************************
        200-MAIN-SEC                SECTION.
-      *
       *
            OPEN     OUTPUT  M01TMP-FILE
            CLOSE            M01TMP-FILE
@@ -718,26 +608,9 @@
            PERFORM  VARYING  IDX  FROM  1  BY  1
                     UNTIL    IDX  >  2
                MOVE    IDX    TO    WRK-NYUGAIKBN
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正START
-      * 20071213 入院の点数・件数の不具合を修正START t.tanaka
-      *         PERFORM   VARYING    WRK-DENPJTIKBN  FROM  1  BY  1
-      *                   UNTIL      WRK-DENPJTIKBN  >     2       
-      * 20071213 入院の点数・件数の不具合を修正END
-      ****2006/03/09 @@@@-BRAND  START
-      *             PERFORM  900-SYUNOU-SELECT-SEC
-      *             PERFORM  UNTIL  FLG-SYUNOU1  =  1
                PERFORM  20011-SYUKEI-SEC
-      *	               PERFORM  900-SYUNOU-FETCH-SEC
-      *             END-PERFORM
-      * 	           PERFORM  900-SYUNOU-CLOSE-SEC
-      * 20071213 入院の点数・件数の不具合を修正START t.tanaka
-      *         END-PERFORM
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
-      * 20071213 入院の点数・件数の不具合を修正END
-      ****2006/03/09 @@@@-BRAND  END
-      	       PERFORM  2001-SYUKEI-SEC
+               PERFORM  2001-SYUKEI-SEC
            END-PERFORM
-      *
       *
            CLOSE   M01TMP-FILE
       **
@@ -757,22 +630,11 @@
       *****************************************************************
        2001-SYUKEI-SEC                SECTION.
       *
-      *
            PERFORM  900-SRYACCT-SELECT-SEC
       * 
            PERFORM  UNTIL    FLG-SRYACCT   =   1
       *
       *    入院料取得処理
-      * 20071213 入院の点数・件数の不具合を修正START t.tanaka
-      *       IF    WRK-NYUGAIKBN  =  "1"
-      *         IF  WRK-CHK-PTID    NOT  =   ACCT-PTID
-      *           MOVE    ACCT-PTID    TO    WRK-CHK-PTID
-      *           PERFORM  20011-NYUIN-SEC
-      
-      *         END-IF
-      *       END-IF
-      * 20071213 入院の点数・件数の不具合を修正END
-      *
                PERFORM  20012-SRY-SET
       
                PERFORM  900-SRYACCT-FETCH-SEC
@@ -782,7 +644,6 @@
              .
        2001-SYUKEI-EXT.
             EXIT.    
-      ****2006/03/09 @@@@-BRAND  START
       ***************************************************************
       *     入院料データ抽出処理
       ****************************************************************
@@ -796,10 +657,8 @@
                        MOVE  NACCT-PTID   TO  WRK-CHK-PTID
                        PERFORM 20011-NYUIN-SEC
                    END-IF
-      *--- 2009/02/12 ADD START ----------------------------------------
       *    日数・件数加算
                    PERFORM   20000-NYUINKENSU-SEC
-      *--- 2009/02/12 ADD END ------------------------------------------
                END-IF
                PERFORM  900-NYUINACCT-FETCH-SEC
            END-PERFORM
@@ -809,12 +668,10 @@
        20011-SYUKEI-EXT.
            EXIT.
       *
-      ****2006/03/09 @@@@-BRAND  END
       *****************************************************************
       *    入院料設定
       *****************************************************************
        20011-NYUIN-SEC                SECTION.
-      *
       *
            INITIALIZE     WRK-NYUIN-AREA
       *    入院履歴情報取得
@@ -880,61 +737,19 @@
                COMPUTE IDC         =    IDB  -  IDA
                SUBTRACT  1         FROM IDB
            END-IF
-      *--- 2009/02/12 DELETE START -------------------------------------
       *    特定入院料区分で加算場所を判定
            IF  PTNYUINRRK-TOKUTEI-KBN    =   SPACE
-      *         ADD    IDC                  TO  M01TMP-KENSU(41)
                MOVE   ZERO                 TO  FLG-TOKUTEI
            ELSE
-      *         ADD    IDC                  TO  M01TMP-KENSU(42)
                MOVE   1                    TO  FLG-TOKUTEI
            END-IF
-      *         ADD    IDC                  TO  M01TMP-KENSU(40)
-      *         ADD    IDC                  TO  M01TMP-KENSU(45)
-      **    室料差額加算
-      *     IF  PTNYUINRRK-RM-SAGAKU  NOT =   SPACE  AND ZERO
-      *         ADD    IDC                  TO  M01TMP-KENSU(43)
-      *         ADD    IDC                  TO  M01TMP-KENSU(40)
-      *         ADD    IDC                  TO  M01TMP-KENSU(45)
-      *     END-IF
-      **    食事療養費加算
-      *     ADD      IDC                    TO  M01TMP-KENSU(43)
-      *     ADD      IDC                    TO  M01TMP-KENSU(40)
-      *     ADD      IDC                    TO  M01TMP-KENSU(45)
       *
       *    日数加算
            PERFORM    UNTIL    IDA  >     IDB
-      **    入院料日数加算
-      *         IF    FLG-TOKUTEI      =     ZERO
-      *             IF    M01TMP-DAY(41 IDA)  =  ZERO
-      *                 MOVE    1     TO       M01TMP-DAY(41 IDA)
-      *                 ADD     1     TO       M01TMP-NISSU(41)
-      *             END-IF
-      *         ELSE
-      *             IF    M01TMP-DAY(42 IDA)  =  ZERO
-      *                 MOVE    1     TO       M01TMP-DAY(42 IDA)
-      *                 ADD     1     TO       M01TMP-NISSU(42)
-      *             END-IF
-      *         END-IF
-      **    室料差額、食事日数加算
-      *         IF    M01TMP-DAY(43 IDA)     =  ZERO
-      *             MOVE      1     TO         M01TMP-DAY(43 IDA)
-      *             ADD       1     TO         M01TMP-NISSU(43)
-      *         END-IF
-      **    診療区分・合計加算
-      *         IF    M01TMP-DAY(40 IDA)     =  ZERO
-      *             MOVE      1     TO         M01TMP-DAY(40 IDA)
-      *             ADD       1     TO         M01TMP-NISSU(40)
-      *         END-IF
-      *         IF    M01TMP-DAY(45 IDA)     =  ZERO
-      *             MOVE      1     TO         M01TMP-DAY(45 IDA)
-      *             ADD       1     TO         M01TMP-NISSU(45)
-      *         END-IF
       **    特定区分設定
                MOVE    FLG-TOKUTEI          TO    WRK-NYUIN-DAY(IDA)
                ADD     1                    TO    IDA
            END-PERFORM
-      *--- 2009/02/12 DELETE END ---------------------------------------
       *
            IF  FLG-M01TMP   =  1
                WRITE    M01TMP-REC
@@ -964,27 +779,8 @@
       *    TMPファイル読み込み
            PERFORM  800-SKTTMP-READ-SEC
       *
-      *--- 2009/02/12 DELETE START -------------------------------------
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正START
-      *     IF SYU-PTID  NOT =   WRK-ZENPTID
-      *       PERFORM  910-SRYACCT-SELECT-SEC
-      ** 
-      *       PERFORM  UNTIL    FLG-SRYACCT   =   1
-      *         IF ACCT-SRYKBN  =  "90" OR  "92"
-      *           COMPUTE  WRK-TENSU3  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
-      *           COMPUTE  SYU-NYN-HKNTEN  =  SYU-NYN-HKNTEN - WRK-TENSU3
-      *           MOVE     ACCT-PTID  TO   WRK-ZENPTID
-      *         END-IF
-      *         PERFORM  910-SRYACCT-FETCH-SEC
-      *       END-PERFORM
-      *     PERFORM  910-SRYACCT-CLOSE-SEC
-      *     END-IF
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
-      *--- 2009/02/12 DELETE END ---------------------------------------
       *   入院料加算
            MOVE    ZERO                    TO    WRK-SYUEKI
-      ***  20050606  MOTO
-      ***     COMPUTE  WRK-SYUEKI     =   SYU-NYN-HKNTEN * WRK-TENTNK
            EVALUATE  WRK-HKNNUM
                WHEN "971"
                WHEN "973"
@@ -997,8 +793,6 @@
                WHEN OTHER
                    COMPUTE  WRK-SYUEKI   =   SYU-NYN-HKNTEN * WRK-TENTNK
            END-EVALUATE
-      ***  20050606  MOTO
-      ***  20050606  MOTO
       *
            MOVE     SYU-SKYEDYMD(7:2)      TO    IDA-G
            IF    WRK-NYUIN-DAY(IDA)    =    1
@@ -1033,7 +827,6 @@
            .
        20013-NYUIN-SET2-EXT.
            EXIT.
-      *--- 2009/02/12 ADD START ----------------------------------------
       *****************************************************************
       *    入院料・件数集計処理
       *****************************************************************
@@ -1178,7 +971,6 @@
            .
        920-NYUINACCT-FETCH-EXT.
            EXIT.
-      *--- 2009/02/12 ADD END ------------------------------------------
       *****************************************************************
       *    診療行為情報取得設定
       *****************************************************************
@@ -1193,7 +985,6 @@
            ELSE
                MOVE    HKN-TENTNK        TO    WRK-TENTNK
            END-IF
-      ***  20050606  MOTO
            IF  WRK-HKNNUM  =  "971"  OR  "973"
                IF    SYS-4001-TENKBN  =  "1"
                    MOVE   11.5   TO   WRK-TENTNK
@@ -1201,7 +992,6 @@
                    MOVE   12     TO   WRK-TENTNK
                END-IF
            END-IF
-      ***  20050606  MOTO
       *
       *    キー設定
            INITIALIZE                      M01TMP-REC
@@ -1214,9 +1004,7 @@
       *    診療行為情報読み込み
       *    検査在宅は診療コード毎に分類する
            IF    ACCT-SRYKBN  =  "60" OR "14"
-      *--- 2009/12/15 ADD START ----------------------------------------
                                  OR  "64"
-      *--- 2009/12/15 ADD END ------------------------------------------
                PERFORM  200121-KENZAI-SEC
            ELSE
                PERFORM  200122-ETC-SEC
@@ -1254,20 +1042,13 @@
                PERFORM  900-SRYACT-FETCH-SEC
            END-PERFORM
       *    
-      *=== sarge対応 UP By Takashima(2006/09/17) start
-      *     PERFORM  900-SRYACCT-CLOSE-SEC
            PERFORM  900-SRYACT-CLOSE-SEC
-      *=== sarge対応 UP By Takashima(2006/09/17) end
       *
       *    合計に加算
-      ***** 03/10/27 UPD
       *    １レコードに付き、１回だけ診療会計の剤点数を加算
            COMPUTE  WRK-TENSU   =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
-      ***  20050606  MOTO
-      ***      COMPUTE  WRK-SYUEKI  =   WRK-TENSU    *  WRK-TENTNK
            COMPUTE  WRK-SYUEKI  ROUNDED 
                                =   WRK-TENSU    *  WRK-TENTNK
-      ***  20050606  MOTO
            MOVE     ZERO        TO  WRK-NISSU
                                      ACCT-ZAIKAISU
            IF  SRY-SRYKBN    =    "14"
@@ -1277,7 +1058,6 @@
            END-IF
             
            PERFORM   20014-GOKEI-SET-SEC
-      ***** UPD END
       *
            .
        200121-KENZAI-EXT.
@@ -1290,33 +1070,20 @@
       *
            PERFORM  900-TENSU-READ-SEC
       *
-      * 20071213 往診・在宅の判定条件を修正START t.tanaka 
-      *     IF    TNS-OSINKBN   =    ZERO
            IF    TNS-CDKBN-KBN   =  "C"
              AND   TNS-CDKBN-KBNNUM  =  ZERO
-      *       MOVE    12     TO      IDX1
                MOVE    11     TO      IDX1
            ELSE
-      *       MOVE    11     TO      IDX1
                MOVE    12     TO      IDX1
            END-IF
-      * 20071213 往診・在宅の判定条件を修正END 
-      *
       *
            MOVE    ZERO     TO   WRK-TENSU
                                  WRK-SYUEKI
-      * 20080801 検査と在宅の点数と回数の計算式を修正START
-      *     COMPUTE  WRK-TENSU   =   TNS-TEN      *  ACCT-ZAIKAISU
            IF  ACCT-ZAINUM NOT =  WRK-ZAINUM
                COMPUTE  WRK-TENSU  =  
                         ACCT-ZAITEN  * ACCT-ZAIKAISU
-      * 20080801 検査と在宅の点数と回数の計算式を修正END
-
-      ***  20050606  MOTO
-      ***      COMPUTE  WRK-SYUEKI  =   WRK-TENSU    *  WRK-TENTNK
                COMPUTE  WRK-SYUEKI  ROUNDED 
                                =   WRK-TENSU    *  WRK-TENTNK
-      ***  20050606  MOTO
       *
       *    点数加算
                ADD    WRK-TENSU      TO     M01TMP-TENSU(IDX1)
@@ -1339,20 +1106,14 @@
                END-PERFORM
                ADD     WRK-NISSU       TO    M01TMP-NISSU(IDX1)
       *
-      *
       *    合計に加算
-      ***** 03/10/27 UPD
                MOVE      ZERO          TO    WRK-TENSU
                                              WRK-SYUEKI
                MOVE      46            TO    IDX2
-      *     MOVE      1             TO    IDX2
-      ***** UPD END
                PERFORM   20014-GOKEI-SET-SEC
       *
-      * 20080801 検査と在宅の点数と回数の計算式を修正START
            END-IF
            MOVE   ACCT-ZAINUM TO  WRK-ZAINUM
-      * 20080801 検査と在宅の点数と回数の計算式を修正END
            .
        200121-ZAITAKU-SET-EXT.
            EXIT.
@@ -1362,9 +1123,7 @@
       *****************************************************************
        200121-KENSA-SET-SEC                SECTION.
       *
-      *--- 2009/12/15 ADD START ----------------------------------------
            IF   SRY-SRYKBN  =  "60"
-      *--- 2009/12/15 ADD END ------------------------------------------
       *    採血チェック
              MOVE    2               TO     WRK-KNSBUNRUI
              PERFORM  900-KENSA-READ-SEC
@@ -1380,28 +1139,20 @@
                    MOVE    32          TO     IDX1
                END-IF
              END-IF
-      *--- 2009/12/15 ADD START ----------------------------------------
            ELSE
              MOVE    47          TO   IDX1
            END-IF
-      *--- 2009/12/15 ADD END ------------------------------------------
       *
       *    点数取得
            PERFORM  900-TENSU-READ-SEC
       *
            MOVE    ZERO     TO   WRK-TENSU
                                  WRK-SYUEKI
-      * 20080801 検査と在宅の点数と回数の計算式を修正START
-      *     COMPUTE  WRK-TENSU   =   TNS-TEN      *  ACCT-ZAIKAISU
            IF  ACCT-ZAINUM NOT =  WRK-ZAINUM
                COMPUTE  WRK-TENSU  =  
                         ACCT-ZAITEN  * ACCT-ZAIKAISU
-      * 20080801 検査と在宅の点数と回数の計算式を修正END
-      ***  20050606  MOTO
-      ***      COMPUTE  WRK-SYUEKI  =   WRK-TENSU    *  WRK-TENTNK
                COMPUTE  WRK-SYUEKI  ROUNDED 
                                =   WRK-TENSU    *  WRK-TENTNK
-      ***  20050606  MOTO
       *
       *    点数加算
                ADD    WRK-TENSU      TO     M01TMP-TENSU(IDX1)
@@ -1424,20 +1175,14 @@
                END-PERFORM
                ADD     WRK-NISSU       TO    M01TMP-NISSU(IDX1)
       *
-      *
       *    合計に加算
-      ***** 03/10/27 UPD
                MOVE      ZERO          TO    WRK-TENSU
                                             WRK-SYUEKI
-      ***** UPD END
                MOVE      31            TO    IDX2
                PERFORM   20014-GOKEI-SET-SEC
-      ***** UPD END
       *
-      * 20080801 検査と在宅の点数と回数の計算式を修正START
            END-IF
            MOVE   ACCT-ZAINUM TO  WRK-ZAINUM
-      * 20080801 検査と在宅の点数と回数の計算式を修正END
            .
        200121-KENSA-SET-EXT.
            EXIT.
@@ -1449,10 +1194,7 @@
       *
       *    診療行為情報より診療種別区分取得
            PERFORM  900-SRYACT-SELECT-SEC
-      *=== sarge対応 UP By Takashima(2006/09/17) start
-      *     PERFORM  900-SRYACCT-CLOSE-SEC
            PERFORM  900-SRYACT-CLOSE-SEC
-      *=== sarge対応 UP By Takashima(2006/09/17) end
       *
       *    集計インデックス設定
            PERFORM  20013-IDXSET-SEC
@@ -1463,18 +1205,13 @@
                COMPUTE  WRK-SYUEKI  =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
            ELSE
                COMPUTE  WRK-TENSU   =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
-      ***  20050606  MOTO
-      ***      COMPUTE  WRK-SYUEKI  =   WRK-TENSU    *  WRK-TENTNK
                COMPUTE  WRK-SYUEKI  ROUNDED 
                                  =   WRK-TENSU    *  WRK-TENTNK
-      ***  20050606  MOTO
            END-IF
       *
-      *--- 2009/02/12 ADD START ----------------------------------------
            IF  IDX1  =  41  OR  42
              CONTINUE
            ELSE
-      *--- 2009/02/12 ADD END ------------------------------------------
       *    点数加算
                ADD    WRK-TENSU      TO     M01TMP-TENSU(IDX1)
       *
@@ -1496,12 +1233,9 @@
                END-PERFORM
                ADD     WRK-NISSU       TO    M01TMP-NISSU(IDX1)
       *
-      *--- 2009/02/12 ADD END ------------------------------------------
       *    合計・診療区分加算
                PERFORM   20014-GOKEI-SET-SEC
-      *--- 2009/02/12 ADD START ----------------------------------------
            END-IF
-      *--- 2009/02/12 ADD END ------------------------------------------
       *
            .
        200122-ETC-EXT.
@@ -1511,7 +1245,6 @@
       *    加算場所設定処理
       *****************************************************************
        20013-IDXSET-SEC                SECTION.
-      * 20080317 H20年4月改正対応START tanaka
       *    保険算定年齢チェック等
            INITIALIZE                  ORCSAGECHKAREA
            MOVE    ACCT-HOSPNUM        TO  AGECHK-HOSPNUM
@@ -1522,8 +1255,7 @@
            CALL    "ORCSAGECHK"        USING
                                        ORCSAGECHKAREA
                                        SPA-AREA
-      
-      * 20080317 H20年4月改正対応END
+      *
            MOVE    ZERO    TO    IDX1
            EVALUATE  SRY-SRYKBN
                WHEN "11" THRU "14"
@@ -1537,18 +1269,13 @@
                                SUBTRACT  1        FROM WRK-NENREI  
                            END-IF
                            IF  COMB-KOH1HKNNUM    =  "027" 
-      * 20080317 H20年4月改正対応START tanaka
                              OR   COMB-HKNNUM  =  "039"
-      * 20080317 H20年4月改正対応END
                                MOVE      5      TO    IDX1
                            ELSE
                                IF  WRK-NENREI   >= 70
                                    MOVE    4      TO    IDX1
                                ELSE
-      * 20080317 H20年4月改正対応START tanaka
-      *                 IF  WRK-NENREI  <  3
                                    IF  AGECHK-SYUGAKUKBN   =  1
-      * 20080317 H20年4月改正対応END
                                        MOVE    2    TO    IDX1
                                    ELSE
                                        MOVE    3    TO    IDX1
@@ -1563,18 +1290,13 @@
                                SUBTRACT  1        FROM WRK-NENREI  
                            END-IF
                            IF  COMB-KOH1HKNNUM    =  "027"
-      * 20080317 H20年4月改正対応START tanaka
                              OR   COMB-HKNNUM  =  "039"
-      * 20080317 H20年4月改正対応END
                                MOVE      9      TO    IDX1
                            ELSE
                                IF  WRK-NENREI   >= 70
                                    MOVE    8      TO    IDX1
                                ELSE
-      * 20080317 H20年4月改正対応START tanaka
-      *                 IF  WRK-NENREI  <  3
                                    IF  AGECHK-SYUGAKUKBN   =  1
-      * 20080317 H20年4月改正対応END
                                        MOVE    6    TO    IDX1
                                    ELSE
                                        MOVE    7    TO    IDX1
@@ -1630,11 +1352,6 @@
                    END-EVALUATE
                WHEN "70"
                    MOVE     35      TO    IDX1
-      * 20080317 H20年4月改正対応START tanaka
-      *--- 2009/12/15 DELETE START -------------------------------------
-      *         WHEN "64"
-      *--- 2009/12/15 DELETE END ---------------------------------------
-      * 20080317 H20年4月改正対応END
                WHEN "80"
                    MOVE     36      TO    IDX2
                    EVALUATE  SRY-SRYSYUKBN
@@ -1643,11 +1360,6 @@
                        WHEN  "800"
                        WHEN  "810"
                            MOVE   38      TO    IDX1
-      * 20080317 H20年4月改正対応START tanaka
-      *--- 2009/12/15 DELETE START -------------------------------------
-      *                 WHEN "640"
-      *--- 2009/12/15 DELETE END ---------------------------------------
-      * 20080317 H20年4月改正対応END
                        WHEN  "830"
                        WHEN  "840"
                        WHEN  "850"
@@ -1682,9 +1394,7 @@
                            SUBTRACT  1        FROM WRK-NENREI  
                        END-IF
                        IF  COMB-KOH1HKNNUM    =  "027"
-      * 20080317 H20年4月改正対応START tanaka
                          OR   COMB-HKNNUM  =  "039"
-      * 20080317 H20年4月改正対応END
                            MOVE      5      TO    IDX1
                        ELSE
                            IF  WRK-NENREI   >= 70
@@ -1705,9 +1415,7 @@
                            SUBTRACT  1        FROM WRK-NENREI  
                        END-IF
                        IF  COMB-KOH1HKNNUM    =  "027"
-      * 20080317 H20年4月改正対応START tanaka
                          OR   COMB-HKNNUM  =  "039"
-      * 20080317 H20年4月改正対応END
                            MOVE      9      TO    IDX1
                        ELSE
                            IF  WRK-NENREI   >= 70
@@ -1777,7 +1485,6 @@
       *   診療区分・合計加算処理
       *****************************************************************
        20014-GOKEI-SET-SEC                SECTION.
-      *
       *
            IF    SRY-SRYKBN  NOT  =   "40" AND "70" AND "95" AND "96"
                ADD    WRK-TENSU      TO     M01TMP-TENSU(IDX2)
@@ -1887,7 +1594,6 @@
                MOVE     "外来"        TO   M01-NYUGAI
            END-IF
            
-      * 20080317 H20年4月改正対応START tanaka
            IF WRK-PARA-SRYYM  <  "200804"
                MOVE     "(３歳未満)"  TO   M01-NENREIKBN(1)
                MOVE     "(老人)"      TO   M01-NENREIKBN2(1)
@@ -1899,7 +1605,6 @@
                MOVE     "(義務教育就学前)"  TO   M01-NENREIKBN(2)
                MOVE     "(後期高齢者)"      TO   M01-NENREIKBN2(2)
            END-IF
-      * 20080317 H20年4月改正対応END
       *
            MOVE    WRK-SRYYM        TO   M01-SRYYM
            MOVE    WRK-SEIYMD       TO   M01-SYSYMD
@@ -1913,20 +1618,10 @@
       *****************************************************************
        320-BODY-HEN-SEC               SECTION.
            PERFORM    VARYING    IDX1    FROM  1  BY  1
-      ***** 03/10/27 UPD
-      *                UNTIL      IDX1    >     45
-      *                UNTIL      IDX1    >     46
-      *--- 2009/12/15 CHANGE START -------------------------------------
                     UNTIL  IDX1  >  47
-      *--- 2009/12/15 ACHANGE END ---------------------------------------
-      *****
       *
-      ***** 03/10/27 UPD 件数の桁数変更
-      *       MOVE    M01TMP-KENSU(IDX1)   TO    WRK-Z4
-      *       MOVE    WRK-Z4               TO    M01-KENSU(IDX1)
                MOVE    M01TMP-KENSU(IDX1)   TO    WRK-Z62
                MOVE    WRK-Z62               TO    M01-KENSU(IDX1)
-      *****
       *
                MOVE    M01TMP-NISSU(IDX1)   TO    WRK-Z4
                MOVE    WRK-Z4               TO    M01-NISSU(IDX1)
@@ -1947,7 +1642,6 @@
       *****************************************************************
        330-PRINT-OUT-SEC         SECTION.
       *
-      * 
            INITIALIZE                       ORCSPRTAREA
            MOVE    "INS"                    TO   SPRT-MODE
            MOVE    LNK-PRTKANRI-RENNUM      TO   SPRT-RENNUM
@@ -1959,26 +1653,15 @@
            MOVE    LNK-PRTKANRI-SHORI-RENNUM
                                             TO   SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY    TO   SPRT-PRIORITY
-      ***  20040909 MOTOHASI MONPEに変更
-      ***     MOVE   "A01014M01"             TO  SPRT-PRTID
-      *--- 2009/12/15 CHANGE START -------------------------------------
-      *     MOVE   "A01014M01.red"             TO  SPRT-PRTID
            MOVE    "A01014M01V02.red"        TO   SPRT-PRTID
-      *--- 2009/12/15 ACHANGE END ---------------------------------------
-      ***  20040909 MOTOHASI MONPEに変更
            MOVE    "診療行為別月計表"       TO   SPRT-TITLE
            MOVE    M01                      TO   SPRT-PRTDATA
            MOVE    LNK-PRTKANRI-TERMID      TO   SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID        TO   SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM       TO   SPRT-PRTNM
-      ***** site-libで動かすためにコメントアウト
-      ***     MOVE    "1"          TO  SPRT-SITEKBN
-      *****
            CALL    "ORCSPRT"           USING
                                        ORCSPRTAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
                                        SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      SPRT-RETURN         =   ZERO
                CONTINUE                    
            END-IF
@@ -1991,35 +1674,21 @@
       *****************************************************************
        900-SYSKANRI-INV-SEC         SECTION.
       *
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    LNK-PRTKANRI-SKYYMD     TO  ORC-DBYMD
-      ****2005/10/17 @@@@-BRAND  END
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-SYSKANRI-KEY10  TO  MCP-PATH
-      *     CALL     "MCPSUB"              USING
            MOVE    "tbl_syskanri"        TO  MCP-TABLE
            MOVE    "key10"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
                                          MCPAREA
                                          MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                          SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *         MOVE  PATH-TBL-SYSKANRI-KEY10  TO  MCP-PATH
-      *         CALL     "MCPSUB"              USING
                MOVE    "tbl_syskanri"        TO  MCP-TABLE
                MOVE    "key10"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                              MCPAREA
                                              MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                              SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
                IF      MCP-RC              =   ZERO
                    MOVE    ZERO                TO  FLG-SYSKANRI
                ELSE
@@ -2029,22 +1698,13 @@
                MOVE    1                   TO  FLG-SYSKANRI
            END-IF
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-SYSKANRI-KEY10  TO  MCP-PATH
-      *     CALL     "MCPSUB"              USING
            MOVE    "tbl_syskanri"        TO  MCP-TABLE
            MOVE    "key10"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                          MCPAREA
                                          MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                          SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            .
        900-SYSKANRI-INV-EXT.
@@ -2055,30 +1715,18 @@
       *****************************************************************
        820-SYSKANRI-DBSELECT-SEC                 SECTION.
       *
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    WRK-SYSYMD            TO  ORC-DBYMD
-      ****2005/10/17 @@@@-BRAND  END
            MOVE    SYS-1005-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"                TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYSKANRI-KEY2     TO  MCP-PATH
-      *     CALL     "MCPSUB"                  USING
            MOVE    "tbl_syskanri"            TO  MCP-TABLE
            MOVE    "key2"                    TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"               USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                              MCPAREA
                                              MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                              SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC           =   ZERO
                PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/09/17) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/17) end
            END-IF        
            .
        820-SYSKANRI-DBSELECT-EXT.
@@ -2090,26 +1738,17 @@
        820-SYSKANRI-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) end
-      *     MOVE    PATH-TBL-SYSKANRI-KEY2      TO  MCP-PATH
-      *     CALL     "MCPSUB"                   USING
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC           =   ZERO
                MOVE    ZERO                   TO  FLG-SYSKANRI3
                MOVE    MCPDATA-REC  TO  SYS-1005-REC
            ELSE
                MOVE    1                           TO  FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/09/17) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/17) end
            END-IF  
            .
        820-SYSKANRI-DBFETCH-EXT.
@@ -2120,22 +1759,13 @@
       *****************************************************************
        820-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE   "DBCLOSE"               TO  MCP-FUNC
            MOVE   "DBCLOSECURSOR"         TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYSKANRI-KEY2  TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_syskanri"         TO  MCP-TABLE
            MOVE    "key2"                 TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"            USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                           MCPAREA
                                           MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                           SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        820-SYSKANRI-DBCLOSE-EXT.
            EXIT.
@@ -2145,30 +1775,18 @@
       *****************************************************************
        821-SYSKANRI-DBSELECT-SEC                 SECTION.
       *
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    WRK-SYSYMD            TO  ORC-DBYMD
-      ****2005/10/17 @@@@-BRAND  END
            MOVE    SYS-1010-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"                TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYSKANRI-KEY2      TO  MCP-PATH
-      *     CALL     "MCPSUB"                   USING
            MOVE    "tbl_syskanri"        TO  MCP-TABLE
            MOVE    "key2"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                          MCPAREA
                                          MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                          SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC           =   ZERO
                PERFORM 821-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/09/17) start
-      *         PERFORM 821-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/17) end
            END-IF        
            .
        821-SYSKANRI-DBSELECT-EXT.
@@ -2180,26 +1798,17 @@
        821-SYSKANRI-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    "SYSKANRI-KEY2"       TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"           USING
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC           =   ZERO
                MOVE    ZERO                   TO  FLG-SYSKANRI3
                MOVE    MCPDATA-REC  TO  SYS-1010-REC
            ELSE
                MOVE    1                           TO  FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/09/17) start
-      *         PERFORM 821-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/17) end
            END-IF  
            .
        821-SYSKANRI-DBFETCH-EXT.
@@ -2210,21 +1819,13 @@
       *****************************************************************
        821-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE  "DBCLOSE"                TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"          TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    "SYSKANRI-KEY2"        TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"            USING
            MOVE    "tbl_syskanri"        TO  MCP-TABLE
            MOVE    "key2"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                          MCPAREA
                                          MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                          SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        821-SYSKANRI-DBCLOSE-EXT.
            EXIT.
@@ -2287,10 +1888,7 @@
                CALL    "ORCSJOB"       USING
                                        ORCSJOBKANRIAREA  
                                        JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                        SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
-
            END-IF
       *
            CLOSE   RECEERR-FILE
@@ -2335,39 +1933,24 @@
        900-PTINF-READ-SEC         SECTION.
       *
            INITIALIZE                      PTINF-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    WRK-PARA-HOSPID         TO  PTINF-HOSPID
            MOVE    WRK-PARA-HOSPNUM         TO  PTINF-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-PTID            TO  PTINF-PTID
            MOVE    PTINF-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-PTINF-KEY      TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_ptinf"            TO  MCP-TABLE
            MOVE    "key"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"            USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                           MCPAREA
                                           MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                           SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) end
-      *         MOVE    PATH-TBL-PTINF-KEY       TO  MCP-PATH
-      *         CALL     "MCPSUB"                USING
                MOVE    "tbl_ptinf"             TO  MCP-TABLE
                MOVE    "key"                   TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"             USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                                MCPAREA
                                                MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                                SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  PTINF-REC
                    MOVE    ZERO                TO  FLG-PTINF
@@ -2380,22 +1963,13 @@
                INITIALIZE                  PTINF-REC
            END-IF
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-PTINF-KEY       TO  MCP-PATH
-      *     CALL     "MCPSUB"                USING
            MOVE    "tbl_ptinf"             TO  MCP-TABLE
            MOVE    "key"                   TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"             USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                            MCPAREA
                                            MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                            SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        900-PTINF-READ-EXT.
            EXIT.
@@ -2406,44 +1980,26 @@
        900-TENSU-READ-SEC   SECTION.
       *
            INITIALIZE                      TNS-TENSU-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    WRK-PARA-HOSPNUM    TO   TNS-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    SRY-SRYCD(IDZ)      TO   TNS-SRYCD
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE    ALL 9               TO  TNS-YUKOSTYMD
-      *                                    TNS-YUKOEDYMD
            MOVE    ALL "9"               TO  TNS-YUKOSTYMD
                                              TNS-YUKOEDYMD
-      ****2005/10/17 @@@@-BRAND  END
            MOVE    TNS-TENSU-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-TENSU-KEY     TO  MCP-PATH
-      *     CALL     "MCPSUB"              USING
            MOVE    "tbl_tensu"           TO  MCP-TABLE
            MOVE    "key"                 TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                          MCPAREA
                                          MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                          SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *         MOVE    PATH-TBL-TENSU-KEY     TO  MCP-PATH
-      *         CALL     "MCPSUB"              USING
                MOVE    "tbl_tensu"           TO  MCP-TABLE
                MOVE    "key"                 TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                              MCPAREA
                                              MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                              SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  TNS-TENSU-REC
                    MOVE    ZERO                TO  FLG-TENSU
@@ -2456,23 +2012,13 @@
                INITIALIZE                  TNS-TENSU-REC
            END-IF
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-TENSU-KEY     TO  MCP-PATH
-      *     CALL     "MCPSUB"              USING
            MOVE    "tbl_tensu"           TO  MCP-TABLE
            MOVE    "key"                 TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                          MCPAREA
                                          MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                          SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
-      *
       *
            .
        900-PTINF-READ-EXT.
@@ -2488,32 +2034,20 @@
            MOVE    WRK-KNSBUNRUI       TO  KENSASORT-KNSBUNRUI
            MOVE    KENSASORT-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-KENSASORT-KEY    TO  MCP-PATH
-      *     CALL     "MCPSUB"                 USING
            MOVE    "tbl_kensasort"       TO  MCP-TABLE
            MOVE    "key"                 TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                          MCPAREA
                                          MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                          SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC              =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *         MOVE    PATH-TBL-KENSASORT-KEY     TO  MCP-PATH
-      *         CALL     "MCPSUB"                  USING
                MOVE    "tbl_kensasort"       TO  MCP-TABLE
                MOVE    "key"                 TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                              MCPAREA
                                              MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                              SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
                IF      MCP-RC              =   ZERO
                    MOVE    MCPDATA-REC         TO  KENSASORT-REC
                    MOVE    ZERO                TO  FLG-KENSASORT
@@ -2526,23 +2060,13 @@
                INITIALIZE                  KENSASORT-REC
            END-IF
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-KENSASORT-KEY     TO  MCP-PATH
-      *     CALL     "MCPSUB"                  USING
            MOVE    "tbl_kensasort"       TO  MCP-TABLE
            MOVE    "key"                 TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                          MCPAREA
                                          MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                          SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
-      *
       *
            .
        900-KENSA-READ-EXT.
@@ -2554,10 +2078,7 @@
        900-SRYACT-SELECT-SEC         SECTION.
       *
            INITIALIZE                       SRYACT-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    ACCT-HOSPID          TO  SRY-HOSPID
            MOVE    ACCT-HOSPNUM          TO  SRY-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    ACCT-NYUGAIKBN       TO  SRY-NYUGAIKBN
            MOVE    ACCT-PTID            TO  SRY-PTID
            MOVE    ACCT-SRYKA           TO  SRY-SRYKA
@@ -2565,18 +2086,12 @@
            MOVE    ACCT-ZAINUM          TO  SRY-ZAINUM
            MOVE    SRYACT-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SRYACT-KEY2    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_sryact"         TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF    MCP-RC    =   ZERO
                MOVE  ZERO               TO FLG-SRYACT
                PERFORM   900-SRYACT-FETCH-SEC
@@ -2592,18 +2107,12 @@
        900-SRYACT-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SRYACT-KEY2    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_sryact"         TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC              =   ZERO
                MOVE    MCPDATA-REC     TO  SRYACT-REC
                MOVE    ZERO            TO  FLG-SRYACT
@@ -2618,21 +2127,13 @@
       *****************************************************************
        900-SRYACT-CLOSE-SEC         SECTION.
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SRYACT-KEY2    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_sryact"         TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        900-SRYACT-CLOSE-EXT.
            EXIT.
@@ -2642,26 +2143,17 @@
        900-SRYACCT-SELECT-SEC         SECTION.
       *
            INITIALIZE                   SRYACCT-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    WRK-PARA-HOSPID      TO  ACCT-HOSPID
            MOVE    WRK-PARA-HOSPNUM      TO  ACCT-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-PARA-SRYYM       TO  ACCT-SRYYM
            MOVE    WRK-NYUGAIKBN        TO  ACCT-NYUGAIKBN
            MOVE    SRYACCT-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SRYACCT-KEY8    TO  MCP-PATH
-      *     CALL     "MCPSUB"                USING
            MOVE    "tbl_sryacct"        TO  MCP-TABLE
            MOVE    "key8"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF    MCP-RC          =   ZERO
                MOVE    ZERO         TO  FLG-SRYACCT
                PERFORM    900-SRYACCT-FETCH-SEC
@@ -2677,18 +2169,12 @@
        900-SRYACCT-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SRYACCT-KEY8    TO  MCP-PATH
-      *     CALL     "MCPSUB"                USING
            MOVE    "tbl_sryacct"        TO  MCP-TABLE
            MOVE    "key8"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF  MCP-RC              =   ZERO
                MOVE    MCPDATA-REC     TO  SRYACCT-REC
                MOVE    ZERO            TO  FLG-SRYACCT
@@ -2700,10 +2186,7 @@
                    GO  TO  900-SRYACCT-FETCH-SEC
                END-IF
       *    コメントは対象外
-      **** ９８印字対象外 by Uchida(2007/02/06) start
-      *             IF    ACCT-SRYKBN    =    "99"
                IF    ACCT-SRYKBN    =    "99"  OR  "98"
-      **** ９８印字対象外 by Uchida(2007/02/06) end
                    GO    TO    900-SRYACCT-FETCH-SEC
                END-IF
                ADD    1               TO  CNT-DATA
@@ -2713,39 +2196,23 @@
            .
        900-SRYACCT-FETCH-EXT.
            EXIT.
-      ****2006/03/09 @@@@-BRAND  START
       *******************************************************************:
       *   入院 診療会計情報SELECT
       *****************************************************************
        900-NYUINACCT-SELECT-SEC         SECTION.
       *
            INITIALIZE                   NYUINACCT-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    WRK-PARA-HOSPID      TO  NACCT-HOSPID
            MOVE    WRK-PARA-HOSPNUM     TO  NACCT-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-PARA-SRYYM       TO  NACCT-SRYYM
            MOVE    WRK-NYUGAIKBN        TO  NACCT-NYUGAIKBN
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正START
-      *     MOVE    SYU-PTID             TO  NACCT-PTID
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    NYUINACCT-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
-      *     MOVE    PATH-TBL-NYUINACCT-KEY9    TO  MCP-PATH
-      *     CALL     "MCPSUB"                  USING
            MOVE    "tbl_nyuinacct"      TO  MCP-TABLE
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正START
            MOVE    "key8"               TO  MCP-PATHNAME
-      *     MOVE    "key9"               TO  MCP-PATHNAME
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF    MCP-RC               =   ZERO
                MOVE    ZERO         TO  FLG-NYUINACCT
                PERFORM    900-NYUINACCT-FETCH-SEC
@@ -2761,21 +2228,12 @@
        900-NYUINACCT-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-NYUINACCT-KEY9    TO  MCP-PATH
-      *     CALL     "MCPSUB"                  USING
            MOVE    "tbl_nyuinacct"      TO  MCP-TABLE
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正START
            MOVE    "key8"               TO  MCP-PATHNAME
-      *     MOVE    "key9"               TO  MCP-PATHNAME
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF    MCP-RC              =   ZERO
                MOVE    MCPDATA-REC     TO  NYUINACCT-REC
                MOVE    ZERO            TO  FLG-NYUINACCT
@@ -2802,50 +2260,28 @@
       *****************************************************************
        900-NYUINACCT-CLOSE-SEC         SECTION.
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-NYUINACCT-KEY9    TO  MCP-PATH
-      *     CALL     "MCPSUB"                  USING
            MOVE    "tbl_nyuinacct"      TO  MCP-TABLE
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正START
            MOVE    "key8"               TO  MCP-PATHNAME
-      *     MOVE    "key9"               TO  MCP-PATHNAME
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        900-NYUINACCT-CLOSE-EXT.
            EXIT.
-      ****2006/03/09 @@@@-BRAND  END
       *****************************************************************
       *    診療会計情報クローズ
       *****************************************************************
        900-SRYACCT-CLOSE-SEC         SECTION.
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SRYACCT-KEY8    TO  MCP-PATH
-      *     CALL     "MCPSUB"                USING
            MOVE    "tbl_sryacct"        TO  MCP-TABLE
            MOVE    "key8"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        900-SRYACCT-CLOSE-EXT.
            EXIT.
@@ -2855,33 +2291,19 @@
        940-SYUNOU-SELECT-SEC         SECTION.
       *
            INITIALIZE                  SYUNOU-REC
-      ****2006/03/09 @@@@-BRAND  START
-      *     MOVE    ACCT-HOSPID          TO  SYU-HOSPID
-      *     MOVE    ACCT-PTID            TO  SYU-PTID
-      *     MOVE    ACCT-NYUGAIKBN       TO  SYU-NYUGAIKBN
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    WRK-PARA-HOSPID     TO   SYU-HOSPID
            MOVE    WRK-PARA-HOSPNUM    TO   SYU-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-PTID            TO   SYU-PTID
            MOVE    WRK-NYUGAIKBN       TO   SYU-NYUGAIKBN
-      ****2006/03/09 @@@@-BRAND  END
            MOVE    WRK-PARA-PRTSYMD     TO  SYU-SKYSTYMD
            MOVE    WRK-PARA-PRTLYMD     TO  SYU-SKYEDYMD
            MOVE    SYUNOU-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYUNOU-KEY5    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_syunou"         TO  MCP-TABLE
            MOVE    "key5"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC           =   ZERO
                PERFORM 940-SYUNOU-FETCH-SEC
            ELSE
@@ -2896,18 +2318,12 @@
        940-SYUNOU-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYUNOU-KEY5    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_syunou"         TO  MCP-TABLE
            MOVE    "key5"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF    MCP-RC        =   ZERO
                MOVE    MCPDATA-REC     TO  SYUNOU-REC
                MOVE    ZERO            TO  FLG-SYUNOU
@@ -2925,63 +2341,37 @@
       *****************************************************************
        940-SYUNOU-CLOSE-SEC         SECTION.
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYUNOU-KEY5    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_syunou"         TO  MCP-TABLE
            MOVE    "key5"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        940-SYUNOU-CLOSE-EXT.
            EXIT.
-      ****2006/03/09 @@@@-BRAND  START
       *****************************************************************
       *    収納情報SELECT
       *****************************************************************
        900-SYUNOU-SELECT-SEC         SECTION.
       *
            INITIALIZE                  SYUNOU-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    WRK-PARA-HOSPID      TO  SYU-HOSPID
            MOVE    WRK-PARA-HOSPNUM     TO  SYU-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-NYUGAIKBN        TO  SYU-NYUGAIKBN
-      * 20071213 入院の点数・件数の不具合を修正START t.tanaka
-      * PERFORM  VARYING IIII FROM 1 BY 1
-      *      UNTIL   IIII = 3 
-      *   MOVE  IIII                  TO  SYU-DENPJTIKBN
-      *  END-PERFORM 
            MOVE    WRK-DENPJTIKBN       TO  SYU-DENPJTIKBN
-      * 20071213 入院の点数・件数の不具合を修正END
            MOVE    WRK-PARA-PRTSYMD     TO  SYU-SKYSTYMD
            MOVE    WRK-PARA-PRTLYMD     TO  SYU-SKYEDYMD
            MOVE    SYUNOU-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYUNOU-KEY7    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_syunou"         TO  MCP-TABLE
            MOVE    "key7"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC           =   ZERO
                PERFORM 900-SYUNOU-FETCH-SEC
-		   
            ELSE
                MOVE   1               TO  FLG-SYUNOU1
            END-IF
@@ -2994,22 +2384,16 @@
        900-SYUNOU-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYUNOU-KEY7    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_syunou"         TO  MCP-TABLE
            MOVE    "key7"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC              =   ZERO
                MOVE    MCPDATA-REC     TO  SYUNOU-REC
                MOVE    ZERO            TO  FLG-SYUNOU1
-		       MOVE    SYU-PTID   TO   WRK-PTID
+               MOVE    SYU-PTID   TO   WRK-PTID
                IF    SYU-DENPJTIKBN    =   "3"
                    GO    TO    900-SYUNOU-FETCH-SEC
                END-IF
@@ -3024,66 +2408,41 @@
       *****************************************************************
        900-SYUNOU-CLOSE-SEC         SECTION.
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYUNOU-KEY7    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_syunou"         TO  MCP-TABLE
            MOVE    "key7"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        900-SYUNOU-CLOSE-EXT.
            EXIT.
-      ****2006/03/09 @@@@-BRAND  END
       *****************************************************************
       *   保険組合せ情報セット
       *****************************************************************
        930-HKNCOMBI-SET-SEC  SECTION.
       *
            INITIALIZE  HKNCOMBI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  ACCT-HOSPID          TO  COMB-HOSPID
            MOVE  ACCT-HOSPNUM         TO  COMB-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE  ACCT-PTID            TO  COMB-PTID
            MOVE  ACCT-HKNCOMBI        TO  COMB-HKNCOMBINUM
            MOVE  HKNCOMBI-REC         TO  MCPDATA-REC
            MOVE  "DBSELECT"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-HKNCOMBI-KEY       TO  MCP-PATH
-      *     CALL     "MCPSUB"                 USING
            MOVE    "tbl_hkncombi"       TO  MCP-TABLE
            MOVE    "key"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF  MCP-RC  =  ZERO
-      *=== 4.0対応 By Otake(2007/09/21) start
                MOVE     "DBFETCH"         TO  MCP-FUNC
-      *         MOVE  PATH-TBL-HKNCOMBI-KEY    TO  MCP-PATH
-      *         CALL     "MCPSUB"              USING
                MOVE    "tbl_hkncombi"     TO  MCP-TABLE
                MOVE    "key"              TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"        USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                           MCPAREA
                                           MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                           SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
                IF  MCP-RC  =  ZERO
                    MOVE  MCPDATA-REC  TO  HKNCOMBI-REC
                    MOVE  ZERO         TO  FLG-HKNCOMBI
@@ -3091,28 +2450,18 @@
                    INITIALIZE  HKNCOMBI-REC
                    MOVE  1            TO  FLG-HKNCOMBI
                END-IF
-
            ELSE
                MOVE    1            TO  FLG-HKNCOMBI
            END-IF
       *
            INITIALIZE  MCPAREA
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE  "DBCLOSE"        TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"  TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-HKNCOMBI-KEY    TO  MCP-PATH
-      *     CALL     "MCPSUB"              USING
            MOVE    "tbl_hkncombi"        TO  MCP-TABLE
            MOVE    "key"                 TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                          MCPAREA
                                          MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                          SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            .
        930-HKNCOMBI-SET-EXT.
@@ -3124,48 +2473,27 @@
        930-HKNNUM-SET-SEC  SECTION.
       *
            INITIALIZE  HKNNUM-REC
-      ****2006/03/09 @@@@-BRAND  START
-      *	   MOVE  ACCT-HOSPID          TO  HKN-HOSPID
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  WRK-PARA-HOSPID      TO  HKN-HOSPID
            MOVE  WRK-PARA-HOSPNUM     TO  HKN-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
-      ****2006/03/09 @@@@-BRAND  END
            MOVE  WRK-HKNNUM           TO  HKN-HKNNUM
            MOVE  "00"                 TO  HKN-PAYKBN
-      ****2005/10/17 @@@@-BRAND  START
-      *    MOVE  ALL 9                TO  HKN-TEKSTYMD
            MOVE  ALL "9"                TO  HKN-TEKSTYMD
-      ****2005/10/17 @@@@-BRAND  END
            MOVE  ZERO                 TO  HKN-TEKEDYMD
            MOVE  HKNNUM-REC           TO  MCPDATA-REC
            MOVE  "DBSELECT"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-HKNNUM-KEY      TO  MCP-PATH
-      *     CALL     "MCPSUB"              USING
            MOVE    "tbl_hknnum"         TO  MCP-TABLE
            MOVE    "key"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF  MCP-RC  =  ZERO
-      *=== 4.0対応 By Otake(2007/09/21) start
                MOVE  "DBFETCH"            TO  MCP-FUNC
-      *         MOVE  PATH-TBL-HKNNUM-KEY    TO  MCP-PATH
-      *         CALL     "MCPSUB"            USING
                MOVE    "tbl_hknnum"        TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
                CALL    "ORCDBMAIN"         USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                            MCPAREA
                                            MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                            SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
                IF  MCP-RC  =  ZERO
                    MOVE  MCPDATA-REC  TO  HKNNUM-REC
                    MOVE  ZERO         TO  FLG-HKNNUM
@@ -3173,28 +2501,18 @@
                    INITIALIZE  HKNCOMBI-REC
                    MOVE  1            TO  FLG-HKNNUM
                END-IF
-
            ELSE
                MOVE    1            TO  FLG-HKNNUM
            END-IF
       *
            INITIALIZE  MCPAREA
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE  "DBCLOSE"        TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"  TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-HKNNUM-KEY     TO  MCP-PATH
-      *     CALL     "MCPSUB"             USING
            MOVE    "tbl_hknnum"         TO  MCP-TABLE
            MOVE    "key"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            .
        930-HKNNUM-SET-EXT.
@@ -3206,31 +2524,18 @@
        930-PTNYUINRRK-SELECT-SEC         SECTION.
       *
            INITIALIZE                       PTNYUINRRK-REC
-      ****2006/03/09 @@@@-BRAND  START
-      *    MOVE    ACCT-HOSPID          TO  PTNYUINRRK-HOSPID
-      *    MOVE    ACCT-PTID            TO  PTNYUINRRK-PTID
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    WRK-PARA-HOSPID      TO  PTNYUINRRK-HOSPID
            MOVE    WRK-PARA-HOSPNUM     TO  PTNYUINRRK-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-PTID             TO  PTNYUINRRK-PTID
-      ****2006/03/09 @@@@-BRAND  END
            MOVE    WRK-PARA-PRTLYMD     TO  PTNYUINRRK-NYUINYMD
            MOVE    WRK-PARA-PRTSYMD     TO  PTNYUINRRK-TAIINYMD
            MOVE    PTNYUINRRK-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-PTNYUINRRK-KEY11     TO  MCP-PATH
-      *     CALL     "MCPSUB"                     USING
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
            MOVE    "key11"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC           =   ZERO
                PERFORM 930-PTNYUINRRK-FETCH-SEC
            ELSE
@@ -3245,18 +2550,12 @@
        930-PTNYUINRRK-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"           TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-PTNYUINRRK-KEY11      TO  MCP-PATH
-      *     CALL     "MCPSUB"                      USING
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
            MOVE    "key11"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC              =   ZERO
                MOVE    MCPDATA-REC     TO  PTNYUINRRK-REC
       *
@@ -3279,22 +2578,13 @@
       *****************************************************************
        930-PTNYUINRRK-CLOSE-SEC         SECTION.
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"            TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-PTNYUINRRK-KEY11     TO  MCP-PATH
-      *     CALL     "MCPSUB"                     USING
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
            MOVE    "key11"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        930-PTNYUINRRK-CLOSE-EXT.
            EXIT.
@@ -3305,18 +2595,12 @@
       *
            MOVE    SYS-5113-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYSKANRI-KEY5   TO  MCP-PATH
-      *     CALL     "MCPSUB"                USING
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key5"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF    MCP-RC     NOT  =   ZERO
                MOVE    1                TO  FLG-ROOM
            END-IF
@@ -3329,18 +2613,12 @@
        900-SYS-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYSKANRI-KEY5      TO  MCP-PATH
-      *     CALL     "MCPSUB"                   USING
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key5"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      MCP-RC              =   ZERO
                MOVE    MCPDATA-REC      TO  SYS-5113-REC
                MOVE    ZERO             TO  FLG-ROOM
@@ -3355,26 +2633,16 @@
       *****************************************************************
        900-SYS-CLOSE-SEC         SECTION.
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-SYSKANRI-KEY5    TO  MCP-PATH
-      *     CALL     "MCPSUB"                 USING
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
            MOVE    "key5"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        900-SYS-CLOSE-EXT.
            EXIT.
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正START
       *****************************************************************
       *    診療会計情報SELECT
       *****************************************************************
@@ -3450,7 +2718,6 @@
            .
        910-SRYACCT-CLOSE-EXT.
            EXIT.
-      * 20080825 診療行為画面から入院料を入力すると重複してしまう不具合を修正END
       *****************************************************************
       *    終了　　処理
       *****************************************************************
@@ -3467,9 +2734,7 @@
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                    SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            PERFORM 900-DBDISCONNECT-SEC
       *
@@ -3483,36 +2748,22 @@
        100-DBOPEN-SEC                SECTION.
       *
            MOVE    "DBOPEN"             TO  MCP-FUNC.
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO  MCP-TABLE
                                             MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            MOVE    "DBSTART"            TO  MCP-FUNC.
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO  MCP-TABLE
                                             MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        100-DBOPEN-EXT.
            EXIT.
@@ -3523,36 +2774,22 @@
        900-DBDISCONNECT-SEC            SECTION.
       *
            MOVE    "DBCOMMIT"           TO  MCP-FUNC.
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO  MCP-TABLE
                                             MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            MOVE    "DBDISCONNECT"       TO  MCP-FUNC.
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO  MCP-TABLE
                                             MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        900-DBCLOSE-EXT.
            EXIT.

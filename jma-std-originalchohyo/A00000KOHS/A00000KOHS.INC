@@ -15,17 +15,11 @@
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
       ********************************************************************
-      ******************************************************************
       *  コピー句修正履歴
       * Maj/Min/Rev  修正者       日付      内容
-      *  01/00/01    田中      2008/09/10   記号・番号の桁数を７桁から８桁に変更
-      *                        2008/09/24   フリガナを追加
-      *  01/00/02    田中      2009/01/29   食事療養費欄の追加
-      *  01/00/03    田中      2009/10/21   患者番号の桁数を変更
-      ******************************************************************
+      * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
+      ********************************************************************
         01  KOHS-DATA.
-      *    請求年月
-      *      03  KOHS-SKYYM                    PIC X(16).
       *    市町村名
             03  KOHS-CITYNAME                 PIC X(80).
       *    公費名
@@ -33,19 +27,13 @@
                 05  KOHS-KOHNAME              PIC X(10) OCCURS 15.
       *    ID(患者番号)
             03  KOHS-PTNUM-TBL.
-      *--- 2009/10/22 CHANGE + ADD START -------------------------------
-      *          05  KOHS-PTNUM                PIC X(18) OCCURS 15.
-                05  KOHS-PTNUM                PIC X(20) OCCURS 15.
-                05  KOHS-PTNUM2               PIC X(40) OCCURS 15.
-      *--- 2009/10/22 CHANGE + ADD END ---------------------------------
+                05  KOHS-PTNUM                PIC X(18) OCCURS 15.
       *    氏名
             03  KOHS-NAME-TBL.
                 05  KOHS-NAME                 PIC X(20) OCCURS 15.
-      * 20080924 フリガナを追加START
       *    フリガナ
             03  KOHS-FURIGANA-TBL.
                 05  KOHS-FURIGANA             PIC X(24) OCCURS 15.
-      * 20080924 フリガナを追加END
       *    負担者番号／受給者番号
             03  KOHS-FTNJA-JKYS-TBL OCCURS 15.
                 05  KOHS-FTNJANUM             PIC X(28).
@@ -64,12 +52,8 @@
                 05  KOHS-HKNJANUM             PIC X(16) OCCURS 15.
       *    記号・番号
             03  KOHS-KIGONUM-TBL OCCURS 15.
-      * 20080910 記号・番号の桁数を７桁から８桁に変更START
-      *          05  KOHS-KIGO                 PIC X(14).
-      *          05  KOHS-NUM                  PIC X(14).
                 05  KOHS-KIGO                 PIC X(16).
                 05  KOHS-NUM                  PIC X(16).
-      * 20080910 記号・番号の桁数を７桁から８桁に変更END
       *    実日数
             03  KOHS-NISSU-TBL.
                 05  KOHS-NISSU                PIC X(04) OCCURS 15.
@@ -79,7 +63,6 @@
       *    本人負担額
             03  KOHS-ITBFTN-TBL.
                 05  KOHS-ITBFTN               PIC X(18) OCCURS 15.
-      *--- 2009/01/29 ADD START ----------------------------------------
       *    食事回数
             03  KOHS-SKJKAISU-TBL.
                 05  KOHS-SKJKAISU             PIC X(04) OCCURS 15.
@@ -89,7 +72,6 @@
       *    食事療養費―標準負担額
             03  KOHS-SKJFTN-TBL.
                 05  KOHS-SKJFTN               PIC X(18) OCCURS 15.
-      *--- 2009/01/29 ADD END ------------------------------------------
       *    診療科名
             03  KOHS-SRYKANAME-TBL.
                 05  KOHS-SRYKANAME            PIC X(10) OCCURS 15.

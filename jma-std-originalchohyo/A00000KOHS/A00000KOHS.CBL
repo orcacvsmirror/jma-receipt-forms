@@ -24,35 +24,10 @@
       *  管理者            :
       *  作成日付    作業者        記述
       *  04/04/07    有村        新規作成
-      *  05/10/17    劉丹    DBアクセスMCPSUBへの変更とOpen-cobol0.23への対応
       *****************************************************************
       *  プログラム修正履歴
-      * Maj/Min/Rev   修正者    日付            内容
-      *  01.00.01      有村    04/06/03   使用追加による修正
-      *  01.00.02      有村    04/07/28   会社別一覧機能削除
-      *  01.00.03      本橋    04/09/14   MONPE化
-      *  01.00.04      王奇    06/02/20   公費−償還払いの使う判定添加
-      *  01.00.05      吉川    06/09/04   sarge対応
-      *  01.00.06      内田    06/10/21   国保を印刷するよう修正
-      *  01.00.07      内田    07/04/01   削除された公費は印字対象外
-      *                                   返戻・月遅れも印字対象とする
-      *  01.00.08      大竹    07/09/21   Ver4.0対応
-      *  01.00.09      田中    07/11/20   主科以外の診療も集計可能にする
-      *                                   診療科名取得時の不具合を修正
-      *  01.00.10      田中    08/04/24   H20年4月改正対応(後期高齢者)
-      *  01.00.11      田中    08/05/26   古い公費名を印字してしまう不具合を修正
-      *  01.00.12      田中    08/06/02   使われていない公費名を印字してしまう不具合を修正
-      *  01.00.13      田中    08/06/19   処理速度の向上の修正
-      *  01.00.14      田中    08/06/23   対象の公費を使用していない場合に上がってきてしまう不具合を修正
-      *  01.00.15      田中    08/07/29   保険変更を行った時,対象外になった公費が印字されてしまう
-      *  01.00.16      田中    08/09/24   カナ氏名を追加
-      *  01.00.17      田中    08/10/27   CSV出力処理を追加
-      *  01.00.18      田中    09/01/29   食事療養費欄の追加
-      *  01.00.18      田中    09/01/29   本人負担額に自費を含まないよう修正
-      *  01.00.19      門間    09/04/16   プログラムオプション対応(INIファイル)
-      *  01.00.20      田中    09/10/22   患者番号の桁数を変更
-      *  01.00.21      田中    10/06/21   患者検索条件を変更
-      *  01.00.22      門間    10/11/22   対象の公費分のみ集計するように修正
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -66,32 +41,11 @@
                                  ACCESS  MODE    IS  DYNAMIC
                                  RECORD  KEY     IS  MF100-KEY
                                  FILE    STATUS  IS  STS-MF100.
-      *---- 2008/10/27  ADD  START -------------------------------------
       *    ファイル出力用
            SELECT  A00000KOHS-FILE   ASSIGN   A00000KOHSCSV
                                      ORGANIZATION    IS  LINE
                                                          SEQUENTIAL
                                      FILE    STATUS  IS  STS-CSV.
-      *---- 2008/10/27  ADD  END ---------------------------------------
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
-      **    自治体名用ファイル
-      *     SELECT  CITY-FILE     ASSIGN FILE-NAME
-      *                           ORGANIZATION   IS  LINE SEQUENTIAL
-      *                           ACCESS MODE    IS  SEQUENTIAL
-      *                           FILE   STATUS  IS  STS-CITY.
-      **    償還払対象公費用ファイル
-      *     SELECT  KOHI-FILE     ASSIGN FILE-NAME
-      ****** 04/06/03 DEL
-      **                           ORGANIZATION   IS  LINE SEQUENTIAL
-      ******
-      *                           ACCESS MODE    IS  SEQUENTIAL
-      *                           FILE   STATUS  IS  STS-KOHI.
-      ****** 04/06/03 INS
-      *     SELECT  KOHS-FILE     ASSIGN FILE-NAME
-      *                           ACCESS MODE    IS  SEQUENTIAL
-      *                           FILE   STATUS  IS  STS-KOHS.
-      ******
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    エラーファイル
            SELECT  RECEERR-FILE  ASSIGN  RECEERR
@@ -105,45 +59,9 @@
        01  MF100-REC. 
            COPY  "A00000KOHSTMP.INC".
       *
-      *---- 2008/10/27  ADD  START -------------------------------------
       *    ＣＳＶファイル出力用
        FD  A00000KOHS-FILE.
        01  A00000KOHS-REC            PIC X(400).
-      *---- 2008/10/27  ADD  END ---------------------------------------
-      
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE START
-      **    優先保険者番号ファイル
-      * FD  CITY-FILE.
-      ****** 04/06/03 UPD
-      ** 01  CITY-CITYNAME             PIC X(16). 
-      * 01  CITY-CITYNAME             PIC X(40). 
-      ******
-      **
-      **    償還払対象公費用ファイル
-      * FD  KOHI-FILE.
-      * 01  KOHI-REC.
-      ****** 04/06/03 UPD
-      **     03 KOHI-DATA-TBL  OCCURS 10.
-      **        05  KOHI-SP1           PIC X(05).
-      **        05  KOHI-KOHNUM        PIC X(03).
-      **        05  KOHI-SP2           PIC X(01). 
-      *     03 KOHI-DATA-TBL  OCCURS 40.
-      *        05  KOHI-SP1           PIC X(06).
-      *        05  KOHI-KOHNUM        PIC X(03).
-      *        05  KOHI-SP2           PIC X(01). 
-      ******
-      ****** 04/06/03 INS
-      * FD  KOHS-FILE.
-      * 01  KOHS-REC.
-      *     03 KOHS-DATA-TBL.
-      ****** 04/07/28 DEL
-      **        05  FILLER             PIC X(17).
-      **        05  KOHS-SYUTURYOKU    PIC 9(01).
-      ******
-      *        05  FILELR             PIC X(15).
-      *        05  KOHS-KAIPAGE       PIC 9(01). 
-      ******
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 DELETE END
       *
       *    エラーファイル
        FD  RECEERR-FILE.
@@ -157,22 +75,12 @@
                    BY         //MF100//.
       *
       *    エラーファイル 名称領域
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     COPY  "CPCOMMONDAT2.INC"
-      *             REPLACING  //RECE01PARA//
-      *             BY         //RECEERR//.
-      *     03      PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
       *帳票コピー句
-      *--- 2009/10/26 CHANGE START -------------------------------------
-      *     COPY    "A00000KOHS.INC".
            COPY    "A00000KOHSV02.INC".
-      *--- 2009/10/26 CHANGE END ---------------------------------------
       *
-      *---- 2008/10/27  ADD  START -------------------------------------
       *    ＣＳＶファイル出力用
        01  A00000KOHSCSV.
            03  FILLER               PIC X(11)   VALUE   "/home/orca/".
@@ -182,7 +90,6 @@
            03  FILLER               PIC X(04)   VALUE   ".csv".
       *    シェル用領域
            COPY    "CPSHELLTBL.INC".
-      *---- 2008/10/27  ADD  END ---------------------------------------
       *    スパ領域
        01  STS-AREA.
            03  STS-MF100            PIC X(02).
@@ -190,10 +97,8 @@
            03  STS-RECEERR          PIC X(02).
            03  STS-CITY             PIC X(02).
            03  STS-KOHI             PIC X(02).
-      ***** 04/06/03 INS
            03  STS-KOHS             PIC X(01).
-      *****
-      *---- 2008/10/27  ADD  START -------------------------------------
+      *
            03  STS-CSV              PIC X(02).
       *    システム領域
        01  SYS-AREA.
@@ -202,7 +107,6 @@
                05  SYS-MM           PIC 9(02).
                05  SYS-DD           PIC 9(02).
            03  SYS-TIME             PIC 9(08).
-      *---- 2008/10/27  ADD  END ---------------------------------------
       *
       *    フラグ領域
        01  FLG-AREA.
@@ -216,12 +120,8 @@
            03  FLG-PTHKNINF         PIC 9(01).
            03  FLG-RECE10           PIC 9(01).
            03  FLG-OK               PIC 9(01).
-      ****2006/02/20 @@@@-BRAND start
            03  FLG-KBN              PIC 9(01).
-      ****2006/02/20 @@@@-BRAND END
-      *--- 2010/06/17 ADD START ----------------------------------------
            03  FLG-KOHCHK           PIC 9(01).
-      *--- 2010/06/17 ADD END ------------------------------------------
       *
       *    添字領域
        01  IDX-AREA.
@@ -231,37 +131,24 @@
            03  IDX4                 PIC 9(04).
            03  IDX5                 PIC 9(04).
            03  IDX                  PIC 9(04).
-      *---- 2008/10/27  ADD  START -------------------------------------
            03  IDX6                 PIC 9(04).
-      *---- 2008/10/27  ADD  END ---------------------------------------
            03  IDY                  PIC 9(04).
            03  IDZ                  PIC 9(04).
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD START
            03  IDXP                 PIC 9(02).
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD END
-      *--- 2010/11/22 ADD START ----------------------------------------
            03  IDX7                 PIC 9(04).
-      *--- 2010/11/22 ADD END   ----------------------------------------
       *
       *    パラメタ領域
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID       PIC 9(07).
            03  WRK-PARA-SHELLID     PIC X(08).
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     03  WRK-PARA-HOSPID     PIC X(24).
            03  WRK-PARA-HOSPNUM     PIC 9(02).
            03  RECEERR              PIC X(100).
-      *=== 4.0対応 By Otake(2007/09/21) end
            03  WRK-PARA-PAGE        PIC 9(10).
            03  WRK-PARA-SRYYM       PIC X(06).
-      *---- 2008/10/27  ADD  START -------------------------------------
            03  WRK-PARA-STUKBN      PIC X(01).
-      *---- 2008/10/27  ADD  END ---------------------------------------
-      ****2005/10/17 @@@@-BRAND  start
            03  WRK-PARA-PRTSYMD     PIC X(08).
            03  WRK-PARA-PRTLYMD     PIC X(08).
-      ****2005/10/17 @@@@-BRAND  END
       *
       *    一時領域
        01  WRK-AREA.
@@ -275,11 +162,10 @@
            03  WRK-HENYMDG1         PIC X(09).
            03  WRK-KOHNUM           PIC X(03).
            03  WRK-TAHO             PIC X(20).
-      ***** 04/06/03 INS
+      *
            03  WRK-CITYNAME1        PIC X(60).
            03  WRK-CITYNAME2        PIC X(80).
            03  WRK-MOJI1            PIC 9(02).
-      *****
       *
            03  WRK-MAE-INPUT        PIC X(200).
            03  WRK-OUT-INPUT        PIC X(200).
@@ -289,58 +175,37 @@
       *
            03  WRK-Z2               PIC ZZ.
            03  WRK-Z9               PIC Z,ZZZ,ZZZ. 
-      * 20080526 古い公費名を印字してしまう不具合を修正START tanaka
            03  WRK-SRYYMD           PIC 9(08). 
-      * 20080526 古い公費名を印字してしまう不具合を修正END
-      * 20080623 対象の公費を使用してない場合に上がってしまう不具合を修正START
            03  FLG-KOHSKY           PIC 9(01).
-      * 20080623 対象の公費を使用してない場合に上がってしまう不具合を修正END
-      *---- 2008/10/27  ADD  START -------------------------------------
            03  WRK-SRYKANAME        PIC X(10).
            03  WRK-REC-LENGTH       PIC 9(04).
            03  IDW                  PIC 9(04).
            03  WRK-HENSYU-AREA.
                05  WRK-DATA         PIC X(100).
                05  WRK-NAGASA       PIC 9(04).
-      *--- 2008/10/27  ADD  END ----------------------------------------
-      *--- 2009/01/29 ADD START ----------------------------------------
            03  WRK-SKYMONEY         PIC 9(09).
-      *--- 2009/01/29 ADD END ------------------------------------------
-      *--- 2010/11/22 ADD START ----------------------------------------
            03  WRK-NISSU1           PIC 9(02).
            03  WRK-NISSU2           PIC 9(02).
-      *--- 2010/11/22 ADD END   ----------------------------------------
       *
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD START
        01  PGOPTION-AREA.
            03  CITY-CITYNAME        PIC X(40).
            03  KOHS-KAIPAGE         PIC 9(01).
            03  KOHI-DATA-TBL        OCCURS 40.
                05  KOHI-KOHNUM      PIC X(03). 
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD END
       *    カウント領域
        01  CNT-AREA.
            03  CNT-RECE10           PIC 9(06).
            03  CNT-MF100            PIC 9(06).
            03  CNT-PAGE             PIC 9(06).
-      ***** 04/06/03 INS
       *    改ページKEY領域
        01  KEY-AREA.
            03  KEY-NEW.
                05  KEY-N-KOHNUM     PIC X(03).
            03  KEY-OLD.
                05  KEY-O-KOHNUM     PIC X(03).
-      ****2005/10/17 @@@@-BRAND  start
       *
            COPY    "CPSHELLTBL.INC".
       *     
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     COPY    "ORCA-DBPATH".   
-      *=== 4.0対応 By Otake(2007/09/21) end
-      *
-      ****2005/10/17 @@@@-BRAND  END
-      *****
-      *
       *****************************************************************
       *    ファイルレイアウト
       *****************************************************************
@@ -380,11 +245,9 @@
       *    患者保険情報
        01  PTHKNINF-REC.
            COPY  "CPPTHKNINF.INC".
-      ****2006/02/20 @@@@-BRAND start
            COPY  "CPKOHSKY.INC"
                  REPLACING  //KOHSKY//
                  BY         //RECE02//.
-      ****2006/02/20 @@@@-BRAND END
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -407,18 +270,12 @@
            COPY    "MCPAREA".
       *
            COPY    "MCPDATA.INC".
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     COPY  "CPORCMCP.INC".
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
       *    ファイルディレクトリ位置指定サブ
            COPY    "CPMKPASS.INC".
       *
            COPY    "COMMON-SPA".
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD START
-      *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 ADD END
       *
       *****************************************************************
        LINKAGE  SECTION.
@@ -453,16 +310,11 @@
            INITIALIZE  WRK-AREA
            INITIALIZE  CNT-AREA
            INITIALIZE  IDX-AREA
-      ***** 04/06/03 INS
            INITIALIZE  KEY-AREA
-      *****
-      *=== 4.0対応 By Otake(2007/09/21) start
            INITIALIZE  SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
-      *---- 2008/10/27  ADD  START -------------------------------------
+      *
            ACCEPT    SYS-YMD       FROM    DATE
            ACCEPT    SYS-TIME      FROM    TIME
-      *---- 2008/10/27  ADD  END ---------------------------------------
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -480,60 +332,32 @@
                                                LNK-PRTKANRI-PRTNM
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                         WRK-PARA-HOSPID
+      *
                                                WRK-PARA-HOSPNUM
                                                RECEERR
                                                WRK-PARA-SRYYM
-      *---- 2008/10/27  ADD  START -------------------------------------
                                                WRK-PARA-STUKBN
-      *---- 2008/10/27  ADD  END -------------------------------------
-      *=== 4.0対応 By Otake(2007/09/21) end
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
-      ***** 04/06/03 INS
            PERFORM  110-INI-FILE-SEC
-      *****
       *
       *    ステップ開始処理
            MOVE    "STS"              TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM        TO  JOB-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-PARA-JOBID     TO  JOB-JOBID
            MOVE    WRK-PARA-SHELLID   TO  JOB-SHELLID
            MOVE    "A00000KOHS"       TO  JOB-PGID
-      ***** 04/07/28 DEL
-      ****** 04/06/03 UPD
-      **     MOVE    "償還払公費一覧表"      TO  JOB-SHELLMSG
-      *     IF      KOHS-SYUTURYOKU    =   ZERO
-      *       MOVE    "償還払公費一覧表"      TO  JOB-SHELLMSG
-      *     ELSE
-      *       MOVE    "会社別患者一覧表"      TO  JOB-SHELLMSG
-      *     END-IF
-      ***** 04/07/28 INS
            MOVE    "償還払公費一覧表"      TO   JOB-SHELLMSG
-      *****
            CALL    "ORCSJOB"          USING
                                       ORCSJOBKANRIAREA
                                       JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                       SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE  WRK-PARA-HOSPNUM     TO   MF100PARA-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE  "MF100ZZ"            TO   MF100PARA-FILE-ID
            MOVE  LNK-PRTKANRI-TERMID(1:16)
                                       TO   MF100PARA-TERMID
-      *
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  "RECEERR"        TO  RECEERR-FILE-ID
-      *     MOVE  LNK-PRTKANRI-TERMID(1:16)
-      *                            TO  RECEERR-TERMID
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
       *    請求年月の和暦を取得
            MOVE    WRK-PARA-SRYYM     TO   WRK-SYMD (1:6)
@@ -541,7 +365,6 @@
            PERFORM   31012-SEIWA-HEN-SEC
            MOVE    WRK-HENYMDG(1:16)  TO   WRK-SRYYMWH
       *
-      ****2005/10/17 @@@@-BRAND  start
       *    対象年月最終日取得
            INITIALIZE  WRK-SYMD
            MOVE    WRK-PARA-SRYYM     TO   WRK-SYMD(1:6)
@@ -551,33 +374,22 @@
       *    対象年月初日
            MOVE    WRK-PARA-SRYYM     TO   WRK-PARA-PRTSYMD(1:6)
            MOVE    "01"               TO   WRK-PARA-PRTSYMD(7:2)
-      ****2005/10/17 @@@@-BRAND  END
       *    医療機関ＩＤ編集
            INITIALIZE  SYS-1001-REC
            MOVE    "1001"             TO   SYS-1001-KANRICD
            MOVE    "*"                TO   SYS-1001-KBNCD
-      ****2005/10/17 @@@@-BRAND  start
            MOVE    WRK-PARA-PRTSYMD   TO   SYS-1001-EDYUKYMD
            MOVE    WRK-PARA-PRTLYMD   TO   SYS-1001-STYUKYMD
-      ****2005/10/17 @@@@-BRAND  END
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM        TO   SYS-1001-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    SYS-1001-REC       TO   MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
            IF   FLG-SYSKANRI  =  ZERO
              MOVE  MCPDATA-REC        TO   SYS-1001-REC
            ELSE
-      ****2005/10/17 @@@@-BRAND  start
-      *      DISPLAY "*** A00000KOHS SYS 1001 ERR ***" UPON CONSOLE
              DISPLAY "*** A00000KOHS SYS 1001 ERR ***" 
-      ****2005/10/17 @@@@-BRAND  END
              MOVE  1  TO  FLG-END
            END-IF 
       *
-      ***** 04/06/03 DEL
-      *     PERFORM  110-INI-FILE-SEC
-      *****
            OPEN  OUTPUT MF100-FILE
            .
        100-INIT-EXT.
@@ -587,66 +399,6 @@
       *    INIファイル読み込み処理
       *****************************************************************
        110-INI-FILE-SEC                SECTION.
-      *
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE START
-      **    ファイルディレクトリ位置指定
-      *     INITIALIZE           ORCSMKPASSAREA
-      *     MOVE    "data/CITYNAME.INI"     TO   MKPASS-IN-01
-      *     CALL    "ORCSMKPASSSITE"        USING
-      *                                     ORCSMKPASSAREA
-      *     MOVE    MKPASS-OT-01            TO   FILE-NAME
-      **
-      *     INITIALIZE   CITY-CITYNAME
-      **
-      *     OPEN  INPUT  CITY-FILE
-      **
-      *     READ CITY-FILE
-      *       AT END
-      *         INITIALIZE          CITY-CITYNAME
-      *     END-READ
-      **
-      **
-      *     CLOSE CITY-FILE
-      **
-      **    ファイルディレクトリ位置指定
-      *     INITIALIZE                  ORCSMKPASSAREA
-      *     MOVE    "data/KOHI.INI"     TO   MKPASS-IN-01
-      *     CALL    "ORCSMKPASSSITE"    USING
-      *                                 ORCSMKPASSAREA
-      *     MOVE    MKPASS-OT-01        TO   FILE-NAME
-      **
-      **
-      *     INITIALIZE   KOHI-REC
-      **
-      *     OPEN  INPUT  KOHI-FILE
-      **
-      *     READ KOHI-FILE
-      *       AT END
-      *         INITIALIZE        KOHI-REC
-      *     END-READ
-      **
-      *     CLOSE KOHI-FILE
-      **
-      ****** 04/06/03 INS
-      **    ファイルディレクトリ位置指定
-      *     INITIALIZE           ORCSMKPASSAREA
-      *     MOVE    "data/KOHS.INI"     TO   MKPASS-IN-01
-      *     CALL    "ORCSMKPASSSITE"    USING
-      *                                 ORCSMKPASSAREA
-      *     MOVE    MKPASS-OT-01        TO   FILE-NAME
-      **
-      **
-      *     INITIALIZE   KOHS-REC
-      **
-      *     OPEN  INPUT   KOHS-FILE
-      **
-      *     READ KOHS-FILE
-      *       AT END
-      *         INITIALIZE        KOHS-REC
-      *     END-READ
-      **
-      **
-      *     CLOSE KOHS-FILE
       *
       *    プログラムオプション取込み
            INITIALIZE                        ORCSPRGOPTIONAREA
@@ -681,7 +433,6 @@
                MOVE  41                     TO  IDXP
              END-IF
            END-PERFORM
-      *--- プログラムオプション対応(INIファイル) 2009/04/16 CHANGE END
       *
            .
        110-INI-FILE-EXT.
@@ -713,68 +464,6 @@
            CLOSE            MF100-FILE
            OPEN     I-O     MF100-FILE
       *
-      *--- 2010/06/17 CHANGE START -------------------------------------
-      * 20080424  H20年4月改正対応START tanaka
-      *     PERFORM  VARYING  IDX  FROM 1  BY  1
-      *              UNTIL    IDX  >    2
-      *     PERFORM  VARYING  IDX  FROM 1  BY  1
-      *              UNTIL    IDX  >    3
-      **       IF  IDX         =    1
-      **=== 4.0対応 By Otake(2007/09/21) start
-      **         MOVE  PATH-TBL-SEIKYU-KEY4     TO     WRK-PATH
-      **         MOVE  "key4"                   TO     WRK-PATH
-      **=== 4.0対応 By Otake(2007/09/21) end
-      **       ELSE
-      **=== 4.0対応 By Otake(2007/09/21) start
-      **         MOVE  PATH-TBL-SEIKYU-KEY3     TO     WRK-PATH
-      **         MOVE  "key3"                   TO     WRK-PATH
-      **=== 4.0対応 By Otake(2007/09/21) end
-      **       END-IF
-      *       EVALUATE  IDX
-      *         WHEN   1
-      *           MOVE  "key4"           TO   WRK-PATH
-      *         WHEN   2
-      *           MOVE  "key3"           TO   WRK-PATH
-      *         WHEN   3
-      ** 20080619 処理速度の向上の修正START tanaka
-      **           MOVE  "all"            TO     WRK-PATH
-      *           MOVE  "key60"          TO   WRK-PATH
-      ** 20080619 処理速度の向上の修正END
-      *       END-EVALUATE
-      * 20080619 処理速度の向上の修正START tanaka
-      *       IF  IDX =  3
-      *         PERFORM  900-SEIKYU-SELECT-SEC
-      *         PERFORM  UNTIL    FLG-END =   1
-      **
-      *           IF  (RECE10-HKNNUM = "039"
-      *             OR  RECE10-HKNNUM = "040")
-      *             AND ((( RECE10-SRYYM    =   WRK-PARA-SRYYM)
-      *             AND (  RECE10-SKYKBN    NOT =  "0"      )
-      *             AND (( RECE10-SKYYM     =   "000000" )
-      *             OR  (  RECE10-SKYYM     =   WRK-PARA-SRYYM )))
-      *             OR  (( RECE10-SKYYM     =   WRK-PARA-SRYYM   )
-      *             AND (  RECE10-SKYKBN    NOT =  "0"      )))
-      *               PERFORM  2002-HENSYU-SEC
-      *           END-IF
-      **
-      *           PERFORM  900-SEIKYU-READ-SEC
-      *         END-PERFORM
-      *         PERFORM  900-SEIKYU-CLOSE-SEC
-      *       ELSE
-      * 20080424  H20年4月改正対応END
-      *         PERFORM  900-SEIKYU-SELECT-SEC
-      *         PERFORM  UNTIL   FLG-END  =  1
-      **
-      *           PERFORM  2002-HENSYU-SEC
-      **
-      *           PERFORM  900-SEIKYU-READ-SEC
-      *         END-PERFORM
-      *         PERFORM  900-SEIKYU-CLOSE-SEC
-      ** 20080424  H20年4月改正対応START tanaka
-      **       END-IF
-      ** 20080619 処理速度の向上の修正END
-      * 20080424  H20年4月改正対応END
-      *     END-PERFORM
            PERFORM  900-KOHSKY-SELECT-SEC
            PERFORM  UNTIL  FLG-KOHSKY  =  1
       *
@@ -784,7 +473,6 @@
            END-PERFORM
       *
            PERFORM  900-KOHSKY-CLOSE-SEC
-      *--- 2010/06/17 CHANGE END ---------------------------------------
       *
            CLOSE   MF100-FILE
       *
@@ -797,15 +485,10 @@
       *****************************************************************
        2002-HENSYU-SEC  SECTION.
       *
-      *--- 2010/06/17 ADD START ----------------------------------------
            INITIALIZE          FLG-KOHCHK
-      *--- 2010/11/22 CHANGE START -------------------------------------
-      *     PERFORM  900-SEIKYU-SELECT-SEC
            PERFORM  20021-KOHCHK-SELECT-SEC
-      *--- 2010/11/22 CHANGE END   -------------------------------------
       *
            IF   FLG-KOHCHK  =  1
-      *--- 2010/11/22 ADD START ----------------------------------------
              PERFORM  900-SEIKYU-SELECT-SEC
              PERFORM  910-SYUNOU-SELECT-SEC
              PERFORM  UNTIL  FLG-SYUNOU  =  1
@@ -819,14 +502,9 @@
                  AND     SYU-KOH3HKNNUM       NOT =  SPACE )
                  OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH4HKNNUM
                  AND     SYU-KOH4HKNNUM       NOT =  SPACE ))
-      *--- 2010/11/22 ADD END   ----------------------------------------
-      *--- 2010/06/17 ADD END ------------------------------------------
       *
       *    データ設定
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    RECE10-HOSPID             TO  MF100-HOSPID
                  MOVE    RECE10-HOSPNUM          TO   MF100-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
                  MOVE    RECE10-PTNUM            TO   MF100-PTNUM
                  MOVE    RECE10-PTID             TO   MF100-PTID
                  MOVE    RECE10-SRYYM            TO   MF100-SRYYM
@@ -837,19 +515,12 @@
                  MOVE    RECE10-HKNJANUM         TO   MF100-HKNJANUM
                  MOVE    RECE10-TEKSTYMD         TO   MF100-TEKSTYMD
                  MOVE    PTINF-NAME              TO   MF100-NAME
-      * 20080924 カナ氏名を追加START
                  MOVE    PTINF-KANANAME          TO   MF100-FURIGANA
-      * 20080924 カナ氏名を追加END
                  MOVE    PTINF-SEX               TO   MF100-SEX
                  MOVE    RECE10-KIGO             TO   MF100-KIGO
                  MOVE    RECE10-NUM              TO   MF100-NUM
                  MOVE    RECE10-KYURATE          TO   MF100-KYURATE
-      *--- 2010/11/22 CHANGE START -------------------------------------
-      *       MOVE    RECE10-JNISSU(1)          TO   MF100-JNISSU
-      *       MOVE    RECE10-TOTALTEN(1)        TO   MF100-TOTALTEN
                  MOVE    RECE10-RJNHKNNUM        TO   MF100-RJNHKNNUM
-      *
-      *           MOVE    ZERO                    TO   MF100-FTNMONEY
       *
                  IF  RECE10-NYUGAIKBN  =  "1"
       *
@@ -909,52 +580,6 @@
                    ADD    SYU-TOTAL-HKNTEN         TO  MF100-TOTALTEN
                  END-IF
       *
-      **--- 2009/01/29 ADD START ----------------------------------------
-      *       IF   RECE10-KOHNUM(1)  =  MF100-KOHNUM
-      **    日数加算
-      *         ADD    RECE10-SHOKUJINISSU(2)      TO   MF100-SKJKAISU
-      **    請求額加算
-      *         ADD    RECE10-SHOKUJIRYOYOHI(2)    TO   MF100-SKJSKY
-      **    標準負担額加算
-      *         ADD    RECE10-SHOKUJIFTN(2)        TO   MF100-SKJFTN
-      *       ELSE
-      *         IF  RECE10-KOHNUM(2)  =  MF100-KOHNUM
-      **    日数加算
-      *           ADD    RECE10-SHOKUJINISSU(3)    TO   MF100-SKJKAISU
-      **    請求額加算
-      *           ADD    RECE10-SHOKUJIRYOYOHI(3)  TO   MF100-SKJSKY
-      **    標準負担額加算
-      *           ADD    RECE10-SHOKUJIFTN(3)      TO   MF100-SKJFTN
-      *         ELSE
-      *           IF  RECE10-KOHNUM(3)  =  MF100-KOHNUM
-      **    日数加算
-      *             ADD    RECE10-SHOKUJINISSU(4)    TO   MF100-SKJKAISU
-      **    請求額加算
-      *             ADD    RECE10-SHOKUJIRYOYOHI(4)  TO   MF100-SKJSKY
-      **    標準負担額加算
-      *             ADD    RECE10-SHOKUJIFTN(4)      TO   MF100-SKJFTN
-      *           ELSE
-      *             IF  RECE10-KOHNUM(4)  =  MF100-KOHNUM
-      **    日数加算
-      *               ADD    RECE10-SHOKUJINISSU(5)   TO   MF100-SKJKAISU
-      **    請求額加算
-      *               ADD    RECE10-SHOKUJIRYOYOHI(5) TO   MF100-SKJSKY
-      **    標準負担額加算
-      *               ADD    RECE10-SHOKUJIFTN(5)     TO   MF100-SKJFTN
-      *             ELSE
-      **    日数加算
-      *               ADD    RECE10-SHOKUJINISSU(1)   TO   MF100-SKJKAISU
-      **    請求額加算
-      *               ADD    RECE10-SHOKUJIRYOYOHI(1) TO   MF100-SKJSKY
-      **    標準負担額加算
-      *               ADD    RECE10-SHOKUJIFTN(1)     TO   MF100-SKJFTN
-      *             END-IF
-      *           END-IF
-      *         END-IF
-      *       END-IF
-      *--- 2009/01/29 ADD END ------------------------------------------
-      *--- 2010/11/22 CHANGE END   -------------------------------------
-      *
       *    公費名取得
                  MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
                  PERFORM  950-HKNNUM-SET-SEC
@@ -988,47 +613,31 @@
                  END-PERFORM
       *
       *    収納情報より、本人負担額を集計
-      *--- 2010/11/22 CHANGE START -------------------------------------
-      *         MOVE     ZERO                     TO   MF100-FTNMONEY
-      *         PERFORM  920-SYUNOU-SET-SEC
-      *    収納情報より、本人負担額を集計
                  COMPUTE  WRK-SKYMONEY  =  SYU-SKYMONEY
                                         -  SYU-JIHI-TOTAL
                                         -  SYU-JIHI-TOTAL-TAX
                  ADD   WRK-SKYMONEY     TO   MF100-FTNMONEY
       *
-      *--- 2010/11/22 CHANGE END   -------------------------------------
-      ***** 04/06/03 INS
       *    公費番号でソートする
                  MOVE     MF100-KOHNUM      TO   MF100-KOHNUM-KEY
-      *****
       *
-      ****2006/02/20 @@@@-BRAND start
-      *    WRITE    MF100-REC
-      *    ADD      1        TO      CNT-MF100
-      *--- 2010/11/22 ADD START ----------------------------------------
                END-IF
                PERFORM  910-SYUNOU-FETCH-SEC
              END-PERFORM
       *
              PERFORM  910-SYUNOU-CLOSE-SEC
-      *--- 2010/11/22 ADD END    ---------------------------------------
              IF  FLG-KBN   =   ZERO
                WRITE    MF100-REC
                ADD     1        TO   CNT-MF100
              ELSE
                REWRITE  MF100-REC
              END-IF
-      ****2006/02/20 @@@@-BRAND END
-      *--- 2010/06/17 ADD START ----------------------------------------
            END-IF
-      *--- 2010/06/17 ADD END ------------------------------------------
       *
            .
        2002-HENSYU-EXT.
            EXIT.
       *
-      *--- 2010/11/22 ADD START ----------------------------------------
       *****************************************************************
       *    公費チェック処理
       *****************************************************************
@@ -1069,7 +678,6 @@
        20021-KOHCHK-SELECT-EXT.
            EXIT.
       *
-      *--- 2010/11/22 ADD END   ----------------------------------------
       *****************************************************************
       *    データ印刷処理
       *****************************************************************
@@ -1093,7 +701,6 @@
       *
            END-PERFORM
            CLOSE    MF100-FILE
-      *---- 2008/10/27  ADD  START -------------------------------------
            IF   WRK-PARA-STUKBN  =  "1"
       *    CSV頭書き出力    
              PERFORM  210-CSV-HED-SEC
@@ -1112,7 +719,6 @@
              CLOSE  A00000KOHS-FILE
              CLOSE  MF100-FILE
            END-IF
-      *---- 2008/10/27  ADD  END ---------------------------------------
       *
            .
        2003-PRINT-EXT.
@@ -1127,27 +733,12 @@
            INITIALIZE  KOHS-DATA
       *
       *    自治体名
-      ***** 04/07/28 DEL
-      ****** 04/06/03 UPD
-      **     MOVE  CITY-CITYNAME           TO     KOHS-CITYNAME
-      **    出力タイプフラグが１の時は公費の制度名を印字する
-      *     IF    KOHS-SYUTURYOKU         =      1
-      *       MOVE     MF100-KOHNUM-KEY     TO    WRK-KOHNUM
-      *       PERFORM  950-HKNNUM-SET-SEC
-      *       MOVE     HKN-SEIDONAME        TO    WRK-CITYNAME1
-      *     ELSE
-      *       STRING   CITY-CITYNAME         DELIMITED BY SPACE
-      *               "償還払公費患者一覧表" DELIMITED BY SIZE
-      *               INTO                  WRK-CITYNAME1
-      *       END-STRING
-      *     END-IF
-      ***** 04/07/28 INS
            INITIALIZE                       WRK-CITYNAME1
            STRING   CITY-CITYNAME           DELIMITED BY SPACE
                    "償還払公費患者一覧表"   DELIMITED BY SIZE
                    INTO                     WRK-CITYNAME1
            END-STRING
-      *****
+      *
       *    文字数計算
            MOVE  ZERO                      TO    WRK-MOJI1
            PERFORM  VARYING  IDX1  FROM  1  BY  2
@@ -1165,12 +756,6 @@
            END-STRING
            MOVE  WRK-CITYNAME2(1:WRK-MOJI1)
                                   TO   KOHS-CITYNAME(IDX1:WRK-MOJI1)
-      *****
-      *
-      *    請求年月
-      ***** 04/06/03 DEL
-      *     MOVE  WRK-SRYYMWH             TO     KOHS-SKYYM
-      *****
       *
            .
        310-HEAD-HEN-EXT.
@@ -1181,66 +766,46 @@
       *****************************************************************
        320-BODY-HEN-SEC      SECTION.
       *
-      ***** 04/06/03 INS
            MOVE     KEY-NEW        TO    KEY-OLD
-      *****
+      *
            PERFORM  VARYING  IDX1  FROM  1   BY   1 
                     UNTIL    IDX1  >  15
                     OR    FLG-PRINT   =   1
-      ***** 04/06/03 INS
                     OR    KEY-NEW  NOT =  KEY-OLD
-      *****
       *    公費名
              MOVE   MF100-KOHNAME          TO   KOHS-KOHNAME(IDX1)
       *
       *    ID(患者番号)
-      ***  20040914 MOTOHASI 全角変換
-      ***       MOVE   MF100-PTNUM            TO    KOHS-PTNUM(IDX1)
              MOVE   MF100-PTNUM            TO   WRK-MAE-INPUT
              PERFORM   2009-HENKAN-SEC
-      *--- 2009/10/22 CHANGE START -------------------------------------
-      *       MOVE   WRK-OUT-INPUT          TO   KOHS-PTNUM(IDX1)
              IF    WRK-OUT-INPUT(21:)  =  SPACE
                MOVE   WRK-OUT-INPUT          TO   KOHS-PTNUM(IDX1)
              ELSE
                MOVE   WRK-OUT-INPUT          TO   KOHS-PTNUM2(IDX1)
              END-IF
-      *--- 2009/10/22 CHANGE END ---------------------------------------
-      ***  20040914 MOTOHASI 全角変換
       *
       *    氏名
              MOVE   MF100-NAME             TO   KOHS-NAME(IDX1)
-      * 20080924 カナ氏名を追加START
              MOVE   MF100-FURIGANA         TO   KOHS-FURIGANA(IDX1)
-      * 20080924 カナ氏名を追加END
       *
       *    負担者番号
-      ***  20040914 MOTOHASI 全角変換
-      ***       MOVE   MF100-FTNJANUM         TO    KOHS-FTNJANUM(IDX1)
              MOVE   MF100-FTNJANUM         TO   WRK-MAE-INPUT
              PERFORM   2009-HENKAN-SEC
              MOVE   WRK-OUT-INPUT          TO   KOHS-FTNJANUM(IDX1)
-      ***  20040914 MOTOHASI 全角変換
       *
       *    受給者番号
-      ***  20040914 MOTOHASI 全角変換
-      ***       MOVE   MF100-JKYSNUM          TO    KOHS-JKYSNUM(IDX1)
              MOVE   MF100-JKYSNUM          TO   WRK-MAE-INPUT
              PERFORM   2009-HENKAN-SEC
              MOVE   WRK-OUT-INPUT          TO   KOHS-JKYSNUM(IDX1)
-      ***  20040914 MOTOHASI 全角変換
       *
       *    診療年月(請求年月と異なる時のみ)
              IF     MF100-SRYYM  NOT =   WRK-PARA-SRYYM
                MOVE    MF100-SRYYM         TO   WRK-SYMD (1:6)
                MOVE    "01"                TO   WRK-SYMD (7:2)
                PERFORM   31012-SEIWA-HEN-SEC
-      ***  20040914 MOTOHASI 全角変換
-      ***         MOVE    WRK-HENYMDG1        TO    KOHS-SRYYM(IDX1)
                MOVE    WRK-HENYMDG1        TO   WRK-MAE-INPUT
                PERFORM   2009-HENKAN-SEC
                MOVE    WRK-OUT-INPUT       TO   KOHS-SRYYM(IDX1)
-      ***  20040914 MOTOHASI 全角変換
              END-IF
       *
       *    性別
@@ -1260,12 +825,9 @@
              END-EVALUATE
       *
       *    保険者番号
-      ***  20040914 MOTOHASI 全角変換
-      ***       MOVE      MF100-HKNJANUM      TO    KOHS-HKNJANUM(IDX1)
              MOVE    MF100-HKNJANUM        TO   WRK-MAE-INPUT
              PERFORM   2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT         TO   KOHS-HKNJANUM(IDX1)
-      ***  20040914 MOTOHASI 全角変換
       *
       *    記号
              MOVE      MF100-KIGO          TO   KOHS-KIGO(IDX1)
@@ -1274,34 +836,22 @@
              MOVE      MF100-NUM           TO   KOHS-NUM(IDX1)
       *
       *    実日数
-      ***  20040914 MOTOHASI 全角変換
-      ***       MOVE      MF100-JNISSU        TO    WRK-Z2
-      ***       MOVE      WRK-Z2              TO    KOHS-NISSU(IDX1)
              MOVE    MF100-JNISSU          TO   WRK-Z2
              MOVE    WRK-Z2                TO   WRK-MAE-INPUT
              PERFORM   2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT         TO   KOHS-NISSU(IDX1)
-      ***  20040914 MOTOHASI 全角変換
       *
       *    点数
-      ***  20040914 MOTOHASI 全角変換
-      ***       MOVE      MF100-TOTALTEN      TO    WRK-Z9
-      ***       MOVE      WRK-Z9              TO    KOHS-TENSU(IDX1)
              MOVE    MF100-TOTALTEN        TO   WRK-Z9
              MOVE    WRK-Z9                TO   WRK-MAE-INPUT
              PERFORM   2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT         TO   KOHS-TENSU(IDX1)
-      ***  20040914 MOTOHASI 全角変換
       *
       *    本人負担額
-      ***  20040914 MOTOHASI 全角変換
-      ***       MOVE      MF100-FTNMONEY      TO    WRK-Z9
-      ***       MOVE      WRK-Z9              TO    KOHS-ITBFTN(IDX1)
              MOVE    MF100-FTNMONEY        TO   WRK-Z9
              MOVE    WRK-Z9                TO   WRK-MAE-INPUT
              PERFORM   2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT         TO   KOHS-ITBFTN(IDX1)
-      ***  20040914 MOTOHASI 全角変換
       *
       *    食事療養費-日数
              MOVE    MF100-SKJKAISU        TO   WRK-Z2
@@ -1322,15 +872,11 @@
       *    診療科名
              IF   MF100-SRYKA   NOT =   "00"
                INITIALIZE                  SYS-1005-REC
-      *    20071120 診療科名取得時の不具合を修正START t.tanaka
                MOVE    SPA-HOSPNUM         TO   SYS-1005-HOSPNUM
-      *    20071120 診療科名取得時の不具合を修正END
                MOVE    "1005"              TO   SYS-1005-KANRICD
                MOVE    MF100-SRYKA         TO   SYS-1005-KBNCD
-      ****2005/10/17 @@@@-BRAND  start
                MOVE  WRK-PARA-PRTSYMD      TO   SYS-1005-EDYUKYMD
                MOVE  WRK-PARA-PRTLYMD      TO   SYS-1005-STYUKYMD
-      ****2005/10/17 @@@@-BRAND  END
                MOVE    SYS-1005-REC        TO   MCPDATA-REC
                PERFORM 800-SYSKANRI-READ-SEC
                IF  FLG-SYSKANRI  =  ZERO
@@ -1340,14 +886,10 @@
              END-IF
       *
       *    給付割合
-      ***  20040914 MOTOHASI 全角変換
-      ***       MOVE     MF100-KYURATE        TO  WRK-Z2
-      ***       MOVE     WRK-Z2               TO  KOHS-KYURATE(IDX1)
              MOVE     MF100-KYURATE        TO   WRK-Z2
              MOVE     WRK-Z2               TO   WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE     WRK-OUT-INPUT        TO   KOHS-KYURATE(IDX1)
-      ***  20040914 MOTOHASI 全角変換
       *
       *    他法公費
              INITIALIZE                         WRK-TAHO
@@ -1361,20 +903,16 @@
                        INTO                WRK-TAHO
                END-STRING
              END-PERFORM
-      ***  20040914 MOTOHASI 全角変換
-      ***       MOVE     WRK-TAHO             TO  KOHS-TAHO(IDX1)
              MOVE     WRK-TAHO             TO   WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE     WRK-OUT-INPUT        TO   KOHS-TAHO(IDX1)
-      ***  20040914 MOTOHASI 全角変換
       *
              PERFORM  900-TMP-READ-SEC
-      ***** 04/06/03 INS
       *      改ページフラグが０の時は公費番号で改ページしない
              IF  KOHS-KAIPAGE              =   ZERO
                MOVE     KEY-NEW            TO    KEY-OLD
              END-IF
-      *****
+      *
            END-PERFORM
       *
            .
@@ -1386,7 +924,6 @@
       *****************************************************************
        330-TERM-HEN-SEC         SECTION.
       *
-      * 
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"                   TO   SPRT-MODE
            MOVE    LNK-PRTKANRI-RENNUM     TO   SPRT-RENNUM
@@ -1398,38 +935,16 @@
            MOVE    LNK-PRTKANRI-SHORI-RENNUM  TO   SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY   TO   SPRT-PRIORITY
       *
-      ***** 04/07/28 DEL
-      ****** 04/06/03 UPD
-      **     MOVE   "A00000KOHS"             TO  SPRT-PRTID
-      **     MOVE    "償還払公費患者一覧表"  TO  SPRT-TITLE
-      *     IF     KOHS-SYUTURYOKU      =   ZERO
-      *       MOVE   "A00000KOHS"             TO  SPRT-PRTID
-      *       MOVE    "償還払公費患者一覧表"  TO  SPRT-TITLE
-      *     ELSE
-      *       MOVE   "A00000KOHS2"             TO  SPRT-PRTID
-      *       MOVE    "会社別患者一覧表"  TO  SPRT-TITLE
-      *     END-IF
-      ***** 04/07/28 INS
-      ***  20040914 MOTOHASI MONPEに変更
-      ***     MOVE   "A00000KOHS"             TO  SPRT-PRTID
-      *--- 2009/10/26 CHANGE START -------------------------------------
-      *     MOVE   "A00000KOHS.red"         TO    SPRT-PRTID
            MOVE   "A00000KOHSV02.red"         TO    SPRT-PRTID
-      *--- 2009/10/26 CHANGE END ---------------------------------------
-      ***  20040914 MOTOHASI MONPEに変更
            MOVE    "償還払公費患者一覧表"  TO    SPRT-TITLE
            MOVE    KOHS-DATA               TO    SPRT-PRTDATA
            MOVE    LNK-PRTKANRI-TERMID     TO    SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID       TO    SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM      TO    SPRT-PRTNM
-      ***** site-libで動かすためにコメントアウト
-      ***     MOVE    "1"          TO  SPRT-SITEKBN
-      *****
+      *
            CALL    "ORCSPRT"               USING
                                            ORCSPRTAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
                                            SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      SPRT-RETURN   =   ZERO
              CONTINUE
            END-IF
@@ -1445,10 +960,8 @@
            READ  MF100-FILE   NEXT
              AT  END
                MOVE    1                   TO   FLG-PRINT
-      ***** 04/06/03 INS
              NOT  AT  END
                MOVE    MF100-KOHNUM-KEY    TO   KEY-N-KOHNUM
-      *****
            END-READ
            .
        900-TMP-READ-EXT.
@@ -1493,7 +1006,6 @@
        31012-SEIWA-HEN-EXT.
            EXIT.
       *
-      ****2005/10/17 @@@@-BRAND  start
       *
       *****************************************************************
       *    月末日算出処理
@@ -1512,7 +1024,6 @@
        31012-LASTDAY-GET-EXT.
            EXIT.
       *
-      ****2005/10/17 @@@@-BRAND  END
       *****************************************************************
       *    全角変換処理
       *****************************************************************
@@ -1543,19 +1054,6 @@
       *    請求管理ＤＢ検索
            INITIALIZE                  RECE10-REC
       *
-      *--- 2010/06/17 CHANGE START -------------------------------------
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    SYS-1001-HOSPID     TO    RECE10-HOSPID
-      *     MOVE    SYS-1001-HOSPNUM    TO   RECE10-HOSPNUM
-      **=== 4.0対応 By Otake(2007/09/21) end
-      *     MOVE    WRK-PARA-SRYYM      TO   RECE10-SKYYM
-      **---(01.00.06) LINE ADD start ------------------------------------
-      *     MOVE    SPACE               TO   RECE10-XXSTHKNJANUM
-      *     MOVE    "99999999"          TO   RECE10-XXEDHKNJANUM
-      **---(01.00.06) LINE ADD END   ------------------------------------
-      ** 20080619 処理速度の向上の修正START tanaka
-      *     MOVE    "6"                 TO   RECE10-TEISYUTUSAKI
-      * 20080619 処理速度の向上の修正END
            MOVE    SPA-HOSPNUM           TO   RECE10-HOSPNUM
            MOVE    RECE02-SRYYM          TO   RECE10-SRYYM
            MOVE    RECE02-NYUGAIKBN      TO   RECE10-NYUGAIKBN
@@ -1566,33 +1064,21 @@
            MOVE    RECE02-HKNJANUM       TO   RECE10-HKNJANUM
            MOVE    RECE02-HOJOKBN-KEY    TO   RECE10-HOJOKBN-KEY
            MOVE    RECE02-TEKSTYMD       TO   RECE10-TEKSTYMD
-      *--- 2010/06/17 CHANGE END ---------------------------------------
       *
            MOVE    RECE10-REC          TO   MCPDATA-REC
            MOVE    "DBSELECT"          TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    WRK-PATH            TO  MCP-PATH
-      *     CALL     "MCPSUB"          USING
            MOVE    "tbl_seikyu"        TO   MCP-TABLE
-      *--- 2010/06/17 CHANGE START -------------------------------------
-      *     MOVE    WRK-PATH              TO   MCP-PATHNAME
-           MOVE    "key"                 TO   MCP-PATHNAME
-      *--- 2010/06/17 CHANGE END ---------------------------------------
+           MOVE    "key"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                        MCPAREA
                                        MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                        SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC   =   ZERO
              PERFORM 900-SEIKYU-READ-SEC
            ELSE
              MOVE    1                 TO   FLG-END
            END-IF
-      *--- 2010/06/17 ADD START ----------------------------------------
            PERFORM  900-SEIKYU-CLOSE-SEC
-      *--- 2010/06/17 ADD END ------------------------------------------
            .
        900-SEIKYU-SELECT-EXT.
            EXIT.
@@ -1603,21 +1089,12 @@
        900-SEIKYU-READ-SEC           SECTION.
       *
            MOVE    "DBFETCH"           TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    WRK-PATH            TO  MCP-PATH
-      *     CALL    "MCPSUB"            USING
            MOVE    "tbl_seikyu"        TO   MCP-TABLE
-      *--- 2010/06/17 CHANGE START -------------------------------------
-      *     MOVE    WRK-PATH              TO   MCP-PATHNAME
-           MOVE    "key"                 TO   MCP-PATHNAME
-      *--- 2010/06/17 CHANGE END ---------------------------------------
+           MOVE    "key"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                        MCPAREA
                                        MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                        SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC   =   ZERO
              MOVE    ZERO              TO   FLG-END
              MOVE    MCPDATA-REC       TO   RECE10-REC
@@ -1625,10 +1102,7 @@
       *        テスト患者のときは読み飛ばす
              MOVE    SPACE             TO   PTINF-REC
              INITIALIZE                     PTINF-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *         MOVE    RECE10-HOSPID       TO  PTINF-HOSPID
              MOVE    RECE10-HOSPNUM    TO   PTINF-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
              MOVE    RECE10-PTID       TO   PTINF-PTID
              MOVE    PTINF-REC         TO   MCPDATA-REC
              PERFORM 800-PTINF-READ-SEC
@@ -1636,16 +1110,6 @@
                  AND   PTINF-TSTPTNUMKBN   =   "1"
                GO  TO  900-SEIKYU-READ-SEC
              END-IF
-      *
-      *      対象公費所持者判定
-      *--- 2010/11/22 DELETE START -------------------------------------
-      *       INITIALIZE  MF100-REC
-      *       PERFORM  9001-CHK-SEC
-      **
-      *       IF   MF100-KOHNUM   =   SPACE
-      *         GO    TO   900-SEIKYU-READ-SEC
-      *       END-IF
-      *--- 2010/11/22 DELETE END   -------------------------------------
       *
              ADD    1                  TO   CNT-RECE10
            ELSE
@@ -1661,154 +1125,23 @@
       *****************************************************************
        900-SEIKYU-CLOSE-SEC  SECTION.
       *
-      *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    WRK-PATH            TO  MCP-PATH
-      *     CALL    "MCPSUB"            USING
            MOVE    "tbl_seikyu"        TO  MCP-TABLE
-      *--- 2010/06/17 CHANGE START -------------------------------------
-      *     MOVE    WRK-PATH              TO   MCP-PATHNAME
-           MOVE    "key"                 TO   MCP-PATHNAME
-      *--- 2010/06/17 CHANGE END ---------------------------------------
+           MOVE    "key"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                        MCPAREA
                                        MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                        SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            .
        900-SEIKYU-CLOSE-EXT.
            EXIT.
       *
-      *--- 2010/06/17 CHANGE START -------------------------------------
-      ****2006/02/20 @@@@-BRAND start
-      *****************************************************************
-      *    公費請求書マスタ読込
-      *****************************************************************
-      * 900-KOHSKY-READ-SEC            SECTION.
-      **
-      *     MOVE    "DBSELECT"           TO   MCP-FUNC
-      **=== 4.0対応 By Otake(2007/09/21) start
-      **     MOVE    PATH-TBL-KOHSKY-KEY7    TO  MCP-PATH
-      **     CALL    "MCPSUB"             USING
-      *     MOVE    "tbl_kohsky"         TO   MCP-TABLE
-      *     MOVE    "key7"               TO   MCP-PATHNAME
-      *     CALL    "ORCDBMAIN"          USING
-      **=== 4.0対応 By Otake(2007/09/21) end
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      **=== 4.0対応 By Otake(2007/09/21) start
-      *                                  SPA-AREA
-      **=== 4.0対応 By Otake(2007/09/21) end
-      *     IF   MCP-RC   =   ZERO
-      *       MOVE    "DBFETCH"          TO  MCP-FUNC
-      **=== 4.0対応 By Otake(2007/09/21) start
-      **         MOVE    PATH-TBL-KOHSKY-KEY7   TO  MCP-PATH
-      **         CALL    "MCPSUB"               USING
-      *       MOVE    "tbl_kohsky"       TO   MCP-TABLE
-      *       MOVE    "key7"             TO   MCP-PATHNAME
-      *       CALL    "ORCDBMAIN"        USING
-      **=== 4.0対応 By Otake(2007/09/21) end
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      **=== 4.0対応 By Otake(2007/09/21) start
-      *                                  SPA-AREA
-      **=== 4.0対応 By Otake(2007/09/21) end
-      *       IF   MCP-RC  NOT =  ZERO
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正START
-      *         MOVE    1                TO   FLG-KOHSKY
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正END
-      *         MOVE    1                TO   FLG-KBN
-      *       ELSE
-      *         MOVE     ZERO            TO   FLG-KOHSKY
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正START
-      *         PERFORM  UNTIL  FLG-KOHSKY = 1
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正END
-      *           MOVE    MCPDATA-REC    TO   RECE02-REC
-      ** 20080602 使われていない公費名を印字してしまう不具合を修正 START tanaka
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正START
-      *           IF RECE10-SRYYM  =  RECE02-SRYYM
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正END
-      *             IF   (PTKOH-KOHNUM  =  RECE02-KOHNUM(1)
-      *                 AND   RECE02-KOHNUM(1)  NOT =  SPACE )
-      *                 OR   (PTKOH-KOHNUM  = RECE02-KOHNUM(2)
-      *                 AND   RECE02-KOHNUM(2)  NOT =  SPACE )
-      *                 OR   (PTKOH-KOHNUM  = RECE02-KOHNUM(3)
-      *                 AND   RECE02-KOHNUM(3)  NOT =  SPACE )
-      *                 OR   (PTKOH-KOHNUM  = RECE02-KOHNUM(4)
-      *                 AND   RECE02-KOHNUM(4)  NOT =  SPACE )
-      ** 20080602 使われていない公費名を印字してしまう不具合を修正 END
-      ** 20080729 保険変更を行った時,対象外になった公費が印字されてしまうSTART
-      *               IF RECE10-HKNNUM  NOT =  RECE02-HKNNUM
-      *                 MOVE    1        TO   FLG-KBN
-      *               ELSE
-      * 	               MOVE    ZERO     TO   FLG-KBN
-      *                 MOVE    1        TO   FLG-KOHSKY
-      *               END-IF
-      ** 20080729 保険変更を行った時,対象外になった公費が印字されてしまうSTART
-      ** 20080602 使われていない公費名を印字してしまう不具合を修正 START tanaka
-      *             ELSE
-      *                MOVE    1         TO   FLG-KBN
-      *             END-IF
-      ** 20080602 使われていない公費名を印字してしまう不具合を修正 END
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正START
-      **                     MOVE    1           TO  FLG-KOHSKY
-      *           ELSE
-      *             MOVE    1            TO   FLG-KBN
-      *           END-IF
-      *           MOVE    "DBFETCH"      TO   MCP-FUNC
-      *           MOVE    "tbl_kohsky"   TO   MCP-TABLE
-      *           MOVE    "key7"         TO   MCP-PATHNAME
-      *           CALL    "ORCDBMAIN"    USING
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      *                                  SPA-AREA
-      *           IF    MCP-RC   =   ZERO
-      *             MOVE  MCPDATA-REC    TO   RECE02-REC
-      *	         ELSE
-      *	           MOVE    1            TO   FLG-KOHSKY
-      *           END-IF   
-      *         END-PERFORM
-      *       END-IF
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正END
-      *     ELSE
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正START
-      *       MOVE    1                  TO   FLG-KOHSKY
-      ** 20080623 対象の公費を使用していない場合に上がってきてしまう不具合を修正END
-      *       MOVE    1                  TO   FLG-KBN
-      *     END-IF
-      *     
-      *     MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
-      **=== 4.0対応 By Otake(2007/09/21) start
-      **     MOVE    PATH-TBL-KOHSKY-KEY7   TO  MCP-PATH
-      **     CALL    "MCPSUB"               USING
-      *     MOVE    "tbl_kohsky"         TO   MCP-TABLE
-      *     MOVE    "key7"               TO   MCP-PATHNAME
-      *     CALL    "ORCDBMAIN"          USING
-      **=== 4.0対応 By Otake(2007/09/21) end
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      **=== 4.0対応 By Otake(2007/09/21) start
-      *                                  SPA-AREA
-      **=== 4.0対応 By Otake(2007/09/21) end
-      **
-      *     .
-      * 900-KOHSKY-READ-EXT.
-      *     EXIT.
-      **
-      *****2006/02/20 @@@@-BRAND END
-      *
       ******************************************************************
       *    公費請求マスタ読込
       ******************************************************************
        900-KOHSKY-SELECT-SEC            SECTION.
-      * 
+      *
            INITIALIZE                   RECE02-REC
            MOVE    SPA-HOSPNUM          TO   RECE02-HOSPNUM
            MOVE    WRK-PARA-SRYYM       TO   RECE02-SKYYM
@@ -1862,7 +1195,6 @@
            .
        900-KOHSKY-CLOSE-EXT.
            EXIT.
-      *--- 2010/06/17 CHANGE END ---------------------------------------
       *****************************************************************
       *    対象公費所持者判定処理
       *****************************************************************
@@ -1870,168 +1202,42 @@
       *
            INITIALIZE  PTKOHINF-REC
       *
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  RECE10-HOSPID      TO  PTKOH-HOSPID
            MOVE    RECE02-HOSPNUM       TO   PTKOH-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    RECE02-PTID          TO   PTKOH-PTID
-      *--- 2010/11/22 ADD START ----------------------------------------
            MOVE    RECE02-KOHID(IDX7)   TO   PTKOH-KOHID
-      *--- 2010/11/22 ADD END   ----------------------------------------
            MOVE    PTKOHINF-REC         TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-PTKOHINF-KEY2    TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_ptkohinf"       TO   MCP-TABLE
-      *--- 2010/11/22 CHANGE START -------------------------------------
-      *     MOVE    "key2"               TO   MCP-PATHNAME
            MOVE    "key"                TO   MCP-PATHNAME
-      *--- 2010/11/22 CHANGE END   -------------------------------------
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF  MCP-RC  =  ZERO
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *       MOVE  PATH-TBL-PTKOHINF-KEY2  TO  MCP-PATH
              MOVE    "tbl_ptkohinf"     TO   MCP-TABLE
-      *--- 2010/11/22 CHANGE START -------------------------------------
-      *       MOVE    "key2"             TO   MCP-PATHNAME
-             MOVE    "key"             TO   MCP-PATHNAME
-      *--- 2010/11/22 CHANGE END   -------------------------------------
-      *=== 4.0対応 By Otake(2007/09/21) end
+             MOVE    "key"              TO   MCP-PATHNAME
              PERFORM  935-PTKOHINF-READ-SEC
       *
-      *--- 2010/11/22 DELETE START -------------------------------------
-      **    公費−償還払い所持者か
-      *       PERFORM  UNTIL  FLG-PTKOHINF  =  1
-      *                OR     MF100-KOHNUM  NOT =  SPACE
-      *         IF  PTKOH-KOHNUM  =  KOHI-KOHNUM(1)
-      *                          OR  KOHI-KOHNUM(2)
-      *                          OR  KOHI-KOHNUM(3)
-      *                          OR  KOHI-KOHNUM(4)
-      *                          OR  KOHI-KOHNUM(5)
-      *                          OR  KOHI-KOHNUM(6)
-      *                          OR  KOHI-KOHNUM(7)
-      *                          OR  KOHI-KOHNUM(8)
-      *                          OR  KOHI-KOHNUM(9)
-      *                          OR  KOHI-KOHNUM(10)
-      ****** 04/06/03 INS
-      *                          OR  KOHI-KOHNUM(11)
-      *                          OR  KOHI-KOHNUM(12)
-      *                          OR  KOHI-KOHNUM(13)
-      *                          OR  KOHI-KOHNUM(14)
-      *                          OR  KOHI-KOHNUM(15)
-      *                          OR  KOHI-KOHNUM(16)
-      *                          OR  KOHI-KOHNUM(17)
-      *                          OR  KOHI-KOHNUM(18)
-      *                          OR  KOHI-KOHNUM(19)
-      *                          OR  KOHI-KOHNUM(20)
-      *                          OR  KOHI-KOHNUM(21)
-      *                          OR  KOHI-KOHNUM(22)
-      *                          OR  KOHI-KOHNUM(23)
-      *                          OR  KOHI-KOHNUM(24)
-      *                          OR  KOHI-KOHNUM(25)
-      *                          OR  KOHI-KOHNUM(26)
-      *                          OR  KOHI-KOHNUM(27)
-      *                          OR  KOHI-KOHNUM(28)
-      *                          OR  KOHI-KOHNUM(29)
-      *                          OR  KOHI-KOHNUM(30)
-      *                          OR  KOHI-KOHNUM(31)
-      *                          OR  KOHI-KOHNUM(32)
-      *                          OR  KOHI-KOHNUM(33)
-      *                          OR  KOHI-KOHNUM(34)
-      *                          OR  KOHI-KOHNUM(35)
-      *                          OR  KOHI-KOHNUM(36)
-      *                          OR  KOHI-KOHNUM(37)
-      *                          OR  KOHI-KOHNUM(38)
-      *                          OR  KOHI-KOHNUM(39)
-      *                          OR  KOHI-KOHNUM(40)
-      *--- 2010/11/22 DELETE END   -------------------------------------
-      *--- 2010/06/17 DELETE START -------------------------------------
-      ****2006/02/20 @@@@-BRAND start
-      *    公費−償還払い所持者かの使う判定
-      *           MOVE    SPACE               TO   RECE02-REC
-      *           INITIALIZE                       RECE02-REC
-      **=== 4.0対応 By Otake(2007/09/21) start
-      **           MOVE    RECE10-HOSPID       TO  RECE02-HOSPID
-      *           MOVE    RECE10-HOSPNUM      TO   RECE02-HOSPNUM
-      **=== 4.0対応 By Otake(2007/09/21) end
-      **---(01.00.07) LINE ADD start ------------------------------------
-      **           MOVE    RECE10-SRYYM        TO  RECE02-SKYYM
-      *           MOVE    RECE10-SKYYM        TO   RECE02-SKYYM
-      **---(01.00.07) LINE ADD END   ------------------------------------
-      *           MOVE    RECE10-PTID         TO   RECE02-PTID
-      *           MOVE    RECE02-REC          TO   MCPDATA-REC
-      *           PERFORM 900-KOHSKY-READ-SEC
-      ****2006/02/20 @@@@-BRAND END
-      *--- 2010/06/17 DELETE END ---------------------------------------
-      ***** 
-      *    請求年月内で有効か・削除された公費か判定
-      *---(01.00.07) LINE ADD start ------------------------------------
-      *           IF  PTKOH-TEKSTYMD(1:6)  <=  WRK-PARA-SRYYM  AND
-      *               PTKOH-TEKEDYMD(1:6)  >=  WRK-PARA-SRYYM
-      * 20080602 使われていない公費名を印字してしまう不具合を修正 START tanaka
                  IF  (PTKOH-TEKSTYMD(1:6)  <=  WRK-PARA-SRYYM
                      AND   PTKOH-TEKEDYMD(1:6)  >=  WRK-PARA-SRYYM)
                      AND   PTKOH-SAKJOKBN   NOT =  "1"
-      *--- 2010/06/17 DELETE START -------------------------------------
-      *               AND   FLG-KBN  =  ZERO
-      *--- 2010/06/17 DELETE END ---------------------------------------
-      * 20080602 使われていない公費名を印字してしまう不具合を修正 START tanaka
-      *---(01.00.07) LINE ADD END   ------------------------------------
                    MOVE  PTKOH-KOHNUM        TO   MF100-KOHNUM
                    MOVE  PTKOH-FTNJANUM      TO   MF100-FTNJANUM
                    MOVE  PTKOH-JKYSNUM       TO   MF100-JKYSNUM
                  END-IF
-      *--- 2010/06/17 ADD START ----------------------------------------
                  MOVE    1     TO   FLG-KOHCHK
-      *--- 2010/06/17 ADD END ------------------------------------------
-      *--- 2010/11/22 DELETE START -------------------------------------
-      *         END-IF
-      *--- 2010/11/22 DELETE END   -------------------------------------
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *         MOVE  PATH-TBL-PTKOHINF-KEY2  TO  MCP-PATH
-      *--- 2010/11/22 DELETE START -------------------------------------
-      *         MOVE   "tbl_ptkohinf"         TO   MCP-TABLE
-      *         MOVE   "key2"                 TO   MCP-PATHNAME
-      *--- 2010/11/22 DELETE END   -------------------------------------
-      *=== 4.0対応 By Otake(2007/09/21) end
-      *--- 2010/11/22 DELETE START -------------------------------------
-      *         PERFORM  935-PTKOHINF-READ-SEC
-      *       END-PERFORM
-      *--- 2010/11/22 DELETE END   -------------------------------------
            ELSE
-      ****2005/10/17  @@@@-BRAND  start
-      *      DISPLAY  "PTKOHINF SELECT ERR" UPON CONSOLE
              DISPLAY  "PTKOHINF SELECT ERR"
-      ****2005/10/17  @@@@-BRAND  END
            END-IF
       *
            INITIALIZE  MCPAREA
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"   TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"          TO   MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-PTKOHINF-KEY2  TO  MCP-PATH
-      *     CALL     "MCPSUB"             USING
            MOVE    "tbl_ptkohinf"           TO   MCP-TABLE
-      *--- 2010/11/22 CHANGE START -------------------------------------
-      *     MOVE    "key2"                   TO   MCP-PATHNAME
-           MOVE    "key"                   TO   MCP-PATHNAME
-      *--- 2010/11/22 CHANGE END   -------------------------------------
+           MOVE    "key"                    TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"              USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                             MCPAREA
                                             MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                             SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            .
        9001-CHK-EXT.
@@ -2042,16 +1248,11 @@
       *****************************************************************
        935-PTKOHINF-READ-SEC  SECTION.
       *
-           MOVE  "DBFETCH"       TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL     "MCPSUB"      USING
+           MOVE    "DBFETCH"      TO   MCP-FUNC
            CALL    "ORCDBMAIN"    USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                   MCPAREA
                                   MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                   SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC  =  ZERO
              MOVE  MCPDATA-REC    TO   PTKOHINF-REC
              MOVE  ZERO           TO   FLG-PTKOHINF
@@ -2070,32 +1271,20 @@
        800-PTINF-READ-SEC         SECTION.
       *
            MOVE    "DBSELECT"           TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-PTINF-KEY   TO  MCP-PATH
-      *     CALL     "MCPSUB"            USING
            MOVE    "tbl_ptinf"          TO   MCP-TABLE
            MOVE    "key"                TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC   =   ZERO
              MOVE    "DBFETCH"          TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *         MOVE    PATH-TBL-PTINF-KEY    TO  MCP-PATH
-      *         CALL     "MCPSUB"             USING
              MOVE    "tbl_ptinf"        TO   MCP-TABLE
              MOVE    "key"              TO   MCP-PATHNAME
              CALL    "ORCDBMAIN"        USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
              IF   MCP-RC   =   ZERO
                MOVE    ZERO             TO   FLG-PTINF
                MOVE    MCPDATA-REC      TO   PTINF-REC
@@ -2108,28 +1297,18 @@
              INITIALIZE                 PTINF-REC
            END-IF
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    PATH-TBL-PTINF-KEY    TO  MCP-PATH
-      *     CALL     "MCPSUB"             USING
            MOVE    "tbl_ptinf"          TO   MCP-TABLE
            MOVE    "key"                TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            .
        800-PTINF-READ-EXT.
            EXIT.
       *
-      *--- 2010/11/22 ADD START ----------------------------------------
       ******************************************************************
       **    収納情報検索
       ******************************************************************
@@ -2198,7 +1377,6 @@
            .
        910-SYUNOU-CLOSE-EXT.
            EXIT.
-      *--- 2010/11/22 ADD END   ----------------------------------------
       *
       *****************************************************************
       *  収納情報セット
@@ -2206,79 +1384,44 @@
        920-SYUNOU-SET-SEC  SECTION.
       *
            INITIALIZE  SYUNOU-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  RECE10-HOSPID      TO  SYU-HOSPID
            MOVE  RECE10-HOSPNUM       TO   SYU-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE  RECE10-NYUGAIKBN     TO   SYU-NYUGAIKBN
            MOVE  RECE10-PTID          TO   SYU-PTID
            MOVE  SYUNOU-REC           TO   MCPDATA-REC
            MOVE  "DBSELECT"           TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-SYUNOU-KEY2      TO  MCP-PATH
-      *     CALL     "MCPSUB"               USING
            MOVE    "tbl_syunou"       TO   MCP-TABLE
            MOVE    "key2"             TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                       MCPAREA
                                       MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                       SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC  =  ZERO
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *         MOVE  PATH-TBL-SYUNOU-KEY2   TO  MCP-PATH
-      *=== 4.0対応 By Otake(2007/09/21) end
              PERFORM  925-SYUNOU-READ-SEC
       *
              PERFORM  UNTIL  FLG-SYUNOU  =  1
                IF  RECE10-SRYYM  =  SYU-SRYYMD(1:6)
-      * 20071120 主科以外の診療分も集計可能にするSTART t.tanaka
-      *             IF    RECE10-RECEKA    =  "00"        OR
-      *                   RECE10-RECEKA    =  SYU-SRYKA
-      *--- 2009/01/29 CHANGE START -------------------------------------
                  IF  SYU-DENPJTIKBN  NOT =  3
                    COMPUTE  WRK-SKYMONEY  =  SYU-SKYMONEY
                                           -  SYU-JIHI-TOTAL
                                           -  SYU-JIHI-TOTAL-TAX
                    ADD   WRK-SKYMONEY     TO   MF100-FTNMONEY
                  END-IF
-      *           ADD  SYU-SKYMONEY       TO   MF100-FTNMONEY
-      *--- 2009/01/29 CHANGE END ---------------------------------------
-      *             END-IF
-      * 20071120 主科以外の診療分も集計可能にするEND
                END-IF
       *
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *           MOVE  PATH-TBL-SYUNOU-KEY2   TO  MCP-PATH
-      *=== 4.0対応 By Otake(2007/09/21) end
                PERFORM   925-SYUNOU-READ-SEC
              END-PERFORM
            ELSE
-      ****2005/10/17 @@@@-BRAND  start
-      *     DISPLAY  "SYUNOU SELECT ERR" UPON CONSOLE
              DISPLAY  "SYUNOU SELECT ERR"
-      ****2005/10/17 @@@@-BRAND  END
            END-IF
       *
            INITIALIZE  MCPAREA
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"            TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"    TO   MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-SYUNOU-KEY2     TO  MCP-PATH
-      *     CALL     "MCPSUB"              USING
            MOVE    "tbl_syunou"       TO   MCP-TABLE
            MOVE    "key2"             TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                       MCPAREA
                                       MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                       SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            .
        920-SYUNOU-SET-EXT.
@@ -2290,16 +1433,12 @@
        925-SYUNOU-READ-SEC  SECTION.
       *
            MOVE  "DBFETCH"  TO  MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    "tbl_syunou"       TO   MCP-TABLE
            MOVE    "key2"             TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                       MCPAREA
                                       MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                       SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF    MCP-RC  =  ZERO
              MOVE    MCPDATA-REC      TO   SYUNOU-REC
              MOVE    ZERO             TO   FLG-SYUNOU
@@ -2317,44 +1456,26 @@
       *****************************************************************
        950-HKNNUM-SET-SEC  SECTION.
       *
-      * 20080526 古い公費名を印字してしまう不具合を修正START tanaka
            MOVE    WRK-PARA-SRYYM       TO   WRK-SRYYMD (1:6)
            MOVE    "01"                 TO   WRK-SRYYMD (7:2)
-      * 20080526 古い公費名を印字してしまう不具合を修正END
            INITIALIZE  HKNNUM-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  SYS-1001-HOSPID      TO  HKN-HOSPID
            MOVE    SYS-1001-HOSPNUM     TO   HKN-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-KOHNUM           TO   HKN-HKNNUM
            MOVE    HKNNUM-REC           TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-HKNNUM-KEY2    TO  MCP-PATH
-      *     CALL     "MCPSUB"             USING
            MOVE    "tbl_hknnum"         TO   MCP-TABLE
            MOVE    "key2"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF  MCP-RC  =  ZERO
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *       MOVE  PATH-TBL-HKNNUM-KEY2      TO  MCP-PATH
              MOVE    "tbl_hknnum"       TO   MCP-TABLE
              MOVE    "key2"             TO   MCP-PATHNAME
-      *=== 4.0対応 By Otake(2007/09/21) end
              PERFORM  955-HKNNUM-READ-SEC
            ELSE
-      ****2005/10/17 @@@@-BRAND  start
-      *      DISPLAY  "HKNNUM SELECT ERR" UPON CONSOLE
              MOVE      1      TO       FLG-HKNNUM
-      ****2005/10/17 @@@@-BRAND  END
            END-IF
-      * 20080526 古い公費名を印字してしまう不具合を修正START tanaka
            PERFORM    UNTIL  FLG-HKNNUM   =   1
              IF   HKN-TEKSTYMD   <=  WRK-SRYYMD
                  AND   HKN-TEKEDYMD   >=  WRK-SRYYMD
@@ -2367,25 +1488,15 @@
                PERFORM  955-HKNNUM-READ-SEC
              END-IF
            END-PERFORM
-      * 20080526 古い公費名を印字してしまう不具合を修正END
       *
            INITIALIZE  MCPAREA
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"      TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-HKNNUM-KEY2    TO  MCP-PATH
-      *     CALL     "MCPSUB"             USING
            MOVE    "tbl_hknnum"         TO   MCP-TABLE
            MOVE    "key2"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            .
        950-HKNNUM-SET-EXT.
@@ -2397,15 +1508,10 @@
        955-HKNNUM-READ-SEC  SECTION.
       *
            MOVE    "DBFETCH"        TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL     "MCPSUB"         USING
            CALL    "ORCDBMAIN"      USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                     MCPAREA
                                     MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                     SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC  =  ZERO
              MOVE    MCPDATA-REC    TO   HKNNUM-REC
              MOVE    ZERO           TO   FLG-HKNNUM
@@ -2429,18 +1535,14 @@
       *    ステップ終了処理
            MOVE    "STE"             TO   SJOBKANRI-MODE
            INITIALIZE                     JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM       TO   JOB-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-PARA-PAGE     TO   JOB-UPDCNT
            MOVE    WRK-PARA-JOBID    TO   JOB-JOBID
            MOVE    WRK-PARA-SHELLID  TO   JOB-SHELLID
            CALL    "ORCSJOB"         USING
                                      ORCSJOBKANRIAREA
                                      JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                      SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            PERFORM 900-DBDISCONNECT-SEC
            .
@@ -2453,32 +1555,20 @@
        800-SYSKANRI-READ-SEC  SECTION.
       *
            MOVE    "DBSELECT"           TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-SYSKANRI-KEY10  TO  MCP-PATH
-      *     CALL     "MCPSUB"              USING
            MOVE    "tbl_syskanri"       TO   MCP-TABLE
            MOVE    "key10"              TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF   MCP-RC  =  ZERO
              MOVE    "DBFETCH"          TO   MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *       MOVE  PATH-TBL-SYSKANRI-KEY10  TO  MCP-PATH
-      *       CALL     "MCPSUB"              USING
              MOVE    "tbl_syskanri"     TO   MCP-TABLE
              MOVE    "key10"            TO   MCP-PATHNAME
              CALL    "ORCDBMAIN"        USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
              IF   MCP-RC  =  ZERO
                MOVE    ZERO  TO  FLG-SYSKANRI
              ELSE
@@ -2488,28 +1578,18 @@
                MOVE    1                TO   FLG-SYSKANRI
            END-IF
       *
-      **** sarge対応 by Yoshikawa(2006/09/04) start
-      *     MOVE    "DBCLOSE"            TO   MCP-FUNC
            MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
-      **** sarge対応 by Yoshikawa(2006/09/04) end
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE  PATH-TBL-SYSKANRI-KEY10  TO  MCP-PATH
-      *     CALL     "MCPSUB"              USING
            MOVE    "tbl_syskanri"       TO   MCP-TABLE
            MOVE    "key10"              TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            .
        800-SYSKANRI-READ-EXT.
            EXIT.
       *
-      *---- 2008/10/27  ADD  START -------------------------------------
       *****************************************************************
       *    CSV頭書き出力　　処理
       *****************************************************************
@@ -2536,7 +1616,6 @@
            MOVE  WRK-PARA-SRYYM(5:2)     TO   A00000KOHS-REC(7:2)
            MOVE  "月"                    TO   A00000KOHS-REC(9:2)
            WRITE  A00000KOHS-REC
-      *
       *
            INITIALIZE  A00000KOHS-REC
            STRING   "公費名"              DELIMITED  BY  SPACE
@@ -2567,14 +1646,12 @@
                     ","                   DELIMITED  BY  SIZE
                     "本人負担額（円）"    DELIMITED  BY  SPACE
                     ","                   DELIMITED  BY  SIZE
-      *--- 2009/01/29 ADD START ----------------------------------------
                     "回数（食事日数）"    DELIMITED  BY  SPACE
                     ","                   DELIMITED  BY  SIZE
                     "請求額（食事日数）"  DELIMITED  BY  SPACE
                     ","                   DELIMITED  BY  SIZE
                     "標準負担額（食事日数）"    DELIMITED  BY  SPACE
                     ","                   DELIMITED  BY  SIZE
-      *--- 2008/01/29 ADD END ------------------------------------------
                     "診療科名"            DELIMITED  BY  SPACE
                     ","                   DELIMITED  BY  SIZE
                     "給付割合"            DELIMITED  BY  SPACE
@@ -2610,7 +1687,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    患者氏名 
            MOVE    MF100-NAME         TO   WRK-DATA
            MOVE    100                TO   WRK-NAGASA
@@ -2618,7 +1694,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    患者フリガナ 
            MOVE    MF100-FURIGANA     TO   WRK-DATA
            MOVE    100                TO   WRK-NAGASA
@@ -2626,7 +1701,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    負担者番号
            MOVE    MF100-FTNJANUM     TO   WRK-DATA
            MOVE    20                 TO   WRK-NAGASA
@@ -2634,7 +1708,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-          
       *    受給者番号 
            MOVE    MF100-JKYSNUM      TO   WRK-DATA
            MOVE    20                 TO   WRK-NAGASA
@@ -2642,7 +1715,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      
       *    診療年月(請求年月と異なる時のみ)
            IF   MF100-SRYYM   NOT =   WRK-PARA-SRYYM
              MOVE    MF100-SRYYM      TO   WRK-SYMD(1:6)
@@ -2655,7 +1727,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    性別
            IF      MF100-SEX  =  1
              MOVE    "男"             TO   WRK-DATA
@@ -2667,7 +1738,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    入外区分 
            IF    MF100-NYUGAIKBN   =   1
              MOVE    "入"             TO   WRK-DATA
@@ -2679,7 +1749,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    保険者番号
            MOVE    MF100-HKNJANUM     TO   WRK-DATA
            MOVE    8                  TO   WRK-NAGASA
@@ -2687,7 +1756,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    記号・番号
            MOVE    MF100-KIGO         TO   WRK-DATA
            MOVE    80                 TO   WRK-NAGASA
@@ -2701,7 +1769,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    実日数 
            MOVE    MF100-JNISSU       TO   WRK-DATA
            MOVE    2                  TO   WRK-NAGASA
@@ -2709,7 +1776,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    合計点数 
            MOVE    MF100-TOTALTEN     TO   WRK-DATA
            MOVE    8                  TO   WRK-NAGASA
@@ -2717,7 +1783,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    負担金額 
            MOVE    MF100-FTNMONEY     TO   WRK-DATA
            MOVE    9                  TO   WRK-NAGASA
@@ -2725,7 +1790,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *--- 2009/01/29 ADD START ----------------------------------------
       *    回数（食事療養費）
            MOVE    MF100-SKJKAISU     TO   WRK-DATA
            MOVE    2                  TO   WRK-NAGASA
@@ -2733,7 +1797,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    請求額（食事療養費）
            MOVE    MF100-SKJSKY       TO   WRK-DATA
            MOVE    9                  TO   WRK-NAGASA
@@ -2741,7 +1804,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    標準負担額（食事療養費）
            MOVE    MF100-SKJFTN       TO   WRK-DATA
            MOVE    9                  TO   WRK-NAGASA
@@ -2749,8 +1811,6 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *--- 2009/01/29 ADD END ------------------------------------------
-
       *    診療科名
            IF   MF100-SRYKA  NOT =  "00"
              INITIALIZE                  SYS-1005-REC
@@ -2772,7 +1832,6 @@
            MOVE    ","                   TO   WRK-DATA
            MOVE    1                     TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    給付割合
            MOVE    MF100-KYURATE         TO   WRK-DATA
            MOVE    3                     TO   WRK-NAGASA
@@ -2780,7 +1839,6 @@
            MOVE    ","                   TO   WRK-DATA
            MOVE    1                     TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-
       *    他方公費
            MOVE    MF100-TAHO            TO   WRK-DATA
            MOVE    3                     TO   WRK-NAGASA
@@ -2843,41 +1901,28 @@
            .
        5004-MOJI-HENSYU-EXT.
            EXIT.
-      *---- 2008/10/27  ADD  END --------------------------------------
       *****************************************************************
       *    ＤＢ　オープン処理
       *****************************************************************
        100-DBOPEN-SEC  SECTION.
       *
            MOVE     "DBOPEN"       TO   MCP-FUNC.
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL     "MCPSUB"        USING
            MOVE    LOW-VALUE       TO   MCP-TABLE
                                         MCP-PATHNAME
            CALL    "ORCDBMAIN"     USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                    MCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                              MCPDATA-REC.
                                    MCPDATA-REC
                                    SPA-AREA
                                    .
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            MOVE    "DBSTART"       TO   MCP-FUNC.
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL     "MCPSUB"           USING
            MOVE    LOW-VALUE       TO   MCP-TABLE
                                         MCP-PATHNAME
            CALL    "ORCDBMAIN"     USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                    MCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                 MCPDATA-REC.
                                    MCPDATA-REC
                                    SPA-AREA
                                       .
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        100-DBOPEN-EXT.
            EXIT.
@@ -2888,34 +1933,22 @@
        900-DBDISCONNECT-SEC  SECTION.
       *
            MOVE    "DBCOMMIT"         TO   MCP-FUNC.
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL     "MCPSUB"           USING
            MOVE    LOW-VALUE          TO   MCP-TABLE
                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                       MCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                  MCPDATA-REC.
                                       MCPDATA-REC
                                       SPA-AREA
                                       .
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            MOVE    "DBDISCONNECT"     TO   MCP-FUNC.
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     CALL     "MCPSUB"           USING
            MOVE    LOW-VALUE          TO   MCP-TABLE
                                            MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                       MCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                 MCPDATA-REC.
                                       MCPDATA-REC
                                       SPA-AREA
                                       .
-      *=== 4.0対応 By Otake(2007/09/21) end
            .
        900-DBCLOSE-EXT.
            EXIT.
