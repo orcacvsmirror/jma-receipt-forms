@@ -1,3 +1,23 @@
+      * Project code name "ORCA"
+      * 日医標準レセプトソフト（JMA standard receipt software）
+      * Copyright(C) 2002 JMA (Japan Medical Association)
+      *
+      * This program is part of "JMA standard receipt software".
+      *
+      *     This program is distributed in the hope that it will be useful
+      * for further advancement in medical care, according to JMA Open
+      * Source License, but WITHOUT ANY WARRANTY.
+      *     Everyone is granted permission to use, copy, modify and
+      * redistribute this program, but only under the conditions described
+      * in the JMA Open Source License. You should have received a copy of
+      * this license along with this program. If not, stop using this
+      * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
+      * 113-8621, Japan.
+      ********************************************************************
+      *  コピー句修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
+      ********************************************************************
         01  HCM03V02B.
             02  HCM03V02B-TYPE-A.
               03  HCM03V02B-NO         PIC X(7).
@@ -12,11 +32,9 @@
               03  HCM03V02B-FUTAN  PIC X(3).
               03  HCM03V02B-MEISAI
                       PIC X(20)   OCCURS  16 TIMES.
-      *--- 2008/10/17  ADD  START --------------------------------------
               03  HCM03V02B-HONKZKKBN  PIC X(04).
               03  HCM03V02B-TANJYOYMD  PIC X(24).
               03  HCM03V02B-SEX        PIC X(02).
-      *--- 2008/10/17  ADD  END ----------------------------------------
               03  HCM03V02B-HKNRYO1    PIC X(18).
               03  HCM03V02B-HKNRYO2    PIC X(18).
               03  HCM03V02B-HKNRYO3    PIC X(18).
@@ -64,13 +82,11 @@
               03  HCM03V02B-IRYOMEI    PIC X(100).
               03  HCM03V02B-IRYOTEL    PIC X(15).
               03  HCM03V02B-MIDASHI    PIC X(10).
-      *--- 2008/10/17  ADD  START --------------------------------------
               03  HCM03V02B-RSIBUN     PIC X(14).
               03  HCM03V02B-RSIEN      PIC X(02).
               03  HCM03V02B-RSIMIDASI  PIC X(12).
               03  HCM03V02B-RSIMIDASI2  PIC X(02).
               03  HCM03V02B-RSIMIDASI3  PIC X(02).
-      *--- 2008/10/17  ADD  END ----------------------------------------
             02  HCM03V02B-TYPE-B.
               03  HCM03V02B-NO         PIC X(7).
               03  HCM03V02B-LBLSRYYMD  PIC X(10).
@@ -84,11 +100,9 @@
               03  HCM03V02B-FUTAN  PIC X(3).
               03  HCM03V02B-MEISAI
                       PIC X(20)   OCCURS  16 TIMES.
-      *--- 2008/10/17  ADD  START --------------------------------------
               03  HCM03V02B-HONKZKKBN  PIC X(04).
               03  HCM03V02B-TANJYOYMD  PIC X(24).
               03  HCM03V02B-SEX        PIC X(02).
-      *--- 2008/10/17  ADD  END ----------------------------------------
               03  HCM03V02B-HKNRYO1    PIC X(18).
               03  HCM03V02B-HKNRYO2    PIC X(18).
               03  HCM03V02B-HKNRYO3    PIC X(18).
@@ -136,10 +150,8 @@
               03  HCM03V02B-IRYOMEI    PIC X(100).
               03  HCM03V02B-IRYOTEL    PIC X(15).
               03  HCM03V02B-MIDASHI    PIC X(10).
-      *--- 2008/10/17  ADD  START --------------------------------------
               03  HCM03V02B-RSIBUN     PIC X(14).
               03  HCM03V02B-RSIEN      PIC X(02).
               03  HCM03V02B-RSIMIDASI  PIC X(12).
               03  HCM03V02B-RSIMIDASI2  PIC X(02).
               03  HCM03V02B-RSIMIDASI3  PIC X(02).
-      *--- 2008/10/17  ADD  END ----------------------------------------

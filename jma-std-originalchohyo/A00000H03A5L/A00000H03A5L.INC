@@ -14,11 +14,10 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
-      *  プログラム修正履歴
-      *              @@@@-高嶋    06/11/22  基本診療項目追加対応
-      *              @@@@-吉川    08/03/17  病理診断対応(ver.4.2)
-      *              @@@@-門間    08/10/22  生年月日,性別,本人家族区分,
-      *                                     内労災診療等を追加
+      ********************************************************************
+      *  コピー句修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
       ********************************************************************
         01  HCM03V02.
             02  HCM03V02-TYPE-A.
@@ -34,11 +33,9 @@
               03  HCM03V02-FUTAN  PIC X(3).
               03  HCM03V02-MEISAI
                       PIC X(20)   OCCURS  16 TIMES.
-      *--- 2008/10/21  ADD  START --------------------------------------
               03  HCM03V02-HONKZKKBN  PIC X(04).
               03  HCM03V02-TANJYOYMD  PIC X(24).
               03  HCM03V02-SEX        PIC X(02).
-      *--- 2008/10/21  ADD  END ----------------------------------------
               03  HCM03V02-HKNRYO1    PIC X(18).
               03  HCM03V02-HKNRYO2    PIC X(18).
               03  HCM03V02-HKNRYO3    PIC X(18).
@@ -86,13 +83,11 @@
               03  HCM03V02-IRYOMEI    PIC X(100).
               03  HCM03V02-IRYOTEL    PIC X(15).
               03  HCM03V02-MIDASHI    PIC X(10).
-      *--- 2008/10/21  ADD  START --------------------------------------
               03  HCM03V02-RSIBUN     PIC X(14).
               03  HCM03V02-RSIEN      PIC X(02).
               03  HCM03V02-RSIMIDASI  PIC X(12).
               03  HCM03V02-RSIMIDASI2  PIC X(02).
               03  HCM03V02-RSIMIDASI3  PIC X(02).
-      *--- 2008/10/21  ADD  END ----------------------------------------
             02  HCM03V02-TYPE-B.
               03  HCM03V02-B-NO PIC X(7).
               03  HCM03V02-B-LBLSRYYMD  PIC X(10).
@@ -106,11 +101,9 @@
               03  HCM03V02-B-FUTAN  PIC X(3).
               03  HCM03V02-B-MEISAI
                       PIC X(20)   OCCURS  16 TIMES.
-      *--- 2008/10/21  ADD  START --------------------------------------
               03  HCM03V02-B-HONKZKKBN  PIC X(04).
               03  HCM03V02-B-TANJYOYMD  PIC X(24).
               03  HCM03V02-B-SEX        PIC X(02).
-      *--- 2008/10/21  ADD  END ----------------------------------------
               03  HCM03V02-B-HKNRYO1    PIC X(18).
               03  HCM03V02-B-HKNRYO2    PIC X(18).
               03  HCM03V02-B-HKNRYO3    PIC X(18).
@@ -158,10 +151,8 @@
               03  HCM03V02-B-IRYOMEI    PIC X(100).
               03  HCM03V02-B-IRYOTEL    PIC X(15).
               03  HCM03V02-B-MIDASHI    PIC X(10).
-      *--- 2008/10/21  ADD  START --------------------------------------
               03  HCM03V02-B-RSIBUN      PIC X(14).
               03  HCM03V02-B-RSIEN       PIC X(02).
               03  HCM03V02-B-RSIMIDASI   PIC X(12).
               03  HCM03V02-B-RSIMIDASI2  PIC X(02).
               03  HCM03V02-B-RSIMIDASI3  PIC X(02).
-      *--- 2008/10/21  ADD  END ----------------------------------------

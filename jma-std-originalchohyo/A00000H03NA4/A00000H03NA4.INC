@@ -1,3 +1,23 @@
+      * Project code name "ORCA"
+      * ì˙à„ïWèÄÉåÉZÉvÉgÉ\ÉtÉgÅiJMA standard receipt softwareÅj
+      * Copyright(C) 2002 JMA (Japan Medical Association)
+      *
+      * This program is part of "JMA standard receipt software".
+      *
+      *     This program is distributed in the hope that it will be useful
+      * for further advancement in medical care, according to JMA Open
+      * Source License, but WITHOUT ANY WARRANTY.
+      *     Everyone is granted permission to use, copy, modify and
+      * redistribute this program, but only under the conditions described
+      * in the JMA Open Source License. You should have received a copy of
+      * this license along with this program. If not, stop using this
+      * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
+      * 113-8621, Japan.
+      ********************************************************************
+      *  ÉRÉsÅ[ãÂèCê≥óöó
+      * Maj/Min/Rev  èCê≥é“       ì˙ït      ì‡óe
+      * 01.00.01     @@@@-ñÂä‘    11/01/07  ÉRÉÅÉìÉgóöóçÌèú
+      ********************************************************************
         01  HCN03V02.
             02  HCN03V02-TYPE-A.
               03  HCN03V02-NO PIC X(7).
@@ -12,25 +32,14 @@
               03  HCN03V02-FUTAN  PIC X(6).
               03  HCN03V02-MIDASI PIC X(20).
               03  HCN03V02-MEISAI
-      * 20080317 ïaóùêfífÇí«â¡START tanaka
-      *                PIC X(20)   OCCURS  15 TIMES.
                       PIC X(20)   OCCURS  16 TIMES.
-      * 20080317 ïaóùêfífÇí«â¡END
-      *--- 2008/10/22  ADD  START --------------------------------------
               03  HCN03V02-HONKZKKBN    PIC X(4).
               03  HCN03V02-TANJYOYMD    PIC X(24).
               03  HCN03V02-SEX    PIC X(02).
-      *--- 2008/10/22  ADD  END --------------------------------------
               03  HCN03V02-HKNRYO
-      * 20080317 ïaóùêfífÇí«â¡START tanaka
-      *                PIC X(18)   OCCURS  16 TIMES.
                       PIC X(18)   OCCURS  17 TIMES.
-      * 20080317 ïaóùêfífÇí«â¡END
               03  HCN03V02-JIHIBUN
-      * 20080317 ïaóùêfífÇí«â¡START tanaka
-      *                PIC X(18)   OCCURS  15 TIMES.
                       PIC X(18)   OCCURS  16 TIMES.
-      * 20080317 ïaóùêfífÇí«â¡END
               03  HCN03V02-SKJRYO     PIC X(18).
               03  HCN03V02-LIFERYO    PIC X(18).
               03  HCN03V02-HOKENBUN   PIC X(18).
@@ -52,11 +61,9 @@
               03  HCN03V02-IRYOADRS   PIC X(100).
               03  HCN03V02-IRYOMEI    PIC X(100).
               03  HCN03V02-IRYOTEL    PIC X(15).
-      *--- 2008/10/22  ADD  START --------------------------------------
               03  HCN03V02-RSIBUN     PIC X(18).
               03  HCN03V02-RSIEN      PIC X(02).
               03  HCN03V02-RSIMIDASI  PIC X(16).
-      *--- 2008/10/22  ADD  END --------------------------------------
             02  HCN03V02-TYPE-B.
               03  HCN03V02-NO PIC X(7).
               03  HCN03V02-NYUINSTRYMD    PIC X(22).
@@ -70,25 +77,14 @@
               03  HCN03V02-FUTAN  PIC X(6).
               03  HCN03V02-MIDASI PIC X(20).
               03  HCN03V02-MEISAI
-      * 20080317 ïaóùêfífÇí«â¡START tanaka
-      *                PIC X(20)   OCCURS  15 TIMES.
                       PIC X(20)   OCCURS  16 TIMES.
-      *--- 2008/10/22  ADD  START --------------------------------------
               03  HCN03V02-HONKZKKBN    PIC X(4).
               03  HCN03V02-TANJYOYMD    PIC X(24).
               03  HCN03V02-SEX    PIC X(02).
-      *--- 2008/10/22  ADD  END --------------------------------------
-      * 20080317 ïaóùêfífÇí«â¡END
               03  HCN03V02-HKNRYO
-      * 20080317 ïaóùêfífÇí«â¡START tanaka
-      *                PIC X(18)   OCCURS  16 TIMES.
                       PIC X(18)   OCCURS  17 TIMES.
-      * 20080317 ïaóùêfífÇí«â¡END
               03  HCN03V02-JIHIBUN
-      * 20080317 ïaóùêfífÇí«â¡START tanaka
-      *                PIC X(18)   OCCURS  15 TIMES.
                       PIC X(18)   OCCURS  16 TIMES.
-      * 20080317 ïaóùêfífÇí«â¡END
               03  HCN03V02-SKJRYO     PIC X(18).
               03  HCN03V02-LIFERYO    PIC X(18).
               03  HCN03V02-HOKENBUN   PIC X(18).
@@ -110,11 +106,9 @@
               03  HCN03V02-IRYOADRS   PIC X(100).
               03  HCN03V02-IRYOMEI    PIC X(100).
               03  HCN03V02-IRYOTEL    PIC X(15).
-      *--- 2008/10/22  ADD  START --------------------------------------
               03  HCN03V02-RSIBUN     PIC X(18).
               03  HCN03V02-RSIEN      PIC X(02).
               03  HCN03V02-RSIMIDASI  PIC X(16).
-      *--- 2008/10/22  ADD  END --------------------------------------
             02  HCN03V02-TYPE-C.
               03  HCN03V02-LBL-G-MISYU    PIC X(20).
               03  HCN03V02-LBL-G-MISYU-EN PIC X(2).

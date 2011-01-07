@@ -24,17 +24,10 @@
       *  管理者            : 
       *  作成日付    作業者        記述
       *  03/10/03    @@@@-有村     新規作成
-      *  03/11/05    @@@@-半田     明細項目に診療年月を追加
-      *  04/06/22    @@@@-本橋     印刷ダイアログメッセージ修正
-      *  04/09/09    @@@@-本橋     MONPE化
-      *  05/04/11    @@@@-本橋     公費単独時、点数・日数が印字されない不具合修正
-      *  06/09/04    @@@@-吉川     sarge対応
-      *  07/09/21    @@@@-大竹     Ver4.0対応
-      *  08/10/17    @@@@-田中     診療年月を表示を和暦に変更
-      *  08/10/28    @@@@-田中     CSV出力処理を追加
-      *  09/02/02    @@@@-門間     ２つの単独公費を使用した場合、点数が合算されず,
-      *                            高い点数のみ印字されていた不具合の修正
-      *  10/01/07    @@@@-田中     患者番号の桁数を8桁から20桁に変更
+      *****************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev 修正者       日付      内容
+      *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -48,13 +41,11 @@
                                    RECORD  KEY     IS  A05TMP-KEY
                                    FILE    STATUS  IS  STS-A05TMP.
       *
-      *---- 2008/10/28  ADD  START -------------------------------------
       *    ファイル出力用
            SELECT  A21011A05-FILE   ASSIGN   A21011A05CSV
                                      ORGANIZATION    IS  LINE
                                                        SEQUENTIAL
                                    FILE    STATUS  IS  STS-CSV.
-      *---- 2008/10/28  ADD  END ---------------------------------------
       *
       *    エラーファイル
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
@@ -63,21 +54,17 @@
        DATA                        DIVISION.
        FILE                        SECTION.
       *
-
       *    レセプト集計表一時ファイル  
        FD  A05TMP-FILE.
        01  A05TMP-REC.
            COPY    "A21011A05TMP.INC".
-      *---- 2008/10/28  ADD  START -------------------------------------
       *    ＣＳＶファイル出力用
        FD  A21011A05-FILE.
        01  A21011A05-REC                        PIC X(400).
-      *---- 2008/10/28  ADD  END ---------------------------------------
       *
 006900*    エラーファイル
        FD  RECEERR-FILE.
        01  RECEERR-REC             PIC X(200). 
-      *
       *
        WORKING-STORAGE             SECTION.
       *    印刷用データ 名称領域 
@@ -89,19 +76,10 @@
                                    BY         //A05TMP//.
       *
       *    エラーファイル 名称領域 
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
-      *--- 2010/01/07 START --------------------------------------------
-      *     COPY    "A21011A05.INC".
            COPY    "A21011A05V02.INC".
-      *--- 2010/01/07 START --------------------------------------------
       *
       *    スパ領域
        01  STS-AREA.
@@ -111,9 +89,7 @@
            03  STS-RECE10          PIC X(02).
            03  STS-RECEERR         PIC X(02).
            03  STS-RECEUPD         PIC X(02).
-      *---- 2008/10/28  ADD  START -------------------------------------
            03  STS-CSV             PIC X(02).
-      *---- 2008/10/28  ADD  END -------------------------------------
       *
       *    フラグ領域
        01  FLG-AREA.
@@ -127,10 +103,8 @@
            03  FLG-PRINT                PIC 9(01).
            03  FLG-PTINF                PIC 9(01).
            03  FLG-ERR                  PIC 9(01).
-      *--- (2009/02/02) line add start monma ---------------------------
            03  FLG-SYUNOU              PIC 9(01).
            03  FLG-NYUINRRK              PIC 9(01).
-      *--- (2009/02/02) line add end monma -----------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -145,9 +119,7 @@
                05  SYS-YY          PIC 9(02).
                05  SYS-MM          PIC 9(02).
                05  SYS-DD          PIC 9(02).
-      *---- 2008/10/28  ADD  START -------------------------------------
            03  SYS-TIME            PIC 9(08).
-      *---- 2008/10/28  ADD  END ---------------------------------------
       *
       *    添字領域
        01  IDX-AREA.
@@ -162,37 +134,26 @@
            03  IDY                PIC 9(04).
            03  IDZ                PIC 9(04).
            03  IDM                PIC 9(04).
-      *--- (2009/02/02) line add start monma ---------------------------
-           03  IDS               PIC 9(02).
+           03  IDS                PIC 9(02).
            03  IDS2               PIC 9(02).
            03  IDS3               PIC 9(02).
            03  IDS4               PIC 9(02).
-      *--- (2009/02/02) line add end monma -----------------------------
       *
       *    パラメタ領域
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     03  WRK-PARA-HOSPID     PIC X(24).
            03  WRK-PARA-HOSPNUM    PIC 9(02).
-      *=== 4.0対応 By Otake(2007/09/21) end
       *    出力区分
            03  WRK-PARA-SYUTURYOKU   PIC X(01).
       *    対象診療年月
            03  WRK-PARA-SKYYM        PIC X(06).
-      *---- 2008/10/27  ADD  START -------------------------------------
            03  WRK-PARA-STUKBN       PIC X(01).
-      *---- 2008/10/27  ADD  END ---------------------------------------
       *
       *    一時領域
        01  WRK-AREA.
       *  
-      *     03  WRK-SYSYMD.
-      *         05  WRK-SYSYY         PIC 9(04).
-      *         05  WRK-SYSMM         PIC 9(02).
-      *         05  WRK-SYSDD         PIC 9(02).
            03  WRK-SYMD.
                05  WRK-SYY           PIC 9(04).
                05  WRK-SMM           PIC 9(02).
@@ -209,7 +170,6 @@
            03  WRK-MAE-INPUT         PIC X(200).
            03  WRK-OUT-INPUT         PIC X(200).
       *
-      *--- (2009/02/02) line add start monma ---------------------------
            03  WRK-SYUNISSU-TBL.
                05  WRK-SYUNISSU-LINE  OCCURS 31.
                    07  WRK-SYUNISSU   PIC 9(01).
@@ -218,7 +178,6 @@
                05  WRK-SYSYY           PIC 9(04).
                05  WRK-SYSMM           PIC 9(02).
                05  WRK-SYSDD           PIC 9(02).
-      *--- (2009/02/02) line add end monma -----------------------------
       *
            03  WRK-PAGE              PIC ZZ9.
            03  WRK-Z2                PIC ZZ.
@@ -245,11 +204,8 @@
            03  SUM-SKINGK               PIC  9(07).
            03  SUM-SFTNGK               PIC  9(07).
       *
-      *--- (2009/02/02) line add start monma ---------------------------
            03  SUM-SYUNISSU         PIC 9(03).
-      *--- (2009/02/02) line add end monma -----------------------------
       *
-      *---- 2008/10/28  ADD  START -------------------------------------
            03  WRK-SRYKANAME         PIC X(10).
            03  WRK-REC-LENGTH        PIC 9(04).
            03  IDW                   PIC 9(04).
@@ -259,7 +215,6 @@
            03  WRK-SABNAME           PIC X(16).
            03  WRK-STUKBN            PIC X(01).
            03  WRK-STARTKBN          PIC X(01).
-      *---- 2008/10/28  ADD  END ---------------------------------------
       *    キー用エリア
        01  KEY-AREA.
            03  KEY-NEW.
@@ -269,7 +224,6 @@
       *
            COPY    "CPSHELLTBL.INC".
       *     
-      *---- 2008/10/28  ADD  START -------------------------------------
       *    ＣＳＶファイル出力用
        01  A21011A05CSV.
            03  FILLER       PIC X(11)   VALUE 
@@ -280,10 +234,6 @@
            03  FILLER               PIC X(01)   VALUE   "-".
            03  CSV-DENPPRTYMDHM     PIC 9(12).
            03  FILLER               PIC X(04)   VALUE   ".csv".
-      *---- 2008/10/28  ADD  END ---------------------------------------
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     COPY    "ORCA-DBPATH".         
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -298,10 +248,8 @@
       *    出力先プリンタ名割り当て情報
            COPY  "CPSK1031.INC".
       *
-      *
       *    ORCAレセプト印刷順情報
            COPY    "CPSK2003.INC".
-      *
       *
       *    請求管理情報
            COPY    "CPRCF010.INC".
@@ -332,30 +280,27 @@
        01  PRTDATA-REC.
            COPY    "CPPRTDATA.INC".          
       *
-      *
-      *
       *****************************************************************
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   ジョブ管理ＤＢ制御サブ
+      *    ジョブ管理ＤＢ制御サブ
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
            COPY    "CPORCSPRT.INC".          
       *
-      *   日付変換サブ
+      *    日付変換サブ
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   患者番号変換サブ
+      *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
-      *
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
@@ -400,13 +345,9 @@
            INITIALIZE                  CNT-AREA
            INITIALIZE                  SUM-AREA
            INITIALIZE                  KEY-AREA
-      *=== 4.0対応 By Otake(2007/09/21) start
            INITIALIZE                  SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
-      *---- 2008/10/28  ADD  START -------------------------------------
            ACCEPT    SYS-YMD       FROM    DATE
            ACCEPT    SYS-TIME      FROM    TIME
-      *---- 2008/10/28  ADD  END ---------------------------------------
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -424,27 +365,18 @@
                                                LNK-PRTKANRI-PRTNM    
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                         WRK-PARA-HOSPID
                                                WRK-PARA-HOSPNUM
                                                RECEERR
-      *=== 4.0対応 By Otake(2007/09/21) end
                                                WRK-PARA-SYUTURYOKU
                                                WRK-PARA-SKYYM
-      *---- 2008/10/27  ADD  START -------------------------------------
                                                WRK-PARA-STUKBN
-      *---- 2008/10/27  ADD  END -------------------------------------
-      *=== 4.0対応 By Otake(2007/09/21) start
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
       *    ステップ管理開始処理
            MOVE    "STS"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
            MOVE    WRK-PARA-SHELLID
                                    TO  JOB-SHELLID
@@ -454,18 +386,11 @@
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                    SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            MOVE    WRK-PARA-HOSPNUM TO  A05TMP-HOSPNUM
            MOVE    "A05TMP"         TO  A05TMP-FILE-ID
            MOVE    LNK-PRTKANRI-TERMID     TO  A05TMP-TERMID
-      *
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE    "RECEERR"           TO  RECEERR-FILE-ID
-      *     MOVE    LNK-PRTKANRI-TERMID     TO  RECEERR-TERMID
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            MOVE    WRK-PARA-SKYYM  TO  WRK-SRYYMD (1:6)
            MOVE    "01"                TO  WRK-SRYYMD (7:2)
@@ -480,9 +405,7 @@
            MOVE    LNK-PRTKANRI-SKYYMD     TO  LNK-DAY2-YMD
            CALL    "ORCSDAY"           USING   STS-AREA-DAY
                                                LNK-DAY2-AREA
-      *=== 4.0対応 By Otake(2007/09/21) start
                                                SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      STS-DAY-RC1         =   ZERO 
                    MOVE    LNK-DAY2-EDTYMD3    TO  WRK-SEIYMD
            END-IF
@@ -491,14 +414,12 @@
            INITIALIZE                     SYS-1001-REC
            MOVE    "1001"         TO      SYS-1001-KANRICD
            MOVE    "*"            TO      SYS-1001-KBNCD
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    LNK-PRTKANRI-SRYYM(1:6)
                                        TO  SYS-1001-STYUKYMD(1:6)
                                            SYS-1001-EDYUKYMD(1:6)
            MOVE    "01"                TO  SYS-1001-STYUKYMD(7:2)
                                            SYS-1001-EDYUKYMD(7:2)
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE    SYS-1001-REC   TO      MCPDATA-REC
            PERFORM 900-SYSKANRI-INV-SEC
            IF     FLG-SYSKANRI        =   ZERO
@@ -565,7 +486,6 @@
            IF  CNT-RECE10   >       ZERO
                PERFORM   2002-PRINT-SEC
            END-IF
-      *
       *
            .
        200-MAIN-EXT.
@@ -655,21 +575,10 @@
              MOVE    RECE10-KOHNUM(1)     TO    A05TMP-KOHNUM1
              MOVE    RECE10-KOHNUM(2)     TO    A05TMP-KOHNUM2
       *
-      ***  20050411 MOTOHASI 公費単独対応
-      ****    日数設定
-      ***       MOVE    RECE10-JNISSU(1)     TO    A05TMP-NISSU
-      ****
-      ****    点数設定
-      ***       MOVE    RECE10-TOTALTEN(1)   TO    A05TMP-TENSU
-      ****
-      ****    薬剤一部負担金
-      ***       MOVE    RECE10-YKZFTN(1)     TO    A05TMP-YKZFTN
-      *
-      *--- (2009/02/02) line add start monma ---------------------------
              INITIALIZE  IDS
                          SUM-SYUNISSU
                          WRK-SYUNISSU-TBL
-      *--- (2009/02/02) line add end monma -----------------------------
+      *
              IF  ( RECE10-KOHNUM(1)  NOT =  SPACE )
                  AND  ( RECE10-HKNNUM  =  SPACE )
       *        他の公費を併用しているか判定
@@ -687,28 +596,7 @@
                      ADD    RECE10-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
                    END-IF
                  END-PERFORM
-      *--- (2009/02/02) line change start monma ------------------------
-      *             IF  RECE10-TOTALTEN(IDX4) 
-      *                 < RECE10-TOTALTEN(IDX4 + 1)
-      **             日数設定
-      *              MOVE    RECE10-JNISSU(IDX4 + 1)   TO  A05TMP-NISSU
-      **
-      **             点数設定
-      *              MOVE    RECE10-TOTALTEN(IDX4 + 1) TO  A05TMP-TENSU
-      **
-      **             薬剤一部負担金
-      *              MOVE    RECE10-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
-      *             ELSE
-      **             日数設定
-      *              MOVE    RECE10-JNISSU(IDX4)     TO    A05TMP-NISSU
-      **
-      **             点数設定
-      *              MOVE    RECE10-TOTALTEN(IDX4)   TO    A05TMP-TENSU
-      **
-      **             薬剤一部負担金
-      *              MOVE    RECE10-YKZFTN(IDX4)     TO    A05TMP-YKZFTN
-      *             END-IF
-      *             日数設定
+      *
                  PERFORM  VARYING  IDS  FROM  1  BY  1
                           UNTIL  IDS  >  31
                    MOVE  RECE10-SRYYM  TO  WRK-SYUYMD(1:6)
@@ -768,7 +656,6 @@
                    MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
       *
                  END-IF
-      *--- (2009/02/02) line add end monma -----------------------------
                ELSE
       *          日数設定
                  MOVE    RECE10-JNISSU(2)     TO    A05TMP-NISSU
@@ -789,32 +676,27 @@
       *        薬剤一部負担金
                MOVE    RECE10-YKZFTN(1)     TO    A05TMP-YKZFTN
              END-IF
-      ***  20050411 MOTOHASI 公費単独対応
       *
-      *    一部負担金
-      ***  20050411 MOTOHASI
-      ***       MOVE    RECE10-FTNMONEY(1)   TO    A05TMP-ITBFTN
-           IF  ( RECE10-KOHNUM(1) =  SPACE )
-               AND ( RECE10-KOHNUM(2) =  SPACE )
-               AND ( RECE10-KOHNUM(3) =  SPACE )
-               AND ( RECE10-KOHNUM(4) =  SPACE )
-               MOVE    RECE10-FTNMONEY(1)   TO    A05TMP-ITBFTN
-           ELSE
-               IF  RECE10-KOHNUM(2) =  SPACE 
-                 MOVE    RECE10-FTNMONEY(2)   TO    A05TMP-ITBFTN
-               ELSE
-                 IF  RECE10-KOHNUM(3) =  SPACE 
-                   MOVE    RECE10-FTNMONEY(3)   TO    A05TMP-ITBFTN
+             IF  ( RECE10-KOHNUM(1) =  SPACE )
+                 AND ( RECE10-KOHNUM(2) =  SPACE )
+                 AND ( RECE10-KOHNUM(3) =  SPACE )
+                 AND ( RECE10-KOHNUM(4) =  SPACE )
+                 MOVE    RECE10-FTNMONEY(1)   TO    A05TMP-ITBFTN
+             ELSE
+                 IF  RECE10-KOHNUM(2) =  SPACE 
+                   MOVE    RECE10-FTNMONEY(2)   TO    A05TMP-ITBFTN
                  ELSE
-                   IF  RECE10-KOHNUM(4) =  SPACE 
-                     MOVE  RECE10-FTNMONEY(4)   TO    A05TMP-ITBFTN
+                   IF  RECE10-KOHNUM(3) =  SPACE 
+                     MOVE    RECE10-FTNMONEY(3)   TO    A05TMP-ITBFTN
                    ELSE
-                     MOVE  RECE10-FTNMONEY(5)   TO    A05TMP-ITBFTN
+                     IF  RECE10-KOHNUM(4) =  SPACE 
+                       MOVE  RECE10-FTNMONEY(4)   TO    A05TMP-ITBFTN
+                     ELSE
+                       MOVE  RECE10-FTNMONEY(5)   TO    A05TMP-ITBFTN
+                     END-IF
                    END-IF
                  END-IF
-               END-IF
-           END-IF
-      ***  20050411 MOTOHASI
+             END-IF
       *
       *    食事日数
              MOVE    RECE10-SHOKUJINISSU  TO    A05TMP-SNISSU
@@ -863,7 +745,6 @@
       *
            CLOSE              A05TMP-FILE
       *
-      *---- 2008/10/28  ADD  START -------------------------------------
            IF   WRK-PARA-STUKBN  =  1
              OPEN       INPUT       A05TMP-FILE
              INITIALIZE             A05TMP-REC
@@ -896,7 +777,6 @@
              CLOSE  A21011A05-FILE
              CLOSE  A05TMP-FILE
            END-IF
-      *---- 2008/10/28  ADD  END ---------------------------------------
            .
        2002-PRINT-EXT.
            EXIT.
@@ -932,7 +812,6 @@
              MOVE    "再請求"        TO    A05-KBN
            END-EVALUATE
       *
-      *
            .
       *
        310-HEAD-HEN-EXT.
@@ -950,25 +829,19 @@
                     OR       KEY-NEW    NOT   =   KEY-OLD
       *
       *    患者番号
-      *--- 2010/01/07 CHANGE START -------------------------------------
-      *       MOVE    A05TMP-PTNUM       TO      A05-PTNUM(IDX1)
              IF  A05TMP-PTNUM(11:)  =  SPACE
                MOVE    A05TMP-PTNUM     TO   A05-PTNUM(IDX1)
              ELSE
                MOVE    A05TMP-PTNUM     TO   A05-PTNUM2(IDX1)
              END-IF
-      *--- 2010/01/07 CHANGE END ---------------------------------------
       *
       *    患者氏名
              MOVE    A05TMP-PTNAME      TO      A05-NAME(IDX1)
       *
       *    保険者番号
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    A05TMP-HKNJANUM    TO      A05-HKNJANUM(IDX1)
              MOVE    A05TMP-HKNJANUM    TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT    TO      A05-HKNJANUM(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    入外区分
              EVALUATE  A05TMP-NYUGAIKBN
@@ -979,12 +852,6 @@
              END-EVALUATE
       *
       *    給付割合
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE      A05TMP-KYURATE   TO      WRK-Z2
-      ***       STRING    WRK-Z2           DELIMITED BY SIZE
-      ***                 "割"             DELIMITED BY SIZE
-      ***                 INTO                     A05-KYURATE(IDX1)
-      ***       END-STRING
              MOVE      A05TMP-KYURATE   TO      WRK-Z2
              MOVE      WRK-Z2           TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
@@ -992,124 +859,79 @@
                        "割"             DELIMITED BY SIZE
                        INTO                     A05-KYURATE(IDX1)
              END-STRING
-      ***  20040914 MOTOHASI MONPEに変更
       *    本人・家族
              EVALUATE  A05TMP-HONKZKKBN
              WHEN "1"
                MOVE    "本"             TO      A05-HONKZKKBN(IDX1)
              WHEN "2"
                MOVE    "家"             TO      A05-HONKZKKBN(IDX1)
-      *--- (2009/02/02) line add start monma ---------------------------
              WHEN OTHER
                MOVE    "　"             TO      A05-HONKZKKBN(IDX1)
              END-EVALUATE
-      *--- (2009/02/02) line add end monma -----------------------------
       *
       *    保険番号・老人保険番号
-      ***  20040914 MOTOHASI MONPEに変更
              MOVE    A05TMP-HKNNUM      TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-HKNNUM(IDX1)
              MOVE    A05TMP-RJNHKNNUM   TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-RJNHKNNUM(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    公費
-      ***  20040914 MOTOHASI MONPEに変更
              MOVE    A05TMP-KOHNUM1     TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT     TO      A05-KOHNUM1(IDX1)
              MOVE    A05TMP-KOHNUM2     TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT     TO      A05-KOHNUM2(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    日数
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    A05TMP-NISSU       TO      WRK-Z4
-      ***       MOVE    WRK-Z4             TO      A05-NISSU(IDX1)
              MOVE    A05TMP-NISSU       TO      WRK-Z4
              MOVE    WRK-Z4             TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-NISSU(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    点数
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    A05TMP-TENSU       TO      WRK-Z9
-      ***       MOVE    WRK-Z9             TO      A05-TENSU(IDX1)
              MOVE    A05TMP-TENSU       TO      WRK-Z9
              MOVE    WRK-Z9             TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-TENSU(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    薬剤一部負担金
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    A05TMP-YKZFTN      TO      WRK-Z7
-      ***       MOVE    WRK-Z7             TO      A05-YKZFTN(IDX1)
              MOVE    A05TMP-YKZFTN      TO      WRK-Z7
              MOVE    WRK-Z7             TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-YKZFTN(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    一部負担金
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    A05TMP-ITBFTN      TO      WRK-Z7
-      ***       MOVE    WRK-Z7             TO      A05-ITBFTN(IDX1)
              MOVE    A05TMP-ITBFTN      TO      WRK-Z7
              MOVE    WRK-Z7             TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-ITBFTN(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    食事日数
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    A05TMP-SNISSU      TO      WRK-Z4
-      ***       MOVE    WRK-Z4             TO      A05-SNISSU(IDX1)
              MOVE    A05TMP-SNISSU      TO      WRK-Z4
              MOVE    WRK-Z4             TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-SNISSU(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    食事療養費
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    A05TMP-SKINGK      TO      WRK-Z9
-      ***       MOVE    WRK-Z9             TO      A05-SKINGK(IDX1)
              MOVE    A05TMP-SKINGK      TO      WRK-Z9
              MOVE    WRK-Z9             TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-SKINGK(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
       *    標準負担額
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    A05TMP-SFTNGK      TO      WRK-Z7
-      ***       MOVE    WRK-Z7             TO      A05-SFTNGK(IDX1)
              MOVE    A05TMP-SFTNGK      TO      WRK-Z7
              MOVE    WRK-Z7             TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-SFTNGK(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
       *
-      * 20031105 追加
       *    診療年月
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    A05TMP-SRYYM       TO      A05-SRYYM(IDX1)
-      *--- 2008/10/17  CHANGE  START -------------------------------
-      *       MOVE    A05TMP-SRYYM       TO      WRK-MAE-INPUT
-      *       PERFORM 2009-HENKAN-SEC
-      *       MOVE    WRK-OUT-INPUT      TO      A05-SRYYM(IDX1)
              MOVE    A05TMP-SRYYM       TO      WRK-SYMD(1:6)
              MOVE    "01"               TO      WRK-SYMD(7:2)
              PERFORM 31012-SEIWA-HEN-SEC
              MOVE    WRK-HENYMDG(1:16)     TO      A05-SRYYM(IDX1)
-      *--- 2008/10/17  CHANGE  END ---------------------------------
-      ***  20040914 MOTOHASI MONPEに変更
-      * 20031105 追加
       *
       *    小計加算
              ADD     A05TMP-NISSU       TO      SUM-NISSU
@@ -1132,7 +954,6 @@
       *****************************************************************
        3201-GOKEI-SEC                SECTION.
       *
-      *
            IF    IDX1    >    20
              MOVE     A05-KBN       TO    WRK-KBN-OLD
              PERFORM  330-PRINT-OUT-SEC
@@ -1142,83 +963,51 @@
              MOVE    1    TO    IDX1
            END-IF
       *
-      *
            MOVE    "合    計"     TO    A05-NAME(IDX1)
       *
-      *
       *    日数
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    SUM-NISSU          TO      WRK-Z4
-      ***       MOVE    WRK-Z4             TO      A05-NISSU(IDX1)
-             MOVE    SUM-NISSU          TO      WRK-Z4
-             MOVE    WRK-Z4             TO      WRK-MAE-INPUT
-             PERFORM 2009-HENKAN-SEC
-             MOVE    WRK-OUT-INPUT      TO      A05-NISSU(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
+           MOVE    SUM-NISSU          TO      WRK-Z4
+           MOVE    WRK-Z4             TO      WRK-MAE-INPUT
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-OUT-INPUT      TO      A05-NISSU(IDX1)
       *
       *    点数
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    SUM-TENSU          TO      WRK-Z9
-      ***       MOVE    WRK-Z9             TO      A05-TENSU(IDX1)
-             MOVE    SUM-TENSU          TO      WRK-Z9
-             MOVE    WRK-Z9             TO      WRK-MAE-INPUT
-             PERFORM 2009-HENKAN-SEC
-             MOVE    WRK-OUT-INPUT      TO      A05-TENSU(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
+           MOVE    SUM-TENSU          TO      WRK-Z9
+           MOVE    WRK-Z9             TO      WRK-MAE-INPUT
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-OUT-INPUT      TO      A05-TENSU(IDX1)
       *
       *    薬剤一部負担金
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    SUM-YKZFTN         TO      WRK-Z7
-      ***       MOVE    WRK-Z7             TO      A05-YKZFTN(IDX1)
-             MOVE    SUM-YKZFTN         TO      WRK-Z7
-             MOVE    WRK-Z7             TO      WRK-MAE-INPUT
-             PERFORM 2009-HENKAN-SEC
-             MOVE    WRK-OUT-INPUT      TO      A05-YKZFTN(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
+           MOVE    SUM-YKZFTN         TO      WRK-Z7
+           MOVE    WRK-Z7             TO      WRK-MAE-INPUT
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-OUT-INPUT      TO      A05-YKZFTN(IDX1)
       *
       *    一部負担金
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    SUM-ITBFTN         TO      WRK-Z7
-      ***       MOVE    WRK-Z7             TO      A05-ITBFTN(IDX1)
-             MOVE    SUM-ITBFTN         TO      WRK-Z7
-             MOVE    WRK-Z7             TO      WRK-MAE-INPUT
-             PERFORM 2009-HENKAN-SEC
-             MOVE    WRK-OUT-INPUT      TO      A05-ITBFTN(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
+           MOVE    SUM-ITBFTN         TO      WRK-Z7
+           MOVE    WRK-Z7             TO      WRK-MAE-INPUT
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-OUT-INPUT      TO      A05-ITBFTN(IDX1)
       *
       *    食事日数
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    SUM-SNISSU         TO      WRK-Z4
-      ***       MOVE    WRK-Z4             TO      A05-SNISSU(IDX1)
-             MOVE    SUM-SNISSU         TO      WRK-Z4
-             MOVE    WRK-Z4             TO      WRK-MAE-INPUT
-             PERFORM 2009-HENKAN-SEC
-             MOVE    WRK-OUT-INPUT      TO      A05-SNISSU(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
+           MOVE    SUM-SNISSU         TO      WRK-Z4
+           MOVE    WRK-Z4             TO      WRK-MAE-INPUT
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-OUT-INPUT      TO      A05-SNISSU(IDX1)
       *
       *    食事療養費
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    SUM-SKINGK         TO      WRK-Z9
-      ***       MOVE    WRK-Z9             TO      A05-SKINGK(IDX1)
-             MOVE    SUM-SKINGK         TO      WRK-Z9
-             MOVE    WRK-Z9             TO      WRK-MAE-INPUT
-             PERFORM 2009-HENKAN-SEC
-             MOVE    WRK-OUT-INPUT      TO      A05-SKINGK(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
+           MOVE    SUM-SKINGK         TO      WRK-Z9
+           MOVE    WRK-Z9             TO      WRK-MAE-INPUT
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-OUT-INPUT      TO      A05-SKINGK(IDX1)
       *
       *    標準負担額
-      ***  20040914 MOTOHASI MONPEに変更
-      ***       MOVE    SUM-SFTNGK         TO      WRK-Z7
-      ***       MOVE    WRK-Z7             TO      A05-SFTNGK(IDX1)
-             MOVE    SUM-SFTNGK         TO      WRK-Z7
-             MOVE    WRK-Z7             TO      WRK-MAE-INPUT
-             PERFORM 2009-HENKAN-SEC
-             MOVE    WRK-OUT-INPUT      TO      A05-SFTNGK(IDX1)
-      ***  20040914 MOTOHASI MONPEに変更
+           MOVE    SUM-SFTNGK         TO      WRK-Z7
+           MOVE    WRK-Z7             TO      WRK-MAE-INPUT
+           PERFORM 2009-HENKAN-SEC
+           MOVE    WRK-OUT-INPUT      TO      A05-SFTNGK(IDX1)
       *
            INITIALIZE    SUM-AREA
-      *
-               
       *
            .
        3201-GOKEI-EXT.
@@ -1239,33 +1028,19 @@
                                        TO  SPRT-TBL-GROUP
            MOVE    LNK-PRTKANRI-SRYYM  TO  SPRT-SRYYM
            MOVE    LNK-PRTKANRI-SKYYMD TO  SPRT-SKYYMD
-           MOVE    LNK-PRTKANRI-SHELLID 
-                                       TO  SPRT-SHELLID
-           MOVE    LNK-PRTKANRI-SHORI-RENNUM
-                                       TO  SPRT-SHORI-RENNUM
+           MOVE    LNK-PRTKANRI-SHELLID       TO  SPRT-SHELLID
+           MOVE    LNK-PRTKANRI-SHORI-RENNUM  TO  SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY
                                        TO  SPRT-PRIORITY
-      ***  20040914 MOTOHASI MONPEに変更
-      ***     MOVE   "A21011A05"             TO  SPRT-PRTID
-      *--- 2010/01/07 START --------------------------------------------
-      *     MOVE   "A21011A05.red"             TO  SPRT-PRTID
-           MOVE   "A21011A05V02.red"             TO  SPRT-PRTID
-      *--- 2010/01/07 END ----------------------------------------------
-      ***  20040914 MOTOHASI MONPEに変更
-           MOVE    "保留・再請求・月遅れリスト"        
-                                         TO  SPRT-TITLE
-           MOVE    A05              TO  SPRT-PRTDATA
+           MOVE   "A21011A05V02.red"   TO  SPRT-PRTID
+           MOVE    "保留・再請求・月遅れリスト"  TO  SPRT-TITLE
+           MOVE    A05                 TO  SPRT-PRTDATA
            MOVE    LNK-PRTKANRI-TERMID TO  SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID   TO  SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-      ***** site-libで動かすためにコメントアウト
-      ***     MOVE    "1"          TO  SPRT-SITEKBN
-      *****
            CALL    "ORCSPRT"           USING
                                        ORCSPRTAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
                                        SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
            IF      SPRT-RETURN         =   ZERO
                CONTINUE                    
            END-IF
@@ -1295,35 +1070,21 @@
       *
       *    請求管理ＤＢ検索
            INITIALIZE         RECE10-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
            MOVE    SPA-HOSPNUM     TO  RECE10-HOSPNUM
-      *=== 4.0対応 By Otake(2007/09/21) end
            MOVE   RECE10-REC            TO    MCPDATA-REC
            MOVE   "DBSELECT"            TO    MCP-FUNC
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *     MOVE   "SEIKYU-ALL"          TO    ORC-DBPATH
-      *     CALL   "ORCMCPSUB"           USING
            MOVE    "tbl_seikyu"         TO  MCP-TABLE
            MOVE    "all"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) start
-      *                                  ORCMCPAREA
-      *=== 4.0対応 By Otake(2007/09/21) end
                                         MCPDATA-REC
-      *=== 4.0対応 By Otake(2007/09/21) start
                                         SPA-AREA
-      *=== 4.0対応 By Otake(2007/09/21) end
       *
            IF     MCP-RC        =       ZERO
                   MOVE    ZERO                TO    FLG-END
                   PERFORM  900-SEIKYU-READ-SEC
            ELSE
                   MOVE    1    TO      FLG-END
-      *=== sarge対応 DEL By Takashima(2006/09/17) start
-      *            PERFORM  900-SEIKYU-CLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/17) end
            END-IF
            .
       *
@@ -1335,7 +1096,6 @@
       *****************************************************************
        900-SEIKYU-READ-SEC           SECTION.
       *
-
            MOVE   "DBFETCH"     TO      MCP-FUNC
       *=== 4.0対応 By Otake(2007/09/21) start
       *     MOVE   "SEIKYU-ALL"          TO    ORC-DBPATH

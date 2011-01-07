@@ -1,3 +1,23 @@
+      * Project code name "ORCA"
+      * 日医標準レセプトソフト（JMA standard receipt software）
+      * Copyright(C) 2002 JMA (Japan Medical Association)
+      *
+      * This program is part of "JMA standard receipt software".
+      *
+      *     This program is distributed in the hope that it will be useful
+      * for further advancement in medical care, according to JMA Open
+      * Source License, but WITHOUT ANY WARRANTY.
+      *     Everyone is granted permission to use, copy, modify and
+      * redistribute this program, but only under the conditions described
+      * in the JMA Open Source License. You should have received a copy of
+      * this license along with this program. If not, stop using this
+      * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
+      * 113-8621, Japan.
+      ********************************************************************
+      *  コピー句修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
+      ********************************************************************
         01  HCM19.
          03 HCM19-TYPE-A.
             05  HCM19-PTNUM PIC X(20).
@@ -23,12 +43,8 @@
             05  HCM19-KIKYY PIC X(4).
             05  HCM19-KIKMM PIC X(4).
             05  HCM19-KIKDD PIC X(4).
-      *--- 2010/10/08 CHANGE START -------------------------------------
-      *      05  HCM19-HOSPADRS  PIC X(80).
-      *      05  HCM19-HOSPNAME  PIC X(80).
             05  HCM19-HOSPADRS  PIC X(72).
             05  HCM19-HOSPNAME  PIC X(72).
-      *--- 2010/10/08 CHANGE END   -------------------------------------
             05  HCM19-HOSPTEL   PIC X(15).
             05  HCM19-DRNAME    PIC X(26).
             05  HCM19-FTNJA2    PIC X(16).
@@ -53,10 +69,7 @@
             05  HCM19-B-KIGO      PIC X(32).
             05  HCM19-B-NUM       PIC X(32).
             05  HCM19-B-MIDASHI   PIC X(20).
-      * 20080328 後発医薬品変更不可の記載修正START tanaka
-      *      05  HCM19-B-MIDASHI2   PIC X(64).
             05  HCM19-B-MIDASHI2   PIC X(88).
-      * 20080328 後発医薬品変更不可の記載修正END
             05  HCM19-B-BIRTH PIC X(22).
             05  HCM19-B-KANANAME  PIC X(30).
             05  HCM19-B-KANANAME2 PIC X(60).
@@ -69,12 +82,8 @@
             05  HCM19-B-KIKYY PIC X(4).
             05  HCM19-B-KIKMM PIC X(4).
             05  HCM19-B-KIKDD PIC X(4).
-      *--- 2010/10/08 CHANGE START -------------------------------------
-      *      05  HCM19-B-HOSPADRS  PIC X(80).
-      *      05  HCM19-B-HOSPNAME  PIC X(80).
             05  HCM19-B-HOSPADRS  PIC X(72).
             05  HCM19-B-HOSPNAME  PIC X(72).
-      *--- 2010/10/08 CHANGE END   -------------------------------------
             05  HCM19-B-HOSPTEL   PIC X(15).
             05  HCM19-B-DRNAME    PIC X(26).
             05  HCM19-B-FTNJA2    PIC X(16).

@@ -1,3 +1,23 @@
+      * Project code name "ORCA"
+      * 日医標準レセプトソフト（JMA standard receipt software）
+      * Copyright(C) 2002 JMA (Japan Medical Association)
+      *
+      * This program is part of "JMA standard receipt software".
+      *
+      *     This program is distributed in the hope that it will be useful
+      * for further advancement in medical care, according to JMA Open
+      * Source License, but WITHOUT ANY WARRANTY.
+      *     Everyone is granted permission to use, copy, modify and
+      * redistribute this program, but only under the conditions described
+      * in the JMA Open Source License. You should have received a copy of
+      * this license along with this program. If not, stop using this
+      * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
+      * 113-8621, Japan.
+      ********************************************************************
+      *  コピー句修正履歴
+      * Maj/Min/Rev  修正者       日付      内容
+      * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
+      ********************************************************************
         01  HCN03V02.
             02  HCN03V02-TYPE.
               03  HCN03V02-NO             PIC X(7).
@@ -12,25 +32,14 @@
               03  HCN03V02-FUTAN  PIC X(6).
               03  HCN03V02-MIDASI PIC X(20).
               03  HCN03V02-MEISAI
-      * 20080317 病理診断の追加START tanaka
-      *                PIC X(20)   OCCURS  15 TIMES.
                       PIC X(20)   OCCURS  16 TIMES.
-      * 20080317 病理診断の追加END
-      *--- 2008/10/22  ADD  START MONMA --------------------------------
               03  HCN03V02-HONKZKKBN  PIC X(04).
               03  HCN03V02-TANJYOYMD  PIC X(24).
               03  HCN03V02-SEX        PIC X(02).
-      *--- 2008/10/22  ADD  END MONMA ----------------------------------
               03  HCN03V02-HKNRYO
-      * 20080317 病理診断の追加START tanaka
-      *                PIC X(18)   OCCURS  16 TIMES.
                       PIC X(18)   OCCURS  17 TIMES.
-      * 20080317 病理診断の追加END
               03  HCN03V02-JIHIBUN
-      * 20080317 病理診断の追加START tanaka
-      *                PIC X(18)   OCCURS  15 TIMES.
                       PIC X(18)   OCCURS  16 TIMES.
-      * 20080317 病理診断の追加END
               03  HCN03V02-SKJRYO     PIC X(18).
               03  HCN03V02-LIFERYO    PIC X(18).
               03  HCN03V02-HOKENBUN   PIC X(18).
@@ -52,11 +61,9 @@
               03  HCN03V02-IRYOADRS   PIC X(100).
               03  HCN03V02-IRYOMEI    PIC X(100).
               03  HCN03V02-IRYOTEL    PIC X(15).
-      *--- 2008/10/22  ADD  START MONMA --------------------------------
               03  HCN03V02-RSIBUN      PIC X(18).
               03  HCN03V02-RSIEN       PIC X(02).
               03  HCN03V02-RSIMIDASI   PIC X(16).
-      *--- 2008/10/22  ADD  END MONMA ----------------------------------
             02  HCN03V02-TYPE-C.
               03  HCN03V02-LBL-G-MISYU    PIC X(20).
               03  HCN03V02-LBL-G-MISYU-EN PIC X(2).
