@@ -14,11 +14,15 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
-      ********************************************************************
+      *******************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev  修正者      日付      内容
+      *   01.00.01    @@@@-田中   11/01/05  コメント履歴削除
+      *******************************************************************
        01  K144TMP-REC.
-              03  K144TMP-KEY.
-                  05  K144TMP-NYUGAIKBN       PIC  X(01).
-                  05  K144TMP-HKNINDEX        PIC  9(03).
-              03  K144TMP-SRY-TBL OCCURS 56.
-                  05  K144TMP-TENSU           PIC  9(11).
-                  05  K144TMP-KAISU           PIC  9(11).
+           03  K144TMP-KEY.
+               05  K144TMP-NYUGAIKBN       PIC X(01).
+               05  K144TMP-HKNINDEX        PIC 9(03).
+           03  K144TMP-SRY-TBL             OCCURS 56.
+               05  K144TMP-TENSU           PIC 9(11).
+               05  K144TMP-KAISU           PIC 9(11).

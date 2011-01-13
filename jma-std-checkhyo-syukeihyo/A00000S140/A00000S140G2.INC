@@ -15,23 +15,25 @@
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
       *******************************************************************
+      *  コピー句修正履歴
+      *  Maj/Min/Rev  修正者      日付      内容
+      *   01.00.01    @@@@-田中   11/01/05  コメント履歴削除
+      *******************************************************************
        01  S140G2.
-              03  S140G2-PAGE              PIC  X(03).
-              03  S140G2-SRYYM             PIC  X(16).
-              03  S140G2-SYSYMD            PIC  X(22).
-              03  S140G2-NYUGAI            PIC  X(04).
-              03  S140G2-SRYKANAME         PIC  X(20).
-              03  S140G2-CITYKBN           PIC  X(12).
-              03  S140G2-HKNJA-AREA.
-                  05  S140G2-HKNJA-TBL OCCURS 55.
-                      07  S140G2-HKNJANAME PIC  X(50).
-                      07  S140G2-KENSU     PIC  X(04).
-                      07  S140G2-NISSU     PIC  X(04).
-                      07  S140G2-TENSU     PIC  X(09).
-                      07  S140G2-MADOGK    PIC  X(09).
-      *--- (2008/12/12) line add start monma ----------------------------
-                      07  S140G2-JIHIGK    PIC  X(09).
-      *--- (2008/12/12) line add end   monma ----------------------------
-                      07  S140G2-HKNGK     PIC  X(09).
-                      07  S140G2-KOHGK     PIC  X(09).
-                      07  S140G2-SYUEKI    PIC  X(09).
+           03  S140G2-PAGE              PIC  X(03).
+           03  S140G2-SRYYM             PIC  X(16).
+           03  S140G2-SYSYMD            PIC  X(22).
+           03  S140G2-NYUGAI            PIC  X(04).
+           03  S140G2-SRYKANAME         PIC  X(20).
+           03  S140G2-CITYKBN           PIC  X(12).
+           03  S140G2-HKNJA-AREA.
+               05  S140G2-HKNJA-TBL OCCURS 55.
+                   07  S140G2-HKNJANAME PIC  X(50).
+                   07  S140G2-KENSU     PIC  X(04).
+                   07  S140G2-NISSU     PIC  X(04).
+                   07  S140G2-TENSU     PIC  X(09).
+                   07  S140G2-MADOGK    PIC  X(09).
+                   07  S140G2-JIHIGK    PIC  X(09).
+                   07  S140G2-HKNGK     PIC  X(09).
+                   07  S140G2-KOHGK     PIC  X(09).
+                   07  S140G2-SYUEKI    PIC  X(09).

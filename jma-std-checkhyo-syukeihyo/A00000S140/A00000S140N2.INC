@@ -14,30 +14,29 @@
       * this license along with this program. If not, stop using this
       * program and contact JMA, 2-28-16 Honkomagome, Bunkyo-ku, Tokyo,
       * 113-8621, Japan.
-      ********************************************************************
+      *******************************************************************
+      *  コピー句修正履歴
+      *  Maj/Min/Rev  修正者      日付      内容
+      *   01.00.01    @@@@-田中   11/01/05  コメント履歴削除
+      *******************************************************************
        01  S140N2.
-              03  S140N2-PAGE              PIC  X(03).
-              03  S140N2-SRYYM             PIC  X(16).
-              03  S140N2-SYSYMD            PIC  X(22).
-              03  S140N2-NYUGAI            PIC  X(04).
-              03  S140N2-SRYKANAME         PIC  X(20).
-              03  S140N2-CITYKBN           PIC  X(12).
-              03  S140N2-HKNJA-AREA.
-                  05  S140N2-HKNJA-TBL OCCURS 55.
-                      07  S140N2-HKNJANAME PIC  X(50).
-                      07  S140N2-KENSU     PIC  X(04).
-                      07  S140N2-NISSU     PIC  X(04).
-                      07  S140N2-TENSU     PIC  X(09).
-                      07  S140N2-MADOGK    PIC  X(09).
-      *--- (2008/12/12) line add start monma ----------------------------
-                      07  S140N2-JIHIGK    PIC  X(09).
-      *--- (2008/12/12) line add end   monma ----------------------------
-                      07  S140N2-HKNGK     PIC  X(09).
-                      07  S140N2-KOHGK     PIC  X(09).
-                      07  S140N2-SYUEKI    PIC  X(09).
-      *--- 2009/08/20 CHANGE START -------------------------------------
-      *                07  S140N2-SNISSU     PIC  X(04).
-                      07  S140N2-SNISSU     PIC  X(05).
-      *--- 2009/08/20 CHANGE END ---------------------------------------
-                      07  S140N2-SSEIKYU   PIC  X(09).
-                      07  S140N2-SFTNGK    PIC  X(09).
+           03  S140N2-PAGE              PIC  X(03).
+           03  S140N2-SRYYM             PIC  X(16).
+           03  S140N2-SYSYMD            PIC  X(22).
+           03  S140N2-NYUGAI            PIC  X(04).
+           03  S140N2-SRYKANAME         PIC  X(20).
+           03  S140N2-CITYKBN           PIC  X(12).
+           03  S140N2-HKNJA-AREA.
+               05  S140N2-HKNJA-TBL OCCURS 55.
+                   07  S140N2-HKNJANAME PIC  X(50).
+                   07  S140N2-KENSU     PIC  X(04).
+                   07  S140N2-NISSU     PIC  X(04).
+                   07  S140N2-TENSU     PIC  X(09).
+                   07  S140N2-MADOGK    PIC  X(09).
+                   07  S140N2-JIHIGK    PIC  X(09).
+                   07  S140N2-HKNGK     PIC  X(09).
+                   07  S140N2-KOHGK     PIC  X(09).
+                   07  S140N2-SYUEKI    PIC  X(09).
+                   07  S140N2-SNISSU     PIC  X(05).
+                   07  S140N2-SSEIKYU   PIC  X(09).
+                   07  S140N2-SFTNGK    PIC  X(09).

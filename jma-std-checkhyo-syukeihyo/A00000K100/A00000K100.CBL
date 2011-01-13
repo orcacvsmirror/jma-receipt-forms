@@ -17,18 +17,19 @@
       ********************************************************************
        IDENTIFICATION          DIVISION.
        PROGRAM-ID.             A00000K100.
-      *****************************************************************
+      *******************************************************************
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 月次帳票
       *  コンポーネント名  : 診療行為区分別帳票制御処理
-      *  管理者            : 
+      *  管理者            :
       *  作成日付    作業者        記述
       *  04/03/26    @@@@-半田     新規作成
-      *  04/07/07    @@@@-本橋     入院基本料・特定基本料項目欄を削除
-      *  04/09/15    @@@@-本橋     MONPE化
-      *  07/09/18    @@@@-長屋     4.0対応
-      *  10/06/24    @@@@-門間     包括修正・パラメタの追加
-      *****************************************************************
+      *******************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev  修正者      日付      内容
+      *   01.00.01    @@@@-田中   10/12/14  open-cobol1.0対応
+      *   01.00.01    @@@@-田中   10/12/14  コメント履歴削除
+      *******************************************************************
       *
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -49,15 +50,8 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域
-      ***07/09/18 nagaya 4.0対応 start
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
-      ***07/09/18 nagaya 4.0対応 end
       *
       *    スパ領域
        01  STS-AREA.
@@ -117,22 +111,16 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
-      ***07/09/18 nagaya 4.0対応 start
-      *     03  WRK-PARA-HOSPID       PIC X(24).
            03  WRK-PARA-HOSPNUM      PIC 9(02).
-      ***07/09/18 nagaya 4.0対応 end
-      *
            03  WRK-PARA-PRTYPE       PIC X(01).
            03  WRK-PARA-YM           PIC X(06).
            03  WRK-PARA-NYUGAIKBN    PIC X(01).
            03  WRK-PARA-HKNTG        PIC X(01).
-      *--- 2010/06/24 ADD START ---------------------------------------
            03  WRK-PARA-HOUKATU      PIC X(01).
-      *--- 2010/06/24 ADD END   ---------------------------------------
       *
       *    一時領域
        01  WRK-AREA.
-      *  
+      *
            03  WRK-PRDTLCNT          PIC 9(06).
            03  WRK-RECCNT            PIC 9(06).
            03  WRK-HONKZKKBN         PIC X(04).
@@ -140,11 +128,9 @@
       *
            03  WRK-SRYYMWH           PIC X(16).
            03  WRK-SYSYMDWH          PIC X(22).
-           03  WRK-RENNUM            PIC 9(03).
            03  WRK-PTNUM             PIC X(20).
-           03  WRK-PTNUM6            PIC 9(06). 
-           03  WRK-SYUHKNNUM         PIC X(03). 
-      *  
+           03  WRK-PTNUM6            PIC 9(06).
+           03  WRK-SYUHKNNUM         PIC X(03).
            03  WRK-SYSYMD.
                05  WRK-SYSYY         PIC 9(04).
                05  WRK-SYSMM         PIC 9(02).
@@ -154,24 +140,21 @@
                05  WRK-SMM           PIC 9(02).
                05  WRK-SDD           PIC 9(02).
            03  WRK-HENYMDG           PIC X(22).
-      *  
-      *    郵便番号変換
-	   03  WRK-POSTMAEG.
-               05  WRK-POSTMAE1    PIC X(03).
-               05  WRK-POSTMAE2    PIC X(04).
-           03  WRK-POSTATOG.
-               05  WRK-POSTATO1    PIC X(03).
-               05  WRK-POSTNAKA    PIC X(01)   VALUE  "-".
-               05  WRK-POSTATO2    PIC X(04).
       *
+      *    郵便番号変換
+       03  WRK-POSTMAEG.
+               05  WRK-POSTMAE1      PIC X(03).
+               05  WRK-POSTMAE2      PIC X(04).
+           03  WRK-POSTATOG.
+               05  WRK-POSTATO1      PIC X(03).
+               05  WRK-POSTNAKA      PIC X(01)   VALUE  "-".
+               05  WRK-POSTATO2      PIC X(04).
            03  WRK-PTID2             PIC X(10).
            03  WRK-SRYCD2            PIC X(10).
-           03  WRK-RENNUM            PIC 9(05).
            03  WRK-NYUGAIKBN         PIC X(01).
            03  WRK-NENREI            PIC 9(03).
            03  WRK-ADRS              PIC X(200).
            03  WRK-PRSRYKA           PIC X(02).
-      *
            03  WRK-Z3                PIC ZZ9.
            03  WRK-PAGE              PIC ZZ9.
            03  WRK-Z9                PIC ZZZZZZZZZZZ9.
@@ -181,12 +164,9 @@
            03  DEBUG-CNT             PIC 9(03).
       *
            COPY    "CPSHELLTBL.INC".
-      *   
-      ***07/09/18 nagaya 4.0対応 start  
-      *     COPY    "ORCA-DBPATH".
-      ***07/09/18 nagaya 4.0対応 end
+      *
       *    診療種別名テーブル
-           COPY    "CPORCSSRYSYU.INC".        
+           COPY    "CPORCSSRYSYU.INC".
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -200,30 +180,30 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
+           COPY    "CPPRTDATA.INC".
       *
       *****************************************************************
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   ジョブ管理ＤＢ制御サブ
+      *    ジョブ管理ＤＢ制御サブ
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
-      *   日付変換サブ
+      *    日付変換サブ
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   患者番号変換サブ
+      *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
+      *
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
-      *
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
@@ -238,7 +218,7 @@
            02  FILLER      PIC X(256).
       ****************************************************************
        PROCEDURE           DIVISION
-               USING
+           USING
            COMMAND-PARAM.
       *
       *****************************************************************
@@ -246,9 +226,9 @@
       *****************************************************************
        000-PROC-SEC                SECTION.
       *
-           PERFORM 100-INIT-SEC
+           PERFORM  100-INIT-SEC
       *
-           PERFORM 200-MAIN-SEC
+           PERFORM  200-MAIN-SEC
       *
            STOP    RUN
            .
@@ -261,9 +241,7 @@
            INITIALIZE                  FLG-AREA
            INITIALIZE                  STS-AREA
            INITIALIZE                  WRK-AREA
-      ***07/09/18 nagaya 4.0対応 start
            INITIALIZE                  SPA-AREA
-      ***07/09/18 nagaya 4.0対応 end
       *
            UNSTRING   COMMAND-PARAM    DELIMITED  BY  ","
                                        INTO    LNK-PRTKANRI-RENNUM
@@ -275,26 +253,20 @@
                                                LNK-PRTKANRI-SHELLID
                                                LNK-PRTKANRI-PRIORITY
                                                LNK-PRTKANRI-TERMID
-                                               LNK-PRTKANRI-OPID    
-                                               LNK-PRTKANRI-PRTNM    
+                                               LNK-PRTKANRI-OPID
+                                               LNK-PRTKANRI-PRTNM
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      ***07/09/18 nagaya 4.0対応 start
-      *                                         WRK-PARA-HOSPID
                                                WRK-PARA-HOSPNUM
                                                RECEERR
-      ***07/09/18 nagaya 4.0対応 start
                                                WRK-PARA-PRTYPE
                                                WRK-PARA-YM
                                                WRK-PARA-NYUGAIKBN
                                                WRK-PARA-HKNTG
-      *--- 2010/06/24 ADD START ---------------------------------------
                                                WRK-PARA-HOUKATU
-      *--- 2010/06/24 ADD END   ---------------------------------------
-      ***07/09/18 nagaya 4.0対応 start
+      *
            END-UNSTRING
-           MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
-      ***07/09/18 nagaya 4.0対応 end
+           MOVE    WRK-PARA-HOSPNUM    TO   SPA-HOSPNUM
       *
            .
        100-INIT-EXT.
@@ -304,62 +276,48 @@
       *****************************************************************
        200-MAIN-SEC                SECTION.
       *
-           MOVE  LNK-PRTKANRI-RENNUM    TO
-                              K100LNK-PRTKANRI-RENNUM
-           MOVE  LNK-PRTKANRI-TBL-KEY   TO
-                              K100LNK-PRTKANRI-TBL-KEY
-           MOVE  LNK-PRTKANRI-TBL-GROUP TO
-                              K100LNK-PRTKANRI-TBL-GROUP
-           MOVE  LNK-PRTKANRI-SHORI-RENNUM      TO
-                              K100LNK-PRTKANRI-SHORI-RENNUM
-           MOVE  LNK-PRTKANRI-SRYYM     TO
-                              K100LNK-PRTKANRI-SRYYM
-           MOVE  LNK-PRTKANRI-SKYYMD    TO
-                              K100LNK-PRTKANRI-SKYYMD
-           MOVE  LNK-PRTKANRI-SHELLID   TO
-                              K100LNK-PRTKANRI-SHELLID
-           MOVE  LNK-PRTKANRI-PRIORITY  TO
-                              K100LNK-PRTKANRI-PRIORITY
-           MOVE  LNK-PRTKANRI-TERMID    TO
-                              K100LNK-PRTKANRI-TERMID
-           MOVE  LNK-PRTKANRI-OPID      TO
-                              K100LNK-PRTKANRI-OPID
-           MOVE  LNK-PRTKANRI-PRTNM     TO
-                              K100LNK-PRTKANRI-PRTNM
+           MOVE    LNK-PRTKANRI-RENNUM    TO   K100LNK-PRTKANRI-RENNUM
+           MOVE    LNK-PRTKANRI-TBL-KEY   TO   K100LNK-PRTKANRI-TBL-KEY
+           MOVE    LNK-PRTKANRI-TBL-GROUP
+                                     TO   K100LNK-PRTKANRI-TBL-GROUP
+           MOVE    LNK-PRTKANRI-SHORI-RENNUM
+                                     TO   K100LNK-PRTKANRI-SHORI-RENNUM
+           MOVE    LNK-PRTKANRI-SRYYM     TO   K100LNK-PRTKANRI-SRYYM
+           MOVE    LNK-PRTKANRI-SKYYMD    TO   K100LNK-PRTKANRI-SKYYMD
+           MOVE    LNK-PRTKANRI-SHELLID   TO   K100LNK-PRTKANRI-SHELLID
+           MOVE    LNK-PRTKANRI-PRIORITY  TO   K100LNK-PRTKANRI-PRIORITY
+           MOVE    LNK-PRTKANRI-TERMID    TO   K100LNK-PRTKANRI-TERMID
+           MOVE    LNK-PRTKANRI-OPID      TO   K100LNK-PRTKANRI-OPID
+           MOVE    LNK-PRTKANRI-PRTNM     TO   K100LNK-PRTKANRI-PRTNM
       *
-           MOVE  WRK-PARA-JOBID         TO    K100LNK-JOBID
-           MOVE  WRK-PARA-SHELLID       TO    K100LNK-SHELLID
-      ***07/09/18 nagaya 4.0対応 start
-      *     MOVE  WRK-PARA-HOSPID        TO    K100LNK-HOSPID
-           MOVE  WRK-PARA-HOSPNUM        TO    K100LNK-HOSPNUM
-      ***07/09/18 nagaya 4.0対応 end
-           MOVE  WRK-PARA-YM            TO    K100LNK-SRYYM
-           MOVE  WRK-PARA-NYUGAIKBN     TO    K100LNK-NYUGAIKBN
-           MOVE  WRK-PARA-HKNTG         TO    K100LNK-HKNTG
-      *--- 2010/06/24 ADD START ---------------------------------------
-           MOVE  WRK-PARA-HOUKATU       TO    K100LNK-HOUKATU
-      *--- 2010/06/24 ADD END   ---------------------------------------
+           MOVE    WRK-PARA-JOBID         TO   K100LNK-JOBID
+           MOVE    WRK-PARA-SHELLID       TO   K100LNK-SHELLID
+           MOVE    WRK-PARA-HOSPNUM       TO   K100LNK-HOSPNUM
+           MOVE    WRK-PARA-YM            TO   K100LNK-SRYYM
+           MOVE    WRK-PARA-NYUGAIKBN     TO   K100LNK-NYUGAIKBN
+           MOVE    WRK-PARA-HKNTG         TO   K100LNK-HKNTG
+           MOVE    WRK-PARA-HOUKATU       TO   K100LNK-HOUKATU
       *
       *    帳票別サブプログラムCALL
            EVALUATE  WRK-PARA-PRTYPE
-               WHEN  SPACE
-      ***            (診療科別)
-                     CALL "A00000K140" USING  A00000K100-LNK
-               WHEN  "0"
-      ***            (医師別)
-                     CALL "A00000K141" USING  A00000K100-LNK
-               WHEN  "1"
-      ***            (年齢別)
-                     CALL "A00000K142" USING  A00000K100-LNK
-               WHEN  "2"
-      ***            (地区別)
-                     CALL "A00000K143" USING  A00000K100-LNK
-               WHEN  "3"
-      ***            (保険別)
-                     CALL "A00000K144" USING  A00000K100-LNK
-               WHEN  "4"
-      ***            (病棟別)
-                     CALL "A00000K145" USING  A00000K100-LNK
+             WHEN  SPACE
+      *    (診療科別)
+               CALL    "A00000K140"     USING   A00000K100-LNK
+             WHEN  "0"
+      *    (医師別)
+               CALL    "A00000K141"     USING   A00000K100-LNK
+             WHEN  "1"
+      *    (年齢別)
+               CALL    "A00000K142"     USING   A00000K100-LNK
+             WHEN  "2"
+      *    (地区別)
+               CALL    "A00000K143"     USING   A00000K100-LNK
+             WHEN  "3"
+      *    (保険別)
+               CALL    "A00000K144"     USING   A00000K100-LNK
+             WHEN  "4"
+      *    (病棟別)
+               CALL    "A00000K145"     USING   A00000K100-LNK
            END-EVALUATE
       *
            .

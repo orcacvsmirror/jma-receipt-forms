@@ -17,24 +17,25 @@
       ********************************************************************
        IDENTIFICATION          DIVISION.
        PROGRAM-ID.             A00000S100.
-      *****************************************************************
+      *******************************************************************
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 月次帳票
       *  コンポーネント名  : 保険別集計チェック表 起動PG
-      *  管理者            : 
+      *  管理者            :
       *  作成日付    作業者        記述
       *  04/03/22    @@@@-高橋     新規作成
-      *  04/08/25    @@@@-本橋     入外区分パラメータ追加
-      *  04/09/17    @@@@-本橋     MONPE化
-      *  06/08/09    @@@@-高嶋     sarge対応
-      *  07/09/00    @@@@-長屋     4.0対応
-      *  08/04/23    @@@@-田中     H20年4月改正対応(後期高齢者)
-      *****************************************************************
+      *******************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev  修正者      日付      内容
+      *   01.00.01    @@@@-田中   11/01/05  open-cobol1.0対応
+      *   01.00.01    @@@@-田中   11/01/05  コメント履歴削除
+      *******************************************************************
       *
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
        INPUT-OUTPUT                SECTION.
        FILE-CONTROL.
+      *
       *    エラーファイル
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
@@ -50,15 +51,9 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域 
-      ***07/09/00 nagaya 4.0対応 start
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
+      *    エラーファイル 名称領域
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.      
-      ***07/09/00 nagaya 4.0対応 end
+                                    BY         //RECEERR//.
       *
       *    スパ領域
        01  STS-AREA.
@@ -118,17 +113,14 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
-      ***07/09/00 nagaya 4.0対応 start
-      *     03  WRK-PARA-HOSPID       PIC X(24).
            03  WRK-PARA-HOSPNUM    PIC 9(02).
-      ***07/09/00 nagaya 4.0対応 end
            03  WRK-PARA-PRTYPE       PIC X(01).
            03  WRK-PARA-YM           PIC X(06).
            03  WRK-PARA-NYUGAIKBN    PIC X(01).
       *
       *    一時領域
        01  WRK-AREA.
-      *  
+      *
            03  WRK-PRDTLCNT          PIC 9(06).
            03  WRK-RECCNT            PIC 9(06).
            03  WRK-HONKZKKBN         PIC X(04).
@@ -138,9 +130,9 @@
            03  WRK-SYSYMDWH          PIC X(22).
            03  WRK-RENNUM            PIC 9(03).
            03  WRK-PTNUM             PIC X(20).
-           03  WRK-PTNUM6            PIC 9(06). 
-           03  WRK-SYUHKNNUM         PIC X(03). 
-      *  
+           03  WRK-PTNUM6            PIC 9(06).
+           03  WRK-SYUHKNNUM         PIC X(03).
+      *
            03  WRK-SYSYMD.
                05  WRK-SYSYY         PIC 9(04).
                05  WRK-SYSMM         PIC 9(02).
@@ -150,7 +142,7 @@
                05  WRK-SMM           PIC 9(02).
                05  WRK-SDD           PIC 9(02).
            03  WRK-HENYMDG           PIC X(22).
-      *  
+      *
       *
            03  WRK-Z3                PIC ZZ9.
            03  WRK-PAGE              PIC ZZ9.
@@ -162,17 +154,14 @@
       *
        01  WRK-SRYKA-AERA.
            03  WRK-SRYKAMAX        PIC    9(03).
-           03  WRK-SRYKA-TBL       OCCURS 100.    
+           03  WRK-SRYKA-TBL       OCCURS 100.
                05  WRK-SRYKA       PIC    X(02).
                05  WRK-SRYKANAME   PIC    X(20).
       *
            COPY    "CPSHELLTBL.INC".
       *
-      ***07/09/00 nagaya 4.0対応 start
-      *     COPY    "ORCA-DBPATH".
-      ***07/09/00 nagaya 4.0対応 end
       *    診療種別名テーブル
-           COPY    "CPORCSSRYSYU.INC".        
+           COPY    "CPORCSSRYSYU.INC".
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -189,7 +178,7 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
+           COPY    "CPPRTDATA.INC".
       *
       *
       *
@@ -203,18 +192,18 @@
       *    印刷ＤＢ更新サブ
            COPY    "CPORCSPRT.INC".
       *
-      *   日付変換サブ
+      *    日付変換サブ
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   患者番号変換サブ
+      *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
+      *
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
-      *
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
@@ -238,11 +227,11 @@
       *****************************************************************
        000-PROC-SEC                SECTION.
       *
-           PERFORM 100-INIT-SEC
+           PERFORM  100-INIT-SEC
       *
-           PERFORM 200-MAIN-SEC
+           PERFORM  200-MAIN-SEC
       *
-           PERFORM 300-END-SEC
+           PERFORM  300-END-SEC
       *
            STOP    RUN
            .
@@ -257,9 +246,7 @@
            INITIALIZE                  WRK-AREA
            INITIALIZE                  WRK-SRYKA-AERA
            INITIALIZE                  CNT-AREA
-      ***07/09/00 nagaya 4.0対応 start
            INITIALIZE                  SPA-AREA
-      ***07/09/00 nagaya 4.0対応 end
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -273,24 +260,18 @@
                                                LNK-PRTKANRI-SHELLID
                                                LNK-PRTKANRI-PRIORITY
                                                LNK-PRTKANRI-TERMID
-                                               LNK-PRTKANRI-OPID    
-                                               LNK-PRTKANRI-PRTNM    
+                                               LNK-PRTKANRI-OPID
+                                               LNK-PRTKANRI-PRTNM
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
-      ***07/09/00 nagaya 4.0対応 start
-      *                                         WRK-PARA-HOSPID
                                                WRK-PARA-HOSPNUM
                                                RECEERR
-      ***07/09/00 nagaya 4.0対応 end
                                                WRK-PARA-PRTYPE
                                                WRK-PARA-YM
-      *   20040825  MOTO  追加
                                                WRK-PARA-NYUGAIKBN
-      *   20040825
-      ***07/09/00 nagaya 4.0対応 start
+      *
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
-      ***07/09/00 nagaya 4.0対応 end
            .
        100-INIT-EXT.
            EXIT.
@@ -324,10 +305,7 @@
       *
            MOVE  WRK-PARA-JOBID   TO    S100LNK-JOBID
            MOVE  WRK-PARA-SHELLID TO    S100LNK-SHELLID
-      ***07/09/00 nagaya 4.0対応 start
-      *     MOVE  WRK-PARA-HOSPID  TO    S100LNK-HOSPID
            MOVE  WRK-PARA-HOSPNUM  TO    S100LNK-HOSPNUM
-      ***07/09/00 nagaya 4.0対応 end
            MOVE  WRK-PARA-YM      TO    S100LNK-YM
            MOVE  WRK-PARA-NYUGAIKBN  TO   S100LNK-NYUGAIKBN
       *
@@ -336,9 +314,7 @@
       *    ステップ管理開始処理
            MOVE    "STS"              TO  SJOBKANRI-MODE
            INITIALIZE                      JOBKANRI-REC
-      ***07/09/00 nagaya 4.0対応 start
            MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-      ***07/09/00 nagaya 4.0対応 end
            MOVE    S100LNK-JOBID      TO  JOB-JOBID
            MOVE    S100LNK-SHELLID    TO  JOB-SHELLID
            MOVE    "A00000S100"       TO  JOB-PGID
@@ -346,66 +322,53 @@
            CALL    "ORCSJOB"          USING
                                       ORCSJOBKANRIAREA
                                       JOBKANRI-REC
-      ***07/09/00 nagaya 4.0対応 start
                                       SPA-AREA
-      *     MOVE    "RECEERR"          TO  RECEERR-FILE-ID
-      *     MOVE    LNK-PRTKANRI-TERMID
-      *                                TO  RECEERR-TERMID
-      ***07/09/00 nagaya 4.0対応 end
       *
       *    帳票別サブプログラムCALL
            EVALUATE  WRK-PARA-PRTYPE
-      ***            (全出力)
-               WHEN  ""
+      *    (全出力)
+             WHEN  ""
       *
-                     CALL  "A00000S137" USING  A00000S100-LNK
+               CALL  "A00000S137" USING  A00000S100-LNK
       *
-                     CALL  "A00000S138" USING  A00000S100-LNK
+               CALL  "A00000S138" USING  A00000S100-LNK
       *
-                     CALL  "A00000S139" USING  A00000S100-LNK
+               CALL  "A00000S139" USING  A00000S100-LNK
       *
-      * 20080423 H20年4月改正対応START tanaka
-                     CALL  "A00000S140" USING  A00000S100-LNK
-      * 20080423 H20年4月改正対応END
+               CALL  "A00000S140" USING  A00000S100-LNK
       *
-      ***            (社保)
-               WHEN  "0"
-                     MOVE    "保険別請求チェック表(社保)"
-                                        TO    S100LNK-SPRT-TITLE
-                     CALL  "A00000S137" USING  A00000S100-LNK
-      ***            (国保)
-               WHEN  "1"
-                     MOVE    "保険別請求チェック表(国保)"
-                                        TO    S100LNK-SPRT-TITLE
-                     CALL  "A00000S138" USING  A00000S100-LNK
-      ***            (総括)
-               WHEN  "2"
-                     MOVE    "保険別請求チェック表(総括)"
-                                        TO    S100LNK-SPRT-TITLE
-                     CALL  "A00000S139" USING  A00000S100-LNK
-      * 20080423 H20年4月改正対応START tanaka
-               WHEN  "3"
-                     MOVE    "保険別請求チェック表(後期高齢者)"
-                                        TO    S100LNK-SPRT-TITLE
-                     CALL  "A00000S140" USING  A00000S100-LNK
-      * 20080423 H20年4月改正対応END
+      *    (社保)
+             WHEN  "0"
+               MOVE    "保険別請求チェック表(社保)"
+                                  TO    S100LNK-SPRT-TITLE
+               CALL  "A00000S137" USING  A00000S100-LNK
+      *    (国保)
+             WHEN  "1"
+               MOVE    "保険別請求チェック表(国保)"
+                                  TO    S100LNK-SPRT-TITLE
+               CALL  "A00000S138" USING  A00000S100-LNK
+      *    (総括)
+             WHEN  "2"
+               MOVE    "保険別請求チェック表(総括)"
+                                  TO    S100LNK-SPRT-TITLE
+               CALL  "A00000S139" USING  A00000S100-LNK
+             WHEN  "3"
+               MOVE    "保険別請求チェック表(後期高齢者)"
+                                  TO    S100LNK-SPRT-TITLE
+               CALL  "A00000S140" USING  A00000S100-LNK
            END-EVALUATE
       *
       *    ステップ管理終了処理
-           MOVE    "STE"           TO  SJOBKANRI-MODE
-           INITIALIZE                  JOBKANRI-REC
-      ***07/09/00 nagaya 4.0対応 start
+           MOVE    "STE"             TO  SJOBKANRI-MODE
+           INITIALIZE                JOBKANRI-REC
            MOVE    SPA-HOSPNUM       TO  JOB-HOSPNUM
-      ***07/09/00 nagaya 4.0対応 end
            MOVE    S100LNK-JOBID     TO  JOB-JOBID
            MOVE    S100LNK-SHELLID   TO  JOB-SHELLID
            MOVE    0                 TO  JOB-UPDCNT
-           CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA
-                                   JOBKANRI-REC
-      ***07/09/00 nagaya 4.0対応 start
-                                   SPA-AREA
-      ***07/09/00 nagaya 4.0対応 end
+           CALL    "ORCSJOB"         USING
+                                     ORCSJOBKANRIAREA
+                                     JOBKANRI-REC
+                                     SPA-AREA
       *
            .
        200-MAIN-EXT.
@@ -415,8 +378,7 @@
       *    終了　　処理
       *****************************************************************
        300-END-SEC                 SECTION.
-      *     
-      *     
+      *
            PERFORM 900-DBDISCONNECT-SEC
       *
            .
@@ -428,23 +390,13 @@
       *****************************************************************
        820-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE  "DBCLOSE"                TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"          TO  MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/00 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY2"  TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_syskanri"             TO  MCP-TABLE
            MOVE    "key2"                  TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/00 nagaya 4.0対応 end
                                         MCPAREA
-      *                                  ORCMCPAREA
                                         MCPDATA-REC
-      ***07/09/00 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/00 nagaya 4.0対応 end
            .
        820-SYSKANRI-DBCLOSE-EXT.
            EXIT.
@@ -455,36 +407,22 @@
        100-DBOPEN-SEC                SECTION.
       *
            MOVE    "DBOPEN"            TO  MCP-FUNC.
-      ***07/09/00 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/00 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/00 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/00 nagaya 4.0対応 end
       *
            MOVE    "DBSTART"           TO  MCP-FUNC.
-      ***07/09/00 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/00 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/00 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/00 nagaya 4.0対応 end
            .
        100-DBOPEN-EXT.
            EXIT.
@@ -495,40 +433,22 @@
        900-DBDISCONNECT-SEC            SECTION.
       *
            MOVE    "DBCOMMIT"          TO  MCP-FUNC.
-      ***07/09/00 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/00 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/00 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/00 nagaya 4.0対応 end
       *
            MOVE    "DBDISCONNECT"      TO  MCP-FUNC.
-      ***07/09/00 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/00 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/00 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/00 nagaya 4.0対応 end
            .
        900-DBCLOSE-EXT.
            EXIT.
-      *
-
-
-

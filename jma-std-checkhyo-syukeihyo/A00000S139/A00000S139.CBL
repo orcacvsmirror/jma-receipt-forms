@@ -20,59 +20,16 @@
       *****************************************************************
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 月次帳票
-      *  コンポーネント名  : 保険別総括表 
-      *  管理者            : 
+      *  コンポーネント名  : 保険別総括表
+      *  管理者            :
       *  作成日付    作業者        記述
       *  03/12/10    @@@@-有村     新規作成
-      *  04/07/12    @@@@-本橋     公費と公費を併用の公費単独患者についての
-      *                            請求点数を請求管理テーブルに登録されている、
-      *                            MAX値を印字するように修正。
-      *  04/08/20    @@@@-本橋     食事療養(日数、請求額、標準負担額)を追加する
-      *                            ※別フォームでの印字
-      *  04/09/17    @@@@-本橋     MONPE化
-      *  05/03/08    @@@@-鈴木     open-cobol 0.23への対応
-      *  05/04/12    @@@@-本橋     窓口領収額の集計における不具合修正
-      *  05/04/19    @@@@-本橋     船員保険（職務上）が正しく集計されない不具合修正
-      *  05/06/09    @@@@-本橋     自費・労災・自賠が正しく集計されない不具合修正
-      *  05/09/07    @@@@-本橋     公費助成額の算出を修正
-      *  06/08/09    @@@@-高嶋     sarge対応
-      *  07/05/08    @@@@-内田     テスト患者の判定修正
-      *  07/08/24    @@@@-大竹     食事療養欄の日数を回数に変更
-      *                            食事回数５桁対応
-      *  07/09/20    @@@@-長屋     4.0対応
-      *  07/11/14    @@@@-田中     公費単独時に医療収益・保険請求額・公費請求額が
-      *                            正しく集計されない不具合を修正
-      *  08/04/23    @@@@-田中     H20年4月改正対応(後期高齢者、義務教育就学前、公害保険)
-      *                            旧総合病院の時に診療科が表示されない不具合を修正
-      *  08/05/12    @@@@-田中     返戻が正しく印字されない不具合を修正
-      *  08/05/14    @@@@-田中     H20年4月以前のﾃﾞｰﾀが正しく表示されない不具合を修正
-      *  08/06/16    @@@@-田中     健保準拠時の自賠責の計算を修正
-      *  08/09/10    @@@@-田中     公費単独欄の食事療養の不具合を修正
-      *  08/09/22    @@@@-田中     労災自賠医療機関情報が読み込めない不具合を修正
-      *  08/10/14    @@@@-田中     主科設定時に診療科を印字する
-      *  08/10/30    @@@@-田中     窓口請求額の不具合を修正
-      *  08/11/06    @@@@-田中     自費の値が常に診療科に分かれてしまう不具合を修正
-      *  08/12/18    @@@@-門間     自費(095XXXXX、096XXXXXで入力)の集計欄を追加
-      *                            食事療養の収益を医療収益に加算
-      *  08/12/26    @@@@-門間     医療収益の計算式を変更
-      *  09/01/08    @@@@-田中     公費請求額の計算式を変更
-      *  09/02/25    @@@@-田中     入院時診療科名の不具合を修正
-      *  09/06/26    @@@@-門間     自費分が正しく集計されない不具合を修正
-      *  09/07/01    @@@@-田中     公費請求額の端数処理を修正
-      *                            保険情報の読込処理を修正
-      *  09/07/29    @@@@-田中     保険請求額の計算式を修正
-      *  09/08/18    @@@@-田中     公費請求額の計算式を修正
-      *  09/08/20    @@@@-田中     食事療養費の回数を5桁に変更
-      *  09/11/06    @@@@-田中     公費単独の公費請求額計算処理を修正
-      *                            同保険者番号に変更時の不具合を修正
-      *  10/01/13    @@@@-田中     公費請求額の計算式を修正
-      *  10/04/06    @@@@-田中     保険請求額の計算式を修正
-      *  10/05/31    @@@@-門間     食事療養費(自費・労災・自賠・公害)2重加算の修正
-      *  10/07/27    @@@@-門間     自費の集計処理を修正
-      *  10/08/04    @@@@-田中     保険請求額の条件を追加
-      *  10/08/12    @@@@-田中     長期医療時に公費請求額の計算を修正
-      *  10/08/12    @@@@-田中     公費単独時に公費請求額の計算を修正
-      *********************************************************************
+      *******************************************************************
+      *  プログラム修正履歴
+      *  Maj/Min/Rev  修正者      日付      内容
+      *   01.00.01    @@@@-田中   11/01/06  open-cobol1.0対応
+      *   01.00.01    @@@@-田中   11/01/06  コメント履歴削除
+      *******************************************************************
       *
        ENVIRONMENT                 DIVISION.
        CONFIGURATION               SECTION.
@@ -97,34 +54,25 @@
        FD  S139TMP-FILE.
            COPY    "A00000S139TMP.INC".
       *
-006900*    エラーファイル
+      *    エラーファイル
        FD  RECEERR-FILE.
-       01  RECEERR-REC             PIC X(200). 
+       01  RECEERR-REC             PIC X(200).
       *
        WORKING-STORAGE             SECTION.
-      *    印刷用データ 名称領域 
+      *    印刷用データ 名称領域
            COPY    "CPCOMMONPRT.INC".
       *
-      *    エラーファイル 名称領域 
-      ***07/09/20 nagaya 4.0対応 start
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //RECEERR//.
-      *     03  FILLER              PIC X(04)   VALUE   ".dat".
+      *    エラーファイル 名称領域
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
       *    全保険一時ファイル 名称領域
-      *     COPY    "CPCOMMONDAT2.INC"
-      *                             REPLACING  //RECE01PARA//
-      *                             BY         //S139TP//.
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //S139TP//.
-      ***07/09/20 nagaya 4.0対応 end
       *
            COPY    "A00000S139.INC".
            COPY    "A00000S139N.INC".
-      *    
+      *
       *    スパ領域
        01  STS-AREA.
            03  STS-PARA                 PIC X(02).
@@ -155,9 +103,7 @@
            03  FLG-RJNHKN               PIC 9(01).
            03  FLG-END                  PIC 9(01).
            03  FLG-HKNCOMBI             PIC 9(01).
-      *--- 2009/07/29 ADD START ----------------------------------------
            03  FLG-TYOKI                PIC 9(01).
-      *--- 2009/07/29 ADD END ------------------------------------------
       *
       *    カウント領域
        01  CNT-AREA.
@@ -200,17 +146,14 @@
            03  IDZ                      PIC 9(04).
            03  IDM                      PIC 9(04).
            03  IDX-MAX                  PIC 9(04).
-           
+
       *
       *    パラメタ領域
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID           PIC 9(07).
            03  WRK-PARA-SHELLID         PIC X(08).
-      ***07/09/20 nagaya 4.0対応 start
-      *     03  WRK-PARA-HOSPID       PIC X(24).
            03  WRK-PARA-HOSPNUM         PIC 9(02).
-      ***07/09/20 nagaya 4.0対応 end
       *    対象診療年月
            03  WRK-PARA-SRYYM           PIC X(06).
       *    対象年月最終日・初日
@@ -251,26 +194,13 @@
                05  WRK-KENSU            PIC 9(04).
                05  WRK-NISSU            PIC 9(04).
                05  WRK-TENSU            PIC 9(09).
-      *--- (2008/12/26) line change start monma ------------------------
-      *         05  WRK-MADOGK            PIC 9(09).
                05  WRK-MADOGK           PIC S9(09).
-      *--- (2008/12/26) line change end   monma ------------------------
-      *--- (2008/12/18) line add start monma ---------------------------
                05  WRK-JIHIGK           PIC 9(09).
-      *--- (2008/12/18) line add end   monma ---------------------------
                05  WRK-HKNGK            PIC 9(09).
-      *--- 2010/01/13 CHANGE START -------------------------------------
-      *--- 2010/04/06 ADD START ----------------------------------------
                05  WRK-HKNGK2           PIC 9(09).
-      *--- 2010/04/06 ADD END ------------------------------------------
-      *         05  WRK-KOHGK            PIC 9(09).
                05  WRK-KOHGK            PIC S9(09).
-      *--- 2010/01/13 CHANGE END ---------------------------------------
                05  WRK-SYUEKI           PIC 9(09).
-      *===食事回数５桁対応 Otake 2007/08/24 Strart
-      *         05  WRK-SNISSU            PIC 9(04).
                05  WRK-SNISSU           PIC 9(05).
-      *===食事回数５桁対応 Otake 2007/08/24 End
                05  WRK-SSEIKYU          PIC 9(09).
                05  WRK-SFTNGK           PIC 9(09).
                05  WRK-KKENSU           PIC 9(04).
@@ -280,21 +210,10 @@
                05  WRK-GKKENSU          PIC 9(04).
                05  WRK-GKNISSU          PIC 9(04).
                05  WRK-GKTENSU          PIC 9(09).
-      *--- (2008/12/26) line change start monma ------------------------
-      *     03  WRK-MADOSEIKYUGK-G        PIC 9(09).
            03  WRK-MADOSEIKYUGK-G       PIC S9(09).
-      *--- (2008/12/26) line change end   monma ------------------------
-      *--- (2008/12/18) line add start monma ---------------------------
            03  WRK-JIHIGK-G             PIC 9(09).
-      *--- (2008/12/18) line add end   monma ---------------------------
-      *--- 2009/08/18 CHANGE START -------------------------------------
-      *     03  WRK-KOHSEIKYUGK          PIC 9(09).
            03  WRK-KOHSEIKYUGK          PIC S9(09).
-      *--- 2009/08/18 CHANGE END ---------------------------------------
-      *--- 2010/01/13 CHANGE START -------------------------------------
-      *     03  WRK-KOHSEIKYUGK-G        PIC 9(09).
            03  WRK-KOHSEIKYUGK-G        PIC S9(09).
-      *--- 2010/01/13 CHANGE END ---------------------------------------
            03  WRK-ZENCOMPFTN           PIC 9(09).
            03  WRK-KOHSKJSEIKYUGK       PIC 9(09).
            03  WRK-PATH                 PIC X(64).
@@ -303,7 +222,7 @@
                05  WRK-KOHTMP-KOHNUM    PIC  X(03).
            03  WRK-CHK-TBL.
                05  WRK-CHK-PTID2        PIC 9(10).
-               05  WRK-CHK-SRYKA-TBL OCCURS 20.
+               05  WRK-CHK-SRYKA-TBL    OCCURS 20.
                    07  WRK-CHK-PTID     PIC 9(10).
                    07  WRK-CHK-DAY-TBL.
                        09  WRK-CHK-DAY  PIC 9(01) OCCURS 31.
@@ -313,15 +232,8 @@
            03  WRK-CNT4                 PIC 9(02).
            03  WRK-KOHNAME-G            PIC X(24).
            03  WRK-KOHNAME-G2           PIC X(24).
-      *--- 2009/06/26 ADD START ----------------------------------------
-      *--- 2010/07/27 CHANGE START -------------------------------------
-      *     03  WRK-JIHI                 PIC 9(07).
-      *     03  WRK-TGMONEY              PIC 9(07).
            03  WRK-JIHI                 PIC S9(07).
            03  WRK-TGMONEY              PIC S9(07).
-      *--- 2010/07/27 CHANGE END   -------------------------------------
-      *--- 2009/06/26 ADD END   ----------------------------------------
-      *
            03  WRK-PAGE                 PIC ZZ9.
            03  WRK-Z3                   PIC ZZ9.
            03  WRK-Z4                   PIC ZZZZ.
@@ -334,60 +246,32 @@
            03  WRK-Z11                  PIC ZZZ,ZZZ,ZZZ.
            03  WRK-Z13                  PIC Z,ZZZ,ZZZ,ZZZ.
            03  WRK-Z14                  PIC ZZ,ZZZ,ZZZ,ZZZ.
-      *--- (2008/12/26) line add start monma ---------------------------
            03  WRK-Z93                  PIC --------Z.
-      *--- (2008/12/26) line add end   monma ---------------------------
-      *--- 2009/08/20 ADD START ----------------------------------------
            03  WRK-Z52                  PIC ZZZZZ.
-      *--- 2009/08/20 ADD END ------------------------------------------
-      *--- 2010/04/06 ADD START ----------------------------------------
            03  WRK-WARI                 PIC 9(02)V9.
-      *--- 2010/04/06 ADD END ------------------------------------------
       *
-      * 2004/03/18  追加
            03  WRK-SYS-BEDSU            PIC 9(04).
            03  WRK-SYS-BEDSUIPN         PIC 9(04).
-      * 2004/03/18  追加
-      *** 20071114 公費単独の不具合を修正START t.tanaka
            03  WRK-FUKUKOHTEN           PIC 9(09).
            03  WRK-FUKUKOHNISSU         PIC 9(09).
            03  WRK-FUKUNISSU            PIC 9(09).
-      *** 20071114 公費単独の不具合を修正END
-      * 20080910 公費単独欄の食事療養の不具合を修正STRAT
            03  WRK-FUKU-S-KAISU         PIC 9(09).
            03  WRK-FUKU-S-SKYMONEY      PIC 9(09).
            03  WRK-FUKU-S-FTNMONEY      PIC 9(09).
-      * 20080910 公費単独欄の食事療養の不具合を修正END
-      * 20080423 H20年4月改正対応START tanaka
            03  WRK-JIHI4                PIC 9(09).
            03  WRK-99                   PIC 9(02).
-      * 20080423 H20年4月改正対応END
-      *--- 2009/01/08 ADD START ----------------------------------------
            03  WRK-FTNFLG               PIC 9(01).
            03  WRK-HKNFTN               PIC 9(09).
            03  WRK-KOHFTN               PIC 9(09).
-      *--- 2009/01/08 ADD END ------------------------------------------
-      *--- 2009/07/29 ADD START ----------------------------------------
            03  WRK-HKNSKYMONEY          PIC 9(09).
-      *--- 2009/08/18 DELETE START -------------------------------------
-      *     03  WRK-MSKYMONEY            PIC 9(09). 
-      *--- 2009/08/18 DELETE END ---------------------------------------
-           03  WRK-TYOKIFTN             PIC 9(09). 
-      *--- 2009/07/29 ADD END ------------------------------------------
-      *--- 2010/08/12 ADD START ----------------------------------------
-           03  WRK-KOHMADOGK           PIC S9(09).
-      *--- 2010/08/12 ADD END ------------------------------------------
+           03  WRK-TYOKIFTN             PIC 9(09).
+           03  WRK-KOHMADOGK            PIC S9(09).
       *
       *    診療科名退避エリア
        01  SUM-AREA.
            03  SUM-SRYKAMAX             PIC 9(03).
-           03  SUM-SRYDR-TBL       OCCURS 100.
+           03  SUM-SRYDR-TBL            OCCURS 100.
                05  SUM-SRYKA            PIC X(02).
-      *--- 2009/02/25 DELETE START -------------------------------------
-      *--- 2008/11/06  ADD  START --------------------------------------
-      *         05  SUM-SRYKA2           PIC X(02).
-      *--- 2008/11/06  ADD  END ----------------------------------------
-      *--- 2008/11/06 DELETE END ---------------------------------------
                05  SUM-SRYKANAME        PIC X(24).
       *    入院履歴情報退避エリア
        01  WRK-NYUIN-AREA.
@@ -397,15 +281,11 @@
       *    室料差額退避エリア
        01  WRK-ROOM-SAGAKU-TBL.
            03  WRK-ROOM-MAX             PIC 9(02).
-           03  WRK-ROOM-DATA     OCCURS 50.
+           03  WRK-ROOM-DATA            OCCURS 50.
                05  WRK-ROOM-CD          PIC 9(03).
                05  WRK-ROOM-SGK         PIC 9(05).
       *
            COPY    "CPSHELLTBL.INC".
-      *
-      ***07/09/20 nagaya 4.0対応 start
-      *     COPY    "ORCA-DBPATH".
-      ***07/09/20 nagaya 4.0対応 end
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -425,14 +305,12 @@
       *
       *    労災医療機関情報
            COPY    "CPSK4001.INC".
-           
-      *--- 2008/11/06  ADD  START --------------------------------------
-      *    主科設定情報 
+      *
+      *    主科設定情報
            COPY    "CPSK2009.INC".
-      *--- 2008/11/06  ADD  END ----------------------------------------
       *
       *    出力先プリンタ名割り当て情報
-           COPY  "CPSK1031.INC".
+           COPY    "CPSK1031.INC".
       *
       *    診療会計マスタ
        01  SRYACCT-REC.
@@ -455,7 +333,7 @@
            COPY    "CPSYUNOU.INC".
       *
       *    室料差額情報
-           COPY  "CPSK5113.INC".
+           COPY    "CPSK5113.INC".
       *
       *    患者マスタ
        01  PTINF-REC.
@@ -520,15 +398,13 @@
       *
            COPY    "COMMON-SPA".
       *
-      *--- 2009/06/26 ADD START ----------------------------------------
       *    保険年齢パラメタ
            COPY    "CPORCSAGECHK.INC".
-      *--- 2009/06/26 ADD END   ----------------------------------------
       *
       ****************************************************************
        LINKAGE                 SECTION.
       *
-	       COPY    "A00000S100LNK.INC".
+           COPY    "A00000S100LNK.INC".
       *
       ****************************************************************
        PROCEDURE           DIVISION
@@ -545,12 +421,10 @@
       *
            PERFORM   300-END-SEC
       *
-      **** 20050308 open-cobol 0.23への対応 SUZUKI
            .
        000-PROC-EXT.
            EXIT PROGRAM
            .
-      **** 20050308 ここまで
       *****************************************************************
       *    初期　処理
       *****************************************************************
@@ -566,22 +440,15 @@
            INITIALIZE                  SUM-AREA
            INITIALIZE                  WRK-ROOM-SAGAKU-TBL
            INITIALIZE                  WRK-NYUIN-AREA
-      ***07/09/20 nagaya 4.0対応 start
            INITIALIZE                  SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
-      *     INITIALIZE                  S139TP
-      *     INITIALIZE                  S139
-      ***07/09/20 nagaya 4.0対応 start
+      *
            MOVE    S100LNK-HOSPNUM     TO   WRK-PARA-HOSPNUM
            MOVE    WRK-PARA-HOSPNUM    TO   SPA-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
       *
       *    ステップ管理開始処理
            MOVE    "STS"               TO   SJOBKANRI-MODE
            INITIALIZE                       JOBKANRI-REC
-      ***07/09/20 nagaya 4.0対応 start
            MOVE    SPA-HOSPNUM         TO   JOB-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    S100LNK-JOBID       TO   JOB-JOBID
            MOVE    S100LNK-SHELLID     TO   JOB-SHELLID
            MOVE    "A00000S100"        TO   JOB-PGID
@@ -590,13 +457,7 @@
            CALL    "ORCSJOB"           USING
                                        ORCSJOBKANRIAREA
                                        JOBKANRI-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      *     MOVE    "RECEERR"       TO  RECEERR-FILE-ID
-      *     MOVE    S100LNK-PRTKANRI-TERMID
-      *                             TO  RECEERR-TERMID
-      ***07/09/20 nagaya 4.0対応 end
-      *     PERFORM 100-DBOPEN-SEC
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -614,13 +475,8 @@
            MOVE  S100LNK-PRTKANRI-SKYYMD   TO   WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
            MOVE  WRK-HENYMDG               TO   WRK-SEIYMD
-      * 20080423 旧総合病院の時に診療科が表示されない不具合を修正START tanaka
            MOVE  S100LNK-PRTKANRI-SKYYMD   TO   SPA-SYSYMD
-      * 20080423 旧総合病院の時に診療科が表示されない不具合を修正END
-      *
-      ***  20040820  @@@@-MOTOHASI  追加
            MOVE   S100LNK-NYUGAIKBN        TO   WRK-PARA-NYUGAIKBN
-      ***  20040820
       *
       *    対象日付処理
            MOVE    S100LNK-YM              TO   WRK-SRYYMD (1:6)
@@ -628,7 +484,7 @@
            MOVE    S100LNK-YM              TO   WRK-SYMD (1:6)
            MOVE    "01"                    TO   WRK-SYMD (7:2)
            PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG(1:16)       TO   WRK-SRYYM 
+           MOVE    WRK-HENYMDG(1:16)       TO   WRK-SRYYM
            MOVE    S100LNK-YM              TO   WRK-PARA-SRYYM
       *
       *    対象年月最終日取得
@@ -645,58 +501,30 @@
       *    医療機関ＩＤ編集
            MOVE    SPACE                   TO   SYS-1001-REC
            INITIALIZE                           SYS-1001-REC
-      ***07/09/20 nagaya 4.0対応 start
            MOVE    SPA-HOSPNUM             TO   SYS-1001-HOSPNUM
            MOVE    SPA-SYSYMD              TO   SYS-1001-STYUKYMD
                                                 SYS-1001-EDYUKYMD
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    "1001"                  TO   SYS-1001-KANRICD
            MOVE    "*"                     TO   SYS-1001-KBNCD
            MOVE    SYS-1001-REC            TO   MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
            IF   FLG-SYSKANRI   =   ZERO
              MOVE    MCPDATA-REC           TO   SYS-1001-REC
-      ***07/09/20 nagaya 4.0対応 start
-      *          MOVE    SYS-1001-HOSPID     TO  WRK-PARA-HOSPID
              MOVE    SYS-1001-HOSPNUM      TO   WRK-PARA-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
              MOVE    SYS-1001-BEDSU        TO   WRK-SYS-BEDSU
              MOVE    SYS-1001-BEDSUIPN     TO   WRK-SYS-BEDSUIPN
-           ELSE    
-                MOVE    "医療機関ＩＤが取得できませんでした。"
-                                           TO   WRK-RECEERR
-                PERFORM   500-ERR-HENSYU-SEC
+           ELSE
+             MOVE    "医療機関ＩＤが取得できませんでした。"
+                                        TO   WRK-RECEERR
+             PERFORM   500-ERR-HENSYU-SEC
            END-IF
       *
-      **    医療機関ＩＤ編集
-      *     INITIALIZE                     SYS-1001-REC
-      *     MOVE    "1001"         TO      SYS-1001-KANRICD
-      *     MOVE    "*"            TO      SYS-1001-KBNCD
-      *     MOVE    SYS-1001-REC   TO      MCPDATA-REC
-      *     PERFORM 900-SYSKANRI-INV-SEC
-      *     IF     FLG-SYSKANRI        =   ZERO
-      *            MOVE    MCPDATA-REC     TO    SYS-1001-REC
-      *            MOVE    SYS-1001-HOSPID TO    WRK-PARA-HOSPID
-      *            IF      SYS-1001-HOSPNAME  =  LOW-VALUE
-      *                    MOVE    SPACE   TO    SYS-1001-HOSPNAME
-      *            END-IF
-      *            IF      SYS-1001-KAISETUNAME  =   LOW-VALUE
-      *                    MOVE    SPACE   TO    SYS-1001-KAISETUNAME
-      *            END-IF    
-      *     ELSE
-      *            MOVE    "医療機関情報が取得できませんでした"
-      *                                    TO    WRK-RECEERR
-      *            PERFORM 500-ERR-HENSYU-SEC
-      *     END-IF
-      **
       *    自賠責点数単価取得
            MOVE     SPACE                  TO   SYS-4001-REC
            INITIALIZE                      SYS-4001-REC
-      ***07/09/20 nagaya 4.0対応 start
            MOVE     SPA-HOSPNUM            TO   SYS-4001-HOSPNUM
            MOVE     SPA-SYSYMD             TO   SYS-4001-STYUKYMD
                                                 SYS-4001-EDYUKYMD
-      ***07/09/20 nagaya 4.0対応 end
            MOVE     "4001"                 TO   SYS-4001-KANRICD
            MOVE     "*"                    TO   SYS-4001-KBNCD
            MOVE     SYS-4001-REC           TO   MCPDATA-REC
@@ -711,8 +539,8 @@
            ELSE
              MOVE    12                    TO   WRK-JIBAITNK
            END-IF
-      *--- 2008/11/06  ADD  START --------------------------------------
-      *    主科設定情報 
+      *
+      *    主科設定情報
            MOVE     SPACE                  TO   SYS-2009-REC
            INITIALIZE                           SYS-2009-REC
            MOVE    SPA-HOSPNUM             TO   SYS-2009-HOSPNUM
@@ -727,32 +555,20 @@
            ELSE
              INITIALIZE           SYS-2009-REC
            END-IF
-      *--- 2008/11/06  ADD  END ----------------------------------------
       *
       *    診療科情報取得
-      ***07/09/20 nagaya 4.0対応 start
            MOVE    SPACE                  TO   SYS-1005-REC
            INITIALIZE                          SYS-1005-REC
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    "1005"                 TO   SYS-1005-KANRICD
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    SPA-SRYYMD             TO  SYS-1005-STYUKYMD
-      *                                        SYS-1005-EDYUKYMD
            MOVE    SPA-SYSYMD             TO   SYS-1005-STYUKYMD
                                                SYS-1005-EDYUKYMD
            MOVE    SPA-HOSPNUM            TO   SYS-1005-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    WRK-PARA-PRTLYMD       TO   WRK-SYMD
            PERFORM 820-SYSKANRI-DBSELECT-SEC
-           MOVE   1        TO     IDX1 
+           MOVE   1        TO     IDX1
            PERFORM  UNTIL  FLG-SYSKANRI3 = 1
              IF   FLG-SYSKANRI3  =  ZERO
                MOVE   SYS-1005-KBNCD      TO   SUM-SRYKA(IDX1)
-      *--- 2009/02/25 DELETE START -------------------------------------
-      *--- 2008/11/06  ADD  START --------------------------------------
-      *         MOVE   SYS-1005-RECESRYKA  TO   SUM-SRYKA2(IDX1)
-      *--- 2008/11/06  ADD  END ----------------------------------------
-      *--- 2009/02/25 DELETE END ---------------------------------------
                MOVE   SYS-1005-SRYKANAME1 TO   SUM-SRYKANAME(IDX1)
                ADD     1                  TO   IDX1
              END-IF
@@ -760,18 +576,12 @@
            END-PERFORM
            SUBTRACT     1        FROM   IDX1
            MOVE    IDX1         TO   SUM-SRYKAMAX
-      *=== sarge対応 ADD By Takashima(2006/09/17) start
            PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 ADD By Takashima(2006/09/17) end
       *
            MOVE    "S139TP"               TO   S139TP-FILE-ID
            MOVE    S100LNK-PRTKANRI-TERMID TO   S139TP-TERMID
-      ***07/09/20 nagaya 4.0対応 start
            MOVE    WRK-PARA-HOSPNUM       TO   S139TP-HOSPNUM
       *
-      *     MOVE    "RECEERR"           TO  RECEERR-FILE-ID
-      *     MOVE    S100LNK-PRTKANRI-TERMID     TO  RECEERR-TERMID
-      ***07/09/20 nagaya 4.0対応 end
            .
        110-PARA-HENSYU-EXT.
            EXIT.
@@ -798,31 +608,27 @@
       *****************************************************************
        2001-SYUKEI-SEC                SECTION.
       *
-      *
            OPEN     OUTPUT  S139TMP-FILE
            CLOSE            S139TMP-FILE
            OPEN     I-O     S139TMP-FILE
-      *--- 2009/06/26 ADD START ----------------------------------------
+      *
       *    自費データ集計
            IF  WRK-PARA-NYUGAIKBN  =  2
              OR  WRK-PARA-NYUGAIKBN  =  SPACE
              PERFORM  2001-JIHI-SYUKEI-SEC
            END-IF
-      *--- 2009/06/26 ADD END   ----------------------------------------
+      *
       *    社保データ集計
            PERFORM  2001-SYAHO-SYUKEI-SEC
       *
       *    国保データ集計
            PERFORM  2001-KOKUHO-SYUKEI-SEC
       *
-      * 20080423 H20年4月改正対応START tanaka
       *    後期高齢者データ集計
            PERFORM  2001-KOUKI-SYUKEI-SEC
-      * 20080423 H20年4月改正対応END
-      *    
+      *
       *    自費・自賠・労災・公害データ集計
            PERFORM  2001-ETC-SYUKEI-SEC
-      *
       *
            CLOSE   S139TMP-FILE
       *
@@ -830,13 +636,12 @@
        2001-SYUKEI-EXT.
            EXIT.
       *
-      *--- 2009/06/26 ADD START ----------------------------------------
       *****************************************************************
       *    自費データ抽出処理１
       *****************************************************************
        2001-JIHI-SYUKEI-SEC                SECTION.
       *
-           MOVE    2        TO   WRK-NYUGAIKBN
+           MOVE    "2"        TO   WRK-NYUGAIKBN
            PERFORM  920-DBSELECT3-SEC
              PERFORM  UNTIL   FLG-JYURRK   =   1
       *    データ集計
@@ -859,11 +664,11 @@
            PERFORM  940-SYUNOU-READ-SEC
            IF  SYU-SYUHKNNUM(1:2)  NOT =  "97" AND "98"
              IF       SYU-TOTAL-HKNTEN            =  0
-               AND    SYU-TOTAL-MONEY             =  0
-               AND  ( SYU-JIHI-TOTAL         NOT  =  0
-               OR     SYU-JIHI-TOTAL-TAX     NOT  =  0 
-               OR     SYU-TOTAL-TGMONEY      NOT  =  0
-               OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
+                 AND    SYU-TOTAL-MONEY             =  0
+                 AND  ( SYU-JIHI-TOTAL         NOT  =  0
+                 OR     SYU-JIHI-TOTAL-TAX     NOT  =  0
+                 OR     SYU-TOTAL-TGMONEY      NOT  =  0
+                 OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
       *
                COMPUTE  WRK-JIHI     =  WRK-JIHI
                                      +  SYU-JIHI-TOTAL
@@ -871,9 +676,7 @@
                COMPUTE  WRK-TGMONEY  =  WRK-TGMONEY
                                      +  SYU-TOTAL-TGMONEY
                                      +  SYU-TOTAL-TGMONEY-TAX
-      *--- 2010/07/27 ADD START ----------------------------------------
                                      +  SYU-CHOSEI
-      *--- 2010/07/27 ADD END   ----------------------------------------
                PERFORM  2001-KASAN-JIHI-G-SEC
                MOVE     0   TO   WRK-JIHI
                                  WRK-TGMONEY
@@ -909,13 +712,13 @@
       *    キー設定
            INITIALIZE    S139TMP-REC
       *
-           IF    SYS-1001-HOSPSBT1  =  1 
+           IF    SYS-1001-HOSPSBT1  =  1
              OR  SYS-2009-SYUKA-KBN = 1
              MOVE  SYU-SRYKA        TO  S139TMP-SRYKA
            ELSE
              MOVE  "00"             TO  S139TMP-SRYKA
            END-IF
-           
+      *
            MOVE    "9"              TO  S139TMP-SRYYMKBN
       *    TMPファイル読み込み
            MOVE    3                TO  FLG-TYPE
@@ -945,7 +748,7 @@
       *
       *    明細場所設定
            IF    SYU-SYUHKNNUM  NOT = "060" AND "067"
-             IF    SYU-SYUHKNNUM = "039" OR 
+             IF    SYU-SYUHKNNUM = "039" OR
                    SYU-SYUHKNNUM = "040"
                IF  SYU-KOH1HKNNUM = SPACE
                  MOVE    17         TO  IDX2
@@ -955,7 +758,7 @@
       *    小計加算場所設定
                MOVE      5          TO  IDX3
              ELSE
-               
+      *
                IF    AGECHK-SYUGAKUKBN   =  1
                  MOVE    6          TO  IDX2
                ELSE
@@ -974,7 +777,7 @@
              END-IF
            ELSE
              EVALUATE  TRUE
-             
+      *
              WHEN AGECHK-SYUGAKUKBN   =  1
                MOVE      14         TO  IDX2
              WHEN SYU-SYUHKNNUM = "067"
@@ -992,7 +795,7 @@
       *    家族の場合１加算
                IF    COMB-HONKZKKBN  NOT =  "1"
                  ADD     1          TO  IDX2
-               END-IF    
+               END-IF
              END-EVALUATE
       *    小計加算場所設定
              MOVE        2          TO  IDX3
@@ -1013,7 +816,6 @@
        2001-JIHI-DATA-SET-SEC                SECTION.
       *
       *    自費・保険外のみの場合、件数・日数は集計しない
-      *
       *    窓口請求額加算
            ADD    WRK-TGMONEY       TO   S139TMP-MADOGK(IDX1 IDX2)
                                          S139TMP-S-MADOGK(IDX1 IDX3)
@@ -1043,7 +845,6 @@
            .
        2001-JIHI-IDX-SET-K-EXT.
            EXIT.
-      *--- 2009/06/26 ADD START ----------------------------------------
       *****************************************************************
       *    社保データ抽出処理
       *****************************************************************
@@ -1082,7 +883,7 @@
       *
       *    データ集計
              PERFORM  2001-KASAN-SEC
-      * 
+      *
              PERFORM  2001-DATA-SET3-SEC
       *
              PERFORM  900-SEIKYU-READ-SEC
@@ -1093,7 +894,6 @@
            .
        2001-KOKUHO-SYUKEI-EXT.
            EXIT.
-      * 20080423 H20年4月改正対応START tanaka
       *****************************************************************
       *    後期高齢者データ抽出処理
       *****************************************************************
@@ -1115,7 +915,7 @@
                    AND (  RECE10-SKYKBN  NOT =  "0")))
       *    データ集計
                  PERFORM  2001-KASAN-SEC
-      * 
+      *
                  PERFORM  2001-DATA-SET3-SEC
       *
                END-IF
@@ -1139,11 +939,8 @@
       *
            MOVE    RECE10-JNISSU(1)    TO   WRK-NISSU
            MOVE    RECE10-TOTALTEN(1)  TO   WRK-TENSU
-      *--- 2009/07/29 ADD START ----------------------------------------
            MOVE    ZERO                TO   FLG-TYOKI
-      *--- 2009/07/29 ADD END ------------------------------------------
       *
-      *--- 2010/08/12 ADD START ----------------------------------------
            IF   (RECE10-TOKKI(1)  =  "02"
                OR  RECE10-TOKKI(2)  =  "02"
                OR  RECE10-TOKKI(3)  =  "02"
@@ -1161,208 +958,98 @@
                MOVE    20000    TO   WRK-TYOKIFTN
              END-IF
            END-IF
-      *--- 2010/08/12 ADD END ------------------------------------------
       *    限度額が有る場合は(点数×１０) − 患者負担 で算出する
            IF    RECE10-FTNMONEY(1)  =  ZERO
                AND  RECE10-KYURATE  NOT =  ZERO
-      ***  20050419  @@@@-MOTOHASI
-      *--- 2009/07/29 ADD START ----------------------------------------
-      *--- 2010/08/12 CHANGE START -------------------------------------
-      *       IF   (RECE10-TOKKI(1)  =  "02"
-      *           OR  RECE10-TOKKI(2)  =  "02"
-      *           OR  RECE10-TOKKI(3)  =  "02"
-      *           OR  RECE10-TOKKI(4)  =  "02"
-      *           OR  RECE10-TOKKI(5)  =  "02")
-      *         MOVE    1        TO   FLG-TYOKI
-      *       ELSE
-      *         IF  (RECE10-TOKKI(1)  =  "16"
-      *             OR  RECE10-TOKKI(2)  =  "16"
-      *             OR  RECE10-TOKKI(3)  =  "16"
-      *             OR  RECE10-TOKKI(4)  =  "16"
-      *             OR  RECE10-TOKKI(5)  =  "16")
-      *           MOVE    2        TO   FLG-TYOKI
-      *         ELSE
              IF    FLG-TYOKI  NOT =  1
                  AND   FLG-TYOKI  NOT =  2
-      *--- 2010/08/12 CHANGE END ---------------------------------------
-      *--- 2009/07/29 ADD END ------------------------------------------
                 COMPUTE   WRK-HKNGK  =  RECE10-TOTALTEN(1)
                                    *  RECE10-KYURATE
-      *--- 2009/07/29 ADD START ----------------------------------------
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *         END-IF
-      *--- 2010/08/12 DELETE END ---------------------------------------
              END-IF
-      *--- 2009/07/29 ADD END ------------------------------------------
            ELSE
              COMPUTE   WRK-HKNGK  =  (RECE10-TOTALTEN(1)  *  10)
                                   -  RECE10-FTNMONEY(1)
            END-IF
-      
+      *
       *    収納情報から窓口請求額、公費請求額を集計
            MOVE    ZERO                    TO   WRK-MADOSEIKYUGK-G
                                                 WRK-KOHSEIKYUGK-G
-      *--- (2008/12/18) line add start monma ---------------------------
                                                 WRK-JIHIGK-G
-      *--- (2008/12/18) line add end   monma ---------------------------
-      *--- 2010/08/12 ADD START ----------------------------------------
                                                 WRK-KOHMADOGK
-      *--- 2010/08/12 ADD END ------------------------------------------
       *
            PERFORM  920-SYUNOU-SET-SEC
-      *--- (2008/12/18) line add&del start monma -----------------------
       *    その他自費を別集計
            MOVE    WRK-JIHIGK-G             TO   WRK-JIHIGK
            COMPUTE  WRK-MADOGK  =  WRK-MADOSEIKYUGK-G  -  WRK-JIHIGK-G
-      *     MOVE    WRK-MADOSEIKYUGK-G       TO    WRK-MADOGK
-      *--- (2008/12/18) line add&del end   monma -----------------------
       *
            MOVE    WRK-KOHSEIKYUGK-G        TO   WRK-KOHGK
       *
-      ***  20040820  @@@@-MOTOHASI  食事療養追加
       *    日数
            MOVE  RECE10-SHOKUJINISSU(1)     TO   WRK-SNISSU
       *    請求額
            MOVE  RECE10-SHOKUJIRYOYOHI(1)   TO   WRK-SSEIKYU
       *    標準負担額
            MOVE  RECE10-SHOKUJIFTN(1)       TO   WRK-SFTNGK
-      ***  20040820  @@@@-MOTOHASI
       *
       *    公費単独の場合の編集
            IF    RECE10-HKNNUM  =  SPACE
-      *
-      ***  20040712  @@@@-MOTOHASI  公費１〜４でMAX値を印字するように変更
-      ***       MOVE    RECE10-JNISSU(2)    TO    WRK-NISSU
-      ***       MOVE    RECE10-TOTALTEN(2)  TO    WRK-TENSU
-      ***       COMPUTE  WRK-HKNGK  = (RECE10-TOTALTEN(2) * 10)
-      ***                           + RECE10-SHOKUJIRYOYOHI(2)
              MOVE    ZERO      TO   WRK-TENSU
              MOVE    2         TO   IDX8
-      * 20071114 公費単独の不具合を修正START t.tanaka
              MOVE    ZERO      TO   WRK-FUKUKOHTEN
              MOVE    ZERO      TO   WRK-FUKUKOHNISSU
              MOVE    ZERO      TO   WRK-FUKUNISSU
-      * 20071114 公費単独の不具合を修正END
-      * 20080910 公費単独欄の食事療養の不具合を修正START
              MOVE    ZERO      TO   WRK-FUKU-S-KAISU
              MOVE    ZERO      TO   WRK-FUKU-S-SKYMONEY
              MOVE    ZERO      TO   WRK-FUKU-S-FTNMONEY
-      * 20080910 公費単独欄の食事療養の不具合を修正END
              PERFORM  VARYING  IDX7  FROM  2  BY  1
                       UNTIL    IDX7  >  5
                IF    RECE10-TOTALTEN(IDX7)  >  WRK-TENSU
                  MOVE    IDX7                 TO   IDX8
-      * 20071114 公費単独の不具合を修正START t.tanaka
                  ADD  WRK-TENSU               TO   WRK-FUKUKOHTEN
                  ADD  WRK-FUKUNISSU           TO   WRK-FUKUKOHNISSU
-      * 20071114 公費単独の不具合を修正END
                  MOVE  RECE10-TOTALTEN(IDX7)  TO   WRK-TENSU
-      * 20071114 公費単独の不具合を修正START t.tanaka
                  MOVE  RECE10-JNISSU(IDX7)    TO   WRK-FUKUNISSU
                ELSE
                  ADD  RECE10-TOTALTEN(IDX7)   TO   WRK-FUKUKOHTEN
                  ADD  RECE10-JNISSU(IDX7)     TO   WRK-FUKUKOHNISSU
-      * 20080910 公費単独欄の食事療養の不具合を修正STRAT
                  ADD  RECE10-SHOKUJINISSU(IDX7)  TO   WRK-FUKU-S-KAISU
                  ADD  RECE10-SHOKUJIRYOYOHI(IDX7)
                                               TO   WRK-FUKU-S-SKYMONEY
                  ADD  RECE10-SHOKUJIFTN(IDX7) TO   WRK-FUKU-S-FTNMONEY
-      * 20080910 公費単独欄の食事療養の不具合を修正END
-      * 20071114 公費単独の不具合を修正END
                END-IF
              END-PERFORM
              MOVE    RECE10-JNISSU(IDX8)    TO    WRK-NISSU
              MOVE    RECE10-TOTALTEN(IDX8)  TO    WRK-TENSU
-      * 20071114 公費単独の不具合を修正START t.tanaka
              ADD    WRK-FUKUKOHNISSU       TO    WRK-NISSU
              ADD    WRK-FUKUKOHTEN         TO    WRK-TENSU
-      *    
-      *       COMPUTE  WRK-HKNGK  = (RECE10-TOTALTEN(IDX8) * 10)
-      *                + RECE10-SHOKUJIRYOYOHI(IDX8)
+      *
       *    公費請求額
-      *--- 2009/01/08 ADD START ----------------------------------------
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *       IF  RECE10-SHOKUJIFTN(IDX8)  NOT =  ZERO
-      *--- 2010/08/12 DELETE END ---------------------------------------
-      *    患者食事負担有り
-      *--- 2009/11/06 CHANGE START -------------------------------------
-      *         COMPUTE   WRK-HKNGK  =  ((WRK-FUKUKOHTEN
               COMPUTE   WRK-KOHGK  =  ((WRK-FUKUKOHTEN
-      *--- 2009/11/06 CHANGE END ---------------------------------------
-                                  +  RECE10-TOTALTEN(IDX8))  *  10)
-      *--- 2010/08/12 CHANGE START -------------------------------------
-      *                            -  (WRK-MADOGK
-                                  -  (WRK-KOHMADOGK
-      *--- 2010/08/12 CHANGE END ---------------------------------------
-                                  -  RECE10-SHOKUJIFTN(IDX8))
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *       ELSE
-      **    患者食事負担無し
-      **--- 2009/01/08 ADD END ------------------------------------------
-      **--- 2009/11/06 CHANGE START -------------------------------------
-      **         COMPUTE   WRK-HKNGK  =  ((WRK-FUKUKOHTEN
-      *          COMPUTE   WRK-KOHGK  =  ((WRK-FUKUKOHTEN
-      **--- 2009/11/06 CHANGE END ---------------------------------------
-      *                            +  RECE10-TOTALTEN(IDX8))  *  10)
-      *                            +  RECE10-SHOKUJIRYOYOHI(IDX8)
-      *                            -  RECE10-FTNMONEY(IDX8)
-      **--- 2009/01/08 ADD START ----------------------------------------
-      *       END-IF
-      *--- 2009/01/08 ADD END ------------------------------------------
-      *--- 2010/08/12 DELETE END ---------------------------------------
-      *
-      * 20071114 公費単独の不具合を修正END
-      ***  20040712  ここまで
-      *
-      *--- 2009/11/06 DELETE START -------------------------------------
-      *       ADD     WRK-HKNGK           TO   WRK-KOHGK
-      *--- 2009/11/06 DELETE END ---------------------------------------
+                                   +  RECE10-TOTALTEN(IDX8))  *  10)
+                                   -  (WRK-KOHMADOGK
+                                   -  RECE10-SHOKUJIFTN(IDX8))
              MOVE    ZERO                TO   WRK-HKNGK
       *
-      ***  20040820  @@@@-MOTOHASI  食事療養追加
       *    日数
              MOVE  RECE10-SHOKUJINISSU(IDX8)     TO   WRK-SNISSU
-      * 20080910 公費単独欄の食事療養の不具合を修正START
              ADD   WRK-FUKU-S-KAISU              TO   WRK-SNISSU
-      * 20080910 公費単独欄の食事療養の不具合を修正END
       *    請求額
              MOVE  RECE10-SHOKUJIRYOYOHI(IDX8)   TO   WRK-SSEIKYU
-      * 20080910 公費単独欄の食事療養の不具合を修正START
              ADD   WRK-FUKU-S-SKYMONEY           TO   WRK-SSEIKYU
-      * 20080910 公費単独欄の食事療養の不具合を修正END
       *    標準負担額
              MOVE  RECE10-SHOKUJIFTN(IDX8)       TO   WRK-SFTNGK
-      * 20080910 公費単独欄の食事療養の不具合を修正START
              ADD   WRK-FUKU-S-FTNMONEY           TO   WRK-SFTNGK
-      * 20080910 公費単独欄の食事療養の不具合を修正END
-      ***  20040820  @@@@-MOTOHASI
            END-IF
       *
       *    医療収益
            IF    RECE10-HKNNUM  =  SPACE
       *    公費単独
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *--- 2009/01/08 ADD START ----------------------------------------
-      *       IF  RECE10-SHOKUJIFTN(IDX8)  NOT =  ZERO
       *    患者食事負担無し
-      *--- 2009/01/08 ADD END ------------------------------------------
-      *--- 2010/08/12 DELETE END ---------------------------------------
              COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
                                   +  WRK-KOHGK
-      *--- (2008/12/18) line add start monma ---------------------------
       *    食事収益加算
                                   +  WRK-JIHIGK
                                   +  (WRK-SSEIKYU - WRK-SFTNGK)
-      *--- (2008/12/18) line add end   monma ---------------------------
-      *--- 2009/01/08 ADD START ----------------------------------------
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *       ELSE
-      **    患者食事負担有り
-      *         COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-      *                              +  WRK-KOHGK
-      *                              +  WRK-JIHIGK
-      *       END-IF
-      *--- 2010/08/12 DELETE END ---------------------------------------
            ELSE
       *    公費単独以外
              COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
@@ -1370,7 +1057,6 @@
                                   +  WRK-JIHIGK
                                   +  (WRK-SSEIKYU - WRK-SFTNGK)
            END-IF
-      *--- 2009/01/08 ADD END ------------------------------------------
       *
       *    公費集計   (単独は集計しない)
            PERFORM  2001-KASAN-KOUHI-SEC
@@ -1409,13 +1095,11 @@
            INITIALIZE    S139TMP-REC
       *
            MOVE    RECE10-RECEKA       TO   S139TMP-SRYKA
-      * 20080512 返戻が正しく印字されない不具合を修正START tanaka
            IF  RECE10-SRYYM < "200804"
              MOVE    "0"       TO   S139TMP-SRYYMKBN
            ELSE
              MOVE    "9"       TO   S139TMP-SRYYMKBN
            END-IF
-      * 20080512 返戻が正しく印字されない不具合を修正END
       *    TMPファイル読み込み
            MOVE    3                   TO   FLG-TYPE
            PERFORM  800-SKTTMP-READ-SEC
@@ -1425,121 +1109,83 @@
              PERFORM  2001-IDX-SET3-SEC
            ELSE
              PERFORM  2002-IDX-SET3-SEC
-      * 20080514 H20年4月以前のﾃﾞｰﾀが正しく表示されない不具合を修正START
            END-IF
       *
-      * 20080514 H20年4月以前のﾃﾞｰﾀが正しく表示されない不具合を修正END
       *    データ設定
       *    件数加算
            ADD    1                 TO   S139TMP-KENSU(IDX1 IDX2)
                                          S139TMP-S-KENSU(IDX1 IDX3)
                                          S139TMP-S-KENSU(IDX1 4)
                                          S139TMP-GKENSU(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                    S139TMP-GKENSU(5)
                                          S139TMP-GKENSU(6)
-      * 20080423 H20年4月改正対応END
       *
       *    日数加算
            ADD    WRK-NISSU         TO   S139TMP-NISSU(IDX1 IDX2)
                                          S139TMP-S-NISSU(IDX1 IDX3)
                                          S139TMP-S-NISSU(IDX1 4)
                                          S139TMP-GNISSU(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                    S139TMP-GNISSU(5)
                                          S139TMP-GNISSU(6)
-      * 20080423 H20年4月改正対応END
       *
       *    点数加算
            ADD    WRK-TENSU         TO   S139TMP-TENSU(IDX1 IDX2)
                                          S139TMP-S-TENSU(IDX1 IDX3)
                                          S139TMP-S-TENSU(IDX1 4)
                                          S139TMP-GTENSU(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                    S139TMP-GTENSU(5)
                                          S139TMP-GTENSU(6)
-      * 20080423 H20年4月改正対応END
       *
       *    窓口請求額加算
            ADD    WRK-MADOGK        TO   S139TMP-MADOGK(IDX1 IDX2)
                                          S139TMP-S-MADOGK(IDX1 IDX3)
                                          S139TMP-S-MADOGK(IDX1 4)
                                          S139TMP-GMADOGK(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                    S139TMP-GMADOGK(5)
                                          S139TMP-GMADOGK(6)
-      * 20080423 H20年4月改正対応END
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費加算
            ADD    WRK-JIHIGK        TO   S139TMP-JIHIGK(IDX1 IDX2)
                                          S139TMP-S-JIHIGK(IDX1 IDX3)
                                          S139TMP-S-JIHIGK(IDX1 4)
                                          S139TMP-GJIHIGK(1)
                                          S139TMP-GJIHIGK(6)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額加算
            ADD    WRK-HKNGK         TO   S139TMP-HKNGK(IDX1 IDX2)
                                          S139TMP-S-HKNGK(IDX1 IDX3)
                                          S139TMP-S-HKNGK(IDX1 4)
                                          S139TMP-GHKNGK(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                    S139TMP-GHKNGK(5)
                                          S139TMP-GHKNGK(6)
-      * 20080423 H20年4月改正対応END
       *
       *    公費請求額
            ADD    WRK-KOHGK         TO   S139TMP-KOHGK(IDX1 IDX2)
                                          S139TMP-S-KOHGK(IDX1 IDX3)
                                          S139TMP-S-KOHGK(IDX1 4)
                                          S139TMP-GKOHGK(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                    S139TMP-GKOHGK(5)
                                          S139TMP-GKOHGK(6)
-      * 20080423 H20年4月改正対応END
       *
       *    医療収益
            ADD    WRK-SYUEKI        TO   S139TMP-SYUEKI(IDX1 IDX2)
                                          S139TMP-S-SYUEKI(IDX1 IDX3)
                                          S139TMP-S-SYUEKI(IDX1 4)
                                          S139TMP-GSYUEKI(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                    S139TMP-GSYUEKI(5)
                                          S139TMP-GSYUEKI(6)
-      * 20080423 H20年4月改正対応END
-      *
-      ***  20040820  @@@@-MOTOHASI  食事療養追加
       *
       *    日数加算
            ADD    WRK-SNISSU        TO   S139TMP-SNISSU(IDX1 IDX2)
                                          S139TMP-S-SNISSU(IDX1 IDX3)
                                          S139TMP-S-SNISSU(IDX1 4)
                                          S139TMP-SGNISSU(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                     S139TMP-SGNISSU(5)
                                           S139TMP-SGNISSU(6)
-      * 20080423 H20年4月改正対応END
       *    請求額加算
            ADD    WRK-SSEIKYU       TO   S139TMP-SSEIKYU(IDX1 IDX2)
                                          S139TMP-S-SSEIKYU(IDX1 IDX3)
                                          S139TMP-S-SSEIKYU(IDX1 4)
                                          S139TMP-SGSEIKYU(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                     S139TMP-SGSEIKYU(5)
                                           S139TMP-SGSEIKYU(6)
-      * 20080423 H20年4月改正対応END
       *    標準負担額加算
            ADD    WRK-SFTNGK        TO   S139TMP-SFTNGK(IDX1 IDX2)
                                          S139TMP-S-SFTNGK(IDX1 IDX3)
                                          S139TMP-S-SFTNGK(IDX1 4)
                                          S139TMP-SGFTNGK(1)
-      * 20080423 H20年4月改正対応START tanaka
-      *                                     S139TMP-SGFTNGK(5)
                                           S139TMP-SGFTNGK(6)
-      * 20080423 H20年4月改正対応END
-      ***  20040820  @@@@-MOTOHASI
-      *
       *
       *    公費分再掲
            ADD    WRK-KKENSU        TO   S139TMP-KENSU(IDX1 16)
@@ -1572,25 +1218,16 @@
       *
              PERFORM  UNTIL   FLG-JYURRK   =   1
       *
-      ***  20050609  @@@@-MOTOHASI  
                IF  JYURRK-EDANUM  =  1
-      ***  20050609  @@@@-MOTOHASI  
       *
       *    旧総合病院の場合、診療科コードで判定を分ける
                  MOVE    JYURRK-SRYYMD(7:2)   TO   IDA-G
-      * 20081014 主科設定時に診療科を印字するSTART
                  IF    SYS-1001-HOSPSBT1    =    1
-      *--- 2008/11/06  ADD  START --------------------------------------
                      OR  SYS-2009-SYUKA-KBN = 1
-      *--- 2009/02/25 CHANGE START -------------------------------------
                    MOVE    JYURRK-SRYKA   TO  IDB-G
-      *             MOVE    1              TO  IDB
-      *--- 2009/02/25 CHANGE END ---------------------------------------
-      *--- 2008/11/06  ADD  END ----------------------------------------
                  ELSE
                    MOVE    1              TO  IDB
                  END-IF
-      * 20081014 主科設定時に診療科を印字するEND
       *    保険組み合わせ情報を参照し、自費・自賠・労災の判定を行う
                  PERFORM  930-HKNCOMBI-SET-SEC
                  IF    COMB-HKNNUM(1:2)  =  "98" OR "97"
@@ -1609,9 +1246,7 @@
                      END-IF
                    END-IF
                  END-IF
-      ***  20050609  @@@@-MOTOHASI
                END-IF
-      ***  20050609  @@@@-MOTOHASI
       *
                PERFORM  920-DBFETCH3-SEC
              END-PERFORM
@@ -1631,29 +1266,18 @@
       *    キー設定
            INITIALIZE    S139TMP-REC
       *
-      * 20081014 主科設定時に診療科を印字するSTART
-      **--- 2008/11/06  ADD  START -------------------------------------
-           IF    SYS-1001-HOSPSBT1  =  1 
+           IF    SYS-1001-HOSPSBT1  =  1
                OR  SYS-2009-SYUKA-KBN = 1
-      *--- 2009/02/25 CHANGE START -------------------------------------
              MOVE    JYURRK-SRYKA      TO    S139TMP-SRYKA
-      *       MOVE    "00"              TO    S139TMP-SRYKA
-      *--- 2009/02/25 CHANGE END ---------------------------------------
            ELSE
-      **--- 2008/11/06  ADD  END ---------------------------------------
              MOVE    "00"              TO    S139TMP-SRYKA
-      **--- 2008/11/06  ADD  START -------------------------------------
            END-IF
-      **--- 2008/11/06  ADD  END ---------------------------------------
-      * 20081014 主科設定時に診療科を印字するEND
-      * 20080512 返戻が正しく印字されない不具合を修正START tanaka
-      *     MOVE    RECE10-SRYYM       TO    S139TMP-SRYYM
+      *
            IF  JYURRK-SRYYMD  <  "20080401"
              MOVE    "0"       TO    S139TMP-SRYYMKBN
            ELSE
              MOVE    "9"       TO    S139TMP-SRYYMKBN
            END-IF
-      * 20080512 返戻が正しく印字されない不具合を修正END
       *    TMPファイル読み込み
            MOVE    3                   TO    FLG-TYPE
            PERFORM 800-SKTTMP-READ-SEC
@@ -1666,16 +1290,13 @@
            WHEN "973"
              MOVE    3    TO    IDX1
              MOVE    4    TO    IDX2
-      * 20080423 H20年4月改正対応START tanaka
            WHEN "975"
              MOVE    4    TO    IDX1
              MOVE    5    TO    IDX2
-      * 20080423 H20年4月改正対応END
            WHEN OTHER
              MOVE    1    TO    IDX1
              MOVE    2    TO    IDX2
            END-EVALUATE
-      *
       *
       *    加算テーブル初期化
            INITIALIZE    WRK-KASAN-TBL
@@ -1696,66 +1317,9 @@
       *
       *    収納情報よりデータ抽出
            PERFORM  940-SYUNOU-READ-SEC
+      *
       *    自費・時賠・労災用加算データ編集
            PERFORM  2001-KASAN-ETC-SEC
-      *
-      * 20080423 H20年4月改正対応START tanaka
-      *    データ設定
-      *    件数加算
-      *     ADD    WRK-KENSU       TO    S139TMP-ETC-KENSU(IDX IDX1)
-      *                                  S139TMP-ETC-KENSU(IDX 4)
-      *                                  S139TMP-GKENSU(IDX2)
-      *                                  S139TMP-GKENSU(5)
-      **
-      **    日数加算
-      *     ADD    WRK-NISSU       TO    S139TMP-ETC-NISSU(IDX IDX1)
-      *                                  S139TMP-ETC-NISSU(IDX 4)
-      *                                  S139TMP-GNISSU(IDX2)
-      *                                  S139TMP-GNISSU(5)
-      **
-      **    点数加算
-      *     ADD    WRK-TENSU       TO    S139TMP-ETC-TENSU(IDX IDX1)
-      *                                  S139TMP-ETC-TENSU(IDX 4)
-      *                                  S139TMP-GTENSU(IDX2)
-      *                                  S139TMP-GTENSU(5)
-      **
-      **    窓口請求額加算
-      *     ADD    WRK-MADOGK      TO    S139TMP-ETC-MADOGK(IDX IDX1)
-      *                                  S139TMP-ETC-MADOGK(IDX 4)
-      *                                  S139TMP-GMADOGK(IDX2)
-      *                                  S139TMP-GMADOGK(5)
-      **
-      **    保険請求額加算
-      *     ADD    WRK-HKNGK       TO    S139TMP-ETC-HKNGK(IDX IDX1)
-      *                                  S139TMP-ETC-HKNGK(IDX 4)
-      *                                  S139TMP-GHKNGK(IDX2)
-      *                                  S139TMP-GHKNGK(5)
-      **
-      **    医療収益
-      *     ADD    WRK-SYUEKI      TO    S139TMP-ETC-SYUEKI(IDX IDX1)
-      *                                  S139TMP-ETC-SYUEKI(IDX 4)
-      *                                  S139TMP-GSYUEKI(IDX2)
-      *                                  S139TMP-GSYUEKI(5)
-      **
-      ****  20040820  @@@@-MOTOHASI  食事療養追加
-      **
-      **    日数加算
-      *     ADD    WRK-SNISSU      TO    S139TMP-ETC-SNISSU(IDX IDX1)
-      *                                  S139TMP-ETC-SNISSU(IDX 4)
-      *                                  S139TMP-SGNISSU(IDX2)
-      *                                  S139TMP-SGNISSU(5)
-      **    請求額加算
-      *     ADD    WRK-SSEIKYU     TO    S139TMP-ETC-SSEIKYU(IDX IDX1)
-      *                                  S139TMP-ETC-SSEIKYU(IDX 4)
-      *                                  S139TMP-SGSEIKYU(IDX2)
-      *                                  S139TMP-SGSEIKYU(5)
-      **    標準負担額加算
-      *     ADD    WRK-SFTNGK      TO    S139TMP-ETC-SFTNGK(IDX IDX1)
-      *                                  S139TMP-ETC-SFTNGK(IDX 4)
-      *                                  S139TMP-SGFTNGK(IDX2)
-      *                                  S139TMP-SGFTNGK(5)
-      ***  20040820  @@@@-MOTOHASI  
-      *
       *
       *    データ設定
       *    件数加算
@@ -1782,13 +1346,11 @@
                                         S139TMP-GMADOGK(IDX2)
                                         S139TMP-GMADOGK(6)
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費加算
            ADD    WRK-JIHIGK      TO    S139TMP-ETC-JIHIGK(IDX IDX1)
                                         S139TMP-ETC-JIHIGK(IDX 5)
                                         S139TMP-GJIHIGK(IDX2)
                                         S139TMP-GJIHIGK(6)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額加算
            ADD    WRK-HKNGK       TO    S139TMP-ETC-HKNGK(IDX IDX1)
@@ -1841,35 +1403,21 @@
            INITIALIZE    S139TMP-REC
       *
       *    入院はレセプトが診療科毎に別れない
-      * 20081014 主科設定時に診療科を印字するSTART
-           IF    SYS-1001-HOSPSBT1  =  1 
-      *--- 2008/11/06  ADD  START --------------------------------------
+           IF    SYS-1001-HOSPSBT1  =  1
                OR  SYS-2009-SYUKA-KBN = 1
-      *--- 2008/11/06  ADD  END ----------------------------------------
-      *--- 2009/02/25 CHANGE START -------------------------------------
              MOVE   SYU-SRYKA    TO    S139TMP-SRYKA
                                        IDB
-      *       MOVE    "00"        TO    S139TMP-SRYKA
-      *                                 IDB-G
-      *       MOVE    1           TO    IDB
-      *--- 2009/02/25 CHANGE END ---------------------------------------
            ELSE
              MOVE    "00"        TO    S139TMP-SRYKA
              MOVE    1           TO    IDB
            END-IF
-      * 20081014 主科設定時に診療科を印字するEND
-      * 20080512 返戻が正しく印字されない不具合を修正START tanaka
-      *     MOVE    RECE10-SRYYM       TO    S139TMP-SRYYM
-      * 2009/02/25 CHANGE START ----------------------------------------
-      *     IF  RECE10-SRYYM < "200804"
+      *
            IF  SYU-SRYYMD < "20080401"
-      * 2009/02/25 CHANGE START ----------------------------------------
              MOVE    "0"         TO    S139TMP-SRYYMKBN
            ELSE
              MOVE    "9"         TO    S139TMP-SRYYMKBN
            END-IF
-      * 20080512 返戻が正しく印字されない不具合を修正START tanaka
-
+      *
       *    TMPファイル読み込み
            MOVE    3                   TO    FLG-TYPE
            PERFORM 800-SKTTMP-READ-SEC
@@ -1882,11 +1430,9 @@
            WHEN "973"
              MOVE    3           TO    IDX1
              MOVE    4           TO    IDX2
-      * 20080423 H20年4月改正対応START tanaka
            WHEN "975"
              MOVE    4           TO    IDX1
              MOVE    5           TO    IDX2
-      * 20080423 H20年4月改正対応END
            WHEN OTHER
              MOVE    1           TO    IDX1
              MOVE    2           TO    IDX2
@@ -1906,74 +1452,14 @@
            IF    SYU-SKYEDYMD    >    WRK-PARA-PRTLYMD
              MOVE    WRK-PARA-PRTLYMD  TO   SYU-SKYEDYMD
            END-IF
-      * 20080423 H20年4月改正対応START tanaka
-      *     MOVE    SYU-SKYSTYMD(7:2)   TO  IDC-G
-      *     MOVE    SYU-SKYEDYMD(7:2)   TO  IDD-G
            MOVE    SYU-SKYSTYMD(7:2)   TO   WRK-99
            MOVE    WRK-99              TO   IDC
            MOVE    SYU-SKYEDYMD(7:2)   TO   WRK-99
            MOVE    WRK-99              TO   IDD
-      * 20080423 H20年4月改正対応END
            COMPUTE  WRK-NISSU    =    IDD - IDC + 1
+      *
       *    自費・時賠・労災用加算データ編集
            PERFORM  2001-KASAN-ETC-SEC
-      *
-      * 20080423 H20年4月改正対応START tanaka
-      *    データ設定
-      *    件数加算
-      *     ADD    WRK-KENSU       TO    S139TMP-ETC-KENSU(IDX IDX1)
-      *                                  S139TMP-ETC-KENSU(IDX 4)
-      *                                  S139TMP-GKENSU(IDX2)
-      *                                  S139TMP-GKENSU(5)
-      **
-      **    日数加算
-      *     ADD    WRK-NISSU       TO    S139TMP-ETC-NISSU(IDX IDX1)
-      *                                  S139TMP-ETC-NISSU(IDX 4)
-      *                                  S139TMP-GNISSU(IDX2)
-      *                                  S139TMP-GNISSU(5)
-      **
-      **    点数加算
-      *     ADD    WRK-TENSU       TO    S139TMP-ETC-TENSU(IDX IDX1)
-      *                                  S139TMP-ETC-TENSU(IDX 4)
-      *                                  S139TMP-GTENSU(IDX2)
-      *                                  S139TMP-GTENSU(5)
-      **
-      **    窓口請求額加算
-      *     ADD    WRK-MADOGK      TO    S139TMP-ETC-MADOGK(IDX IDX1)
-      *                                  S139TMP-ETC-MADOGK(IDX 4)
-      *                                  S139TMP-GMADOGK(IDX2)
-      *                                  S139TMP-GMADOGK(5)
-      **
-      **    保険請求額加算
-      *     ADD    WRK-HKNGK       TO    S139TMP-ETC-HKNGK(IDX IDX1)
-      *                                  S139TMP-ETC-HKNGK(IDX 4)
-      *                                  S139TMP-GHKNGK(IDX2)
-      *                                  S139TMP-GHKNGK(5)
-      **
-      **    医療収益
-      *     ADD    WRK-SYUEKI      TO    S139TMP-ETC-SYUEKI(IDX IDX1)
-      *                                  S139TMP-ETC-SYUEKI(IDX 4)
-      *                                  S139TMP-GSYUEKI(IDX2)
-      *                                  S139TMP-GSYUEKI(5)
-      **
-      ****  20040820  @@@@-MOTOHASI  食事療養追加
-      **
-      **    日数加算
-      *     ADD    WRK-SNISSU      TO    S139TMP-ETC-SNISSU(IDX IDX1)
-      *                                  S139TMP-ETC-SNISSU(IDX 4)
-      *                                  S139TMP-SGNISSU(IDX2)
-      *                                  S139TMP-SGNISSU(5)
-      **    請求額加算
-      *     ADD    WRK-SSEIKYU     TO    S139TMP-ETC-SSEIKYU(IDX IDX1)
-      *                                  S139TMP-ETC-SSEIKYU(IDX 4)
-      *                                  S139TMP-SGSEIKYU(IDX2)
-      *                                  S139TMP-SGSEIKYU(5)
-      **    標準負担額加算
-      *     ADD    WRK-SFTNGK      TO    S139TMP-ETC-SFTNGK(IDX IDX1)
-      *                                  S139TMP-ETC-SFTNGK(IDX 4)
-      *                                  S139TMP-SGFTNGK(IDX2)
-      *                                  S139TMP-SGFTNGK(5)
-      ***  20040820  @@@@-MOTOHASI  
       *
       *    データ設定
       *    件数加算
@@ -2000,13 +1486,11 @@
                                         S139TMP-GMADOGK(IDX2)
                                         S139TMP-GMADOGK(6)
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費加算
            ADD    WRK-JIHIGK      TO    S139TMP-ETC-JIHIGK(IDX IDX1)
                                         S139TMP-ETC-JIHIGK(IDX 5)
                                         S139TMP-GJIHIGK(IDX2)
                                         S139TMP-GJIHIGK(6)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額加算
            ADD    WRK-HKNGK       TO    S139TMP-ETC-HKNGK(IDX IDX1)
@@ -2019,8 +1503,6 @@
                                         S139TMP-ETC-SYUEKI(IDX 5)
                                         S139TMP-GSYUEKI(IDX2)
                                         S139TMP-GSYUEKI(6)
-      *
-      ***  20040820  @@@@-MOTOHASI  食事療養追加
       *
       *    日数加算
            ADD    WRK-SNISSU      TO    S139TMP-ETC-SNISSU(IDX IDX1)
@@ -2037,8 +1519,6 @@
                                         S139TMP-ETC-SFTNGK(IDX 5)
                                         S139TMP-SGFTNGK(IDX2)
                                         S139TMP-SGFTNGK(6)
-      * 20080423 H20年4月改正対応END
-      *
       *
       *    書き出し
            IF  FLG-S139TMP   =  1
@@ -2090,7 +1570,6 @@
              EVALUATE  TRUE
              WHEN RECE10-RJNHKNNUM NOT = SPACE
                MOVE        13   TO    IDX2
-      
              WHEN RECE10-AGE    <    3
                MOVE        14   TO    IDX2
              WHEN RECE10-HKNNUM = "067"
@@ -2108,7 +1587,7 @@
       *    家族の場合１加算
                IF    RECE10-HONKZKKBN NOT = "1"
                  ADD       1    TO    IDX2
-               END-IF    
+               END-IF
              END-EVALUATE
       *    小計加算場所設定
              MOVE          2    TO    IDX3
@@ -2120,11 +1599,9 @@
              MOVE         3     TO    IDX3
            END-IF
       *
-      *
            .
        2001-IDX-SET3-EXT.
            EXIT.
-      * 20080423 H20年4月改正対応START tanaka
       *****************************************************************
       *    保険合計集計場所設定(H20年4月以降)
       *****************************************************************
@@ -2140,7 +1617,7 @@
       *
       *    明細場所設定
            IF    RECE10-HKNNUM  NOT = "060" AND "067"
-             IF    RECE10-HKNNUM = "039" OR 
+             IF    RECE10-HKNNUM = "039" OR
                    RECE10-HKNNUM = "040"
                IF  RECE10-KOHNUM(1) = SPACE
                  MOVE    17    TO    IDX2
@@ -2191,7 +1668,7 @@
       *    家族の場合１加算
                IF    RECE10-HONKZKKBN NOT = "1"
                  ADD       1    TO    IDX2
-               END-IF    
+               END-IF
              END-EVALUATE
       *    小計加算場所設定
              MOVE          2    TO    IDX3
@@ -2203,36 +1680,27 @@
              MOVE         3     TO    IDX3
            END-IF
       *
-      *
            .
        2001-IDX-SET3-EXT.
            EXIT.
       *
-      * 20080423 H20年4月改正対応END
       *****************************************************************
       *    自費・時賠・労災用加算データ設定処理
       *****************************************************************
        2001-KASAN-ETC-SEC                SECTION.
       *
-      *
       *    点数
            ADD      SYU-TOTAL-HKNTEN      TO    WRK-TENSU
       *
-      *--- (2008/12/18) line add&del start monma -----------------------
       *    窓口請求額
-      *     ADD      SYU-SKYMONEY          TO    WRK-MADOGK
            MOVE     ZERO     TO     WRK-JIHIGK
            COMPUTE  WRK-JIHIGK  =  SYU-JIHI-TOTAL
                                 +  SYU-JIHI-TOTAL-TAX
            COMPUTE  WRK-MADOGK  =  SYU-SKYMONEY - WRK-JIHIGK
-      *--- (2008/12/18) line add&del end   monma -----------------------
       *
       *    保険請求額
            IF     SYU-PTFTNRATE           =     ZERO
              IF     SYU-SYUHKNNUM         =     "971" OR "973"
-      *           COMPUTE  WRK-HKNGK  =
-      *                                  SYU-TOTAL-HKNTEN 
-      *                                  * WRK-JIBAITNK
                IF    SYS-4001-TENKBN    =    "1"
                  COMPUTE  WRK-HKNGK  =
                                        SYU-TOTAL-HKNTEN * 11.5
@@ -2245,18 +1713,8 @@
                                    +  SYU-RSISAISHIN-MONEY
                                    +  SYU-RSISDO-MONEY
                                    +  SYU-RSIETC-MONEY
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *                             +  SYU-RYOYOHI-SKJ
-      *--- 2010/08/12 DELETE END ---------------------------------------
       *
-      * 20080616 健保準拠時の自賠責の計算を修正START tanaka
                IF   SYU-SYUHKNNUM    =   "973"
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *           IF  SYU-PTFTNRATE NOT =  ZERO
-      *             MOVE    ZERO     TO   WRK-HKNGK
-      *             COMPUTE  WRK-MADOGK  =  SYU-SKYMONEY - WRK-JIHIGK
-      *           ELSE
-      *--- 2010/08/12 DELETE END ---------------------------------------
                    COMPUTE  WRK-HKNGK  =  SYU-RSIJIBAI-SKYMONEY
                                        -  SYU-JIHI-TOTAL
                                        -  SYU-JIHI-TOTAL-TAX
@@ -2264,19 +1722,10 @@
                                        -  SYU-TOTAL-TGMONEY-TAX
                                        -  SYU-CHOSEI
                                        -  SYU-YKZ-FTN
-      *--- 2010/08/12 CHANGE START -------------------------------------
-      *                                 -  SYU-SKYMONEY-SKJ-JIHI-KEI
-      *                                 -  SYU-SKYMONEY-LIFE-JIHI-KEI
                                        -  SYU-SYUSKJ-RYOYOHI
-      *--- 2010/08/12 CHANGE END ---------------------------------------
                                        -  SYU-RMSAGAKU
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *           END-IF
-      *--- 2010/08/12 DELETE END ---------------------------------------
                END-IF
-      * 20080616 健保準拠時の自賠責の計算を修正END
              END-IF
-      * 20080423 H20年4月改正対応START tanaka
       *    公害保険の場合
              IF     SYU-SYUHKNNUM  =  "975"
                 COMPUTE WRK-JIHI4  =  SYU-TOTAL-TGMONEY
@@ -2284,55 +1733,26 @@
                                    +  SYU-JIHI-TOTAL
                                    +  SYU-JIHI-TOTAL-TAX
                                    +  SYU-RMSAGAKU
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *                             +  SYU-SKYMONEY-SKJ-JIHI-KEI
-      *--- 2010/08/12 DELETE END ---------------------------------------
                IF      SYU-SRYYMD  <  "20070401"
                  COMPUTE WRK-JIHI4   =   WRK-JIHI4  +  SYU-JIHI-TAX
                END-IF
                COMPUTE   WRK-HKNGK  =  SYU-RSIJIBAI-SKYMONEY
                                     -  WRK-JIHI4
-      *--- 2010/08/12 ADD START ----------------------------------------
                                     -  SYU-SYUSKJ-RYOYOHI
-      *--- 2010/08/12 ADD END ------------------------------------------
              END-IF
-      * 20080423 H20年4月改正対応END
            END-IF
       *
-      *--- (2008/12/18) line del start monma ---------------------------
-      *    医療収益
-      *     COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-      *                          +  WRK-KOHGK
-      *--- (2008/12/18) line del end   monma ---------------------------
-      *
-      ***  20040820  @@@@-MOTOHASI  食事療養追加
       *    日数
            MOVE    SYU-SYUSKJ-NISSU     TO   WRK-SNISSU
       *    請求額
            MOVE    SYU-SYUSKJ-RYOYOHI   TO   WRK-SSEIKYU
       *    標準負担額
            MOVE    SYU-SYUSKJ-FTN       TO   WRK-SFTNGK
-      ***  20040820  @@@@-MOTOHASI  
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    医療収益 食事収益加算
-      *--- 2010/05/31 CHANGE START -------------------------------------
-      *--- 2010/08/12 CHANGE START -------------------------------------
            COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
                                 +  WRK-KOHGK  +  WRK-JIHIGK
                                 +  (WRK-SSEIKYU - WRK-SFTNGK)
-      *     IF  SYU-SYUHKNNUM(1:2)  NOT =  "98"  AND
-      *         WRK-SFTNGK              =  0
-      *       COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-      *                            +  WRK-KOHGK  +  WRK-JIHIGK
-      *     ELSE
-      *       COMPUTE  WRK-SYUEKI  =  WRK-HKNGK  +  WRK-MADOGK
-      *                            +  WRK-KOHGK  +  WRK-JIHIGK
-      *                            +  (WRK-SSEIKYU - WRK-SFTNGK)
-      *     END-IF
-      *--- 2010/08/12 CHANGE END ---------------------------------------
-      *--- 2010/05/31 CHANGE END   -------------------------------------
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
            .
        2001-KASAN-ETC-EXT.
@@ -2364,8 +1784,6 @@
       *
            PERFORM  UNTIL  FLG-PRINT   =    1
       *
-      *
-      ***  20040820  @@@@-MOTOHASI  追加
       *    入院フォーム
       *    見出し編集
              IF    WRK-FLG-NYUGAIKBN     =  "1"
@@ -2379,15 +1797,7 @@
                PERFORM  340-PRINT-OUT-SEC
              END-IF
       *
-      ***  20040820  @@@@-MOTOHASI
-      *
       *    外来フォーム
-      *
-      ***  20040820  @@@@-MOTOHASI  追加
-      *    見出し編集
-      ***       IF    WRK-PARA-NYUGAIKBN     =  "2"  OR  SPACE
-      ***  20040820  @@@@-MOTOHASI  
-      *
              MOVE     1       TO   WRK-CNT1
              PERFORM  3103-HEAD-HEN-SEC
       *
@@ -2420,19 +1830,12 @@
            MOVE    WRK-PAGE         TO    S139-PAGE
       *
       *    診療科名(旧総合病院時のみ)
-      * 20081014 主科設定時に診療科を印字するSTART
            IF    SYS-1001-HOSPSBT1  =  1
               OR  SYS-2009-SYUKA-KBN  =  1
-      * 20081014 主科設定時に診療科を印字するEND
              MOVE     1               TO    IDX4
              MOVE     SUM-SRYKAMAX    TO    IDX-MAX
              PERFORM  UNTIL    IDX4   >   IDX-MAX
-      *--- 2009/02/25 CHANGE START -------------------------------------
-      *--- 2008/11/06  CHANGE  START -----------------------------------
                IF  S139TMP-SRYKA       =     SUM-SRYKA(IDX4)
-      *         IF   S139TMP-SRYKA   =   SUM-SRYKA2(IDX4)
-      *--- 2008/11/06  CHANGE  END -------------------------------------
-      *--- 2009/02/25 CHANGE END ---------------------------------------
                  MOVE    ZERO                   TO    IDX-MAX
                  MOVE    SUM-SRYKANAME(IDX4)    TO    S139-SRYKANAME
                ELSE
@@ -2440,22 +1843,6 @@
                END-IF
              END-PERFORM
            END-IF
-      *--- 2009/02/25 DELETE START -------------------------------------
-      *--- 2008/11/06  ADD  START --------------------------------------
-      *     IF   SYS-2009-SYUKA-KBN = 1
-      *       MOVE     1               TO    IDX4
-      *       MOVE     SUM-SRYKAMAX    TO    IDX-MAX
-      *       PERFORM  UNTIL    IDX4   >     IDX-MAX
-      *         IF   S139TMP-SRYKA   =   SUM-SRYKA(IDX4)
-      *           MOVE    ZERO                   TO    IDX-MAX
-      *           MOVE    SUM-SRYKANAME(IDX4)    TO    S139-SRYKANAME
-      *         ELSE
-      *           ADD     1                      TO    IDX4
-      *         END-IF
-      *       END-PERFORM
-      *     END-IF
-      *--- 2008/11/06  ADD  END ----------------------------------------
-      *--- 2009/02/25 DELETE END ---------------------------------------
       *
            MOVE    WRK-SRYYM        TO   S139-SRYYM
            MOVE    WRK-SEIYMD       TO   S139-SYSYMD
@@ -2477,21 +1864,12 @@
            MOVE    WRK-PAGE         TO    S139N-PAGE
       *
       *    診療科名(旧総合病院時のみ)
-      * 20081014 主科設定時に診療科を印字するSTART
            IF    SYS-1001-HOSPSBT1  =  1
-      *--- 2008/11/06  ADD  START --------------------------------------
                    OR  SYS-2009-SYUKA-KBN = 1
-      *--- 2008/11/06  ADD  END ----------------------------------------
-      * 20081014 主科設定時に診療科を印字するEND
              MOVE     1               TO    IDX4
              MOVE     SUM-SRYKAMAX    TO    IDX-MAX
              PERFORM  UNTIL   IDX4  >  IDX-MAX
-      *--- 2009/02/25 CHANGE START -------------------------------------
-      *--- 2008/11/06  CHANGE  START -----------------------------------
                IF  S139TMP-SRYKA       =     SUM-SRYKA(IDX4)
-      *         IF  S139TMP-SRYKA       =     SUM-SRYKA2(IDX4)
-      *--- 2008/11/06  CHANGE  END -------------------------------------
-      *--- 2009/02/25 CHANGE END ---------------------------------------
                  MOVE    ZERO                   TO   IDX-MAX
                  MOVE    SUM-SRYKANAME(IDX4)    TO   S139N-SRYKANAME
                ELSE
@@ -2499,23 +1877,6 @@
                END-IF
              END-PERFORM
            END-IF
-      *
-      *--- 2009/02/25 DELETE START -------------------------------------
-      *--- 2008/11/06  ADD  START --------------------------------------
-      *     IF   SYS-2009-SYUKA-KBN = 1
-      *       MOVE    1               TO    IDX4
-      *       MOVE    SUM-SRYKAMAX    TO    IDX-MAX
-      *       PERFORM  UNTIL   IDX4   >   IDX-MAX
-      *         IF  S139TMP-SRYKA   =   SUM-SRYKA(IDX4)
-      *           MOVE    ZERO                   TO    IDX-MAX
-      *           MOVE    SUM-SRYKANAME(IDX4)    TO    S139-SRYKANAME
-      *         ELSE
-      *           ADD     1                      TO    IDX4
-      *         END-IF
-      *       END-PERFORM
-      *     END-IF
-      *--- 2008/11/06  ADD  END ----------------------------------------
-      *--- 2009/02/25 DELETE END -------------------------------------
       *
            MOVE    WRK-SRYYM        TO   S139N-SRYYM
            MOVE    WRK-SEIYMD       TO   S139N-SYSYMD
@@ -2531,12 +1892,8 @@
       *
            PERFORM    VARYING  IDX1  FROM  2  BY  1
                       UNTIL    IDX1  >     2
-      * 20080423 H20年4月改正対応START tanaka
-      *       PERFORM  VARYING  IDX2  FROM  1  BY  1
-      *                UNTIL    IDX2  >     16
              PERFORM  VARYING  IDX2  FROM  1  BY  1
                       UNTIL    IDX2  >     18
-      * 20080423 H20年4月改正対応END
       *
       *    件数
                MOVE     S139TMP-KENSU(IDX1 IDX2)    TO    WRK-Z4
@@ -2550,19 +1907,13 @@
                MOVE     S139TMP-TENSU(IDX1 IDX2)    TO    WRK-Z92
                MOVE     WRK-Z92          TO    S139-TENSU(1 IDX2)
       *
-      *--- (2008/12/26) line change start monma ------------------------
       *    窓口請求額
-      *         MOVE     S139TMP-MADOGK(IDX1 IDX2)   TO    WRK-Z92
-      *         MOVE     WRK-Z92          TO    S139-MADOGK(1 IDX2)
                MOVE     S139TMP-MADOGK(IDX1 IDX2)   TO    WRK-Z93
                MOVE     WRK-Z93          TO    S139-MADOGK(1 IDX2)
-      *--- (2008/12/26) line change end   monma ------------------------
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費
                MOVE     S139TMP-JIHIGK(IDX1 IDX2)   TO    WRK-Z92
                MOVE     WRK-Z92          TO    S139-JIHIGK(1 IDX2)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額
                MOVE     S139TMP-HKNGK(IDX1 IDX2)    TO    WRK-Z92
@@ -2578,12 +1929,8 @@
              END-PERFORM
       *
       *    小計
-      * 20080423 H20年4月改正対応START tanaka
-      *       PERFORM  VARYING  IDX2  FROM  1  BY  1
-      *                UNTIL    IDX2  >     4
              PERFORM  VARYING  IDX2  FROM  1  BY  1
                       UNTIL    IDX2  >     5
-      * 20080423 H20年4月改正対応END
       *
       *    件数
                MOVE     S139TMP-S-KENSU(IDX1 IDX2)    TO    WRK-Z4
@@ -2597,19 +1944,13 @@
                MOVE     S139TMP-S-TENSU(IDX1 IDX2)    TO    WRK-Z92
                MOVE     WRK-Z92      TO    S139-S-TENSU(1 IDX2)
       *
-      *--- (2008/12/26) line change start monma ------------------------
       *    窓口請求額
-      *         MOVE     S139TMP-S-MADOGK(IDX1 IDX2)   TO    WRK-Z92
-      *         MOVE     WRK-Z92      TO    S139-S-MADOGK(1 IDX2)
                MOVE     S139TMP-S-MADOGK(IDX1 IDX2)   TO    WRK-Z93
                MOVE     WRK-Z93      TO    S139-S-MADOGK(1 IDX2)
-      *--- (2008/12/26) line change end   monma ------------------------
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費
                MOVE     S139TMP-S-JIHIGK(IDX1 IDX2)   TO    WRK-Z92
                MOVE     WRK-Z92      TO    S139-S-JIHIGK(1 IDX2)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額
                MOVE     S139TMP-S-HKNGK(IDX1 IDX2)    TO    WRK-Z92
@@ -2624,13 +1965,9 @@
                MOVE     WRK-Z92      TO    S139-S-SYUEKI(1 IDX2)
       *
              END-PERFORM
-      * 20080423 H20年4月改正対応START tanaka
-      *       PERFORM  VARYING  IDX2  FROM  1  BY  1
-      *                UNTIL    IDX2  >     4
              PERFORM  VARYING  IDX2  FROM  1  BY  1
                       UNTIL    IDX2  >     5
       *    自費・労災・自賠・公害
-      * 20080423 H20年4月改正対応END
       *    件数
                MOVE     S139TMP-ETC-KENSU(IDX1 IDX2)    TO    WRK-Z4
                MOVE     WRK-Z4       TO    S139-ETC-KENSU(1 IDX2)
@@ -2643,19 +1980,13 @@
                MOVE     S139TMP-ETC-TENSU(IDX1 IDX2)    TO    WRK-Z92
                MOVE     WRK-Z92      TO    S139-ETC-TENSU(1 IDX2)
       *
-      *--- (2008/12/26) line change start monma ------------------------
       *    窓口請求額
-      *         MOVE   S139TMP-ETC-MADOGK(IDX1 IDX2)   TO  WRK-Z92
-      *         MOVE   WRK-Z92    TO    S139-ETC-MADOGK(1 IDX2)
                MOVE   S139TMP-ETC-MADOGK(IDX1 IDX2)   TO  WRK-Z93
                MOVE   WRK-Z93    TO    S139-ETC-MADOGK(1 IDX2)
-      *--- (2008/12/26) line change end   monma ------------------------
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費
                MOVE   S139TMP-ETC-JIHIGK(IDX1 IDX2)   TO  WRK-Z92
                MOVE   WRK-Z92    TO    S139-ETC-JIHIGK(1 IDX2)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額
                MOVE   S139TMP-ETC-HKNGK(IDX1 IDX2)    TO  WRK-Z92
@@ -2668,12 +1999,8 @@
            END-PERFORM
       *
       *    総合計
-      * 20080423 H20年4月改正対応START tanaka
-      *     PERFORM  VARYING  IDX3   FROM  1  BY  1
-      *              UNTIL    IDX3   >     5
            PERFORM  VARYING  IDX3   FROM  1  BY  1
                     UNTIL    IDX3   >     6
-      * 20080423 H20年4月改正対応END
       *
       *    件数
                MOVE     S139TMP-GKENSU(IDX3)    TO    WRK-Z4
@@ -2687,19 +2014,13 @@
                MOVE     S139TMP-GTENSU(IDX3)    TO    WRK-Z92
                MOVE     WRK-Z92          TO    S139-GTENSU(IDX3)
       *
-      *--- (2008/12/26) line change start monma ------------------------
       *    窓口請求額
-      *         MOVE     S139TMP-GMADOGK(IDX3)   TO    WRK-Z92
-      *         MOVE     WRK-Z92          TO    S139-GMADOGK(IDX3)
                MOVE     S139TMP-GMADOGK(IDX3)   TO    WRK-Z93
                MOVE     WRK-Z93          TO    S139-GMADOGK(IDX3)
-      *--- (2008/12/26) line change end   monma ------------------------
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費
                MOVE     S139TMP-GJIHIGK(IDX3)   TO    WRK-Z92
                MOVE     WRK-Z92          TO    S139-GJIHIGK(IDX3)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額
                MOVE     S139TMP-GHKNGK(IDX3)    TO    WRK-Z92
@@ -2712,14 +2033,11 @@
       *    医療収益
                MOVE     S139TMP-GSYUEKI(IDX3)   TO    WRK-Z92
                MOVE     WRK-Z92          TO    S139-GSYUEKI(IDX3)
-      ***  食事療養
+      *
+      *    食事療養
       *    日数
-      *--- 2009/08/20 CHANGE START -------------------------------------
-      *         MOVE     S139TMP-SGNISSU(IDX3)   TO    WRK-Z4
-      *         MOVE     WRK-Z4       TO    S139-SGNISSU(IDX3)
                MOVE     S139TMP-SGNISSU(IDX3)   TO    WRK-Z52
                MOVE     WRK-Z52       TO    S139-SGNISSU(IDX3)
-      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    請求額
                MOVE     S139TMP-SGSEIKYU(IDX3)  TO    WRK-Z92
@@ -2729,7 +2047,7 @@
                MOVE     S139TMP-SGFTNGK(IDX3)   TO    WRK-Z92
                MOVE     WRK-Z92      TO    S139-SGFTNGK(IDX3)
            END-PERFORM
-      *     
+      *
            .
        3203-BODY-HEN-EXT.
            EXIT.
@@ -2741,12 +2059,8 @@
       *
            PERFORM    VARYING  IDX1  FROM  1  BY  1
                       UNTIL    IDX1  >     1
-      * 20080423 H20年4月改正対応START tanaka
-      *       PERFORM  VARYING  IDX2  FROM  1  BY  1
-      *                UNTIL    IDX2  >     16
              PERFORM  VARYING  IDX2  FROM  1  BY  1
                       UNTIL    IDX2  >     18
-      * 20080423 H20年4月改正対応END
       *
       *    件数
                MOVE     S139TMP-KENSU(IDX1 IDX2)    TO    WRK-Z4
@@ -2760,19 +2074,13 @@
                MOVE     S139TMP-TENSU(IDX1 IDX2)    TO    WRK-Z92
                MOVE     WRK-Z92          TO    S139N-TENSU(IDX1 IDX2)
       *
-      *--- (2008/12/26) line change start monma ------------------------
       *    窓口請求額
-      *         MOVE     S139TMP-MADOGK(IDX1 IDX2)   TO    WRK-Z92
-      *         MOVE     WRK-Z92          TO    S139N-MADOGK(IDX1 IDX2)
                MOVE     S139TMP-MADOGK(IDX1 IDX2)   TO    WRK-Z93
                MOVE     WRK-Z93          TO    S139N-MADOGK(IDX1 IDX2)
-      *--- (2008/12/26) line change end   monma ------------------------
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費
                MOVE     S139TMP-JIHIGK(IDX1 IDX2)   TO    WRK-Z92
                MOVE     WRK-Z92          TO    S139N-JIHIGK(IDX1 IDX2)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額
                MOVE     S139TMP-HKNGK(IDX1 IDX2)    TO    WRK-Z92
@@ -2785,14 +2093,11 @@
       *    医療収益
                MOVE     S139TMP-SYUEKI(IDX1 IDX2)   TO    WRK-Z92
                MOVE     WRK-Z92          TO    S139N-SYUEKI(IDX1 IDX2)
-      ***  食事療養
+      *
+      *    食事療養
       *    日数
-      *--- 2009/08/20 CHANGE START -------------------------------------
-      *         MOVE     S139TMP-SNISSU(IDX1 IDX2)    TO    WRK-Z4
-      *         MOVE     WRK-Z4           TO    S139N-SNISSU(IDX1 IDX2)
                MOVE     S139TMP-SNISSU(IDX1 IDX2)    TO    WRK-Z52
                MOVE     WRK-Z52           TO    S139N-SNISSU(IDX1 IDX2)
-      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    請求額
                MOVE     S139TMP-SSEIKYU(IDX1 IDX2)   TO    WRK-Z92
@@ -2804,12 +2109,8 @@
              END-PERFORM
       *
       *    小計
-      * 20080423 H20年4月改正対応START tanaka
-      *       PERFORM  VARYING  IDX2  FROM  1  BY  1
-      *                UNTIL    IDX2  >     4
              PERFORM  VARYING  IDX2  FROM  1  BY  1
                       UNTIL    IDX2  >     5
-      * 20080423 H20年4月改正対応END
       *
       *    件数
                MOVE     S139TMP-S-KENSU(IDX1 IDX2)    TO    WRK-Z4
@@ -2823,19 +2124,13 @@
                MOVE     S139TMP-S-TENSU(IDX1 IDX2)    TO    WRK-Z92
                MOVE     WRK-Z92      TO    S139N-S-TENSU(IDX1 IDX2)
       *
-      *--- (2008/12/26) line change start monma ------------------------
       *    窓口請求額
-      *         MOVE     S139TMP-S-MADOGK(IDX1 IDX2)   TO    WRK-Z92
-      *         MOVE     WRK-Z92      TO    S139N-S-MADOGK(IDX1 IDX2)
                MOVE     S139TMP-S-MADOGK(IDX1 IDX2)   TO    WRK-Z93
                MOVE     WRK-Z93      TO    S139N-S-MADOGK(IDX1 IDX2)
-      *--- (2008/12/26) line change end   monma ------------------------
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費
                MOVE     S139TMP-S-JIHIGK(IDX1 IDX2)   TO    WRK-Z92
                MOVE     WRK-Z92      TO    S139N-S-JIHIGK(IDX1 IDX2)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額
                MOVE     S139TMP-S-HKNGK(IDX1 IDX2)    TO    WRK-Z92
@@ -2848,14 +2143,11 @@
       *    医療収益
                MOVE     S139TMP-S-SYUEKI(IDX1 IDX2)   TO    WRK-Z92
                MOVE     WRK-Z92      TO    S139N-S-SYUEKI(IDX1 IDX2)
-      ***  食事療養
+      *
+      *    食事療養
       *    日数
-      *--- 2009/08/20 CHANGE START -------------------------------------
-      *         MOVE     S139TMP-S-SNISSU(IDX1 IDX2)    TO    WRK-Z4
-      *         MOVE     WRK-Z4       TO    S139N-S-SNISSU(IDX1 IDX2)
                MOVE     S139TMP-S-SNISSU(IDX1 IDX2)    TO    WRK-Z52
                MOVE     WRK-Z52       TO    S139N-S-SNISSU(IDX1 IDX2)
-      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    請求額
                MOVE     S139TMP-S-SSEIKYU(IDX1 IDX2)   TO    WRK-Z92
@@ -2865,13 +2157,11 @@
                MOVE     S139TMP-S-SFTNGK(IDX1 IDX2)    TO    WRK-Z92
                MOVE     WRK-Z92      TO    S139N-S-SFTNGK(IDX1 IDX2)
       *
-      *         
-      * 20080423 H20年4月改正対応START tanaka
+      *
              END-PERFORM
              PERFORM  VARYING  IDX2  FROM  1  BY  1
                       UNTIL    IDX2  >     5
       *    自費・労災・自賠・公害
-      * 20080310 公害保険対応END
       *    件数
                MOVE     S139TMP-ETC-KENSU(IDX1 IDX2)    TO    WRK-Z4
                MOVE     WRK-Z4       TO    S139N-ETC-KENSU(IDX1 IDX2)
@@ -2884,19 +2174,13 @@
                MOVE     S139TMP-ETC-TENSU(IDX1 IDX2)    TO    WRK-Z92
                MOVE     WRK-Z92      TO    S139N-ETC-TENSU(IDX1 IDX2)
       *
-      *--- (2008/12/26) line change start monma ------------------------
       *    窓口請求額
-      *         MOVE   S139TMP-ETC-MADOGK(IDX1 IDX2)   TO  WRK-Z92
-      *         MOVE   WRK-Z92    TO    S139N-ETC-MADOGK(IDX1 IDX2)
                MOVE   S139TMP-ETC-MADOGK(IDX1 IDX2)   TO  WRK-Z93
                MOVE   WRK-Z93    TO    S139N-ETC-MADOGK(IDX1 IDX2)
-      *--- (2008/12/26) line change end   monma ------------------------
       *
-      *--- (2008/12/18) line add start monma ---------------------------
       *    自費
                MOVE   S139TMP-ETC-JIHIGK(IDX1 IDX2)   TO  WRK-Z92
                MOVE   WRK-Z92    TO    S139N-ETC-JIHIGK(IDX1 IDX2)
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
       *    保険請求額
                MOVE   S139TMP-ETC-HKNGK(IDX1 IDX2)    TO  WRK-Z92
@@ -2905,14 +2189,11 @@
       *    医療収益
                MOVE   S139TMP-ETC-SYUEKI(IDX1 IDX2)   TO  WRK-Z92
                MOVE   WRK-Z92    TO    S139N-ETC-SYUEKI(IDX1 IDX2)
-      ***  食事療養
+      *
+      *    食事療養
       *    日数
-      *--- 2009/08/20 CHANGE START -------------------------------------
-      *         MOVE     S139TMP-ETC-SNISSU(IDX1 IDX2)    TO    WRK-Z4
-      *         MOVE     WRK-Z4       TO    S139N-ETC-SNISSU(IDX1 IDX2)
                MOVE     S139TMP-ETC-SNISSU(IDX1 IDX2)    TO    WRK-Z52
                MOVE     WRK-Z52       TO    S139N-ETC-SNISSU(IDX1 IDX2)
-      *--- 2009/08/20 CHANGE END ---------------------------------------
       *
       *    請求額
                MOVE     S139TMP-ETC-SSEIKYU(IDX1 IDX2)   TO    WRK-Z92
@@ -2924,39 +2205,6 @@
              END-PERFORM
            END-PERFORM
       *
-      ****    総合計
-      ***     PERFORM  VARYING  IDX3   FROM  1  BY  1
-      ***              UNTIL    IDX3   >     5
-      *
-      *    件数
-      ***         MOVE     S139TMP-GKENSU(IDX3)    TO    WRK-Z4
-      ***         MOVE     WRK-Z4           TO    S139N-GKENSU(IDX3)
-      *
-      *    日数
-      ***         MOVE     S139TMP-GNISSU(IDX3)    TO    WRK-Z4
-      ***         MOVE     WRK-Z4           TO    S139N-GNISSU(IDX3)
-      *
-      *    点数
-      ***         MOVE     S139TMP-GTENSU(IDX3)    TO    WRK-Z92
-      ***         MOVE     WRK-Z92          TO    S139N-GTENSU(IDX3)
-      *
-      *    窓口請求額
-      ***         MOVE     S139TMP-GMADOGK(IDX3)   TO    WRK-Z92
-      ***         MOVE     WRK-Z92          TO    S139N-GMADOGK(IDX3)
-      *
-      *    保険請求額
-      ***         MOVE     S139TMP-GHKNGK(IDX3)    TO    WRK-Z92
-      ***         MOVE     WRK-Z92          TO    S139N-GHKNGK(IDX3)
-      *
-      *    公費請求額
-      ***         MOVE     S139TMP-GKOHGK(IDX3)   TO    WRK-Z92
-      ***         MOVE     WRK-Z92          TO    S139N-GKOHGK(IDX3)
-      *
-      *    医療収益
-      ***         MOVE     S139TMP-GSYUEKI(IDX3)   TO    WRK-Z92
-      ***         MOVE     WRK-Z92          TO    S139N-GSYUEKI(IDX3)
-      ***     END-PERFORM
-      *     
            .
        3204-BODY-HEN-EXT.
            EXIT.
@@ -2966,7 +2214,7 @@
       *****************************************************************
        330-PRINT-OUT-SEC         SECTION.
       *
-      * 
+      *
            INITIALIZE                          ORCSPRTAREA
            MOVE    "INS"                       TO   SPRT-MODE
            MOVE    S100LNK-PRTKANRI-RENNUM     TO   SPRT-RENNUM
@@ -2977,39 +2225,25 @@
            MOVE    S100LNK-PRTKANRI-SHELLID    TO   SPRT-SHELLID
            MOVE    S100LNK-PRTKANRI-SHORI-RENNUM  TO   SPRT-SHORI-RENNUM
            MOVE    S100LNK-PRTKANRI-PRIORITY      TO   SPRT-PRIORITY
-      ***  20040917 MOTOHASI MONPEに変更
-      ***     MOVE    "A00000S139"        TO  SPRT-PRTID
-      * 20080423 H20年4月改正対応START tanaka
-      *     MOVE    "A00000S139.red"        TO  SPRT-PRTID
-      * 20080512 返戻が正しく印字されない不具合を修正START tanaka
-      *     IF S100LNK-YM < "200804"
            IF    S139TMP-SRYYMKBN   =  "0"
              MOVE    "A00000S139O.red"        TO   SPRT-PRTID
            ELSE
              MOVE    "A00000S139.red"         TO   SPRT-PRTID
            END-IF
-      * 20080512 返戻が正しく印字されない不具合を修正END
-      * 20080423 H20年4月改正対応END
-      ***  20040917 MOTOHASI MONPEに変更
            MOVE    S100LNK-SPRT-TITLE         TO   SPRT-TITLE
            MOVE    S139                       TO   SPRT-PRTDATA
            MOVE    S100LNK-PRTKANRI-TERMID    TO   SPRT-TERMID
            MOVE    S100LNK-PRTKANRI-OPID      TO   SPRT-OPID
            MOVE    S100LNK-PRTKANRI-PRTNM     TO   SPRT-PRTNM
-      ***** site-libで動かすためにコメントアウト
-      ***     MOVE    "1"          TO  SPRT-SITEKBN
-      *****
            CALL    "ORCSPRT"                  USING
                                               ORCSPRTAREA
-      ***07/09/20 nagaya 4.0対応 start
                                               SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
-           IF  SPRT-RETURN         =   ZERO
+           IF  SPRT-RETURN   =   ZERO
                CONTINUE
            ELSE
              MOVE    "印刷ＤＢに更新できませんでした"   TO  WRK-RECEERR
-	         PERFORM 500-ERR-HENSYU-SEC
-	       END-IF
+             PERFORM 500-ERR-HENSYU-SEC
+           END-IF
            .
        330-PRINT-OUT-EXT.
            EXIT.
@@ -3019,7 +2253,7 @@
       *****************************************************************
        340-PRINT-OUT-SEC         SECTION.
       *
-      * 
+      *
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"                       TO   SPRT-MODE
            MOVE    S100LNK-PRTKANRI-RENNUM     TO   SPRT-RENNUM
@@ -3031,40 +2265,26 @@
            MOVE    S100LNK-PRTKANRI-SHORI-RENNUM
                                        TO  SPRT-SHORI-RENNUM
            MOVE    S100LNK-PRTKANRI-PRIORITY   TO   SPRT-PRIORITY
-      ***  20040917 MOTOHASI MONPEに変更
-      ***     MOVE    "A00000S139N"        TO  SPRT-PRTID
-      * 20080423 H20年4月改正対応START tanaka
-      *     MOVE    "A00000S139N.red"        TO  SPRT-PRTID
-      * 20080512 返戻が正しく印字されない不具合を修正START tanaka
-      *     IF S100LNK-YM < "200804"
            IF S139TMP-SRYYMKBN  =  "0"
              MOVE    "A00000S139NO.red"        TO   SPRT-PRTID
            ELSE
              MOVE    "A00000S139N.red"         TO   SPRT-PRTID
            END-IF
-      * 20080512 返戻が正しく印字されない不具合を修正END
-      * 20080423 H20年4月改正対応END
-      ***  20040917 MOTOHASI MONPEに変更
            MOVE    S100LNK-SPRT-TITLE          TO   SPRT-TITLE
            MOVE    S139N                       TO   SPRT-PRTDATA
            MOVE    S100LNK-PRTKANRI-TERMID     TO   SPRT-TERMID
            MOVE    S100LNK-PRTKANRI-OPID       TO   SPRT-OPID
            MOVE    S100LNK-PRTKANRI-PRTNM      TO   SPRT-PRTNM
-      ***** site-libで動かすためにコメントアウト
-      ***     MOVE    "1"          TO  SPRT-SITEKBN
-      *****
            CALL    "ORCSPRT"           USING
                                        ORCSPRTAREA
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF  SPRT-RETURN   =   ZERO
-             CONTINUE             
+             CONTINUE
            ELSE
              MOVE    "印刷ＤＢに更新できませんでした"
                                      TO  WRK-RECEERR
              PERFORM 500-ERR-HENSYU-SEC
-	       END-IF
+           END-IF
            .
        340-PRINT-OUT-EXT.
            EXIT.
@@ -3074,48 +2294,21 @@
       *****************************************************************
        900-SYSKANRI-INV-SEC         SECTION.
       *
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    S100LNK-PRTKANRI-SKYYMD     TO  ORC-DBYMD
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    "DBSELECT"          TO  MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
-      * 20080922 労災自賠医療機関情報が読み込めない不具合を修正START
-      *     MOVE    "key"               TO  MCP-PATHNAME
            MOVE    "key10"               TO  MCP-PATHNAME
-      * 20080922 労災自賠医療機関情報が読み込めない不具合を修正END
            CALL    "ORCDBMAIN"         USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC   =   ZERO
              MOVE    "DBFETCH"           TO  MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *         MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"          USING
              MOVE    "tbl_syskanri"      TO  MCP-TABLE
-      * 20080922 労災自賠医療機関情報が読み込めない不具合を修正START
-      *         MOVE    "key"               TO  MCP-PATHNAME
              MOVE    "key10"             TO  MCP-PATHNAME
-      * 20080922 労災自賠医療機関情報が読み込めない不具合を修正END
              CALL    "ORCDBMAIN"         USING
-      ***07/09/20 nagaya 4.0対応 end
                                          MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                      ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                          MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                          SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
              IF   MCP-RC    =   ZERO
                MOVE    ZERO       TO   FLG-SYSKANRI
              ELSE
@@ -3125,28 +2318,13 @@
              MOVE    1            TO   FLG-SYSKANRI
            END-IF
       *
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_syskanri"      TO   MCP-TABLE
-      * 20080922 労災自賠医療機関情報が読み込めない不具合を修正START
-      *     MOVE    "key"               TO  MCP-PATHNAME
            MOVE    "key10"             TO   MCP-PATHNAME
-      * 20080922 労災自賠医療機関情報が読み込めない不具合を修正END
            CALL    "ORCDBMAIN"         USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
       *
            .
        900-SYSKANRI-INV-EXT.
@@ -3157,33 +2335,18 @@
       *****************************************************************
        820-SYSKANRI-DBSELECT-SEC                 SECTION.
       *
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    WRK-SYMD              TO  ORC-DBYMD
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    SYS-1005-REC          TO   MCPDATA-REC
            MOVE    "DBSELECT"            TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_syskanri"        TO   MCP-TABLE
            MOVE    "key2"                TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
-      ***07/09/20 nagaya 4.0対応 end
                                          MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                          MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                          SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF  MCP-RC   =   ZERO
              PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
              MOVE    1           TO    FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/09/17) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/17) end
            END-IF
            .
        820-SYSKANRI-DBSELECT-EXT.
@@ -3195,29 +2358,17 @@
        820-SYSKANRI-DBFETCH-SEC                SECTION.
       *
            MOVE    "DBFETCH"            TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY2"      TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"         USING
            MOVE    "tbl_syskanri"       TO   MCP-TABLE
            MOVE    "key2"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC   =   ZERO
              MOVE    ZERO               TO   FLG-SYSKANRI3
              MOVE    MCPDATA-REC        TO   SYS-1005-REC
            ELSE
              MOVE    1                  TO   FLG-SYSKANRI3
-      *=== sarge対応 DEL By Takashima(2006/09/17) start
-      *         PERFORM 820-SYSKANRI-DBCLOSE-SEC
-      *=== sarge対応 DEL By Takashima(2006/09/17) end
            END-IF
            .
        820-SYSKANRI-DBFETCH-EXT.
@@ -3228,25 +2379,13 @@
       *****************************************************************
        820-SYSKANRI-DBCLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE  "DBCLOSE"                TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"        TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY2"  TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE  "tbl_syskanri"         TO   MCP-TABLE
            MOVE  "key2"                 TO   MCP-PATHNAME
            CALL  "ORCDBMAIN"            USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            .
        820-SYSKANRI-DBCLOSE-EXT.
            EXIT.
@@ -3278,7 +2417,7 @@
            INITIALIZE                  LNK-DAY7-AREA
            MOVE    "71"                TO   LNK-DAY7-IRAI
            MOVE    WRK-SYMD            TO   LNK-DAY7-YM
-           CALL    "ORCSDAY"           USING 
+           CALL    "ORCSDAY"           USING
                                        STS-AREA-DAY
                                        LNK-DAY7-AREA
            MOVE    LNK-DAY7-KOYOMI    TO   WRK-SYMD
@@ -3304,9 +2443,7 @@
       *    ジョブ終了処理
              MOVE    "JBE"             TO   SJOBKANRI-MODE
              INITIALIZE                  JOBKANRI-REC
-      ***07/09/20 nagaya 4.0対応 start
              MOVE    SPA-HOSPNUM       TO   JOB-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
              MOVE    S100LNK-JOBID     TO   JOB-JOBID
              MOVE    S100LNK-SHELLID   TO   JOB-SHELLID
              MOVE    WRK-RECEERR       TO   JOB-YOBI
@@ -3314,9 +2451,7 @@
              CALL    "ORCSJOB"         USING
                                        ORCSJOBKANRIAREA
                                        JOBKANRI-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            END-IF
       *
            MOVE    1        TO    FLG-END
@@ -3345,42 +2480,21 @@
       *****************************************************************^M
        800-SYSKANRI-READ-SEC           SECTION.
       *
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    WRK-SYSYMD          TO  ORC-DBYMD
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    "DBSELECT"          TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "SYSKANRI-KEY10"      TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"         USING
            MOVE    "tbl_syskanri"      TO   MCP-TABLE
            MOVE    "key10"             TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC   =   ZERO
              MOVE    "DBFETCH"         TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *          MOVE    "SYSKANRI-KEY10"      TO  ORC-DBPATH
-      *          CALL    "ORCMCPSUB"          USING
              MOVE    "tbl_syskanri"    TO   MCP-TABLE
              MOVE    "key10"           TO   MCP-PATHNAME
              CALL    "ORCDBMAIN"       USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
              IF   MCP-RC   =   ZERO
                MOVE    ZERO            TO   FLG-SYSKANRI
              ELSE
@@ -3390,25 +2504,13 @@
              MOVE    1                 TO   FLG-SYSKANRI
            END-IF
       *
-      *=== sarge対応 Takashima(2006/08/09)
-      *      MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *      MOVE    "SYSKANRI-KEY10"      TO  ORC-DBPATH
-      *      CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_syskanri"      TO   MCP-TABLE
            MOVE    "key10"             TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                   ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
       *
             .
        800-SYSKANRI-READ-EXT.
@@ -3422,42 +2524,29 @@
            READ  S139TMP-FILE   NEXT
              AT  END
                MOVE    1    TO   FLG-PRINT
-             NOT AT END
+             NOT  AT  END
                ADD     1    TO   CNT-READ
            END-READ
            .
        900-TMP-READ-EXT.
            EXIT.
-      *      
+      *
       *****************************************************************
       *    請求管理読込
       *****************************************************************
        900-SEIKYU-SELECT-SEC             SECTION.
-      
+      *
       *    請求管理ＤＢ検索
            INITIALIZE                  RECE10-REC
       *
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE   WRK-PARA-HOSPID      TO    RECE10-HOSPID.
            MOVE   WRK-PARA-HOSPNUM     TO   RECE10-HOSPNUM.
            MOVE   "0"                  TO   RECE10-XXSTHKNJANUM
            MOVE   "9999999"            TO   RECE10-XXEDHKNJANUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE   WRK-PARA-SRYYM       TO   RECE10-SKYYM.
            MOVE   WRK-PARA-NYUGAIKBN   TO   RECE10-NYUGAIKBN.
            MOVE    RECE10-REC          TO   MCPDATA-REC
            MOVE    "DBSELECT"          TO   MCP-FUNC
-      *     MOVE    "SEIKYU-KEY4"       TO  ORC-DBPATH
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    WRK-PATH            TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_seikyu"        TO   MCP-TABLE
-      * 20080423 H20年4月改正対応START tanaka
-      *     IF WRK-PATH = "SEIKYU-KEY4"
-      *           MOVE    "key4"        TO  MCP-PATHNAME
-      *     ELSE
-      *           MOVE    "key3"        TO  MCP-PATHNAME
-      *     END-IF
            EVALUATE  WRK-PATH
              WHEN  "SEIKYU-KEY4"
                MOVE    "key4"          TO   MCP-PATHNAME
@@ -3466,17 +2555,11 @@
              WHEN  "SEIKYU-ALL"
                MOVE    "all"           TO   MCP-PATHNAME
            END-EVALUATE
-      * 20080423 H20年4月改正対応END
            CALL    "ORCDBMAIN"         USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
+      *
            IF   MCP-RC   =   ZERO
              PERFORM 900-SEIKYU-READ-SEC
            ELSE
@@ -3489,21 +2572,9 @@
       *    請求マスター読込
       *****************************************************************
        900-SEIKYU-READ-SEC           SECTION.
-      
-      *     MOVE    "SEIKYU-KEY4"       TO  ORC-DBPATH
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    WRK-PATH            TO  ORC-DBPATH
-      ***07/09/20 nagaya 4.0対応 end
+      *
            MOVE    "DBFETCH"            TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_seikyu"         TO   MCP-TABLE
-      * 20080423 H20年4月改正対応START tanaka
-      *     IF WRK-PATH = "SEIKYU-KEY4"
-      *           MOVE    "key4"        TO  MCP-PATHNAME
-      *     ELSE
-      *           MOVE    "key3"        TO  MCP-PATHNAME
-      *     END-IF
            EVALUATE  WRK-PATH
              WHEN  "SEIKYU-KEY4"
                MOVE    "key4"         TO   MCP-PATHNAME
@@ -3512,42 +2583,28 @@
              WHEN  "SEIKYU-ALL"
                MOVE    "all"          TO   MCP-PATHNAME
            END-EVALUATE
-      * 20080423 H20年4月改正対応END
            CALL    "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                       SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
+      *
            IF   MCP-RC    =   ZERO
              MOVE    ZERO             TO   FLG-END
              MOVE    MCPDATA-REC      TO   RECE10-REC
-      
+      *
       *    テスト患者のときは読み飛ばす
              MOVE    SPACE            TO   PTINF-REC
              INITIALIZE               PTINF-REC
-      *=== テスト患者の判定修正 Uchida(2007/05/08)
-      *         MOVE    RECE10-HOSPID       TO  PTINF-HOSPID
-      *         MOVE    RECE10-PTID         TO  PTINF-PTID
-      *         MOVE    PTINF-REC           TO  MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
-      *         MOVE    RECE10-HOSPID       TO  WRK-PARA-HOSPID
              MOVE    RECE10-HOSPNUM      TO  WRK-PARA-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
              MOVE    RECE10-PTID         TO  WRK-PTID
-      *=== テスト患者の判定修正 Uchida(2007/05/08)
              PERFORM 900-PTINF-READ-SEC
              IF      FLG-PTINF           =   ZERO
                  AND     PTINF-TSTPTNUMKBN   =   "1"
                GO  TO  900-SEIKYU-READ-SEC
              END-IF
-      **    ０９１と０５１を同じ公費として扱う
+      *    ０９１と０５１を同じ公費として扱う
              PERFORM  VARYING  IDX5  FROM  1  BY  1
-                      UNTIL    IDX5  >  4  
+                      UNTIL    IDX5  >  4
                       OR   RECE10-KOHNUM(IDX5)  =  SPACE
                IF    RECE10-KOHNUM(IDX5)  =  "091"
                  MOVE    "051"      TO   RECE10-KOHNUM(IDX5)
@@ -3565,21 +2622,8 @@
       *****************************************************************
        900-SEIKYU-CLOSE-SEC                 SECTION.
       *
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE    "SEIKYU-KEY4"       TO  ORC-DBPATH
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    WRK-PATH            TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_seikyu"        TO   MCP-TABLE
-      * 20080423 H20年4月改正対応START tanaka
-      *     IF WRK-PATH = "SEIKYU-KEY4"
-      *           MOVE    "key4"        TO  MCP-PATHNAME
-      *     ELSE
-      *           MOVE    "key3"        TO  MCP-PATHNAME
-      *     END-IF
            EVALUATE  WRK-PATH
              WHEN  "SEIKYU-KEY4"
                MOVE    "key4"          TO   MCP-PATHNAME
@@ -3588,17 +2632,10 @@
              WHEN  "SEIKYU-ALL"
                MOVE    "all"           TO   MCP-PATHNAME
            END-EVALUATE
-      * 20080423 H20年4月改正対応END
            CALL    "ORCDBMAIN"         USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            .
        900-SEIKYU-CLOSE-EXT.
            EXIT.
@@ -3609,45 +2646,25 @@
        900-PTINF-READ-SEC         SECTION.
       *
            INITIALIZE                      PTINF-REC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    WRK-PARA-HOSPID     TO  PTINF-HOSPID
            MOVE    WRK-PARA-HOSPNUM    TO   PTINF-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    WRK-PTID            TO   PTINF-PTID
            MOVE    PTINF-REC           TO   MCPDATA-REC
            MOVE    "DBSELECT"          TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_ptinf"         TO   MCP-TABLE
            MOVE    "key"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
+      *
            IF   MCP-RC   =   ZERO
              MOVE    "DBFETCH"         TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *         MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *         CALL    "ORCMCPSUB"         USING
              MOVE    "tbl_ptinf"       TO   MCP-TABLE
              MOVE    "key"             TO   MCP-PATHNAME
             CALL    "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
              IF   MCP-RC   =   ZERO
                MOVE    MCPDATA-REC     TO   PTINF-REC
                MOVE    ZERO            TO   FLG-PTINF
@@ -3660,26 +2677,13 @@
              INITIALIZE                PTINF-REC
            END-IF
       *
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE    "DBCLOSE"           TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "PTINF-KEY"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_ptinf"         TO   MCP-TABLE
            MOVE    "key"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
-      *
       *
            .
        900-PTINF-READ-EXT.
@@ -3691,30 +2695,18 @@
        920-DBSELECT3-SEC                 SECTION.
       *
            INITIALIZE                    JYURRK-REC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    WRK-PARA-HOSPID   TO  JYURRK-HOSPID
            MOVE    WRK-PARA-HOSPNUM     TO   JYURRK-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    WRK-NYUGAIKBN        TO   JYURRK-NYUGAIKBN
            MOVE    WRK-PARA-PRTSYMD     TO   JYURRK-SRYYMD
            MOVE    WRK-PARA-PRTLYMD     TO   JYURRK-UPSRYYMD
            MOVE    JYURRK-REC           TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "JYURRK-KEY21"    TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"          USING
            MOVE    "tbl_jyurrk"         TO   MCP-TABLE
            MOVE    "key21"              TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC   =   ZERO
              PERFORM 920-DBFETCH3-SEC
            ELSE
@@ -3730,21 +2722,12 @@
        920-DBFETCH3-SEC                SECTION.
       *
            MOVE    "DBFETCH"          TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "JYURRK-KEY21"    TO  ORC-DBPATH
-      *     CALL     "ORCMCPSUB"          USING
            MOVE    "tbl_jyurrk"       TO   MCP-TABLE
            MOVE    "key21"            TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                       SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF    MCP-RC   =   ZERO
              MOVE    ZERO            TO   FLG-JYURRK
              MOVE    MCPDATA-REC  TO  JYURRK-REC
@@ -3759,7 +2742,7 @@
       *
            ELSE
              MOVE    1            TO  FLG-JYURRK
-           END-IF  
+           END-IF
            .
        920-DBFETCH3-EXT.
            EXIT.
@@ -3769,30 +2752,17 @@
       *****************************************************************
        920-DBCLOSE3-SEC                 SECTION.
       *
-      *=== sarge対応 Takashima(2006/08/09)
-      *      MOVE  "DBCLOSE"                TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"      TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "JYURRK-KEY21"  TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_jyurrk"       TO   MCP-TABLE
            MOVE    "key21"            TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                       SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            .
        920-DBCLOSE3-EXT.
            EXIT.
       *
-      *--- 2009/07/29 ADD START ----------------------------------------
       *****************************************************************
       *    患者保険情報マスター読込処理
       *****************************************************************
@@ -3842,61 +2812,34 @@
            .
        910-PTHKNINF-READ-EXT.
            EXIT.
-      *--- 2009/07/29 ADD END   ----------------------------------------
       *****************************************************************
       *   保険者情報セット
       *****************************************************************
        920-HKNJAINF-SET-SEC  SECTION.
       *
            INITIALIZE  HKNJAINF-REC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  WRK-PARA-HOSPID      TO  HKNJA-HOSPID
            MOVE    WRK-PARA-HOSPNUM     TO   HKNJA-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    WRK-HKNJANUM         TO   HKNJA-HKNJANUM
            MOVE    HKNJAINF-REC         TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  "HKNJAINF-KEY"       TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"          USING
            MOVE    "tbl_hknjainf"       TO   MCP-TABLE
            MOVE    "key"                TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC  =  ZERO
-             MOVE  "HKNJAINF-KEY"       TO   ORC-DBPATH
              PERFORM  925-HKNJAINF-READ-SEC
-      *     ELSE
            END-IF
       *
-           INITIALIZE  MCPAREA
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE  "DBCLOSE"        TO  MCP-FUNC
+           INITIALIZE                   MCPAREA
            MOVE  "DBCLOSECURSOR"        TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  "HKNJAINF-KEY"   TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"      USING
            MOVE    "tbl_hknjainf"       TO   MCP-TABLE
            MOVE    "key"                TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                            ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
       *
            .
        920-HKNJAINF-SET-EXT.
@@ -3908,20 +2851,12 @@
        925-HKNJAINF-READ-SEC  SECTION.
       *
            MOVE  "DBFETCH"  TO  MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     CALL  "ORCMCPSUB"  USING
            MOVE  "tbl_hknjainf"     TO   MCP-TABLE
            MOVE  "key"              TO   MCP-PATHNAME
            CALL  "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
                                     MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                          ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                     MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                     SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF  MCP-RC  =  ZERO
              MOVE  MCPDATA-REC      TO   HKNJAINF-REC
              MOVE  ZERO             TO   FLG-HKNJAINF
@@ -3944,10 +2879,8 @@
            MOVE    ZERO    TO    WRK-KOHSEIKYUGK
                                  WRK-KOHSKJSEIKYUGK
                                  WRK-ZENCOMPFTN
-      *--- 2009/01/08 ADD START ----------------------------------------
                                  WRK-FTNFLG
-      *--- 2009/01/08 ADD END ------------------------------------------
-      *--- 2009/07/29 ADD START ----------------------------------------
+      *
            IF   RECE10-FTNMONEY(1)  =  ZERO
                AND   RECE10-KYURATE  NOT =  ZERO
              PERFORM  VARYING  IDX7  FROM  1  BY  1
@@ -3961,9 +2894,6 @@
                  MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)
                                               TO   SYU-SYUCOMPFTN-ENTANI
                  MOVE    SYU-KOH-COMPFTN(IDX7)  TO   SYU-SYUCOMPFTN
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *           MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
-      *--- 2010/08/12 DELETE END ---------------------------------------
                END-IF
                IF   FLG-TYOKI  =  2
                    AND  SYU-KOH-HKNNUM(IDX7)  =  "974"
@@ -3973,12 +2903,8 @@
                  MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)
                                               TO   SYU-SYUCOMPFTN-ENTANI
                  MOVE    SYU-KOH-COMPFTN(IDX7)  TO   SYU-SYUCOMPFTN
-      *--- 2010/08/12 DELETE START -------------------------------------
-      *           MOVE    SYU-KOH-COMPFTN-ENTANI(IDX7)  TO  WRK-TYOKIFTN
-      *--- 2010/08/12 DELETE END ---------------------------------------
                END-IF
              END-PERFORM
-      *--- 2010/04/06 ADD START ----------------------------------------
              IF   ( FLG-TYOKI  =  1  OR  2 )
                  AND  ( SYU-KOH-HKNNUM(1)  NOT =  "972" AND "974" )
                  AND  ( SYU-KOH-HKNNUM(2)  NOT =  "972" AND "974" )
@@ -3988,138 +2914,82 @@
                                      *  RECE10-KYURATE
                 ADD    WRK-HKNGK2    TO   WRK-HKNGK
              END-IF
-      *--- 2010/04/06 ADD END ------------------------------------------
            END-IF
-      *--- 2009/07/29 ADD END ------------------------------------------
       *
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
            IF   RECE10-RJNHKNNUM  NOT =  SPACE
              MOVE   SYU-KOH-COMPFTN(1)    TO   WRK-ZENCOMPFTN
            ELSE
              MOVE   SYU-SYUCOMPFTN        TO   WRK-ZENCOMPFTN
            END-IF
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
       *
            PERFORM  VARYING  IDX  FROM  1  BY  1
                     UNTIL    IDX  >   4
                     OR   SYU-KOH-HKNNUM(IDX)  =  SPACE
              IF   SYU-KOH-HKNNUM(IDX)  NOT =  "027"
-      *--- 2009/08/18 ADD START ----------------------------------------
                  AND  SYU-KOH-HKNNUM(IDX)  NOT =  "972"
                  AND  SYU-KOH-HKNNUM(IDX)  NOT =  "974"
-      *--- 2009/08/18 ADD END ------------------------------------------
       *    差額から助成額(公費請求額)を算出
                IF   RECE10-RJNHKNNUM  NOT =  SPACE
       *
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
                  IF  SYU-KOH-COMPFTN(IDX) < WRK-ZENCOMPFTN
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
-      *
                    COMPUTE  WRK-KOHSEIKYUGK  =  SYU-KOH-COMPFTN(1)
                                              -  SYU-KOH-COMPFTN(IDX)
                    COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SKJ-FTN(1)
                                                 -  SYU-SKJ-FTN(IDX)
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
                    MOVE   SYU-KOH-COMPFTN(IDX)  TO  WRK-ZENCOMPFTN
                  END-IF
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
                ELSE
       *
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
-      *--- 2009/08/18 DELETE START -------------------------------------
-      *           IF  SYU-KOH-COMPFTN(IDX)  <  WRK-ZENCOMPFTN
-      *--- 2009/08/18 DELETE END ---------------------------------------
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
-      *
-      *--- 2009/01/08 ADD+DELETE START ---------------------------------
-      *             COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
-      *                                       -  SYU-KOH-COMPFTN(IDX)
-      *             COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-      *                                          -  SYU-SKJ-FTN(IDX)
                    IF    RECE10-FTNMONEY(1)  =  ZERO
                        AND  RECE10-KYURATE  NOT = ZERO
       *    限度なし
                      MOVE  SYU-KOH-HKNNUM(IDX)   TO  WRK-KOHNUM
                      PERFORM   950-HKNNUM-SET-SEC
-      *--- 2009/07/01 DELETE START -------------------------------------
-      *               IF   HKN-RECEFTNDSPKBN  =  1
-      *    四捨五入する 
-      *                 COMPUTE  WRK-KOHSEIKYUGK  =  SYU-SYUCOMPFTN
-      *                                           -  SYU-KOH-COMPFTN(IDX)
-      *                 COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
-      *                                              -  SYU-SKJ-FTN(IDX)
-      *               ELSE
-      *--- 2009/07/01 DELETE END ---------------------------------------
-      *    四捨五入しない 
+      *    四捨五入しない
                        COMPUTE  WRK-KOHSEIKYUGK = SYU-SYUCOMPFTN-ENTANI
                                           -  SYU-KOH-COMPFTN-ENTANI(IDX)
                        COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
                                                     -  SYU-SKJ-FTN(IDX)
-      *--- 2009/07/01 DELETE START -------------------------------------
-      *               END-IF
-      *--- 2009/07/01 DELETE END ---------------------------------------
                    ELSE
       *    限度あり
-      *--- 2010/08/12 CHANGE START -------------------------------------
-      *               ADD    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
                      MOVE    SYU-KOH-COMPFTN(IDX)  TO    WRK-KOHFTN
-      *--- 2010/08/12 CHANGE END ---------------------------------------
                      MOVE   1   TO    WRK-FTNFLG
                      COMPUTE  WRK-KOHSKJSEIKYUGK  =  SYU-SYUSKJ-FTN
                                                   -  SYU-SKJ-FTN(IDX)
                    END-IF
-      *--- 2009/01/08 ADD+DELETE END -----------------------------------
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
                    MOVE   SYU-KOH-COMPFTN(IDX)  TO  WRK-ZENCOMPFTN
-      *--- 2009/08/18 DELETE START -------------------------------------
-      *           END-IF
-      *--- 2009/08/18 DELETE END ---------------------------------------
-      ***  20050907 MOTOHASI 公費助成額の算出を修正
                END-IF
       *
-      *--- 2010/08/04 ADD START ---------------------------------------- 
              ELSE
                IF   RECE10-FLG(2)  =  1
                    AND  ( FLG-TYOKI  =  1  OR  2 )
                    AND  ( SYU-KOH-HKNNUM(2)  =  SPACE
                    AND  SYU-KOH-HKNNUM(3)  =  SPACE
                    AND  SYU-KOH-HKNNUM(4)  =  SPACE )
-
                  COMPUTE  WRK-HKNGK  =  WRK-HKNGK
                                      +  SYU-SYUCOMPFTN-ENTANI
                                      -  SYU-SKYMONEY
                END-IF
-      *--- 2010/08/04 ADD END ------------------------------------------ 
              END-IF
            END-PERFORM
       *
-      *--- 2009/01/08 ADD START ----------------------------------------
            IF  WRK-FTNFLG  =  1
              COMPUTE  WRK-HKNFTN       =   WRK-HKNFTN
                                        -   WRK-KOHFTN
-      *--- 2009/08/18 ADD START ----------------------------------------
              IF  WRK-HKNFTN  <=  10
                MOVE    ZERO      TO   WRK-HKNFTN
              END-IF
-      *--- 2009/08/18 ADD END ------------------------------------------
              INITIALIZE    WRK-KOHFTN
            ELSE
              ADD    WRK-KOHSEIKYUGK     TO   WRK-KOHSEIKYUGK-G
            END-IF
-      *--- 2009/01/08 ADD END ------------------------------------------
-      *--- (2008/12/18) line add start monma ---------------------------
            COMPUTE  WRK-JIHIGK-G  =  WRK-JIHIGK-G
                                   +  SYU-JIHI-TOTAL
                                   +  SYU-JIHI-TOTAL-TAX
-      *--- (2008/12/18) line add end   monma ---------------------------
       *
-      *--- 2009/01/08 DELETE START -------------------------------------
-      *     ADD    WRK-KOHSEIKYUGK     TO   WRK-KOHSEIKYUGK-G
-      *--- 2009/01/08 DELETE END ---------------------------------------
            ADD    WRK-KOHSKJSEIKYUGK  TO   WRK-KOHSEIKYUGK-G
            ADD    SYU-SKYMONEY        TO   WRK-MADOSEIKYUGK-G
       *
-      *--- 2010/08/12 ADD START ----------------------------------------
            COMPUTE    WRK-KOHMADOGK  =  WRK-KOHMADOGK
                                      +  SYU-SKYMONEY
                                      -  SYU-JIHI-TOTAL
@@ -4127,35 +2997,6 @@
                                      -  SYU-TOTAL-TGMONEY
                                      -  SYU-TOTAL-TGMONEY-TAX
                                      -  SYU-RMSAGAKU
-      *--- 2010/08/12 ADD END ----------------------------------------
-      *--- 2009/07/29 ADD START ----------------------------------------
-      *--- 2009/08/18 DELETE START -------------------------------------
-      *     COMPUTE   WRK-MSKYMONEY   =  WRK-MADOSEIKYUGK-G
-      *                               -  RECE10-SHOKUJIFTN(1)
-      *--- 2009/08/18 DELETE END ---------------------------------------
-      *--- 2010/01/08 DELETE START -------------------------------------
-      *     IF   FLG-TYOKI  =  1
-      *       IF   WRK-TYOKIFTN  =  ZERO
-      *           AND  RECE10-TEISYUTUSAKI  =  6
-      *         MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
-      **--- 2009/08/18 DELETE START -------------------------------------
-      **       ELSE
-      **         COMPUTE  WRK-KOHSEIKYUGK-G  =  10000 - WRK-MSKYMONEY
-      **--- 2009/08/18 DELETE END ---------------------------------------
-      *       END-IF
-      *     END-IF
-      *     IF   FLG-TYOKI  =  2
-      *       IF   WRK-TYOKIFTN  =  ZERO
-      *           AND  RECE10-TEISYUTUSAKI  =  6
-      *         MOVE    ZERO      TO   WRK-KOHSEIKYUGK-G
-      **--- 2009/08/18 DELETE START -------------------------------------
-      **       ELSE
-      **         COMPUTE  WRK-KOHSEIKYUGK-G  =  20000 - WRK-MSKYMONEY
-      **--- 2009/08/18 DELETE END ---------------------------------------
-      *       END-IF
-      *     END-IF
-      *--- 2009/07/29 ADD END ------------------------------------------
-      *--- 2010/01/08 DELETE END ---------------------------------------
       *
            .
        800-SEIKYU-SEC-EXT.
@@ -4166,120 +3007,68 @@
       *****************************************************************
        920-SYUNOU-SET-SEC  SECTION.
       *
-             INITIALIZE  SYUNOU-REC
-      *--- 2009/01/08 ADD START ----------------------------------------
-                         WRK-HKNFTN
-             MOVE   RECE10-FTNMONEY(1)    TO   WRK-HKNFTN
-      *--- 2009/01/08 ADD END ------------------------------------------
-      ***07/09/20 nagaya 4.0対応 start
-      *       MOVE  RECE10-HOSPID      TO  SYU-HOSPID
-             MOVE   RECE10-HOSPNUM     TO   SYU-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
-             MOVE   RECE10-NYUGAIKBN   TO   SYU-NYUGAIKBN
-             MOVE   RECE10-PTID        TO   SYU-PTID
-             MOVE   SYUNOU-REC         TO   MCPDATA-REC
-             MOVE   "DBSELECT"         TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *       MOVE  "SYUNOU-KEY2"      TO  ORC-DBPATH
-      *       CALL  "ORCMCPSUB"        USING
-             MOVE   "tbl_syunou"       TO   MCP-TABLE
-             MOVE   "key2"             TO   MCP-PATHNAME
-             CALL   "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
-                                       MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
-                                       MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
-                                       SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
-             IF   MCP-RC   =   ZERO
-               MOVE  "SYUNOU-KEY2"  TO  ORC-DBPATH
-               PERFORM  925-SYUNOU-READ-SEC
+           INITIALIZE  SYUNOU-REC
+                       WRK-HKNFTN
+           MOVE   RECE10-FTNMONEY(1)    TO   WRK-HKNFTN
+           MOVE   RECE10-HOSPNUM     TO   SYU-HOSPNUM
+           MOVE   RECE10-NYUGAIKBN   TO   SYU-NYUGAIKBN
+           MOVE   RECE10-PTID        TO   SYU-PTID
+           MOVE   SYUNOU-REC         TO   MCPDATA-REC
+           MOVE   "DBSELECT"         TO   MCP-FUNC
+           MOVE   "tbl_syunou"       TO   MCP-TABLE
+           MOVE   "key2"             TO   MCP-PATHNAME
+           CALL   "ORCDBMAIN"        USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF   MCP-RC   =   ZERO
+             PERFORM  925-SYUNOU-READ-SEC
       *
-               PERFORM  UNTIL  FLG-SYUNOU  =  1
-      *--- 2009/06/26 ADD START ----------------------------------------
+             PERFORM  UNTIL  FLG-SYUNOU  =  1
                IF       SYU-TOTAL-HKNTEN =  0
                  AND    SYU-TOTAL-MONEY             =  0
                  AND  ( SYU-JIHI-TOTAL         NOT  =  0
-                 OR     SYU-JIHI-TOTAL-TAX     NOT  =  0 
+                 OR     SYU-JIHI-TOTAL-TAX     NOT  =  0
                  OR     SYU-TOTAL-TGMONEY      NOT  =  0
                  OR     SYU-TOTAL-TGMONEY-TAX  NOT  =  0 )
                  CONTINUE
                ELSE
-      *--- 2009/07/29 ADD START ----------------------------------------
                  PERFORM  920-PTHKNINF-READ-SEC
-      *--- 2009/08/18 ADD START ----------------------------------------
                  IF    RECE10-KOHNUM(1)  NOT =   SPACE
                      AND RECE10-HKNNUM   =   SPACE
                    MOVE    ZERO     TO   PTHKN-HKNJANUM
                  END-IF
-      *--- 2009/08/18 ADD END ------------------------------------------
-      *--- 2009/07/29 ADD END ------------------------------------------
-      *--- 2009/06/26 ADD START ----------------------------------------
                  IF  RECE10-SRYYM  =  SYU-SRYYMD(1:6)
                      AND  SYU-DENPJTIKBN   NOT = "3"
-      *--- 2009/11/06 DELETE START -------------------------------------
-      *               AND  RECE10-TEKSTYMD  <=  SYU-SRYYMD
-      *--- 2009/11/06 DELETE END ---------------------------------------
       *
-      ***  20050412  @@@@-MOTOHASI  
                      AND  SYU-SYUHKNNUM  =  RECE10-HKNNUM
-      ***  20050412  @@@@-MOTOHASI  
-      *--- 2009/07/29 ADD START ----------------------------------------
                      AND  PTHKN-HKNJANUM  =  RECE10-HKNJANUM
-      *--- 2009/07/29 ADD END ------------------------------------------
-      *
       *
       *    旧総合病院の時は該当する診療科のみ対象にする
-      *--- 2008/10/30  CHANGE  START ----------------------------------
-      * 20081014 主科設定時に診療科を印字するSTART
-                   IF    SYS-1001-HOSPSBT1 NOT =  1
-                       OR   RECE10-NYUGAIKBN      = "1"
-      *              IF    RECE10-NYUGAIKBN      = "1" OR
-      * 20081014 主科設定時に診療科を印字するEND
-      *--- 2008/10/30  CHANGE  END ----------------------------------
-                       OR   RECE10-RECEKA         = SYU-SRYKA
-                     PERFORM  800-SEIKYU-SEC
-                   END-IF
-                 END-IF
-      *--- 2009/06/26 ADD START ----------------------------------------
+                    IF    SYS-1001-HOSPSBT1  NOT =  1
+                        OR   RECE10-NYUGAIKBN      = "1"
+                        OR   RECE10-RECEKA         = SYU-SRYKA
+                      PERFORM  800-SEIKYU-SEC
+                    END-IF
+                  END-IF
                END-IF
-      *--- 2009/06/26 ADD START ----------------------------------------
       *
-                 MOVE  "SYUNOU-KEY2"     TO   ORC-DBPATH
-                 PERFORM   925-SYUNOU-READ-SEC
-               END-PERFORM
-      *       ELSE
-             END-IF
+               PERFORM   925-SYUNOU-READ-SEC
+             END-PERFORM
+           END-IF
       *
-             INITIALIZE  MCPAREA
-      *=== sarge対応 Takashima(2006/08/09)
-      *       MOVE  "DBCLOSE"      TO  MCP-FUNC
-             MOVE  "DBCLOSECURSOR"      TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *       MOVE  "SYUNOU-KEY2"  TO  ORC-DBPATH
-      *       CALL  "ORCMCPSUB"  USING
-             MOVE    "tbl_syunou"       TO   MCP-TABLE
-             MOVE    "key2"             TO   MCP-PATHNAME
-             CALL    "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
-                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                             ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
-                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
-                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
+           INITIALIZE  MCPAREA
+           MOVE    "DBCLOSECURSOR"    TO   MCP-FUNC
+           MOVE    "tbl_syunou"       TO   MCP-TABLE
+           MOVE    "key2"             TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
       *
-      *--- 2009/01/08 ADD START ----------------------------------------
            IF  WRK-FTNFLG  =  1
              ADD    WRK-HKNFTN     TO   WRK-KOHSEIKYUGK-G
            END-IF
-      *--- 2009/01/08 ADD END ------------------------------------------
            .
        920-SYUNOU-SET-EXT.
            EXIT.
@@ -4290,20 +3079,12 @@
        925-SYUNOU-READ-SEC  SECTION.
       *
            MOVE    "DBFETCH"        TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     CALL  "ORCMCPSUB"  USING
            MOVE    "tbl_syunou"     TO   MCP-TABLE
            MOVE    "key2"           TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"      USING
-      ***07/09/20 nagaya 4.0対応 end
                                     MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                              ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                     MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                     SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF  MCP-RC  =  ZERO
              MOVE   MCPDATA-REC     TO   SYUNOU-REC
              MOVE   ZERO            TO   FLG-SYUNOU
@@ -4322,49 +3103,26 @@
        940-SYUNOU-READ-SEC         SECTION.
       *
            INITIALIZE                   SYUNOU-REC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  JYURRK-HOSPID        TO  SYU-HOSPID
            MOVE    JYURRK-HOSPNUM       TO   SYU-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    JYURRK-NYUGAIKBN     TO   SYU-NYUGAIKBN
            MOVE    JYURRK-PTID          TO   SYU-PTID
            MOVE    JYURRK-DENPNUM       TO   SYU-DENPNUM
            MOVE    SYUNOU-REC           TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  "SYUNOU-KEY"      TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"          USING
            MOVE    "tbl_syunou"         TO   MCP-TABLE
            MOVE    "key"                TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF  MCP-RC  =  ZERO
-      ***07/09/20 nagaya 4.0対応 start
-      *       MOVE  "SYUNOU-KEY"  TO  ORC-DBPATH
-      ***07/09/20 nagaya 4.0対応 end
              MOVE   "DBFETCH"          TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *       CALL  "ORCMCPSUB"  USING
              MOVE   "tbl_syunou"       TO   MCP-TABLE
              MOVE   "key"              TO   MCP-PATHNAME
              CALL   "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                 ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
              IF  MCP-RC  =  ZERO
                MOVE  MCPDATA-REC       TO   SYUNOU-REC
                MOVE  ZERO              TO   FLG-SYUNOU
@@ -4378,25 +3136,13 @@
            END-IF
       *
            INITIALIZE  MCPAREA
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE  "DBCLOSE"        TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"       TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  "SYUNOU-KEY"  TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"      USING
            MOVE  "tbl_syunou"          TO   MCP-TABLE
            MOVE  "key"                 TO   MCP-PATHNAME
            CALL  "ORCDBMAIN"           USING
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                            ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                        MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                        SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            .
        940-SYUNOU-READ-EXT.
            EXIT.
@@ -4406,31 +3152,19 @@
        940-SYUNOU-SELECT-SEC         SECTION.
       *
            INITIALIZE                  SYUNOU-REC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    JYURRK-HOSPID        TO  SYU-HOSPID
            MOVE    JYURRK-HOSPNUM       TO   SYU-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    JYURRK-PTID          TO   SYU-PTID
            MOVE    JYURRK-NYUGAIKBN     TO   SYU-NYUGAIKBN
            MOVE    WRK-PARA-PRTSYMD     TO   SYU-SKYSTYMD
            MOVE    WRK-PARA-PRTLYMD     TO   SYU-SKYEDYMD
            MOVE    SYUNOU-REC           TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "SYUNOU-KEY5"        TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_syunou"         TO   MCP-TABLE
            MOVE    "key5"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC   =   ZERO
              PERFORM   940-SYUNOU-FETCH-SEC
            ELSE
@@ -4445,21 +3179,12 @@
        940-SYUNOU-FETCH-SEC         SECTION.
       *
            MOVE    "DBFETCH"            TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "SYUNOU-KEY5"         TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_syunou"         TO   MCP-TABLE
            MOVE    "key5"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC    =   ZERO
              MOVE    MCPDATA-REC     TO   SYUNOU-REC
              MOVE    ZERO            TO   FLG-SYUNOU
@@ -4482,25 +3207,13 @@
       *****************************************************************
        940-SYUNOU-CLOSE-SEC         SECTION.
       *
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE    "DBCLOSE"            TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE    "SYUNOU-KEY5"        TO  ORC-DBPATH
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    "tbl_syunou"         TO   MCP-TABLE
            MOVE    "key5"               TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            .
        940-SYUNOU-CLOSE-EXT.
            EXIT.
@@ -4510,55 +3223,30 @@
        930-HKNCOMBI-SET-SEC  SECTION.
       *
            INITIALIZE  HKNCOMBI-REC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  JYURRK-HOSPID          TO  COMB-HOSPID
            MOVE  JYURRK-HOSPNUM         TO   COMB-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE  JYURRK-PTID            TO   COMB-PTID
            MOVE  JYURRK-HKNCOMBINUM     TO   COMB-HKNCOMBINUM
-      *--- 2009/06/26 ADD START ----------------------------------------
            IF   WRK-PATH   =   "JIHI"
              MOVE  SYU-HOSPNUM          TO   COMB-HOSPNUM
              MOVE  SYU-PTID             TO   COMB-PTID
              MOVE  SYU-HKNCOMBINUM      TO   COMB-HKNCOMBINUM
            END-IF
-      *--- 2009/06/26 ADD END   ----------------------------------------
            MOVE  HKNCOMBI-REC           TO   MCPDATA-REC
            MOVE  "DBSELECT"             TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  "HKNCOMBI-KEY"      TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"          USING
            MOVE    "tbl_hkncombi"       TO   MCP-TABLE
            MOVE    "key"                TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC  =  ZERO
-      ***07/09/20 nagaya 4.0対応 start
-      *       MOVE  "HKNCOMBI-KEY"  TO  ORC-DBPATH
-      ***07/09/20 nagaya 4.0対応 end
              MOVE    "DBFETCH"            TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *       CALL  "ORCMCPSUB"  USING
              MOVE    "tbl_hkncombi"     TO   MCP-TABLE
              MOVE    "key"              TO   MCP-PATHNAME
              CALL    "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                             ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
              IF  MCP-RC  =  ZERO
                MOVE    MCPDATA-REC      TO   HKNCOMBI-REC
                MOVE    ZERO             TO   FLG-HKNCOMBI
@@ -4571,25 +3259,13 @@
            END-IF
       *
            INITIALIZE             MCPAREA
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE  "DBCLOSE"        TO  MCP-FUNC
            MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  "HKNCOMBI-KEY"  TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"      USING
            MOVE    "tbl_hkncombi"       TO   MCP-TABLE
            MOVE    "key"                TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                            ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                         SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
       *
            .
        930-HKNCOMBI-SET-EXT.
@@ -4601,35 +3277,20 @@
        950-HKNNUM-SET-SEC  SECTION.
       *
            INITIALIZE  HKNNUM-REC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  WRK-PARA-HOSPID           TO  HKN-HOSPID
            MOVE  WRK-PARA-HOSPNUM     TO   HKN-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE  WRK-KOHNUM           TO   HKN-HKNNUM
            MOVE  HKNNUM-REC           TO   MCPDATA-REC
            MOVE  "DBSELECT"           TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  "HKNNUM-KEY2"        TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"          USING
            MOVE    "tbl_hknnum"       TO   MCP-TABLE
            MOVE    "key2"             TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                       SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC   =  ZERO
-             MOVE  "HKNNUM-KEY2"      TO   ORC-DBPATH
              PERFORM  955-HKNNUM-READ-SEC
-      *     ELSE
            END-IF
       *
-      *--- 2009/07/01 ADD START ----------------------------------------
            PERFORM   UNTIL  FLG-HKNNUM   =   1
              IF   HKN-TEKSTYMD   <=   WRK-SRYYMD
                  AND   HKN-TEKEDYMD   >=   WRK-SRYYMD
@@ -4642,28 +3303,15 @@
                PERFORM  955-HKNNUM-READ-SEC
              END-IF
            END-PERFORM
-      *--- 2009/07/01 ADD END ------------------------------------------
       *
            INITIALIZE  MCPAREA
-      *=== sarge対応 Takashima(2006/08/09)
-      *     MOVE  "DBCLOSE"        TO  MCP-FUNC
            MOVE  "DBCLOSECURSOR"      TO   MCP-FUNC
-      *=== sarge対応 Takashima(2006/08/09)
-      ***07/09/20 nagaya 4.0対応 start
-      *     MOVE  "HKNNUM-KEY2"    TO  ORC-DBPATH
-      *     CALL  "ORCMCPSUB"      USING
            MOVE    "tbl_hknnum"       TO   MCP-TABLE
            MOVE    "key2"             TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                            ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                       MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                       SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
       *
            .
        950-HKNNUM-SET-EXT.
@@ -4675,20 +3323,12 @@
        955-HKNNUM-READ-SEC  SECTION.
       *
            MOVE    "DBFETCH"        TO   MCP-FUNC
-      ***07/09/20 nagaya 4.0対応 start
-      *     CALL  "ORCMCPSUB"  USING
            MOVE    "tbl_hknnum"     TO   MCP-TABLE
            MOVE    "key2"           TO   MCP-PATHNAME
            CALL    "ORCDBMAIN"      USING
-      ***07/09/20 nagaya 4.0対応 end
                                     MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                        ORCMCPAREA
-      ***07/09/20 nagaya 4.0対応 end
                                     MCPDATA-REC
-      ***07/09/20 nagaya 4.0対応 start
                                     SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
            IF   MCP-RC  =  ZERO
              MOVE  MCPDATA-REC      TO   HKNNUM-REC
              MOVE  ZERO             TO   FLG-HKNNUM
@@ -4705,25 +3345,18 @@
       *    終了　　処理
       *****************************************************************
        300-END-SEC                 SECTION.
-      *     
+      *
       *    ステップ管理終了処理
            MOVE    "STE"             TO   SJOBKANRI-MODE
            INITIALIZE                     JOBKANRI-REC
-      ***07/09/20 nagaya 4.0対応 start
            MOVE    SPA-HOSPNUM       TO   JOB-HOSPNUM
-      ***07/09/20 nagaya 4.0対応 end
            MOVE    S100LNK-JOBID     TO   JOB-JOBID
            MOVE    S100LNK-SHELLID   TO   JOB-SHELLID
            MOVE    CNT-PAGE          TO   JOB-UPDCNT
            CALL    "ORCSJOB"         USING
                                      ORCSJOBKANRIAREA
                                      JOBKANRI-REC
-      ***07/09/20 nagaya 4.0対応 start
                                      SPA-AREA
-      ***07/09/20 nagaya 4.0対応 end
-      *
-      *     PERFORM 900-DBDISCONNECT-SEC
-      *
            .
        300-END-EXT.
            EXIT.
@@ -4734,36 +3367,22 @@
        100-DBOPEN-SEC                SECTION.
       *
            MOVE    "DBOPEN"             TO   MCP-FUNC.
-      ***07/09/20 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO   MCP-TABLE
                                              MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/20 nagaya 4.0対応 end
       *
            MOVE    "DBSTART"            TO   MCP-FUNC.
-      ***07/09/20 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO   MCP-TABLE
                                              MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/20 nagaya 4.0対応 end
            .
        100-DBOPEN-EXT.
            EXIT.
@@ -4774,36 +3393,22 @@
        900-DBDISCONNECT-SEC            SECTION.
       *
            MOVE    "DBCOMMIT"           TO   MCP-FUNC.
-      ***07/09/20 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO   MCP-TABLE
                                              MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/20 nagaya 4.0対応 end
       *
            MOVE    "DBDISCONNECT"       TO   MCP-FUNC.
-      ***07/09/20 nagaya 4.0対応 start
-      *     CALL    "ORCMCPSUB"          USING
            MOVE    LOW-VALUE            TO   MCP-TABLE
                                              MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
-      ***07/09/20 nagaya 4.0対応 end
                                         MCPAREA
-      ***07/09/20 nagaya 4.0対応 start
-      *                                  ORCMCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .
-      ***07/09/20 nagaya 4.0対応 end
            .
        900-DBCLOSE-EXT.
            EXIT.
