@@ -30,6 +30,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -421,7 +422,9 @@
            02  LNK-WKSRYACT-REC      OCCURS   100.
            COPY    "CPWKSRYACT.INC"  REPLACING
                                      //WKSRY-// BY //LNK-WKSRY-//.
-           03  LNK-WKSRY-DRCD          PIC X(05).
+      *--- 20110107 DELETE START ---------------------------------------
+      *     03  LNK-WKSRY-DRCD          PIC X(05).
+      *--- 20110107 DELETE END   ---------------------------------------
            03  LNK-WKSRY-SYORI         PIC X(01).
       *
        01  LNK-WKSRYACT-MAX           PIC 9(04).
@@ -434,8 +437,10 @@
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   免除判定サブ
-           COPY    "CPORCSMENJYO.INC".
+      *--- 20110107 DELETE START ---------------------------------------
+      **   免除判定サブ
+      *     COPY    "CPORCSMENJYO.INC".
+      *--- 20110107 DELETE END   ---------------------------------------
       *
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
@@ -500,7 +505,10 @@
       *
       *    ファイルＯＰＥＮ
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
-           MOVE    "HCM19"             TO  HC01PARA-FORM-ID
+      *--- 20110107 CHANGE START ---------------------------------------
+      *     MOVE    "HCM19"             TO  HC01PARA-FORM-ID
+           MOVE    "HC19"              TO  HC01PARA-FORM-ID
+      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
            MOVE    WRK-SYS-TIME        TO  HC01PARA-SYOHMS
            ADD     1                   TO  WRK-PAGE
@@ -2847,12 +2855,16 @@
                                                    TO  WRK-DRCD(2:4)
                    END-IF
                END-IF
+      *--- 20110107 CHANGE START ---------------------------------------
       *        投薬と在宅のみ対象とする
-               IF      WKSRY-SRYKBN        =   "21"
-                                           OR  "22"
-                                           OR  "23"
-                                           OR  "14"
-                                           OR  "98"
+      *         IF      WKSRY-SRYKBN        =   "21"
+      *                                     OR  "22"
+      *                                     OR  "23"
+      *                                     OR  "14"
+      *                                     OR  "98"
+               IF   (WKSRY-SRYKBN    =   "21"  OR  "22"  OR
+                                         "23"  OR  "14"  OR  "98" )
+      *--- 20110107 CHANGE END   ---------------------------------------
       *           包括保険分は対象外
                   AND (WRK-HKNCOMBINUM NOT =   "9999" )
       *                薬評分対象外

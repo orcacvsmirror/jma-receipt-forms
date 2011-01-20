@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -67,7 +68,9 @@
            03  FLG-PTHKNINF        PIC 9(01).
            03  FLG-JYURRK          PIC 9(01).
            03  FLG-SRYACCT         PIC 9(01).
-           03  FLG-PTHKNINF        PIC 9(01).
+      *--- 20110107 DELETE START ---------------------------------------
+      *     03  FLG-PTHKNINF        PIC 9(01).
+      *--- 20110107 DELETE END   ---------------------------------------
            03  FLG-SP              PIC 9(01).
            03  FLG-OK              PIC 9(01).
            03  FLG-CHK             PIC 9(01).

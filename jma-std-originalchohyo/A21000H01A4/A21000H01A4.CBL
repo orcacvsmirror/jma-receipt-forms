@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -356,7 +357,10 @@
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
            MOVE    "HC01"              TO  HC01PARA-FORM-ID
-           MOVE    "H01SA4"            TO  HC01PARA2-FORM-ID
+      *--- 20110107 CHANGE START ---------------------------------------
+      *     MOVE    "H01SA4"            TO  HC01PARA2-FORM-ID
+           MOVE    "H1A4"              TO  HC01PARA2-FORM-ID
+      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
                                            HC01PARA2-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS
@@ -1163,7 +1167,10 @@
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
            MOVE    "HC01"              TO  HC01PARA-FORM-ID
-           MOVE    "H01SA4"             TO  HC01PARA2-FORM-ID
+      *--- 20110107 CHANGE START ---------------------------------------
+      *     MOVE    "H01SA4"            TO  HC01PARA2-FORM-ID
+           MOVE    "H1A4"              TO  HC01PARA2-FORM-ID
+      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
                                            HC01PARA2-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS
@@ -1337,7 +1344,10 @@
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
            MOVE    "HC01"              TO  HC01PARA-FORM-ID
-           MOVE    "H01SA4"             TO  HC01PARA2-FORM-ID
+      *--- 20110107 CHANGE START ---------------------------------------
+      *     MOVE    "H01SA4"            TO  HC01PARA2-FORM-ID
+           MOVE    "H1A4"              TO  HC01PARA2-FORM-ID
+      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
                                            HC01PARA2-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS

@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -276,7 +277,9 @@
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
-           COPY    "ORCA-DBPATH".
+      *--- 20110107 DELETE START ---------------------------------------
+      *     COPY    "ORCA-DBPATH".
+      *--- 20110107 DELETE END   ---------------------------------------
       *
            COPY    "MCPAREA".
       *
@@ -336,7 +339,10 @@
            MOVE    SPACE               TO  SYS-1001-REC
            MOVE    "1001"              TO  SYS-1001-KANRICD
            MOVE    "*"                 TO  SYS-1001-KBNCD
-           MOVE    ORCHCN03-HOSPNUM    TO  SYS-1001-HOSPNUM
+      *--- 20110107 CHANGE START ---------------------------------------
+      *     MOVE    ORCHCN03-HOSPNUM    TO  SYS-1001-HOSPNUM
+           MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
+      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1001-STYUKYMD
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1001-EDYUKYMD
       *    システム管理検索
@@ -371,7 +377,10 @@
            MOVE    SPACE               TO  SYS-1002-REC
            MOVE    "1002"              TO  SYS-1002-KANRICD
            MOVE    "*"                 TO  SYS-1002-KBNCD
-           MOVE    ORCHCN03-HOSPNUM    TO  SYS-1002-HOSPNUM
+      *--- 20110107 CHANGE START ---------------------------------------
+      *     MOVE    ORCHCN03-HOSPNUM    TO  SYS-1002-HOSPNUM
+           MOVE    SPA-HOSPNUM         TO  SYS-1002-HOSPNUM
+      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1002-STYUKYMD
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1002-EDYUKYMD
       *    システム管理検索

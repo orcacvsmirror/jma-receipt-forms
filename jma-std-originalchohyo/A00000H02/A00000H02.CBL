@@ -29,6 +29,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -212,7 +213,7 @@
            03  WRK-ZZZ             PIC ZZZ.
            03  WRK-KAISU           PIC 9(05).
            03  WRK-Z9VZ            PIC Z9.Z.
-	       03  WRK-Z9              PIC Z9.
+           03  WRK-Z9              PIC Z9.
       *
            03  WRK-COM-NAME        PIC X(200).
            03  WRK-TNS-NAME        PIC X(200).
@@ -270,7 +271,9 @@
                    07  WRK-MEISYOU1        PIC X(38).
                    07  WRK-SURYOU          PIC X(18).
                    07  WRK-TANI            PIC X(12).
-                   07  WRK-FIL11           PIC X(06).
+      *
+      *             07  WRK-FIL11           PIC X(06).
+      *
                    07  WRK-FIL11           PIC X(12).
                05  WRK-NAIYOU-R2           REDEFINES   WRK-NAIYOU-Z.
                    07  WRK-FIL21           PIC X(06).
@@ -432,8 +435,10 @@
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   免除判定サブ
-           COPY    "CPORCSMENJYO.INC".
+      *--- 20110107 DELETE START ---------------------------------------
+      **   免除判定サブ
+      *     COPY    "CPORCSMENJYO.INC".
+      *--- 20110107 DELETE END   ---------------------------------------
       *
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
@@ -2893,12 +2898,16 @@
                                                    TO  WRK-DRCD(2:4)
                    END-IF
                END-IF
+      *--- 20110107 CHANGE START ---------------------------------------
       *        投薬と在宅のみ対象とする
-               IF      WKSRY-SRYKBN        =   "21"
-                                           OR  "22"
-                                           OR  "23"
-                                           OR  "14"
-                                           OR  "98"
+      *         IF      WKSRY-SRYKBN        =   "21"
+      *                                     OR  "22"
+      *                                     OR  "23"
+      *                                     OR  "14"
+      *                                     OR  "98"
+               IF   (WKSRY-SRYKBN   =   "21"  OR  "22"  OR
+                                        "23"  OR  "14"  OR  "98"  )
+      *--- 20110107 CHANGE END   ---------------------------------------
       *           包括保険分は対象外
                   AND (WRK-HKNCOMBINUM NOT =   "9999" )
       *    薬評分対象外

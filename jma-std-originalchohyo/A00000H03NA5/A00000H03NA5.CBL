@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -172,7 +173,11 @@
                05  WRK-FIL3            PIC X(18).
            03  WRK-Z72                 PIC S9(07).
            03  WRK-Z72-H2              PIC Z,ZZZ,ZZZ.
-           03  WRK-Z72-HS2             REDEFINES  WRK-Z72-H2.
+      *--- 20110107 CHANGE START ---------------------------------------
+      *     03  WRK-Z72-HS2             REDEFINES  WRK-Z72-H2.
+           03  WRK-Z72-HS2             REDEFINES  WRK-Z72-H2
+                                       PIC -,---,---.
+      *--- 20110107 CHANGE END   ---------------------------------------
       *
       *   日本語数字
        01  TBL-SUJI-AREA.
@@ -281,7 +286,9 @@
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
-           COPY    "ORCA-DBPATH".
+      *--- 20110107 DELETE START ---------------------------------------
+      *     COPY    "ORCA-DBPATH".
+      *--- 20110107 DELETE END   ---------------------------------------
       *
            COPY    "MCPAREA".
       *
@@ -341,7 +348,10 @@
            MOVE    SPACE               TO  SYS-1001-REC
            MOVE    "1001"              TO  SYS-1001-KANRICD
            MOVE    "*"                 TO  SYS-1001-KBNCD
-           MOVE    ORCHCN03-HOSPNUM    TO  SYS-1001-HOSPNUM
+      *--- 20110107 CHANGE START ---------------------------------------
+      *     MOVE    ORCHCN03-HOSPNUM    TO  SYS-1001-HOSPNUM
+           MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
+      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1001-STYUKYMD
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1001-EDYUKYMD
       *    システム管理検索

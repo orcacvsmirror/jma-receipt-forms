@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -149,8 +150,10 @@
            COPY    "CPORCSPRTLNK.INC".
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
-           03  WRK-PARA-HOSPNUM    PIC 9(02).
-           03  RECEERR             PIC X(100).
+           03  WRK-PARA-HOSPNUM      PIC 9(02).
+      *--- 20110107 DELETE START ---------------------------------------
+      *     03  RECEERR               PIC X(100).
+      *--- 20110107 DELETE END   ---------------------------------------
       *    対象診療年月
            03  WRK-PARA-SRYYM        PIC X(06).
       *    診療科

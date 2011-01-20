@@ -138,7 +138,10 @@
               03  HCM03V02-B-JIHIMSG10  PIC X(20).
               03  HCM03V02-B-JIHI
                       PIC X(18)   OCCURS  12 TIMES.
-              03  HCM03V02-YAKUZAI    PIC X(18).
+      *--- 20110107 CHANGE START ---------------------------------------
+      *        03  HCM03V02-YAKUZAI    PIC X(18).
+              03  HCM03V02-B-YAKUZAI    PIC X(18).
+      *--- 20110107 CHANGE END   ---------------------------------------
               03  HCM03V02-B-ROUJIN PIC X(18).
               03  HCM03V02-B-KOUHI  PIC X(18).
               03  HCM03V02-B-CHOSEI PIC X(18).

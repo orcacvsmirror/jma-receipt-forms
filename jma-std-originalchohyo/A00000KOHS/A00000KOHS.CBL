@@ -28,6 +28,7 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
+      *                                     open-cobol1.0対応
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -143,7 +144,9 @@
            03  WRK-PARA-JOBID       PIC 9(07).
            03  WRK-PARA-SHELLID     PIC X(08).
            03  WRK-PARA-HOSPNUM     PIC 9(02).
-           03  RECEERR              PIC X(100).
+      *--- 20110107 DELETE START ---------------------------------------
+      *     03  RECEERR              PIC X(100).
+      *--- 20110107 DELETE END   ---------------------------------------
            03  WRK-PARA-PAGE        PIC 9(10).
            03  WRK-PARA-SRYYM       PIC X(06).
            03  WRK-PARA-STUKBN      PIC X(01).
@@ -204,7 +207,9 @@
            03  KEY-OLD.
                05  KEY-O-KOHNUM     PIC X(03).
       *
-           COPY    "CPSHELLTBL.INC".
+      *--- 20110107 DELETE START ---------------------------------------
+      *     COPY    "CPSHELLTBL.INC".
+      *--- 20110107 DELETE END   ---------------------------------------
       *     
       *****************************************************************
       *    ファイルレイアウト
@@ -1840,7 +1845,10 @@
            MOVE    1                     TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
       *    他方公費
-           MOVE    MF100-TAHO            TO   WRK-DATA
+      *--- 20110107 CHANGE START ---------------------------------------
+      *     MOVE    MF100-TAHO            TO   WRK-DATA
+           MOVE    MF100-TAHO(1)            TO   WRK-DATA
+      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    3                     TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
            
