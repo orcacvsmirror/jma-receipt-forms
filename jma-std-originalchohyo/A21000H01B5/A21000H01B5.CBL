@@ -29,6 +29,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
+      *  01.00.02    @@@@-田中    11/01/24  4.6対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -355,10 +356,7 @@
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
            MOVE    "HC01"              TO  HC01PARA-FORM-ID
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     MOVE    "H01SB5"            TO  HC01PARA2-FORM-ID
            MOVE    "H1B5"              TO  HC01PARA2-FORM-ID
-      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
                                            HC01PARA2-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS
@@ -603,7 +601,7 @@
            MOVE    "DBSELECT"            TO  MCP-FUNC
            MOVE    "tbl_hknjainf"        TO  MCP-TABLE
            MOVE    "key"                 TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN   "        USING
+           CALL    "ORCDBMAIN"           USING
                                          MCPAREA
                                          MCPDATA-REC
                                          SPA-AREA
@@ -1136,10 +1134,7 @@
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
            MOVE    "HC01"              TO  HC01PARA-FORM-ID
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     MOVE    "H01SB5"            TO  HC01PARA2-FORM-ID
            MOVE    "H1B5"              TO  HC01PARA2-FORM-ID
-      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
                                            HC01PARA2-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS
@@ -1309,10 +1304,7 @@
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
            MOVE    "HC01"              TO  HC01PARA-FORM-ID
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     MOVE    "H01SB5"            TO  HC01PARA2-FORM-ID
            MOVE    "H1B5"              TO  HC01PARA2-FORM-ID
-      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
                                            HC01PARA2-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS

@@ -29,6 +29,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
+      *  01.00.02    @@@@-田中    11/01/24  4.6対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -357,10 +358,7 @@
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
            MOVE    "HC01"              TO  HC01PARA-FORM-ID
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     MOVE    "H01SA4"            TO  HC01PARA2-FORM-ID
            MOVE    "H1A4"              TO  HC01PARA2-FORM-ID
-      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
                                            HC01PARA2-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS
@@ -563,8 +561,8 @@
            MOVE    SPA-PTID            TO  COMB-PTID
            MOVE    SPA-HKNCOMBINUM     TO  COMB-HKNCOMBINUM
            PERFORM 910-HKNCOMBI-READ-SEC
-           IF      FLG-HKNCOMBI        =   1
-               INITIALIZE                  HKNCOMBI-REC
+           IF   FLG-HKNCOMBI  =  1
+             INITIALIZE                  HKNCOMBI-REC
            END-IF
       *
       *    患者保険情報検索
@@ -574,23 +572,23 @@
       *    主保険−ＩＤ
            MOVE    COMB-HKNID          TO  PTHKN-HKNID
            PERFORM 920-PTHKNINF-READ-SEC
-           IF      FLG-PTHKNINF      NOT =   ZERO
-               INITIALIZE              PTHKNINF-REC
+           IF      FLG-PTHKNINF  NOT =   ZERO
+             INITIALIZE              PTHKNINF-REC
            END-IF
       *
       *    保険者番号変換処理
            MOVE    SPACE               TO  WRK-HKNJA
            MOVE    9                   TO  IDY
            MOVE    ZERO                TO  FLG-OK
-           PERFORM VARYING     IDX     FROM    8   BY  -1
-                   UNTIL       IDX     <   1
-               IF      PTHKN-HKNJANUM(IDX:1)   NOT =   SPACE
-                   MOVE    1               TO  FLG-OK
-               END-IF
-               IF      FLG-OK              =   1
-                   COMPUTE IDY         =   IDY     -   1
-                   MOVE    PTHKN-HKNJANUM(IDX:1)   TO  WRK-HKNJA (IDY:1)
-               END-IF
+           PERFORM  VARYING  IDX  FROM  8  BY  -1
+                    UNTIL  IDX  <  1
+             IF   PTHKN-HKNJANUM(IDX:1)   NOT =   SPACE
+               MOVE    1             TO  FLG-OK
+             END-IF
+             IF    FLG-OK  =  1
+               COMPUTE IDY  =   IDY     -   1
+               MOVE    PTHKN-HKNJANUM(IDX:1)   TO  WRK-HKNJA (IDY:1)
+             END-IF
            END-PERFORM
            MOVE    16                  TO  WRK-MOJISU
            MOVE    WRK-HKNJA           TO  WRK-MAE-INPUT
@@ -599,45 +597,45 @@
       *
       *    保険番号マスター検索
            INITIALIZE                  HKNNUM-REC
-           MOVE    SPA-HOSPNUM   TO  HKN-HOSPNUM
+           MOVE    SPA-HOSPNUM         TO  HKN-HOSPNUM
            MOVE    COMB-HKNNUM         TO  HKN-HKNNUM
            MOVE    COMB-TEKSTYMD       TO  HKN-TEKSTYMD
            PERFORM 930-HKNNUM-READ-SEC
-           IF      FLG-HKNNUM      NOT =   ZERO
+           IF      FLG-HKNNUM  NOT =   ZERO
                INITIALIZE              HKNNUM-REC
            END-IF
       *
       *    保険者番号　検索チェック
-           INITIALIZE                    HKNJAINF-REC
-           MOVE    SPA-HOSPNUM           TO  HKNJA-HOSPNUM
-           MOVE    PTHKN-HKNJA-G         TO  HKNJA-HKNJANUM
-           MOVE    HKNJAINF-REC          TO  MCPDATA-REC
-           MOVE    "DBSELECT"            TO  MCP-FUNC
-           MOVE    "tbl_hknjainf"       TO  MCP-TABLE
-           MOVE    "key"                TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN   "       USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    "tbl_hknjainf"      TO  MCP-TABLE
-               MOVE    "key"               TO  MCP-PATHNAME
-               PERFORM 900-HKNJAINF-READ-SEC
+           INITIALIZE                  HKNJAINF-REC
+           MOVE    SPA-HOSPNUM         TO  HKNJA-HOSPNUM
+           MOVE    PTHKN-HKNJA-G       TO  HKNJA-HKNJANUM
+           MOVE    HKNJAINF-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_hknjainf"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF   MCP-RC  =   ZERO
+             MOVE    "tbl_hknjainf"    TO  MCP-TABLE
+             MOVE    "key"             TO  MCP-PATHNAME
+             PERFORM  900-HKNJAINF-READ-SEC
            ELSE
-               INITIALIZE                  HKNJAINF-REC
-               MOVE    1               TO  FLG-HKNJAINF
+             INITIALIZE                HKNJAINF-REC
+             MOVE    1                 TO  FLG-HKNJAINF
            END-IF
       *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_hknjainf"       TO  MCP-TABLE
-           MOVE    "key"                TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN   "       USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
+           MOVE    "tbl_hknjainf"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
       *
       *    帳票編集処理
-           PERFORM 310-HC01-HEN-SEC
+           PERFORM  310-HC01-HEN-SEC
       *    患者病名編集
            PERFORM  311-HC01-HEN-SEC
       *
@@ -1167,10 +1165,7 @@
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
            MOVE    "HC01"              TO  HC01PARA-FORM-ID
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     MOVE    "H01SA4"            TO  HC01PARA2-FORM-ID
            MOVE    "H1A4"              TO  HC01PARA2-FORM-ID
-      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
                                            HC01PARA2-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS
@@ -1344,10 +1339,7 @@
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
            MOVE    "HC01"              TO  HC01PARA-FORM-ID
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     MOVE    "H01SA4"            TO  HC01PARA2-FORM-ID
            MOVE    "H1A4"              TO  HC01PARA2-FORM-ID
-      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    SPA-TERMID          TO  HC01PARA-TERMID
                                            HC01PARA2-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS
