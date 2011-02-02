@@ -29,6 +29,7 @@
       *  Maj/Min/Rev ½¤Àµ¼Ô       ÆüÉÕ      ÆâÍÆ
       *  01.00.01    @@@@-Ìç´Ö    11/01/07  ¥³¥á¥ó¥ÈÍúÎòºï½ü
       *                                     open-cobol1.0ÂÐ±þ
+      *  01.00.02    @@@@-ÅÄÃæ    11/01/20  ÅÀ¿ôÃ±²Á¼èÆÀ¾ò·ï¤ò½¤Àµ
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -151,9 +152,6 @@
            03  WRK-PARA-JOBID        PIC 9(07).
            03  WRK-PARA-SHELLID      PIC X(08).
            03  WRK-PARA-HOSPNUM      PIC 9(02).
-      *--- 20110107 DELETE START ---------------------------------------
-      *     03  RECEERR               PIC X(100).
-      *--- 20110107 DELETE END   ---------------------------------------
       *    ÂÐ¾Ý¿ÇÎÅÇ¯·î
            03  WRK-PARA-SRYYM        PIC X(06).
       *    ¿ÇÎÅ²Ê
@@ -770,61 +768,73 @@
        20013-NYUIN-SET2-SEC                SECTION.
       *
       *    ÅÀ¿ôÃ±²Á¼èÆÀ
-           MOVE     SYU-SYUHKNNUM      TO    WRK-HKNNUM
+           MOVE     SYU-SYUHKNNUM   TO    WRK-HKNNUM
            PERFORM  930-HKNNUM-SET-SEC
-           MOVE     HKN-TENTNK        TO    WRK-TENTNK
+           IF    FLG-HKNNUM    =    1
+             MOVE    10             TO   WRK-TENTNK
+           ELSE
+             MOVE    HKN-TENTNK     TO   WRK-TENTNK
+           END-IF
       *
       *    ¥­¡¼ÀßÄê
-           INITIALIZE                      M01TMP-REC
+           INITIALIZE               M01TMP-REC
       *
-           MOVE    SYU-NYUGAIKBN           TO    M01TMP-NYUGAIKBN
-           MOVE    SYU-SRYKA               TO    M01TMP-SRYKA
+           MOVE    SYU-NYUGAIKBN    TO    M01TMP-NYUGAIKBN
+           MOVE    SYU-SRYKA        TO    M01TMP-SRYKA
       *    TMP¥Õ¥¡¥¤¥ëÆÉ¤ß¹þ¤ß
            PERFORM  800-SKTTMP-READ-SEC
       *
-      *   Æþ±¡ÎÁ²Ã»»
-           MOVE    ZERO                    TO    WRK-SYUEKI
+      *    Æþ±¡ÎÁ²Ã»»
+           MOVE    ZERO             TO    WRK-SYUEKI
            EVALUATE  WRK-HKNNUM
-               WHEN "971"
-               WHEN "973"
-                   IF  SYS-4001-TENKBN  =  "1"
-                       COMPUTE  WRK-SYUEKI  ROUNDED  
-                                        =   SYU-NYN-HKNTEN * 11.5
-                   ELSE
-                       COMPUTE  WRK-SYUEKI   =   SYU-NYN-HKNTEN * 12
-                   END-IF
-               WHEN OTHER
-                   COMPUTE  WRK-SYUEKI   =   SYU-NYN-HKNTEN * WRK-TENTNK
+             WHEN "971"
+             WHEN "973"
+               IF  SYS-4001-TENKBN  =  "1"
+                 COMPUTE  WRK-SYUEKI  ROUNDED  =  SYU-NYN-HKNTEN * 11.5
+               ELSE
+                 COMPUTE  WRK-SYUEKI  =  SYU-NYN-HKNTEN * 12
+               END-IF
+             WHEN  "980"  THRU  "989"
+               IF   SYS-1001-JIHIPOSITION  =  "2"
+                 IF   SYU-NYN-TGMONEY-TAX  NOT =  SPACE
+                   COMPUTE  WRK-SYUEKI  =  SYU-NYN-TGMONEY-TAX
+                 ELSE
+                   COMPUTE  WRK-SYUEKI  =  SYU-NYN-TGMONEY
+                 END-IF
+               END-IF
+             WHEN OTHER
+               COMPUTE  WRK-SYUEKI  =  SYU-NYN-HKNTEN  *  WRK-TENTNK
            END-EVALUATE
       *
-           MOVE     SYU-SKYEDYMD(7:2)      TO    IDA-G
-           IF    WRK-NYUIN-DAY(IDA)    =    1
-               ADD    SYU-NYN-HKNTEN       TO    M01TMP-TENSU(42)
-               ADD    WRK-SYUEKI           TO    M01TMP-SYUEKI(42)
+           MOVE    SYU-SKYEDYMD(7:2)     TO   IDA-G
+           IF    WRK-NYUIN-DAY(IDA)  =  1
+             ADD    SYU-NYN-HKNTEN       TO   M01TMP-TENSU(42)
+             ADD    WRK-SYUEKI           TO   M01TMP-SYUEKI(42)
            ELSE
-               ADD    SYU-NYN-HKNTEN       TO    M01TMP-TENSU(41)
-               ADD    WRK-SYUEKI           TO    M01TMP-SYUEKI(41)
+             ADD    SYU-NYN-HKNTEN       TO   M01TMP-TENSU(41)
+             ADD    WRK-SYUEKI           TO   M01TMP-SYUEKI(41)
            END-IF
+      *
       *    ¿ÇÎÅ¶èÊ¬¡¦¹ç·×²Ã»»
-           ADD      SYU-NYN-HKNTEN         TO    M01TMP-TENSU(40)
-           ADD      WRK-SYUEKI             TO    M01TMP-SYUEKI(40)
-           ADD      SYU-NYN-HKNTEN         TO    M01TMP-TENSU(45)
-           ADD      WRK-SYUEKI             TO    M01TMP-SYUEKI(45)
+           ADD    SYU-NYN-HKNTEN         TO   M01TMP-TENSU(40)
+           ADD    WRK-SYUEKI             TO   M01TMP-SYUEKI(40)
+           ADD    SYU-NYN-HKNTEN         TO   M01TMP-TENSU(45)
+           ADD    WRK-SYUEKI             TO   M01TMP-SYUEKI(45)
       *
       *    ¼¼ÎÁº¹³Û²Ã»»
-           ADD      SYU-RMSAGAKU           TO    M01TMP-SYUEKI(43)
-                                                 M01TMP-SYUEKI(40)
-                                                 M01TMP-SYUEKI(45)
+           ADD    SYU-RMSAGAKU           TO   M01TMP-SYUEKI(43)
+                                              M01TMP-SYUEKI(40)
+                                              M01TMP-SYUEKI(45)
       *
       *    ¿©»ö²Ã»»
-           ADD      SYU-RYOYOHI-SKJ        TO    M01TMP-SYUEKI(43)
-                                                 M01TMP-SYUEKI(40)
-                                                 M01TMP-SYUEKI(45)
+           ADD    SYU-RYOYOHI-SKJ        TO   M01TMP-SYUEKI(43)
+                                              M01TMP-SYUEKI(40)
+                                              M01TMP-SYUEKI(45)
       *
-           IF  FLG-M01TMP   =  1
-               WRITE    M01TMP-REC
+           IF  FLG-M01TMP  =  1
+             WRITE    M01TMP-REC
            ELSE
-               REWRITE  M01TMP-REC
+             REWRITE  M01TMP-REC
            END-IF
       *
            .
