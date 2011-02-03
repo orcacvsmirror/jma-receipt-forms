@@ -29,8 +29,9 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
-      *                           11/01/13  公費請求テーブルを参照
+      *  01.00.02                 11/01/13  公費請求テーブルを参照
       *                                     月途中での本家区分変更へ対応
+      *  01.00.03                 11/01/27  公費請求テーブルの参照方法を変更
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -97,9 +98,7 @@
       *    フラグ領域
        01  FLG-AREA.
            03  FLG-END             PIC 9(01).
-      *--- 20100114 ADD START ------------------------------------------
            03  FLG-END2            PIC 9(01).
-      *--- 20100114 ADD END   ------------------------------------------
            03  FLG-SYSKANRI        PIC 9(01).
            03  FLG-SYSKANRI3       PIC 9(01).
            03  FLG-TYPE            PIC 9(01).
@@ -111,6 +110,7 @@
            03  FLG-ERR             PIC 9(01).
            03  FLG-SYUNOU          PIC 9(01).
            03  FLG-NYUINRRK        PIC 9(01).
+           03  FLG-KOHI            PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -276,12 +276,10 @@
        01  NYUINRRK-REC.
            COPY  "CPPTNYUINRRK.INC".
       *
-      *--- 20100114 ADD START ------------------------------------------
       *    公費請求書
            COPY    "CPKOHSKY.INC"
                    REPLACING  //KOHSKY//
                    BY         //RECE02//.
-      *--- 20100114 ADD END   ------------------------------------------
       *
       *    ジョブ管理マスタ
        01  JOBKANRI-REC.
@@ -291,7 +289,7 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
+           COPY    "CPPRTDATA.INC".
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -301,7 +299,7 @@
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
       *    日付変換サブ
            COPY    "CPORCSDAY.INC".
@@ -336,10 +334,7 @@
       *
            PERFORM 100-INIT-SEC
       *
-      *--- 20100114 CHANGE START ---------------------------------------
-      *     IF    FLG-END    =    1    OR
-           IF    FLG-END2   =    1    OR
-      *--- 20100114 CHANGE END   ---------------------------------------
+           IF    FLG-END    =    1    OR
                  FLG-ERR    =    1
              PERFORM  210-ERR-SEC
            ELSE
@@ -377,8 +372,8 @@
                                                LNK-PRTKANRI-SHELLID
                                                LNK-PRTKANRI-PRIORITY
                                                LNK-PRTKANRI-TERMID
-                                               LNK-PRTKANRI-OPID    
-                                               LNK-PRTKANRI-PRTNM    
+                                               LNK-PRTKANRI-OPID
+                                               LNK-PRTKANRI-PRTNM
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
                                                WRK-PARA-HOSPNUM
@@ -400,7 +395,7 @@
            MOVE    "保留・再請求・月遅れリスト"
                                    TO  JOB-SHELLMSG
            CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
+                                   ORCSJOBKANRIAREA
                                    JOBKANRI-REC
                                    SPA-AREA
       *
@@ -452,7 +447,7 @@
                   PERFORM 500-ERR-HENSYU-SEC
                   MOVE    1               TO    FLG-END
            END-IF
-      *                       
+      *
       *    出力先プリンタ名割り当て情報編集
            MOVE     SPACE         TO        SYS-1031-REC
            INITIALIZE                       SYS-1031-REC
@@ -478,12 +473,8 @@
            END-IF
       *
            IF    FLG-ERR   NOT =  1
-      *--- 20100114 CHANGE START ---------------------------------------
-      *       MOVE    ZERO    TO    FLG-END
-      *       PERFORM  900-SEIKYU-SELECT-SEC
-             MOVE    ZERO    TO    FLG-END2
-             PERFORM 900-KOHSKY-START-SEC
-      *--- 20100114 CHANGE END   ---------------------------------------
+             MOVE    ZERO    TO    FLG-END
+             PERFORM  900-SEIKYU-SELECT-SEC
            END-IF
       *
            .
@@ -498,16 +489,8 @@
            OPEN      OUTPUT A05TMP-FILE
            CLOSE            A05TMP-FILE
            OPEN   I-O       A05TMP-FILE
-      *--- 20100114 ADD START ------------------------------------------
-           PERFORM  UNTIL  FLG-END2  =  1
-      *--- 20100114 ADD END   ------------------------------------------
-      *      一時ファイル編集処理
-             PERFORM  2001-HENSYU-SEC
-      *--- 20100114 ADD START ------------------------------------------
-             PERFORM 900-KOHSKY-READ-SEC
-           END-PERFORM
-           PERFORM 900-KOHSKY-CLOSE-SEC
-      *--- 20100114 ADD END   ------------------------------------------
+      *    一時ファイル編集処理
+           PERFORM  2001-HENSYU-SEC
       *
            CLOSE            A05TMP-FILE
       *    印刷処理
@@ -565,194 +548,395 @@
       *****************************************************************
        2001-HENSYU-SEC                SECTION.
       *    
-      *--- 20100114 CHANGE START ---------------------------------------
-      *     PERFORM  UNTIL  FLG-END  =  1
-           PERFORM  900-SEIKYU-SELECT-SEC
-           IF  FLG-END = 0
-      *--- 20100114 CHANGE END   ---------------------------------------
-      *    ソートキー設定
-             INITIALIZE    A05TMP-REC
+           PERFORM  UNTIL  FLG-END  =  1
       *
-      *    出力区分設定
-             MOVE    FLG-TYPE            TO    A05TMP-SYUTURYOKU
+             IF  ( FLG-KOHI  =  ZERO  AND
+                   FLG-END2  =  ZERO )
+               PERFORM  2002-HENSYU-SEC
+             ELSE
       *
-      *    患者番号設定
-             MOVE    RECE10-PTNUM        TO    A05TMP-PTNUM
+      *        ソートキー設定
+               INITIALIZE    A05TMP-REC
       *
-      *    患者氏名設定
-             MOVE    PTINF-NAME          TO    A05TMP-PTNAME
+      *        出力区分設定
+               MOVE    FLG-TYPE            TO    A05TMP-SYUTURYOKU
       *
-      *    入外区分設定
-             MOVE    RECE10-NYUGAIKBN    TO    A05TMP-NYUGAIKBN
+      *        患者番号設定
+               MOVE    RECE10-PTNUM        TO    A05TMP-PTNUM
       *
-      *    給付割合設定
-             MOVE    RECE10-KYURATE      TO    A05TMP-KYURATE
+      *        患者氏名設定
+               MOVE    PTINF-NAME          TO    A05TMP-PTNAME
       *
-      *    診療年月設定
-             MOVE    RECE10-SRYYM        TO    A05TMP-SRYYM
+      *        入外区分設定
+               MOVE    RECE10-NYUGAIKBN    TO    A05TMP-NYUGAIKBN
       *
-      *    保険者番号設定
-             MOVE    RECE10-HKNJANUM     TO    A05TMP-HKNJANUM
+      *        給付割合設定
+               MOVE    RECE10-KYURATE      TO    A05TMP-KYURATE
       *
-      *    本人・家族区分設定
-             MOVE    RECE10-HONKZKKBN    TO    A05TMP-HONKZKKBN
+      *        診療年月設定
+               MOVE    RECE10-SRYYM        TO    A05TMP-SRYYM
       *
-      *    主保険番号設定
-             MOVE    RECE10-HKNNUM       TO    A05TMP-HKNNUM
+      *        保険者番号設定
+               MOVE    RECE10-HKNJANUM     TO    A05TMP-HKNJANUM
       *
-      *    老人保健番号設定
-             MOVE    RECE10-RJNHKNNUM    TO    A05TMP-RJNHKNNUM
+      *        本人・家族区分設定
+               MOVE    RECE10-HONKZKKBN    TO    A05TMP-HONKZKKBN
       *
-      *    公費番号設定
-             MOVE    RECE10-KOHNUM(1)     TO    A05TMP-KOHNUM1
-             MOVE    RECE10-KOHNUM(2)     TO    A05TMP-KOHNUM2
+      *        主保険番号設定
+               MOVE    RECE10-HKNNUM       TO    A05TMP-HKNNUM
       *
-             INITIALIZE  IDS
-                         SUM-SYUNISSU
-                         WRK-SYUNISSU-TBL
+      *        老人保健番号設定
+               MOVE    RECE10-RJNHKNNUM    TO    A05TMP-RJNHKNNUM
       *
-             IF  ( RECE10-KOHNUM(1)  NOT =  SPACE )
-                 AND  ( RECE10-HKNNUM  =  SPACE )
-      *        他の公費を併用しているか判定
-               IF  ( RECE10-KOHNUM(2)  NOT =  SPACE )
-                 OR ( RECE10-KOHNUM(3) NOT =  SPACE )
-                 OR ( RECE10-KOHNUM(4) NOT =  SPACE )
-                 PERFORM  VARYING  IDX4  FROM  1  BY  1
-                          UNTIL    IDX4  >  4
-                   IF  RECE10-KOHNUM(IDX4)  NOT = SPACE
+      *        公費番号設定
+               MOVE    RECE10-KOHNUM(1)     TO    A05TMP-KOHNUM1
+               MOVE    RECE10-KOHNUM(2)     TO    A05TMP-KOHNUM2
       *
-      *             点数設定
-                     ADD    RECE10-TOTALTEN(IDX4 + 1) TO  A05TMP-TENSU
+               INITIALIZE  IDS
+                           SUM-SYUNISSU
+                           WRK-SYUNISSU-TBL
       *
-      *             薬剤一部負担金
-                     ADD    RECE10-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
-                   END-IF
-                 END-PERFORM
+               IF  ( RECE10-KOHNUM(1)  NOT =  SPACE )
+                   AND  ( RECE10-HKNNUM  =  SPACE )
+      *          他の公費を併用しているか判定
+                 IF  ( RECE10-KOHNUM(2)  NOT =  SPACE )
+                   OR ( RECE10-KOHNUM(3) NOT =  SPACE )
+                   OR ( RECE10-KOHNUM(4) NOT =  SPACE )
+                   PERFORM  VARYING  IDX4  FROM  1  BY  1
+                            UNTIL    IDX4  >  4
+                     IF  RECE10-KOHNUM(IDX4)  NOT = SPACE
       *
-                 PERFORM  VARYING  IDS  FROM  1  BY  1
-                          UNTIL  IDS  >  31
-                   MOVE  RECE10-SRYYM  TO  WRK-SYUYMD(1:6)
-                   MOVE  IDS  TO  WRK-SYUYMD(7:2)
-                   PERFORM  920-SYUNOU-SET-SEC
-                   PERFORM  925-SYUNOU-READ-SEC
-                   IF  FLG-SYUNOU  =  ZERO
-                     IF  SYU-NYUGAIKBN = 2
-                       MOVE  1  TO  WRK-SYUNISSU(IDS)
-                     END-IF
-                   END-IF 
-                   PERFORM  940-SYUNOU-CLOSE-SEC
-                 END-PERFORM
-                 IF  RECE10-NYUGAIKBN = 2
-                   PERFORM  VARYING  IDS  FROM  1  BY  1
-                            UNTIL  IDS > 31
-                     IF  WRK-SYUNISSU(IDS)  =  1
-                       ADD    1        TO  SUM-SYUNISSU
+      *                点数設定
+                       ADD  RECE10-TOTALTEN(IDX4 + 1) TO  A05TMP-TENSU
+      *
+      *                薬剤一部負担金
+                       ADD  RECE10-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
                      END-IF
                    END-PERFORM
-                   MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
-                 ELSE
       *
-      *    対象年月最終日取得
-                   INITIALIZE   WRK-SYSYMD
-                   MOVE    RECE10-SRYYM       TO     WRK-SYSYMD(1:6)
-                   PERFORM  31012-LASTDAY-GET-SEC
-                   PERFORM  900-NYUINRRK-SET-SEC
-                   PERFORM  900-NYUINRRK-READ-SEC
-                   PERFORM  UNTIL  FLG-NYUINRRK  =  1
-      *             開始日設定
-                     IF  RECE10-SRYYM  >  PTNYUINRRK-TENNYUYMD(1:6)
-                       MOVE     1                       TO   IDS2
-                     ELSE
-                       MOVE  PTNYUINRRK-TENNYUYMD(7:2)  TO   IDS2
-                     END-IF
-      *             終了日設定
-                     IF  PTNYUINRRK-TENSTUYMD(1:6)  >  RECE10-SRYYM
-                       MOVE  WRK-SYSYMD(7:2)            TO   IDS3
-                     ELSE
-                       MOVE  PTNYUINRRK-TENSTUYMD(7:2)  TO   IDS3
-                     END-IF
-                     PERFORM  VARYING IDS4  FROM IDS2  BY 1
-                              UNTIL  IDS4  >  IDS3
-                       MOVE   1     TO    WRK-SYUNISSU(IDS4)
+                   PERFORM  VARYING  IDS  FROM  1  BY  1
+                            UNTIL  IDS  >  31
+                     MOVE  RECE10-SRYYM  TO  WRK-SYUYMD(1:6)
+                     MOVE  IDS  TO  WRK-SYUYMD(7:2)
+      *
+                     MOVE  RECE10-HOSPNUM     TO   SYU-HOSPNUM
+                     MOVE  RECE10-NYUGAIKBN   TO   SYU-NYUGAIKBN
+                     MOVE  RECE10-PTID        TO   SYU-PTID
+      *
+                     PERFORM  920-SYUNOU-SET-SEC
+                     PERFORM  925-SYUNOU-READ-SEC
+                     IF  FLG-SYUNOU  =  ZERO
+                       IF  SYU-NYUGAIKBN = 2
+                         MOVE  1  TO  WRK-SYUNISSU(IDS)
+                       END-IF
+                     END-IF 
+                     PERFORM  940-SYUNOU-CLOSE-SEC
+                   END-PERFORM
+                   IF  RECE10-NYUGAIKBN = 2
+                     PERFORM  VARYING  IDS  FROM  1  BY  1
+                              UNTIL  IDS > 31
+                       IF  WRK-SYUNISSU(IDS)  =  1
+                         ADD    1        TO  SUM-SYUNISSU
+                       END-IF
                      END-PERFORM
+                     MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
+                   ELSE
+      *
+      *              対象年月最終日取得
+                     INITIALIZE   WRK-SYSYMD
+                     MOVE    RECE10-SRYYM       TO     WRK-SYSYMD(1:6)
+                     PERFORM  31012-LASTDAY-GET-SEC
+                     MOVE   RECE10-HOSPNUM     TO   PTNYUINRRK-HOSPNUM
+                     MOVE   RECE10-PTID        TO   PTNYUINRRK-PTID
+                     MOVE   RECE10-SRYYM
+                                        TO   PTNYUINRRK-TENNYUYMD(1:6)
+                     MOVE   WRK-SYSYMD(7:2)
+                                        TO   PTNYUINRRK-TENNYUYMD(7:2)
+                     MOVE   RECE10-SRYYM
+                                        TO   PTNYUINRRK-TENSTUYMD(1:6)
+                     MOVE   "01"        TO   PTNYUINRRK-TENSTUYMD(7:2)
+                     PERFORM  900-NYUINRRK-SET-SEC
                      PERFORM  900-NYUINRRK-READ-SEC
-                   END-PERFORM
-                   PERFORM  900-NYUINRRK-CLOSE-SEC
+                     PERFORM  UNTIL  FLG-NYUINRRK  =  1
+      *                開始日設定
+                       IF  RECE10-SRYYM  >  PTNYUINRRK-TENNYUYMD(1:6)
+                         MOVE     1                       TO   IDS2
+                       ELSE
+                         MOVE  PTNYUINRRK-TENNYUYMD(7:2)  TO   IDS2
+                       END-IF
+      *                終了日設定
+                       IF  PTNYUINRRK-TENSTUYMD(1:6)  >  RECE10-SRYYM
+                         MOVE  WRK-SYSYMD(7:2)            TO   IDS3
+                       ELSE
+                         MOVE  PTNYUINRRK-TENSTUYMD(7:2)  TO   IDS3
+                       END-IF
+                       PERFORM  VARYING IDS4  FROM IDS2  BY 1
+                                UNTIL  IDS4  >  IDS3
+                         MOVE   1     TO    WRK-SYUNISSU(IDS4)
+                       END-PERFORM
+                       PERFORM  900-NYUINRRK-READ-SEC
+                     END-PERFORM
+                     PERFORM  900-NYUINRRK-CLOSE-SEC
       *
-                   PERFORM  VARYING  IDS  FROM  1  BY  1
-                            UNTIL  IDS > 31
-                     IF  WRK-SYUNISSU(IDS)  =  1
-                       ADD    1        TO  SUM-SYUNISSU
-                     END-IF
-                   END-PERFORM
-                   MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
+                     PERFORM  VARYING  IDS  FROM  1  BY  1
+                              UNTIL  IDS > 31
+                       IF  WRK-SYUNISSU(IDS)  =  1
+                         ADD    1        TO  SUM-SYUNISSU
+                       END-IF
+                     END-PERFORM
+                     MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
       *
+                   END-IF
+                 ELSE
+      *            日数設定
+                   MOVE    RECE10-JNISSU(2)     TO    A05TMP-NISSU
+      *
+      *            点数設定
+                   MOVE    RECE10-TOTALTEN(2)   TO    A05TMP-TENSU
+      *
+      *            薬剤一部負担金
+                   MOVE    RECE10-YKZFTN(2)     TO    A05TMP-YKZFTN
                  END-IF
                ELSE
       *          日数設定
-                 MOVE    RECE10-JNISSU(2)     TO    A05TMP-NISSU
+                 MOVE    RECE10-JNISSU(1)     TO    A05TMP-NISSU
       *
       *          点数設定
-                 MOVE    RECE10-TOTALTEN(2)   TO    A05TMP-TENSU
+                 MOVE    RECE10-TOTALTEN(1)   TO    A05TMP-TENSU
       *
       *          薬剤一部負担金
-                 MOVE    RECE10-YKZFTN(2)     TO    A05TMP-YKZFTN
+                 MOVE    RECE10-YKZFTN(1)     TO    A05TMP-YKZFTN
                END-IF
-             ELSE
-      *        日数設定
-               MOVE    RECE10-JNISSU(1)     TO    A05TMP-NISSU
       *
-      *        点数設定
-               MOVE    RECE10-TOTALTEN(1)   TO    A05TMP-TENSU
-      *
-      *        薬剤一部負担金
-               MOVE    RECE10-YKZFTN(1)     TO    A05TMP-YKZFTN
-             END-IF
-      *
-             IF  ( RECE10-KOHNUM(1) =  SPACE )
-                 AND ( RECE10-KOHNUM(2) =  SPACE )
-                 AND ( RECE10-KOHNUM(3) =  SPACE )
-                 AND ( RECE10-KOHNUM(4) =  SPACE )
-                 MOVE    RECE10-FTNMONEY(1)   TO    A05TMP-ITBFTN
-             ELSE
-                 IF  RECE10-KOHNUM(2) =  SPACE 
-                   MOVE    RECE10-FTNMONEY(2)   TO    A05TMP-ITBFTN
-                 ELSE
-                   IF  RECE10-KOHNUM(3) =  SPACE 
-                     MOVE    RECE10-FTNMONEY(3)   TO    A05TMP-ITBFTN
+               IF  ( RECE10-KOHNUM(1) =  SPACE )
+                   AND ( RECE10-KOHNUM(2) =  SPACE )
+                   AND ( RECE10-KOHNUM(3) =  SPACE )
+                   AND ( RECE10-KOHNUM(4) =  SPACE )
+                   MOVE    RECE10-FTNMONEY(1)   TO    A05TMP-ITBFTN
+               ELSE
+                   IF  RECE10-KOHNUM(2) =  SPACE 
+                     MOVE    RECE10-FTNMONEY(2)   TO    A05TMP-ITBFTN
                    ELSE
-                     IF  RECE10-KOHNUM(4) =  SPACE 
-                       MOVE  RECE10-FTNMONEY(4)   TO    A05TMP-ITBFTN
+                     IF  RECE10-KOHNUM(3) =  SPACE 
+                       MOVE    RECE10-FTNMONEY(3)   TO    A05TMP-ITBFTN
                      ELSE
-                       MOVE  RECE10-FTNMONEY(5)   TO    A05TMP-ITBFTN
+                       IF  RECE10-KOHNUM(4) =  SPACE 
+                         MOVE  RECE10-FTNMONEY(4)   TO    A05TMP-ITBFTN
+                       ELSE
+                         MOVE  RECE10-FTNMONEY(5)   TO    A05TMP-ITBFTN
+                       END-IF
                      END-IF
                    END-IF
-                 END-IF
+               END-IF
+      *
+      *        食事日数
+               MOVE    RECE10-SHOKUJINISSU(1)  TO    A05TMP-SNISSU
+      *
+      *        食事療養費
+               MOVE    RECE10-SHOKUJIRYOYOHI(1)  TO  A05TMP-SKINGK
+      *
+      *        標準負担額
+               MOVE    RECE10-SHOKUJIFTN(1)    TO    A05TMP-SFTNGK
+      *
              END-IF
       *
-      *--- 20110107 CHANGE START ---------------------------------------
-      *    食事日数
-      *       MOVE    RECE10-SHOKUJINISSU  TO    A05TMP-SNISSU
-             MOVE    RECE10-SHOKUJINISSU(1)  TO    A05TMP-SNISSU
-      *
-      *    食事療養費
-      *       MOVE    RECE10-SHOKUJIRYOYOHI  TO  A05TMP-SKINGK
-             MOVE    RECE10-SHOKUJIRYOYOHI(1)  TO  A05TMP-SKINGK
-      *
-      *    標準負担額
-      *       MOVE    RECE10-SHOKUJIFTN    TO    A05TMP-SFTNGK
-             MOVE    RECE10-SHOKUJIFTN(1)    TO    A05TMP-SFTNGK
-      *--- 20110107 CHANGE END   ---------------------------------------
-      *
              WRITE  A05TMP-REC
-      *--- 20100114 CHANGE START ---------------------------------------
-      *       PERFORM  900-SEIKYU-READ-SEC
-      *     END-PERFORM
-           END-IF
-      *--- 20100114 CHANGE END   ---------------------------------------
+             PERFORM  900-SEIKYU-READ-SEC
+           END-PERFORM
       *
            .
        2001-HENSYU-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    一時ファイル編集処理２
+      *****************************************************************
+       2002-HENSYU-SEC                SECTION.
+      *
+      *    ソートキー設定
+           INITIALIZE    A05TMP-REC
+      *
+      *    出力区分設定
+           MOVE    FLG-TYPE            TO    A05TMP-SYUTURYOKU
+      *
+      *    患者番号設定
+           MOVE    RECE02-PTNUM        TO    A05TMP-PTNUM
+      *
+      *    患者氏名設定
+           MOVE    PTINF-NAME          TO    A05TMP-PTNAME
+      *
+      *    入外区分設定
+           MOVE    RECE02-NYUGAIKBN    TO    A05TMP-NYUGAIKBN
+      *
+      *    給付割合設定
+           MOVE    ZERO                TO    A05TMP-KYURATE
+      *
+      *    診療年月設定
+           MOVE    RECE02-SRYYM        TO    A05TMP-SRYYM
+      *
+      *    保険者番号設定
+           MOVE    "00000000"          TO    A05TMP-HKNJANUM
+      *
+      *    本人・家族区分設定
+           MOVE    SPACE               TO    A05TMP-HONKZKKBN
+      *
+      *    主保険番号設定
+           MOVE    SPACE               TO    A05TMP-HKNNUM
+      *
+      *    老人保健番号設定
+           MOVE    RECE02-RJNHKNNUM    TO    A05TMP-RJNHKNNUM
+      *
+      *    公費番号設定
+           MOVE    RECE02-KOHNUM(1)    TO    A05TMP-KOHNUM1
+           MOVE    RECE02-KOHNUM(2)    TO    A05TMP-KOHNUM2
+      *
+           INITIALIZE  IDS
+                       SUM-SYUNISSU
+                       WRK-SYUNISSU-TBL
+      *
+           IF  ( RECE02-KOHNUM(1)  NOT =  SPACE )
+               AND  ( RECE02-HKNNUM  =  SPACE )
+      *      他の公費を併用しているか判定
+             IF  ( RECE02-KOHNUM(2)  NOT =  SPACE )
+               OR ( RECE02-KOHNUM(3) NOT =  SPACE )
+               OR ( RECE02-KOHNUM(4) NOT =  SPACE )
+               PERFORM  VARYING  IDX4  FROM  1  BY  1
+                        UNTIL    IDX4  >  4
+                 IF  RECE02-KOHNUM(IDX4)  NOT = SPACE
+      *
+      *           点数設定
+                   ADD    RECE02-TOTALTEN(IDX4 + 1) TO  A05TMP-TENSU
+      *
+      *           薬剤一部負担金
+                   ADD    RECE02-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
+                 END-IF
+               END-PERFORM
+      *
+               PERFORM  VARYING  IDS  FROM  1  BY  1
+                        UNTIL  IDS  >  31
+                 MOVE  RECE02-SRYYM  TO  WRK-SYUYMD(1:6)
+                 MOVE  IDS  TO  WRK-SYUYMD(7:2)
+      *
+                 MOVE   RECE02-HOSPNUM     TO   SYU-HOSPNUM
+                 MOVE   RECE02-NYUGAIKBN   TO   SYU-NYUGAIKBN
+                 MOVE   RECE02-PTID        TO   SYU-PTID
+      *
+                 PERFORM  920-SYUNOU-SET-SEC
+                 PERFORM  925-SYUNOU-READ-SEC
+                 IF  FLG-SYUNOU  =  ZERO
+                   IF  SYU-NYUGAIKBN = 2
+                     MOVE  1  TO  WRK-SYUNISSU(IDS)
+                   END-IF
+                 END-IF 
+                 PERFORM  940-SYUNOU-CLOSE-SEC
+               END-PERFORM
+               IF  RECE02-NYUGAIKBN = 2
+                 PERFORM  VARYING  IDS  FROM  1  BY  1
+                          UNTIL  IDS > 31
+                   IF  WRK-SYUNISSU(IDS)  =  1
+                     ADD    1        TO  SUM-SYUNISSU
+                   END-IF
+                 END-PERFORM
+                 MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
+               ELSE
+      *
+      *    対象年月最終日取得
+                 INITIALIZE   WRK-SYSYMD
+                 MOVE    RECE02-SRYYM       TO     WRK-SYSYMD(1:6)
+                 PERFORM  31012-LASTDAY-GET-SEC
+      *
+                 MOVE   RECE02-HOSPNUM     TO  PTNYUINRRK-HOSPNUM
+                 MOVE   RECE02-PTID        TO  PTNYUINRRK-PTID
+                 MOVE   RECE02-SRYYM       TO  PTNYUINRRK-TENNYUYMD(1:6)
+                 MOVE   WRK-SYSYMD(7:2)    TO  PTNYUINRRK-TENNYUYMD(7:2)
+                 MOVE   RECE02-SRYYM       TO  PTNYUINRRK-TENSTUYMD(1:6)
+                 MOVE   "01"               TO  PTNYUINRRK-TENSTUYMD(7:2)
+      *
+                 PERFORM  900-NYUINRRK-SET-SEC
+                 PERFORM  900-NYUINRRK-READ-SEC
+                 PERFORM  UNTIL  FLG-NYUINRRK  =  1
+      *           開始日設定
+                   IF  RECE02-SRYYM  >  PTNYUINRRK-TENNYUYMD(1:6)
+                     MOVE     1                       TO   IDS2
+                   ELSE
+                     MOVE  PTNYUINRRK-TENNYUYMD(7:2)  TO   IDS2
+                   END-IF
+      *           終了日設定
+                   IF  PTNYUINRRK-TENSTUYMD(1:6)  >  RECE02-SRYYM
+                     MOVE  WRK-SYSYMD(7:2)            TO   IDS3
+                   ELSE
+                     MOVE  PTNYUINRRK-TENSTUYMD(7:2)  TO   IDS3
+                   END-IF
+                   PERFORM  VARYING IDS4  FROM IDS2  BY 1
+                            UNTIL  IDS4  >  IDS3
+                     MOVE   1     TO    WRK-SYUNISSU(IDS4)
+                   END-PERFORM
+                   PERFORM  900-NYUINRRK-READ-SEC
+                 END-PERFORM
+                 PERFORM  900-NYUINRRK-CLOSE-SEC
+      *
+                 PERFORM  VARYING  IDS  FROM  1  BY  1
+                          UNTIL  IDS > 31
+                   IF  WRK-SYUNISSU(IDS)  =  1
+                     ADD    1        TO  SUM-SYUNISSU
+                   END-IF
+                 END-PERFORM
+                 MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
+      *
+               END-IF
+             ELSE
+      *        日数設定
+               MOVE    RECE02-JNISSU(2)     TO    A05TMP-NISSU
+      *
+      *        点数設定
+               MOVE    RECE02-TOTALTEN(2)   TO    A05TMP-TENSU
+      *
+      *        薬剤一部負担金
+               MOVE    RECE02-YKZFTN(2)     TO    A05TMP-YKZFTN
+             END-IF
+           ELSE
+      *      日数設定
+             MOVE    RECE02-JNISSU(1)     TO    A05TMP-NISSU
+      *
+      *      点数設定
+             MOVE    RECE02-TOTALTEN(1)   TO    A05TMP-TENSU
+      *
+      *      薬剤一部負担金
+             MOVE    RECE02-YKZFTN(1)     TO    A05TMP-YKZFTN
+           END-IF
+      *
+           IF  ( RECE02-KOHNUM(1) =  SPACE )
+               AND ( RECE02-KOHNUM(2) =  SPACE )
+               AND ( RECE02-KOHNUM(3) =  SPACE )
+               AND ( RECE02-KOHNUM(4) =  SPACE )
+               MOVE    RECE02-FTNMONEY(1)   TO    A05TMP-ITBFTN
+           ELSE
+               IF  RECE02-KOHNUM(2) =  SPACE 
+                 MOVE    RECE02-FTNMONEY(2)   TO    A05TMP-ITBFTN
+               ELSE
+                 IF  RECE02-KOHNUM(3) =  SPACE 
+                   MOVE    RECE02-FTNMONEY(3)   TO    A05TMP-ITBFTN
+                 ELSE
+                   IF  RECE02-KOHNUM(4) =  SPACE 
+                     MOVE  RECE02-FTNMONEY(4)   TO    A05TMP-ITBFTN
+                   ELSE
+                     MOVE  RECE02-FTNMONEY(5)   TO    A05TMP-ITBFTN
+                   END-IF
+                 END-IF
+               END-IF
+           END-IF
+      *
+      *    食事日数
+           MOVE    RECE02-SHOKUJINISSU(1)  TO    A05TMP-SNISSU
+      *
+      *    食事療養費
+           MOVE    RECE02-SHOKUJIRYOYOHI(1)  TO  A05TMP-SKINGK
+      *
+      *    標準負担額
+           MOVE    RECE02-SHOKUJIFTN(1)    TO    A05TMP-SFTNGK
+      *
+           .
+       2002-HENSYU-EXT.
            EXIT.
       *
       *****************************************************************
@@ -795,16 +979,10 @@
              MOVE   ZERO  TO  WRK-STARTKBN
                         
              PERFORM  UNTIL    FLG-PRINT   =  1
-      *--- 20110107 CHANGE START ---------------------------------------
-      *         IF   WRK-STARTKBN  =  0
                IF   WRK-STARTKBN  =  "0"
-      *--- 20110107 CHANGE START ---------------------------------------
       *    CSV頭書き出力
                  PERFORM  210-CSV-HED-SEC
-      *--- 20110107 CHANGE START ---------------------------------------
-      *           MOVE   1   TO   WRK-STARTKBN
                  MOVE   "1"   TO   WRK-STARTKBN
-      *--- 20110107 CHANGE START ---------------------------------------
                END-IF
                IF A05TMP-SYUTURYOKU  NOT =  WRK-STUKBN
                  PERFORM   220-G-CSV-WRITE-SEC
@@ -1060,10 +1238,9 @@
            EXIT.
       *      
       *****************************************************************
-      *          *    帳票編集処理2
+      *    帳票編集処理2
       *****************************************************************
        330-PRINT-OUT-SEC         SECTION.
-      *
       *
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"               TO  SPRT-MODE
@@ -1108,263 +1285,208 @@
            .
        900-TMP-READ-EXT.
            EXIT.
-      *      
-      *--- 20100114 CHANGE START ---------------------------------------
-      *****************************************************************
-      *    公費請求書マスタ読込
-      *****************************************************************
-       900-KOHSKY-START-SEC            SECTION.
       *
-           INITIALIZE                  RECE02-REC
-           MOVE    SPA-HOSPNUM         TO  RECE02-HOSPNUM
-           MOVE    RECE02-REC          TO  MCPDATA-REC
-      *
-           MOVE    "DBSELECT"          TO  MCP-FUNC
-           MOVE    "tbl_kohsky"        TO  MCP-TABLE
-           MOVE    "all"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-      *
-           IF      MCP-RC              =   ZERO
-             MOVE    ZERO            TO  FLG-END2
-             PERFORM 900-KOHSKY-READ-SEC
-           ELSE
-             MOVE    1               TO  FLG-END2
-           END-IF
-      *
-           .
-       900-KOHSKY-START-EXT.
-           EXIT.
-      *      
-      *****************************************************************
-      *    公費請求書マスタＲＥＡＤ
-      *****************************************************************
-       900-KOHSKY-READ-SEC         SECTION.
-      *
-           MOVE    "DBFETCH"           TO  MCP-FUNC
-           MOVE    "tbl_kohsky"        TO  MCP-TABLE
-           MOVE    "all"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-      *
-           IF       MCP-RC  =     ZERO
-             INITIALIZE                 RECE02-REC
-             MOVE     MCPDATA-REC   TO  RECE02-REC
-             PERFORM  9001-CHK-SEC
-      *    テスト患者は対象外
-             PERFORM  900-PTINF-READ-SEC
-             IF      FLG-PTINF           =   ZERO
-               AND     PTINF-TSTPTNUMKBN   =   "1"
-                 GO    TO    900-KOHSKY-READ-SEC
-             END-IF
-             IF  FLG-TYPE NOT  =  ZERO
-               ADD    1    TO    CNT-RECE10
-             ELSE
-               GO    TO    900-KOHSKY-READ-SEC
-             END-IF
-           ELSE
-             MOVE    1             TO      FLG-END2
-           END-IF
-           .
-       900-KOHSKY-READ-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    公費請求書マスタCLOSE
-      *****************************************************************
-       900-KOHSKY-CLOSE-SEC        SECTION.
-      *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_kohsky"        TO  MCP-TABLE
-           MOVE    "all"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-      *
-           .
-       900-KOHSKY-CLOSE-EXT.
-           EXIT.
-      *****************************************************************
+      ******************************************************************
       *    請求管理読込
-      *****************************************************************
+      ******************************************************************
        900-SEIKYU-SELECT-SEC             SECTION.
       *
       *    請求管理ＤＢ検索
            INITIALIZE                   RECE10-REC
-           MOVE    RECE02-HOSPNUM       TO  RECE10-HOSPNUM
-           MOVE    RECE02-SRYYM         TO  RECE10-SRYYM
-           MOVE    RECE02-NYUGAIKBN     TO  RECE10-NYUGAIKBN
-           MOVE    RECE02-PTID          TO  RECE10-PTID
-           MOVE    RECE02-RECEKA        TO  RECE10-RECEKA 
-           MOVE    RECE02-TEISYUTUSAKI  TO  RECE10-TEISYUTUSAKI
-           MOVE    RECE02-HKNJANUM-KEY  TO  RECE10-HKNJANUM
-           MOVE    RECE02-HOJOKBN-KEY   TO  RECE10-HOJOKBN-KEY
-           MOVE    RECE02-TEKSTYMD      TO  RECE10-TEKSTYMD
-           MOVE    RECE10-REC           TO  MCPDATA-REC
-           MOVE    "DBSELECT"           TO  MCP-FUNC
+           MOVE   SPA-HOSPNUM           TO  RECE10-HOSPNUM
+           MOVE   RECE10-REC            TO  MCPDATA-REC
+           MOVE   "DBSELECT"            TO  MCP-FUNC
            MOVE    "tbl_seikyu"         TO  MCP-TABLE
-           MOVE    "key15"              TO  MCP-PATHNAME
+           MOVE    "all"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
       *
            IF     MCP-RC        =       ZERO
-             MOVE    "DBFETCH"            TO  MCP-FUNC
-             MOVE    "tbl_seikyu"         TO  MCP-TABLE
-             MOVE    "key15"              TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"          USING
-                                          MCPAREA
-                                          MCPDATA-REC
-                                          SPA-AREA
-      *
-             IF       MCP-RC  =     ZERO
-               MOVE    MCPDATA-REC          TO    RECE10-REC
-               MOVE    ZERO                 TO    FLG-END
-             ELSE
-               MOVE    1                    TO    FLG-END
-             END-IF
+                  MOVE    ZERO                TO    FLG-END
+                  PERFORM  900-SEIKYU-READ-SEC
            ELSE
-             MOVE    1                    TO    FLG-END
-             INITIALIZE                   RECE10-REC
+                  MOVE    1    TO      FLG-END
            END-IF
-      *
-           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
-           MOVE    "tbl_seikyu"         TO  MCP-TABLE
-           MOVE    "key15"              TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
            .
       *
        900-SEIKYU-SELECT-EXT.
            EXIT.
       *
-      ******************************************************************
-      **    請求管理読込
-      ******************************************************************
-      * 900-SEIKYU-SELECT-SEC             SECTION.
-      **
-      **    請求管理ＤＢ検索
-      *     INITIALIZE         RECE10-REC
-      *     MOVE    SPA-HOSPNUM     TO  RECE10-HOSPNUM
-      *     MOVE   RECE10-REC            TO    MCPDATA-REC
-      *     MOVE   "DBSELECT"            TO    MCP-FUNC
-      *     MOVE    "tbl_seikyu"         TO  MCP-TABLE
-      *     MOVE    "all"                TO  MCP-PATHNAME
-      *     CALL    "ORCDBMAIN"          USING
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      *                                  SPA-AREA
-      **
-      *     IF     MCP-RC        =       ZERO
-      *            MOVE    ZERO                TO    FLG-END
-      *            PERFORM  900-SEIKYU-READ-SEC
-      *     ELSE
-      *            MOVE    1    TO      FLG-END
-      *     END-IF
-      *     .
-      **
-      * 900-SEIKYU-SELECT-EXT.
-      *     EXIT.
-      **
-      ******************************************************************
-      **    請求マスター読込
-      ******************************************************************
-      * 900-SEIKYU-READ-SEC           SECTION.
-      **
-      *     MOVE   "DBFETCH"     TO      MCP-FUNC
-      *     MOVE    "tbl_seikyu"         TO  MCP-TABLE
-      *     MOVE    "all"                TO  MCP-PATHNAME
-      *     CALL    "ORCDBMAIN"          USING
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      *                                  SPA-AREA
-      **
-      *     IF       MCP-RC  =     ZERO
-      *              INITIALIZE                    RECE10-REC
-      *              MOVE    MCPDATA-REC   TO      RECE10-REC
-      *              PERFORM  9001-CHK-SEC
-      **    テスト患者は対象外
-      *              PERFORM  900-PTINF-READ-SEC
-      *              IF      FLG-PTINF           =   ZERO
-      *                AND     PTINF-TSTPTNUMKBN   =   "1"
-      *                  GO    TO    900-SEIKYU-READ-SEC
-      *              END-IF
-      *              IF  FLG-TYPE NOT  =  ZERO
-      *                ADD    1    TO    CNT-RECE10
-      *              ELSE
-      *                GO    TO    900-SEIKYU-READ-SEC
-      *              END-IF
-      *     ELSE
-      *              MOVE    1             TO      FLG-END
-      *     END-IF
-      *     .
-      **
-      * 900-SEIKYU-READ-EXT.
-      *     EXIT.
-      **
-      ******************************************************************
-      **    請求情報クローズ
-      ******************************************************************
-      * 900-SEIKYU-CLOSE-SEC  SECTION.
-      **
-      *     MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *     MOVE    "tbl_syunou"         TO  MCP-TABLE
-      *     MOVE    "all"                TO  MCP-PATHNAME
-      *     CALL    "ORCDBMAIN"          USING
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      *                                  SPA-AREA
-      **
-      *     .
-      * 900-SEIKYU-CLOSE-EXT.
-      *     EXIT.
-      *--- 20100114 CHANGE END   ---------------------------------------
+      *****************************************************************
+      *    請求マスター読込
+      *****************************************************************
+       900-SEIKYU-READ-SEC           SECTION.
       *
+           MOVE    1                    TO  FLG-KOHI
+                                            FLG-END2
+      *
+           MOVE    "DBFETCH"            TO  MCP-FUNC
+           MOVE    "tbl_seikyu"         TO  MCP-TABLE
+           MOVE    "all"                TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           IF       MCP-RC  =     ZERO
+                    INITIALIZE                    RECE10-REC
+                    MOVE    MCPDATA-REC   TO      RECE10-REC
+      *
+                    IF  (  RECE10-SKYYM     =  "000000"    AND
+                           RECE10-HENREIYM  =  "000000"  )
+                      PERFORM  900-KOHSKY-READ-SEC
+                      IF  (  RECE10-KOHNUM(1)      =  SPACE    AND
+                             RECE02-KOHNUM(1)  NOT =  SPACE  )
+                        PERFORM  9002-CHK-SEC
+                        IF  FLG-TYPE NOT  =  ZERO
+                          MOVE   ZERO   TO   FLG-KOHI
+                        END-IF
+                      ELSE
+                        PERFORM  9001-CHK-SEC
+                      END-IF
+                    ELSE
+                      PERFORM  9001-CHK-SEC
+                    END-IF
+      *
+      *    テスト患者は対象外
+                    PERFORM  900-PTINF-READ-SEC
+                    IF      FLG-PTINF           =   ZERO
+                      AND     PTINF-TSTPTNUMKBN   =   "1"
+                        GO    TO    900-SEIKYU-READ-SEC
+                    END-IF
+                    IF  FLG-TYPE NOT  =  ZERO
+                      ADD    1    TO    CNT-RECE10
+                    ELSE
+                      GO    TO    900-SEIKYU-READ-SEC
+                    END-IF
+           ELSE
+                    MOVE    1             TO      FLG-END
+           END-IF
+           .
+      *
+       900-SEIKYU-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    請求情報クローズ
+      *****************************************************************
+       900-SEIKYU-CLOSE-SEC  SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_seikyu"         TO  MCP-TABLE
+           MOVE    "all"                TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       900-SEIKYU-CLOSE-EXT.
+           EXIT.
+      *
+      ******************************************************************
+      *    公費請求書マスタ読込
+      ******************************************************************
+       900-KOHSKY-READ-SEC            SECTION.
+      *
+           INITIALIZE                    RECE02-REC
+           MOVE    RECE10-HOSPNUM        TO  RECE02-HOSPNUM
+           MOVE    RECE10-SRYYM          TO  RECE02-SRYYM
+           MOVE    RECE10-NYUGAIKBN      TO  RECE02-NYUGAIKBN
+           MOVE    RECE10-PTID           TO  RECE02-PTID
+           MOVE    RECE10-RECEKA         TO  RECE02-RECEKA 
+           MOVE    RECE10-TEISYUTUSAKI   TO  RECE02-TEISYUTUSAKI
+           MOVE    RECE10-RECESYUBETU    TO  RECE02-RECESYUBETU
+           MOVE    RECE10-HKNJANUM       TO  RECE02-HKNJANUM-KEY
+           MOVE    RECE10-HOJOKBN-KEY    TO  RECE02-HOJOKBN-KEY
+           MOVE    RECE10-TEKSTYMD       TO  RECE02-TEKSTYMD
+           MOVE    RECE02-REC            TO  MCPDATA-REC
+      *
+           MOVE    "DBSELECT"            TO  MCP-FUNC
+           MOVE    "tbl_kohsky"          TO  MCP-TABLE
+           MOVE    "key"                 TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
+           IF      MCP-RC              =   ZERO
+             MOVE    "DBFETCH"             TO  MCP-FUNC
+             MOVE    "tbl_kohsky"          TO  MCP-TABLE
+             MOVE    "key"                 TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"           USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+             IF      MCP-RC              =   ZERO
+               MOVE    MCPDATA-REC           TO  RECE02-REC
+               MOVE    ZERO                  TO  FLG-END2
+             ELSE
+               INITIALIZE                        RECE02-REC
+                MOVE     1                   TO  FLG-END2
+             END-IF
+           ELSE
+             MOVE    1                     TO  FLG-END2
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"       TO  MCP-FUNC
+           MOVE    "tbl_kohsky"          TO  MCP-TABLE
+           MOVE    "key"                 TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
+           .
+       900-KOHSKY-READ-EXT.
+           EXIT.
       *****************************************************************
       *    請求管理対象判定処理(出力区分)
       *****************************************************************
        9001-CHK-SEC                 SECTION.
       *
-      *--- 20100114 CHANGE START ---------------------------------------
       *    保留判定
-      *     MOVE  ZERO            TO      FLG-TYPE
-      *     IF    WRK-PARA-SYUTURYOKU  =  "1" OR "9"
-      *       IF    RECE10-SKYKBN      =  "0"
-      *         MOVE    1         TO      FLG-TYPE
-      *       END-IF
-      *     END-IF
-      **
-      **    月遅れ判定
-      *     IF    FLG-TYPE               =  ZERO
-      *       IF    WRK-PARA-SYUTURYOKU  =  "2" OR "9"
-      *         IF    RECE10-SKYYM       =    WRK-PARA-SKYYM   AND
-      *               RECE10-SKYKBN      =    "1"              AND
-      *               RECE10-SRYYM  NOT  =    "000000"         AND
-      *               RECE10-HENREIYM    =    "000000"
-      *               MOVE     2         TO   FLG-TYPE
-      *         END-IF
-      *       END-IF
-      *     END-IF
-      **
-      **    再請求判定
-      *     IF    FLG-TYPE               =  ZERO
-      *       IF    WRK-PARA-SYUTURYOKU  =  "3" OR "9"
-      *         IF    RECE10-SKYYM       =    WRK-PARA-SKYYM   AND
-      *               RECE10-SKYKBN      =    "1"              AND
-      *               RECE10-SRYYM  NOT  =    "000000"         AND
-      *               RECE10-HENREIYM NOT   =    "000000"
-      *               MOVE     3         TO   FLG-TYPE
-      *         END-IF
-      *       END-IF
-      *     END-IF
+           MOVE  ZERO            TO      FLG-TYPE
+           IF    WRK-PARA-SYUTURYOKU  =  "1" OR "9"
+             IF    RECE10-SKYKBN      =  "0"
+               MOVE    1         TO      FLG-TYPE
+             END-IF
+           END-IF
+      *
+      *    月遅れ判定
+           IF    FLG-TYPE               =  ZERO
+             IF    WRK-PARA-SYUTURYOKU  =  "2" OR "9"
+               IF    RECE10-SKYYM       =    WRK-PARA-SKYYM   AND
+                     RECE10-SKYKBN      =    "1"              AND
+                     RECE10-SRYYM  NOT  =    "000000"         AND
+                     RECE10-HENREIYM    =    "000000"
+                     MOVE     2         TO   FLG-TYPE
+               END-IF
+             END-IF
+           END-IF
+      *
+      *    再請求判定
+           IF    FLG-TYPE               =  ZERO
+             IF    WRK-PARA-SYUTURYOKU  =  "3" OR "9"
+               IF    RECE10-SKYYM       =    WRK-PARA-SKYYM   AND
+                     RECE10-SKYKBN      =    "1"              AND
+                     RECE10-SRYYM  NOT  =    "000000"         AND
+                     RECE10-HENREIYM NOT   =    "000000"
+                     MOVE     3         TO   FLG-TYPE
+               END-IF
+             END-IF
+           END-IF
+      *
+          .
+       9001-CHK-EXT.
+           EXIT.
+      *****************************************************************
+      *    請求管理対象判定処理(出力区分)
+      *****************************************************************
+       9002-CHK-SEC                 SECTION.
+      *
       *    保留判定
            MOVE  ZERO            TO      FLG-TYPE
            IF    WRK-PARA-SYUTURYOKU       =    "1" OR "9"
@@ -1396,29 +1518,25 @@
                END-IF
              END-IF
            END-IF
-      *--- 20100114 CHANGE END   ---------------------------------------
       *
           .
-       9001-CHK-EXT.
+       9002-CHK-EXT.
            EXIT.
       *****************************************************************
-      *  収納情報セット
+      *    収納情報セット
       *****************************************************************
        920-SYUNOU-SET-SEC  SECTION.
       *
-             INITIALIZE  SYUNOU-REC
-             MOVE   RECE10-HOSPNUM     TO   SYU-HOSPNUM
-             MOVE   RECE10-NYUGAIKBN   TO   SYU-NYUGAIKBN
-             MOVE   RECE10-PTID        TO   SYU-PTID
-             MOVE   WRK-SYUYMD         TO   SYU-SRYYMD
-             MOVE   SYUNOU-REC         TO   MCPDATA-REC
-             MOVE   "DBSELECT"         TO   MCP-FUNC
-             MOVE   "tbl_syunou"       TO   MCP-TABLE
-             MOVE   "key14"            TO   MCP-PATHNAME
-             CALL   "ORCDBMAIN"        USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
+           INITIALIZE                SYUNOU-REC
+           MOVE   WRK-SYUYMD         TO   SYU-SRYYMD
+           MOVE   SYUNOU-REC         TO   MCPDATA-REC
+           MOVE   "DBSELECT"         TO   MCP-FUNC
+           MOVE   "tbl_syunou"       TO   MCP-TABLE
+           MOVE   "key14"            TO   MCP-PATHNAME
+           CALL   "ORCDBMAIN"        USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
            IF  MCP-RC  =  ZERO
              MOVE   ZERO            TO   FLG-SYUNOU
            ELSE
@@ -1472,21 +1590,15 @@
       *****************************************************************
        900-NYUINRRK-SET-SEC  SECTION.
       *
-             INITIALIZE  NYUINRRK-REC
-             MOVE   RECE10-HOSPNUM     TO   PTNYUINRRK-HOSPNUM
-             MOVE   RECE10-PTID        TO   PTNYUINRRK-PTID
-             MOVE   RECE10-SRYYM       TO   PTNYUINRRK-TENNYUYMD(1:6)
-             MOVE   WRK-SYSYMD(7:2)    TO   PTNYUINRRK-TENNYUYMD(7:2)
-             MOVE   RECE10-SRYYM       TO   PTNYUINRRK-TENSTUYMD(1:6)
-             MOVE   "01"               TO   PTNYUINRRK-TENSTUYMD(7:2)
-             MOVE   NYUINRRK-REC       TO   MCPDATA-REC
-             MOVE   "DBSELECT"         TO   MCP-FUNC
-             MOVE   "tbl_ptnyuinrrk"   TO   MCP-TABLE
-             MOVE   "key19"            TO   MCP-PATHNAME
-             CALL   "ORCDBMAIN"        USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
+           INITIALIZE                NYUINRRK-REC
+           MOVE   NYUINRRK-REC       TO   MCPDATA-REC
+           MOVE   "DBSELECT"         TO   MCP-FUNC
+           MOVE   "tbl_ptnyuinrrk"   TO   MCP-TABLE
+           MOVE   "key19"            TO   MCP-PATHNAME
+           CALL   "ORCDBMAIN"        USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
            IF  MCP-RC  =  ZERO
              MOVE   ZERO            TO   FLG-NYUINRRK
            ELSE
@@ -1558,12 +1670,8 @@
        900-PTINF-READ-SEC         SECTION.
       *
            INITIALIZE                      PTINF-REC
-      *--- 20100114 CHANGE START ---------------------------------------
-      *     MOVE    RECE10-HOSPNUM      TO  PTINF-HOSPNUM
-      *     MOVE    RECE10-PTID         TO  PTINF-PTID
-           MOVE    RECE02-HOSPNUM      TO  PTINF-HOSPNUM
-           MOVE    RECE02-PTID         TO  PTINF-PTID
-      *--- 20100114 CHANGE END   ---------------------------------------
+           MOVE    RECE10-HOSPNUM      TO  PTINF-HOSPNUM
+           MOVE    RECE10-PTID         TO  PTINF-PTID
            MOVE    PTINF-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_ptinf"         TO  MCP-TABLE
@@ -1914,10 +2022,7 @@
            EVALUATE A05TMP-HONKZKKBN
              WHEN "1"
                MOVE    "本"             TO  WRK-DATA
-      *--- 20110113 CHANGE START ---------------------------------------
-      *       WHEN "1"
              WHEN "2"
-      *--- 20110113 CHANGE END   ---------------------------------------
                MOVE    "家"             TO  WRK-DATA
              WHEN OTHER
                MOVE    "　"             TO  WRK-DATA
@@ -2043,7 +2148,6 @@
        220-G-CSV-WRITE-SEC                SECTION.
       *
       *    ＣＳＶ書き出し
-      *    
            INITIALIZE  A21011A05-REC
                        WRK-REC-LENGTH
       *    患者番号
