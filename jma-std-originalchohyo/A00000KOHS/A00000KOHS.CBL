@@ -29,6 +29,7 @@
       *  Maj/Min/Rev ½¤Àµ¼Ô       ÆüÉÕ      ÆâÍÆ
       *  01.00.01    @@@@-Ìç´Ö    11/01/07  ¥³¥á¥ó¥ÈÍúÎòºï½ü
       *                                     open-cobol1.0ÂÐ±þ
+      *  01.00.02    @@@@-Ìç´Ö    11/02/09  ½¸·×½èÍý¤ò½¤Àµ
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -144,9 +145,6 @@
            03  WRK-PARA-JOBID       PIC 9(07).
            03  WRK-PARA-SHELLID     PIC X(08).
            03  WRK-PARA-HOSPNUM     PIC 9(02).
-      *--- 20110107 DELETE START ---------------------------------------
-      *     03  RECEERR              PIC X(100).
-      *--- 20110107 DELETE END   ---------------------------------------
            03  WRK-PARA-PAGE        PIC 9(10).
            03  WRK-PARA-SRYYM       PIC X(06).
            03  WRK-PARA-STUKBN      PIC X(01).
@@ -207,10 +205,6 @@
            03  KEY-OLD.
                05  KEY-O-KOHNUM     PIC X(03).
       *
-      *--- 20110107 DELETE START ---------------------------------------
-      *     COPY    "CPSHELLTBL.INC".
-      *--- 20110107 DELETE END   ---------------------------------------
-      *     
       *****************************************************************
       *    ¥Õ¥¡¥¤¥ë¥ì¥¤¥¢¥¦¥È
       *****************************************************************
@@ -497,8 +491,7 @@
              PERFORM  900-SEIKYU-SELECT-SEC
              PERFORM  910-SYUNOU-SELECT-SEC
              PERFORM  UNTIL  FLG-SYUNOU  =  1
-      *
-               IF  SYU-DENPJTIKBN  NOT =  "3"
+               IF        SYU-DENPJTIKBN       NOT =  "3"
                  AND  (( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH1HKNNUM
                  AND     SYU-KOH1HKNNUM       NOT =  SPACE )
                  OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH2HKNNUM
@@ -508,24 +501,24 @@
                  OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH4HKNNUM
                  AND     SYU-KOH4HKNNUM       NOT =  SPACE ))
       *
-      *    ¥Ç¡¼¥¿ÀßÄê
-                 MOVE    RECE10-HOSPNUM          TO   MF100-HOSPNUM
-                 MOVE    RECE10-PTNUM            TO   MF100-PTNUM
-                 MOVE    RECE10-PTID             TO   MF100-PTID
-                 MOVE    RECE10-SRYYM            TO   MF100-SRYYM
-                 MOVE    RECE10-NYUGAIKBN        TO   MF100-NYUGAIKBN
-                 MOVE    RECE10-RECEKA           TO   MF100-SRYKA
-                 MOVE    RECE10-TEISYUTUSAKI     TO   MF100-TEISYUTUSAKI
-                 MOVE    RECE10-RECESYUBETU      TO   MF100-RECESYUBETU
-                 MOVE    RECE10-HKNJANUM         TO   MF100-HKNJANUM
-                 MOVE    RECE10-TEKSTYMD         TO   MF100-TEKSTYMD
-                 MOVE    PTINF-NAME              TO   MF100-NAME
-                 MOVE    PTINF-KANANAME          TO   MF100-FURIGANA
-                 MOVE    PTINF-SEX               TO   MF100-SEX
-                 MOVE    RECE10-KIGO             TO   MF100-KIGO
-                 MOVE    RECE10-NUM              TO   MF100-NUM
-                 MOVE    RECE10-KYURATE          TO   MF100-KYURATE
-                 MOVE    RECE10-RJNHKNNUM        TO   MF100-RJNHKNNUM
+      *          ¥Ç¡¼¥¿ÀßÄê
+                 MOVE    RECE10-HOSPNUM        TO   MF100-HOSPNUM
+                 MOVE    RECE10-PTNUM          TO   MF100-PTNUM
+                 MOVE    RECE10-PTID           TO   MF100-PTID
+                 MOVE    RECE10-SRYYM          TO   MF100-SRYYM
+                 MOVE    RECE10-NYUGAIKBN      TO   MF100-NYUGAIKBN
+                 MOVE    RECE10-RECEKA         TO   MF100-SRYKA
+                 MOVE    RECE10-TEISYUTUSAKI   TO   MF100-TEISYUTUSAKI
+                 MOVE    RECE10-RECESYUBETU    TO   MF100-RECESYUBETU
+                 MOVE    RECE10-HKNJANUM       TO   MF100-HKNJANUM
+                 MOVE    RECE10-TEKSTYMD       TO   MF100-TEKSTYMD
+                 MOVE    PTINF-NAME            TO   MF100-NAME
+                 MOVE    PTINF-KANANAME        TO   MF100-FURIGANA
+                 MOVE    PTINF-SEX             TO   MF100-SEX
+                 MOVE    RECE10-KIGO           TO   MF100-KIGO
+                 MOVE    RECE10-NUM            TO   MF100-NUM
+                 MOVE    RECE10-KYURATE        TO   MF100-KYURATE
+                 MOVE    RECE10-RJNHKNNUM      TO   MF100-RJNHKNNUM
       *
                  IF  RECE10-NYUGAIKBN  =  "1"
       *
@@ -537,42 +530,42 @@
                    ADD    SYU-TOTAL-HKNTEN    TO  MF100-TOTALTEN
       *
                    IF   SYU-KOH1HKNNUM  =  MF100-KOHNUM
-      *    Æü¿ô²Ã»»
+      *              Æü¿ô²Ã»»
                      ADD   SYU-KOH1SKJ-NISSU    TO  MF100-SKJKAISU
-      *    ÀÁµá³Û²Ã»»
+      *              ÀÁµá³Û²Ã»»
                      ADD   SYU-KOH1SKJ-RYOYOHI  TO  MF100-SKJSKY
-      *    É¸½àÉéÃ´³Û²Ã»»
+      *              É¸½àÉéÃ´³Û²Ã»»
                      ADD   SYU-KOH1SKJ-FTN      TO  MF100-SKJFTN
                    ELSE
                      IF  SYU-KOH2HKNNUM  =  MF100-KOHNUM
-      *    Æü¿ô²Ã»»
+      *                Æü¿ô²Ã»»
                        ADD   SYU-KOH2SKJ-NISSU    TO  MF100-SKJKAISU
-      *    ÀÁµá³Û²Ã»»
+      *                ÀÁµá³Û²Ã»»
                        ADD   SYU-KOH2SKJ-RYOYOHI  TO  MF100-SKJSKY
-      *    É¸½àÉéÃ´³Û²Ã»»
+      *                É¸½àÉéÃ´³Û²Ã»»
                        ADD   SYU-KOH2SKJ-FTN      TO  MF100-SKJFTN
                      ELSE
                        IF  SYU-KOH3HKNNUM  =  MF100-KOHNUM
-      *    Æü¿ô²Ã»»
+      *                  Æü¿ô²Ã»»
                          ADD   SYU-KOH3SKJ-NISSU    TO  MF100-SKJKAISU
-      *    ÀÁµá³Û²Ã»»
+      *                  ÀÁµá³Û²Ã»»
                          ADD   SYU-KOH3SKJ-RYOYOHI  TO  MF100-SKJSKY
-      *    É¸½àÉéÃ´³Û²Ã»»
+      *                  É¸½àÉéÃ´³Û²Ã»»
                          ADD   SYU-KOH3SKJ-FTN      TO  MF100-SKJFTN
                        ELSE
                          IF  SYU-KOH4HKNNUM  =  MF100-KOHNUM
-      *    Æü¿ô²Ã»»
+      *                    Æü¿ô²Ã»»
                            ADD   SYU-KOH4SKJ-NISSU    TO  MF100-SKJKAISU
-      *    ÀÁµá³Û²Ã»»
+      *                    ÀÁµá³Û²Ã»»
                            ADD   SYU-KOH4SKJ-RYOYOHI  TO  MF100-SKJSKY
-      *    É¸½àÉéÃ´³Û²Ã»»
+      *                    É¸½àÉéÃ´³Û²Ã»»
                            ADD   SYU-KOH4SKJ-FTN      TO  MF100-SKJFTN
                          ELSE
-      *    Æü¿ô²Ã»»
+      *                    Æü¿ô²Ã»»
                            ADD   SYU-SYUSKJ-NISSU     TO  MF100-SKJKAISU
-      *    ÀÁµá³Û²Ã»»
+      *                    ÀÁµá³Û²Ã»»
                            ADD   SYU-SYUSKJ-RYOYOHI   TO  MF100-SKJSKY
-      *    É¸½àÉéÃ´³Û²Ã»»
+      *                    É¸½àÉéÃ´³Û²Ã»»
                            ADD   SYU-SYUSKJ-FTN       TO  MF100-SKJFTN
                          END-IF
                        END-IF
@@ -581,16 +574,16 @@
       *
                  ELSE
       *
-                   ADD    1                        TO  MF100-JNISSU
-                   ADD    SYU-TOTAL-HKNTEN         TO  MF100-TOTALTEN
+                   ADD    1                        TO   MF100-JNISSU
+                   ADD    SYU-TOTAL-HKNTEN         TO   MF100-TOTALTEN
                  END-IF
       *
-      *    ¸øÈñÌ¾¼èÆÀ
+      *          ¸øÈñÌ¾¼èÆÀ
                  MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
                  PERFORM  950-HKNNUM-SET-SEC
                  MOVE    HKN-TANSEIDONAME          TO   MF100-KOHNAME
       *
-      *    Â¾Ë¡¸øÈñ¾ðÊóÀßÄê
+      *          Â¾Ë¡¸øÈñ¾ðÊóÀßÄê
                  MOVE    1                         TO   IDX1
                  IF   RECE10-RJNHKNNUM  NOT =  SPACE
                    MOVE   "27"                     TO   MF100-TAHO(IDX1)
@@ -617,13 +610,13 @@
                    END-IF
                  END-PERFORM
       *
-      *    ¼ýÇ¼¾ðÊó¤è¤ê¡¢ËÜ¿ÍÉéÃ´³Û¤ò½¸·×
-                 COMPUTE  WRK-SKYMONEY  =  SYU-SKYMONEY
-                                        -  SYU-JIHI-TOTAL
-                                        -  SYU-JIHI-TOTAL-TAX
-                 ADD   WRK-SKYMONEY     TO   MF100-FTNMONEY
+      *          ¼ýÇ¼¾ðÊó¤è¤ê¡¢ËÜ¿ÍÉéÃ´³Û¤ò½¸·×
+                 COMPUTE  WRK-SKYMONEY      =    SYU-SKYMONEY
+                                            -    SYU-JIHI-TOTAL
+                                            -    SYU-JIHI-TOTAL-TAX
+                 ADD      WRK-SKYMONEY      TO   MF100-FTNMONEY
       *
-      *    ¸øÈñÈÖ¹æ¤Ç¥½¡¼¥È¤¹¤ë
+      *          ¸øÈñÈÖ¹æ¤Ç¥½¡¼¥È¤¹¤ë
                  MOVE     MF100-KOHNUM      TO   MF100-KOHNUM-KEY
       *
                END-IF
@@ -1325,8 +1318,9 @@
            MOVE    RECE10-NYUGAIKBN  TO  SYU-NYUGAIKBN
            MOVE    RECE10-PTID       TO  SYU-PTID
            MOVE    RECE10-SRYYM      TO  SYU-SKYSTYMD(1:6)
+                                         SYU-SKYEDYMD(1:6)
            MOVE    "01"              TO  SYU-SKYSTYMD(7:2)
-           MOVE    "99999999"        TO  SYU-SKYEDYMD
+           MOVE    "31"              TO  SYU-SKYEDYMD(7:2)
       *
            MOVE    SYUNOU-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"        TO  MCP-FUNC
@@ -1600,7 +1594,6 @@
       *****************************************************************
        210-CSV-HED-SEC                SECTION.
       *
-      *
       *    £Ã£Ó£Ö¥Õ¥¡¥¤¥ëÌ¾¾Î
            IF  CNT-PAGE  >  0
              MOVE    "20"                TO   CSV-DENPPRTYMDHM(1:2)
@@ -1845,10 +1838,7 @@
            MOVE    1                     TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
       *    Â¾Êý¸øÈñ
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     MOVE    MF100-TAHO            TO   WRK-DATA
            MOVE    MF100-TAHO(1)            TO   WRK-DATA
-      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    3                     TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
            
