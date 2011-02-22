@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/02/09  集計処理を修正
+      *  01.00.03    @@@@-門間    11/02/21  収納情報取得条件を修正
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -500,6 +501,7 @@
                  AND     SYU-KOH3HKNNUM       NOT =  SPACE )
                  OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH4HKNNUM
                  AND     SYU-KOH4HKNNUM       NOT =  SPACE ))
+                 AND     RECE02-SRYYM             =  SYU-SRYYMD(1:6)
       *
       *          データ設定
                  MOVE    RECE10-HOSPNUM        TO   MF100-HOSPNUM
@@ -1318,9 +1320,8 @@
            MOVE    RECE10-NYUGAIKBN  TO  SYU-NYUGAIKBN
            MOVE    RECE10-PTID       TO  SYU-PTID
            MOVE    RECE10-SRYYM      TO  SYU-SKYSTYMD(1:6)
-                                         SYU-SKYEDYMD(1:6)
            MOVE    "01"              TO  SYU-SKYSTYMD(7:2)
-           MOVE    "31"              TO  SYU-SKYEDYMD(7:2)
+           MOVE    "99999999"        TO  SYU-SKYEDYMD
       *
            MOVE    SYUNOU-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"        TO  MCP-FUNC
