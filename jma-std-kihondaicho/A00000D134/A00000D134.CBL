@@ -29,6 +29,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-田中    10/12/13  コメント履歴削除
       *              @@@@-門間    10/12/15  open-cobol1.0対応
+      *  01.00.02    @@@@-門間    11/02/21  処理速度の改善
       ********************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -291,6 +292,10 @@
              05  SUM-SYUNOU-CNT       PIC 9(09).
              05  SUM-YOSO-TBL         OCCURS 50.
                07  SUM-YOSO           PIC S9(11).
+      *
+       01  KEY-AREA.
+           03  KEY-PTID                 PIC 9(10).
+           03  KEY-DENPNUM              PIC 9(07).
       *
        01  WRK-CONS-AREA.
       *    自費保険番号
@@ -1233,27 +1238,23 @@
              MOVE SYU-HOSPNUM TO PTINF-HOSPNUM
              MOVE SYU-PTID   TO PTINF-PTID
              PERFORM 900-PTINF-READ-SEC
-             IF      SYU-DENPPRTYMD         >=  WRK-STARTYMD
+             IF      SYU-DENPPRTYMD           >=  WRK-STARTYMD
                  AND   SYU-DENPPRTYMD         <=  WRK-LASTYMD
-                 AND   SYU-HOSPNUM              =  D100LNK-HOSPNUM
+                 AND   SYU-HOSPNUM             =  D100LNK-HOSPNUM
                  AND   SYU-CREATEKBN       NOT =  "3"
                  AND   SYU-DENPJTIKBN      NOT =  "3"
                  AND   SYU-NYUGAIKBN           =  "1"
                  AND ((WRK-SEL-SRYKACD         =  SPACE)
-                 OR  (WRK-SEL-SRYKACD     NOT =  SPACE
-                 AND  SYU-SRYKA               =  WRK-SEL-SRYKACD))
+                 OR  (WRK-SEL-SRYKACD      NOT =  SPACE
+                 AND  SYU-SRYKA                =  WRK-SEL-SRYKACD))
                  AND ((WRK-SEL-DRCD            =  SPACE)
-                 OR  (WRK-SEL-DRCD        NOT =  SPACE
+                 OR  (WRK-SEL-DRCD         NOT =  SPACE
                  AND   SYU-DRCD                =  WRK-SEL-DRCD))
                  AND   FLG-PTINF               =  ZERO
                  AND   PTINF-TSTPTNUMKBN   NOT =  "1"
-      *    伝票作成区分 = 3(入院レセプト用ダミー)は対象外データとして取り扱う
-      *    伝票状態区分 = 3(請求取消)は対象外データとして取り扱う
-      *    患者情報にレコードが存在しないデータは抽出しない。
-      *    テスト患者番号区分 = 1(テスト患者)は対象外データとして取り扱う
       *
                INITIALIZE                           HKNCOMBI-REC
-               MOVE    SYU-HOSPNUM               TO  COMB-HOSPNUM
+               MOVE    SYU-HOSPNUM              TO  COMB-HOSPNUM
                MOVE    SYU-PTID                 TO  COMB-PTID
                MOVE    SYU-HKNCOMBINUM          TO  COMB-HKNCOMBINUM
                PERFORM 900-HKNCOMBI-READ-SEC
@@ -1287,60 +1288,148 @@
                  END-IF
                  PERFORM 320-SYUNOU-CNT-SUB-SEC
                END-IF
-             ELSE
-               IF     SYU-DENPPRTYMD          <  WRK-STARTYMD
-                   AND   SYU-HOSPNUM              =  D100LNK-HOSPNUM
-                   AND   SYU-CREATEKBN       NOT =  "3"
-                   AND   SYU-DENPJTIKBN      NOT =  "3"
-                   AND   SYU-NYUGAIKBN           =  "1"
-                   AND ((WRK-SEL-SRYKACD         =  SPACE)
-                    OR  (WRK-SEL-SRYKACD     NOT =  SPACE  AND
-                         SYU-SRYKA               =  WRK-SEL-SRYKACD))
-                   AND ((WRK-SEL-DRCD            =  SPACE)
-                    OR  (WRK-SEL-DRCD        NOT =  SPACE  AND
-                         SYU-DRCD                =  WRK-SEL-DRCD))
-                   AND   FLG-PTINF               =  ZERO
-                   AND   PTINF-TSTPTNUMKBN   NOT =  "1"
-                  INITIALIZE                           HKNCOMBI-REC
-                  MOVE    SYU-HOSPNUM               TO  COMB-HOSPNUM
-                  MOVE    SYU-PTID                 TO  COMB-PTID
-                  MOVE    SYU-HKNCOMBINUM          TO  COMB-HKNCOMBINUM
-                  PERFORM 900-HKNCOMBI-READ-SEC
-                  MOVE    SPACE                    TO  WRK-HKNNUM
-                                                       WRK-RJNHKNNUM
-                                                       WRK-HONKZKKBN
-                  MOVE    ZERO                     TO  WRK-NENREI
-                  MOVE    COMB-HKNNUM              TO  WRK-HKNNUM
-                  IF   COMB-KOHHKNNUM(1)        =   "027"
-                      OR  COMB-KOHHKNNUM(2)        =   "027"
-                      OR  COMB-KOHHKNNUM(3)        =   "027"
-                      OR  COMB-KOHHKNNUM(4)        =   "027"
-                    MOVE  "027"                    TO  WRK-RJNHKNNUM
-                  END-IF
-                  MOVE    COMB-HONKZKKBN           TO  WRK-HONKZKKBN
-                  MOVE    PTINF-BIRTHDAY           TO  WRK-BIRTHDAY
-                  MOVE    D100LNK-YMD1             TO  WRK-SYMD
-                  COMPUTE  WRK-NENREI              =   WRK-SYY
-                                                   -   WRK-BIRTHY
-                  IF       WRK-SMM                 <   WRK-BIRTHM
-                    COMPUTE  WRK-NENREI            =   WRK-NENREI - 1
-                  END-IF
-                 IF   D100LNK-YMD1  <  "20080401"
-                     PERFORM  320-SRYYMD-GROUPING-SEC
-                 ELSE
-                     PERFORM  330-SRYYMD-GROUPING-SEC
-                 END-IF
-      *    範囲指定期間前未収金の集計
-                 COMPUTE  WRK-MONEY    =
-                          SYU-SKYMONEY -  SYU-NYUKIN-TOTAL
-                 ADD  WRK-MONEY
-                        TO  SUM-BF-MISYU(I3)
-                 PERFORM 320-SYUMEI-CNT-SUB-SEC
-               END-IF
              END-IF
              PERFORM 910-DBFETCH-SEC
            END-PERFORM
            PERFORM 910-DBCLOSE-SEC
+      *
+           PERFORM  911-DBSELECT-SEC
+           PERFORM  UNTIL      FLG-SYUNOU  = 1
+      *
+            INITIALIZE         PTINF-REC 
+            MOVE SYU-HOSPNUM TO PTINF-HOSPNUM
+            MOVE SYU-PTID   TO PTINF-PTID
+            PERFORM 900-PTINF-READ-SEC
+      *
+               IF     SYU-DENPPRTYMD          <  WRK-STARTYMD
+                AND   SYU-HOSPNUM             =  D100LNK-HOSPNUM
+                AND   SYU-CREATEKBN       NOT =  "3"
+                AND   SYU-DENPJTIKBN      NOT =  "3"
+                AND   SYU-NYUGAIKBN           =  "1"
+                AND ((WRK-SEL-SRYKACD         =  SPACE)
+                 OR  (WRK-SEL-SRYKACD     NOT =  SPACE  AND
+                      SYU-SRYKA               =  WRK-SEL-SRYKACD))
+                AND ((WRK-SEL-DRCD            =  SPACE)
+                 OR  (WRK-SEL-DRCD        NOT =  SPACE  AND
+                      SYU-DRCD                =  WRK-SEL-DRCD))
+                AND   FLG-PTINF               =  ZERO
+                AND   PTINF-TSTPTNUMKBN   NOT =  "1"
+      *
+                 INITIALIZE                           HKNCOMBI-REC
+                 MOVE    SYU-HOSPNUM              TO  COMB-HOSPNUM
+                 MOVE    SYU-PTID                 TO  COMB-PTID
+                 MOVE    SYU-HKNCOMBINUM          TO  COMB-HKNCOMBINUM
+                 PERFORM 900-HKNCOMBI-READ-SEC
+                 MOVE    SPACE                    TO  WRK-HKNNUM
+                                                      WRK-RJNHKNNUM
+                                                      WRK-HONKZKKBN
+                 MOVE    ZERO                     TO  WRK-NENREI
+                 MOVE    COMB-HKNNUM              TO  WRK-HKNNUM
+                 IF      COMB-KOHHKNNUM(1)        =   "027"
+                     OR  COMB-KOHHKNNUM(2)        =   "027"
+                     OR  COMB-KOHHKNNUM(3)        =   "027"
+                     OR  COMB-KOHHKNNUM(4)        =   "027"
+                   MOVE  "027"                    TO  WRK-RJNHKNNUM
+                 END-IF
+                 MOVE    COMB-HONKZKKBN           TO  WRK-HONKZKKBN
+                 MOVE    PTINF-BIRTHDAY           TO  WRK-BIRTHDAY
+                 MOVE    D100LNK-YMD1             TO  WRK-SYMD
+                 COMPUTE  WRK-NENREI              =   WRK-SYY
+                                                  -   WRK-BIRTHY
+                 IF   WRK-SMM                 <   WRK-BIRTHM
+                   COMPUTE  WRK-NENREI            =   WRK-NENREI - 1
+                 END-IF
+      ***        範囲指定期間前未収金の集計
+                 IF D100LNK-YMD1  <  "20080401"
+                   PERFORM  320-SRYYMD-GROUPING-SEC
+                 ELSE
+                   PERFORM  330-SRYYMD-GROUPING-SEC
+                 END-IF
+      *
+                 COMPUTE  WRK-MONEY      =
+                          SYU-SKYMONEY   -   SYU-NYUKIN-TOTAL
+                 ADD      WRK-MONEY      TO  SUM-BF-MISYU(I3)
+               END-IF
+            PERFORM 911-DBFETCH-SEC
+           END-PERFORM
+           PERFORM 911-DBCLOSE-SEC
+      *
+           MOVE   ZERO  TO  FLG-SYUMEI
+           PERFORM  320-SYUMEI-SELECT-SEC
+           PERFORM  UNTIL  FLG-SYUMEI  = 1
+              INITIALIZE         PTINF-REC 
+              MOVE SMEI-HOSPNUM TO PTINF-HOSPNUM
+              MOVE SMEI-PTID    TO PTINF-PTID
+              PERFORM 900-PTINF-READ-SEC
+              PERFORM 900-SYUNOU-KEY-SEL-SEC
+      *
+              MOVE    SMEI-PTID    TO  KEY-PTID
+              MOVE    SMEI-DENPNUM TO  KEY-DENPNUM
+              PERFORM UNTIL ( FLG-SYUMEI  = 1 )
+                       OR   ( SMEI-PTID      NOT = KEY-PTID )
+                       OR   ( SMEI-DENPNUM   NOT = KEY-DENPNUM )
+      *
+                 IF     SYU-HOSPNUM             =  D100LNK-HOSPNUM
+                  AND   SYU-CREATEKBN       NOT =  "3"
+                  AND   SYU-DENPJTIKBN      NOT =  "3"
+                  AND   SYU-NYUGAIKBN           =  "1"
+                  AND ((WRK-SEL-SRYKACD         =  SPACE)
+                   OR  (WRK-SEL-SRYKACD     NOT =  SPACE  AND
+                      SYU-SRYKA               =  WRK-SEL-SRYKACD))
+                  AND ((WRK-SEL-DRCD            =  SPACE)
+                   OR  (WRK-SEL-DRCD        NOT =  SPACE  AND
+                      SYU-DRCD                =  WRK-SEL-DRCD))
+                  AND   FLG-PTINF               =  ZERO
+                  AND   PTINF-TSTPTNUMKBN   NOT =  "1"
+      *
+                   INITIALIZE                           HKNCOMBI-REC
+                   MOVE    SYU-HOSPNUM              TO  COMB-HOSPNUM
+                   MOVE    SYU-PTID                 TO  COMB-PTID
+                   MOVE    SYU-HKNCOMBINUM          TO  COMB-HKNCOMBINUM
+                   PERFORM 900-HKNCOMBI-READ-SEC
+                   MOVE    SPACE                    TO  WRK-HKNNUM
+                                                        WRK-RJNHKNNUM
+                                                        WRK-HONKZKKBN
+                   MOVE    ZERO                     TO  WRK-NENREI
+                   MOVE    COMB-HKNNUM              TO  WRK-HKNNUM
+                   IF      COMB-KOHHKNNUM(1)        =   "027"
+                       OR  COMB-KOHHKNNUM(2)        =   "027"
+                       OR  COMB-KOHHKNNUM(3)        =   "027"
+                       OR  COMB-KOHHKNNUM(4)        =   "027"
+                     MOVE  "027"                    TO  WRK-RJNHKNNUM
+                   END-IF
+                   MOVE    COMB-HONKZKKBN           TO  WRK-HONKZKKBN
+                   MOVE    PTINF-BIRTHDAY           TO  WRK-BIRTHDAY
+                   MOVE    D100LNK-YMD1             TO  WRK-SYMD
+                   COMPUTE  WRK-NENREI              =   WRK-SYY
+                                                    -   WRK-BIRTHY
+                   IF   WRK-SMM                 <   WRK-BIRTHM
+                     COMPUTE  WRK-NENREI            =   WRK-NENREI - 1
+                   END-IF
+      *
+                   IF D100LNK-YMD1  <  "20080401"
+                     PERFORM  320-SRYYMD-GROUPING-SEC
+                   ELSE
+                     PERFORM  330-SRYYMD-GROUPING-SEC
+                   END-IF
+      *
+                   IF I3    <   SUM-HKNMAX
+      *
+                     IF     SMEI-NYUHEN-YMD <= WRK-LASTYMD
+                       AND  SMEI-NYUHEN-YMD >= WRK-STARTYMD
+                       ADD  SMEI-NYUHEN-MONEY
+                                        TO  SUM-YOSO(I3 21)
+                       ADD  SMEI-NYUHEN-MONEY
+                                        TO  SUM-YOSO(SUM-HKNMAX 21)
+                     END-IF
+      *
+                   END-IF
+                 END-IF
+      *
+                 PERFORM  320-SYUMEI-FETCH-SEC
+              END-PERFORM
+           END-PERFORM 
+           PERFORM  320-SYUMEI-CLOSE-SEC
       *
       *    その他集計項目の加算
            PERFORM  320-ETC-CNT-SEC
@@ -2059,19 +2148,19 @@
                   TO  SUM-YOSO(SUM-HKNMAX 19)
       *
       *    入金額(当日の診療に対する入金額)
-           MOVE   ZERO  TO  FLG-SYUMEI
-           PERFORM  320-SYUMEI-SELECT-SEC
-           PERFORM  UNTIL  FLG-SYUMEI  = 1
-             IF     SMEI-NYUHEN-YMD <= D100LNK-YMD2
-                 AND  SMEI-NYUHEN-YMD >= D100LNK-YMD1
-               ADD    SMEI-NYUHEN-MONEY
-                      TO  SUM-YOSO(I3 21)
-               ADD    SMEI-NYUHEN-MONEY
-                      TO  SUM-YOSO(SUM-HKNMAX 21)
-             END-IF
-           PERFORM  320-SYUMEI-FETCH-SEC
-           END-PERFORM
-           PERFORM  320-SYUMEI-CLOSE-SEC
+      *     MOVE   ZERO  TO  FLG-SYUMEI
+      *     PERFORM  320-SYUMEI-SELECT-SEC
+      *     PERFORM  UNTIL  FLG-SYUMEI  = 1
+      *       IF     SMEI-NYUHEN-YMD <= D100LNK-YMD2
+      *           AND  SMEI-NYUHEN-YMD >= D100LNK-YMD1
+      *         ADD    SMEI-NYUHEN-MONEY
+      *                TO  SUM-YOSO(I3 21)
+      *         ADD    SMEI-NYUHEN-MONEY
+      *                TO  SUM-YOSO(SUM-HKNMAX 21)
+      *       END-IF
+      *     PERFORM  320-SYUMEI-FETCH-SEC
+      *     END-PERFORM
+      *     PERFORM  320-SYUMEI-CLOSE-SEC
       *    未収金残額
            COMPUTE     WRK-MONEY        =
                        SYU-SKYMONEY     -    SYU-NYUKIN-TOTAL
@@ -2202,22 +2291,24 @@
        320-SYUMEI-CNT-SUB-EXT.
            EXIT.
       *****************************************************************
-      *   入金  SELECT
+      *    入金  SELECT
       *****************************************************************
        320-SYUMEI-SELECT-SEC           SECTION.
       *
-           MOVE    SYU-HOSPNUM          TO  SMEI-HOSPNUM
-           MOVE    SYU-NYUGAIKBN       TO  SMEI-NYUGAIKBN
-           MOVE    SYU-PTID            TO  SMEI-PTID
-           MOVE    SYU-DENPNUM         TO  SMEI-DENPNUM
+           MOVE    SYU-HOSPNUM         TO  SMEI-HOSPNUM
+           MOVE    "1"                 TO  SMEI-NYUGAIKBN
+           MOVE    WRK-STARTYMD        TO  SMEI-STDAILYKEY
+           MOVE    "0000"              TO  SMEI-STDAILYKEY(9:4)
+           MOVE    WRK-LASTYMD         TO  SMEI-EDDAILYKEY
+           MOVE    "9999"              TO  SMEI-EDDAILYKEY(9:4)
            MOVE    SYUMEI-REC          TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-           MOVE    "tbl_syumei"             TO  MCP-TABLE
-           MOVE    "key7"                  TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
+           MOVE    "tbl_syumei"        TO  MCP-TABLE
+           MOVE    "key8"              TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
            IF      MCP-RC              =   ZERO
                 PERFORM  320-SYUMEI-FETCH-SEC
            ELSE
@@ -2227,34 +2318,34 @@
        320-SYUMEI-SELECT-EXT.
            EXIT.
       *****************************************************************
-      *   入金  FETCH
+      *    入金  FETCH
       *****************************************************************
        320-SYUMEI-FETCH-SEC             SECTION.
       *
-           MOVE    "DBFETCH"           TO  MCP-FUNC
-           MOVE    "tbl_syumei"             TO  MCP-TABLE
-           MOVE    "key7"                  TO  MCP-PATHNAME
+           MOVE    "DBFETCH"            TO  MCP-FUNC
+           MOVE    "tbl_syumei"         TO  MCP-TABLE
+           MOVE    "key8"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-           IF    MCP-RC              =   ZERO
+           IF      MCP-RC              =   ZERO
              MOVE    ZERO            TO  FLG-SYUMEI
              MOVE    MCPDATA-REC     TO  SYUMEI-REC
            ELSE
              MOVE    1               TO  FLG-SYUMEI
            END-IF
-            .
+           .
        320-SYUMEI-FETCH-EXT.
             EXIT.
       *****************************************************************
-      *  入金  CLOSE
+      *    入金  CLOSE
       *****************************************************************
        320-SYUMEI-CLOSE-SEC            SECTION.
       *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_syumei"             TO  MCP-TABLE
-           MOVE    "key7"                  TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_syumei"         TO  MCP-TABLE
+           MOVE    "key8"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -2262,6 +2353,7 @@
             .
        320-SYUMEI-SELECT-EXT.
             EXIT.
+      *
       *****************************************************************
       *    受診履歴情報集計サブ処理@@@@@@@未使用
       *****************************************************************
@@ -3087,6 +3179,127 @@
                                         SPA-AREA
            .
        910-DBCLOSE-EXT.
+           EXIT.
+      *
+      *
+      *****************************************************************
+      *    収納情報検索
+      *****************************************************************
+       911-DBSELECT-SEC             SECTION.
+      *
+           MOVE    ZERO              TO  FLG-SYUNOU
+      *
+           INITIALIZE                     SYUNOU-REC
+           MOVE    D100LNK-HOSPNUM   TO   SYU-HOSPNUM
+           MOVE    "1"               TO   SYU-NYUGAIKBN
+           MOVE    D100LNK-YMD1      TO   SYU-SRYYMD
+           MOVE    SYUNOU-REC        TO   MCPDATA-REC
+           MOVE    "DBSELECT"        TO   MCP-FUNC
+           MOVE    "tbl_syunou"      TO   MCP-TABLE
+           MOVE    "key78"           TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF      MCP-RC              =   ZERO
+               PERFORM 911-DBFETCH-SEC
+           ELSE
+               MOVE    1            TO  FLG-SYUNOU
+           END-IF
+           .
+       911-DBSELECT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *     収納情報検索
+      *****************************************************************
+       911-DBFETCH-SEC                SECTION.
+      *
+           MOVE    ZERO              TO  FLG-SYUNOU
+      *
+           MOVE    "DBFETCH"         TO  MCP-FUNC
+           MOVE    "tbl_syunou"      TO  MCP-TABLE
+           MOVE    "key78"           TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF      MCP-RC              =   ZERO
+               MOVE    ZERO         TO  FLG-SYUNOU
+               MOVE    MCPDATA-REC  TO  SYUNOU-REC
+           ELSE
+               MOVE    1            TO  FLG-SYUNOU
+           END-IF  
+           .
+       911-DBFETCH-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    ＤＢ　クローズ処理
+      *****************************************************************
+       911-DBCLOSE-SEC                 SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"   TO  MCP-FUNC
+           MOVE    "tbl_syunou"      TO  MCP-TABLE
+           MOVE    "key78"           TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           .
+       911-DBCLOSE-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    収納検索処理
+      *****************************************************************
+       900-SYUNOU-KEY-SEL-SEC      SECTION.
+      *
+           MOVE    ZERO            TO  FLG-SYUNOU
+      *
+           INITIALIZE                  SYUNOU-REC
+      *
+           MOVE    SMEI-HOSPNUM    TO  SYU-HOSPNUM
+           MOVE    SMEI-NYUGAIKBN  TO  SYU-NYUGAIKBN
+           MOVE    SMEI-PTID       TO  SYU-PTID
+           MOVE    SMEI-DENPNUM    TO  SYU-DENPNUM
+           MOVE    SYUNOU-REC      TO  MCPDATA-REC
+           MOVE    "tbl_syunou"    TO  MCP-TABLE
+           MOVE    "key"           TO  MCP-PATHNAME
+           MOVE    "DBSELECT"      TO  MCP-FUNC
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF    ( MCP-RC          =   ZERO )
+               MOVE    "tbl_syunou"    TO  MCP-TABLE
+               MOVE    "key"           TO  MCP-PATHNAME
+               MOVE    "DBFETCH"       TO  MCP-FUNC
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+               IF    ( MCP-RC          =   ZERO )
+                   MOVE    MCPDATA-REC TO  SYUNOU-REC
+               ELSE
+                   MOVE    1           TO  FLG-SYUNOU
+                   INITIALIZE              SYUNOU-REC
+               END-IF
+           ELSE
+               MOVE    1           TO  FLG-SYUNOU
+               INITIALIZE              SYUNOU-REC
+           END-IF
+      *
+           MOVE    "tbl_syunou"    TO  MCP-TABLE
+           MOVE    "key"           TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR" TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+       900-SYUNOU-KEY-SEL-EXT.
            EXIT.
       *
       *****************************************************************
