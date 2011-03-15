@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/01/24  4.6対応
+      *  01.00.03    @@@@-田中    11/03/10  病名補足コメント対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -139,6 +140,7 @@
                05  WRK-NENREI      PIC 9(03).
            03  WRK-HKNJA           PIC X(08).
            03  WRK-HKNJA-G         PIC X(16).
+           03  WRK-BYOMEI          PIC X(100).
       *
       *    文字変換
            03  WRK-ZENKAKU-G.
@@ -1032,7 +1034,18 @@
                  PERFORM  3103-BYOMEI-SET-SEC
       *    カルテ病名がある時はカルテ病名
                  IF   PTBYO-CHARTBYOMEI  =  SPACE
-                   MOVE    PTBYO-BYOMEI    TO  H01KB5-BYOMEI(IDX)
+                   MOVE    SPACE          TO  WRK-BYOMEI
+                   IF   PTBYO-HOSOKU-COMMENT  =  SPACE
+                     MOVE    PTBYO-BYOMEI  TO  H01KB5-BYOMEI(IDX)
+                   ELSE
+                     STRING  PTBYO-BYOMEI          DELIMITED  BY  SPACE
+                             "（"                  DELIMITED  BY  SIZE
+                             PTBYO-HOSOKU-COMMENT  DELIMITED  BY  SPACE
+                             "）"                  DELIMITED  BY  SIZE
+                                                   INTO   WRK-BYOMEI
+                     END-STRING
+                     MOVE    WRK-BYOMEI    TO  H01KB5-BYOMEI(IDX)
+                   END-IF
                  ELSE
                    MOVE    PTBYO-CHARTBYOMEI   TO  H01KB5-BYOMEI(IDX)
                  END-IF
@@ -1161,7 +1174,18 @@
                  PERFORM  3103-BYOMEI-SET-SEC
       *    カルテ病名がある時はカルテ病名
                  IF      PTBYO-CHARTBYOMEI  =  SPACE
-                   MOVE    PTBYO-BYOMEI  TO  H01KB5-BYOMEI(IDX)
+                   MOVE    SPACE          TO  WRK-BYOMEI
+                   IF   PTBYO-HOSOKU-COMMENT  =  SPACE
+                     MOVE    PTBYO-BYOMEI       TO  H01KB5-BYOMEI(IDX)
+                   ELSE
+                     STRING  PTBYO-BYOMEI          DELIMITED  BY  SPACE
+                             "（"                  DELIMITED  BY  SIZE
+                             PTBYO-HOSOKU-COMMENT  DELIMITED  BY  SPACE
+                             "）"                  DELIMITED  BY  SIZE
+                                                   INTO   WRK-BYOMEI
+                     END-STRING
+                     MOVE    WRK-BYOMEI  TO  H01KB5-BYOMEI(IDX)
+                   END-IF
                  ELSE
                    MOVE    PTBYO-CHARTBYOMEI    TO  H01KB5-BYOMEI(IDX)
                  END-IF

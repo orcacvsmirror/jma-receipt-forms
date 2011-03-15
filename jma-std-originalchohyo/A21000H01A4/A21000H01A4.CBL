@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/01/24  4.6対応
+      *  01.00.03    @@@@-田中    11/03/10  補足病名コメント対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -124,7 +125,6 @@
                05  WRK-SYSYY       PIC 9(04).
                05  WRK-SYSMM       PIC 9(02).
                05  WRK-SYSDD       PIC 9(02).
-      *
            03  WRK-WSYSYMD.
                05  WRK-WGO         PIC X(01).
                05  WRK-WYY         PIC 9(02).
@@ -134,15 +134,13 @@
                05  WRK-SYY         PIC 9(04).
                05  WRK-SMM         PIC 9(02).
                05  WRK-SDD         PIC 9(02).
-      *
            03  WRK-PAGE            PIC 9(03).
-      *
            03  WRK-ADRS            PIC X(200).
            03  WRK-NENREI-X.
                05  WRK-NENREI      PIC 9(03).
-      *
            03  WRK-HKNJA           PIC X(08).
            03  WRK-HKNJA-G         PIC X(16).
+           03  WRK-BYOMEI          PIC X(100).
       *
       *    文字変換
            03  WRK-ZENKAKU-G.
@@ -151,25 +149,21 @@
            03  WRK-MOJISU          PIC 9(02).
            03  WRK-MAE-INPUT       PIC X(200).
            03  WRK-OUT-INPUT       PIC X(200).
-      *
            03  WRK-HEN-KIGONUM     PIC X(80).
            03  WRK-KIGONUM         PIC X(80).
            03  WRK-NUM             PIC X(80).
-      *
            03  WRK-WARI            PIC 9(02)V9.
            03  WRK-Z6              PIC ZZZZ.
            03  WRK-Z62             PIC Z9.9.
            03  WRK-Z3              PIC ZZ9.
            03  WRK-Z9V9            PIC Z9.9.
            03  WRK-Z9              PIC Z9.
-      *
            03  WRK-HKNCOMBI        PIC X(40).
            03  WRK-HPTNUM          PIC X(08).
            03  WRK-FTNSNO          PIC X(16).
            03  WRK-JKYSNO          PIC X(20).
            03  WRK-TEKSTYMD        PIC X(22).
            03  WRK-TEKEDYMD        PIC X(22).
-      *
            03  WRK-STRYMD.
                05  WRK-STRGO       PIC X(04).
                05  WRK-STRYY       PIC X(04).
@@ -186,7 +180,6 @@
                05  WRK-END2        PIC X(02).
                05  WRK-ENDDD       PIC X(04).
                05  WRK-END3        PIC X(02).
-      *
            03  WRK-STRYMDW.
                05  WRK-STRGOW      PIC X(01).
                05  WRK-STRYYW      PIC X(02).
@@ -201,7 +194,6 @@
                05  WRK-ENDMMW      PIC X(02).
                05  WRK-END2W       PIC X(01).
                05  WRK-ENDDDW      PIC X(02).
-      *
            03  WRK-ERRMSG          PIC X(40).
            03  WRK-MSG             PIC X(200).
       *
@@ -226,7 +218,7 @@
                05  FILLER          PIC  X(01)  VALUE  "-".
                05  WRK-POST2       PIC  X(04).
       *
-      *   日本語数字
+      *    日本語数字
        01  TBL-SUJI-AREA.
            03  FILLER              PIC X(20)
                                    VALUE "１２３４５６７８９０".
@@ -1035,7 +1027,6 @@
            MOVE    SPA-HOSPNUM         TO  PTBYO-HOSPNUM
            MOVE    SPA-PTID            TO  PTBYO-PTID
            MOVE    SPA-SRYKA           TO  PTBYO-SRYKA
-      *
            MOVE    PTBYOMEI-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
@@ -1065,8 +1056,20 @@
                  PERFORM 3103-BYOMEI-SET-SEC
       *    カルテ病名がある時はカルテ病名
                  IF   PTBYO-CHARTBYOMEI  =  SPACE
-                   MOVE    PTBYO-BYOMEI  TO  H01KA4-BYOMEI(IDX)
-                                             H01SA4-BYOMEI(IDX)
+                   MOVE    SPACE          TO  WRK-BYOMEI
+                   IF   PTBYO-HOSOKU-COMMENT  =  SPACE
+                     MOVE    PTBYO-BYOMEI     TO  H01KA4-BYOMEI(IDX)
+                                                  H01SA4-BYOMEI(IDX)
+                   ELSE
+                     STRING  PTBYO-BYOMEI          DELIMITED  BY  SPACE
+                             "（"                  DELIMITED  BY  SIZE
+                             PTBYO-HOSOKU-COMMENT  DELIMITED  BY  SPACE
+                             "）"                  DELIMITED  BY  SIZE
+                                                   INTO   WRK-BYOMEI
+                     END-STRING
+                     MOVE    WRK-BYOMEI   TO  H01KA4-BYOMEI(IDX)
+                                              H01SA4-BYOMEI(IDX)
+                   END-IF
                  ELSE
                    MOVE    PTBYO-CHARTBYOMEI   TO  H01KA4-BYOMEI(IDX)
                                                    H01SA4-BYOMEI(IDX)
@@ -1200,8 +1203,20 @@
                  PERFORM 3103-BYOMEI-SET-SEC
       *    カルテ病名がある時はカルテ病名
                  IF   PTBYO-CHARTBYOMEI  =  SPACE
-                   MOVE    PTBYO-BYOMEI  TO  H01KA4-BYOMEI(IDX)
+                   MOVE    SPACE          TO  WRK-BYOMEI
+                   IF   PTBYO-HOSOKU-COMMENT  =  SPACE
+                     MOVE    PTBYO-BYOMEI     TO  H01KA4-BYOMEI(IDX)
+                                                  H01SA4-BYOMEI(IDX)
+                   ELSE
+                     STRING  PTBYO-BYOMEI          DELIMITED  BY  SPACE
+                             "（"                  DELIMITED  BY  SIZE
+                             PTBYO-HOSOKU-COMMENT  DELIMITED  BY  SPACE
+                             "）"                  DELIMITED  BY  SIZE
+                                                   INTO   WRK-BYOMEI
+                     END-STRING
+                     MOVE    WRK-BYOMEI  TO  H01KA4-BYOMEI(IDX)
                                              H01SA4-BYOMEI(IDX)
+                   END-IF
                  ELSE
                    MOVE    PTBYO-CHARTBYOMEI   TO  H01KA4-BYOMEI(IDX)
                                                    H01SA4-BYOMEI(IDX)
