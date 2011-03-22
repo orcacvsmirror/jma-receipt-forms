@@ -29,6 +29,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     open-cobol1.0対応
+      *  01.00.02    @@@@-田中    11/03/17  患者番号の編集処理を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -122,7 +123,6 @@
            03  WRK-SYSYMDWH          PIC X(22).
            03  WRK-RENNUM            PIC 9(03).
            03  WRK-PTNUM             PIC X(20).
-           03  WRK-PTNUM8            PIC 9(08).
       *  
            03  WRK-SYSYMD.
                05  WRK-SYSYY         PIC 9(04).
@@ -1227,8 +1227,7 @@
                                               ORCSPTIDAREA
                                               SPA-AREA
                IF    SPTID-RC  =  ZERO
-                 MOVE    SPTID-PTNUM          TO   WRK-PTNUM8
-                 MOVE    WRK-PTNUM8           TO   HC17-PTNUM (CNT-LINE)
+                 MOVE    SPTID-PTNUM          TO   HC17-PTNUM(CNT-LINE)
                ELSE
                  MOVE    SPACE         TO   HC17-PTNUM (CNT-LINE)
                END-IF
