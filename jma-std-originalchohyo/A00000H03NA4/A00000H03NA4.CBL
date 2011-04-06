@@ -29,6 +29,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
+      *  01.00.02    @@@@-田中    11/04/04  DB検索時の不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1538,13 +1539,13 @@
            MOVE    SPA-HOSPNUM     TO  SYS-1902-HOSPNUM
            MOVE    SYS-1902-REC    TO  MCPDATA-REC
            PERFORM 900-SYSKANRI-KEY10-SEC
-           IF      FLG-SYSKANRI        =   ZERO
-               MOVE    MCPDATA-REC     TO  SYS-1902-REC
-               MOVE    SYS-1902-ADRS1  TO  WRK-HOSPADRS1
-               MOVE    SYS-1902-ADRS2  TO  WRK-HOSPADRS2
-               MOVE    SYS-1902-TEL    TO  WRK-HOSPTEL
+           IF   FLG-SYSKANRI   =   ZERO
+             MOVE    MCPDATA-REC     TO  SYS-1902-REC
+             MOVE    SYS-1902-ADRS1  TO  WRK-HOSPADRS1
+             MOVE    SYS-1902-ADRS2  TO  WRK-HOSPADRS2
+             MOVE    SYS-1902-TEL    TO  WRK-HOSPTEL
            ELSE
-               INITIALIZE                  SYS-1902-REC
+             INITIALIZE                  SYS-1902-REC
            END-IF
            .
       *
@@ -1558,18 +1559,36 @@
       *
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key10"             TO  MCP-PATHNAME
-           PERFORM 910-DBSELECT-SEC
-           IF      MCP-RC              =   ZERO
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF   MCP-RC  =  ZERO
+             MOVE    "tbl_syskanri"    TO  MCP-TABLE
+             MOVE    "key10"           TO  MCP-PATHNAME
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF      MCP-RC              =   ZERO
                MOVE    ZERO            TO  FLG-SYSKANRI
-               MOVE    "tbl_syskanri"      TO  MCP-TABLE
-               MOVE    "key10"             TO  MCP-PATHNAME
-               PERFORM 910-DBFETCH-SEC
-           ELSE
+             ELSE
                MOVE    1               TO  FLG-SYSKANRI
+             END-IF
+      *
+           ELSE
+             MOVE    1                 TO  FLG-SYSKANRI
            END-IF
+           
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key10"             TO  MCP-PATHNAME
-           PERFORM 910-DBCLOSECURSOR-SEC
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
       *
            .
        900-SYSKANRI-KEY10-EXT.
@@ -1747,29 +1766,47 @@
       *****************************************************************
        900-PTNYUINRRK-KEY45-SEL-SEC         SECTION.
       *
-           MOVE    ZERO             TO  FLG-PTNYUINRRK
+           MOVE    ZERO                 TO  FLG-PTNYUINRRK
       *
            INITIALIZE                   PTNYUINRRK-REC
-           MOVE    SYU-HOSPNUM       TO  PTNYUINRRK-HOSPNUM
-           MOVE    SYU-PTID         TO  PTNYUINRRK-PTID
-           MOVE    SYU-DENPPRTYMD   TO  PTNYUINRRK-TENNYUYMD
-           MOVE    PTNYUINRRK-REC   TO  MCPDATA-REC
-           MOVE    "tbl_ptnyuinrrk" TO  MCP-TABLE
-           MOVE    "key45"          TO  MCP-PATHNAME
-           PERFORM  910-DBSELECT-SEC
+           MOVE    SYU-HOSPNUM          TO  PTNYUINRRK-HOSPNUM
+           MOVE    SYU-PTID             TO  PTNYUINRRK-PTID
+           MOVE    SYU-DENPPRTYMD       TO  PTNYUINRRK-TENNYUYMD
+           MOVE    PTNYUINRRK-REC       TO  MCPDATA-REC
+           MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
+           MOVE    "key45"              TO  MCP-PATHNAME
+           MOVE    "DBSELECT"           TO  MCP-FUNC
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
            IF  ( MCP-RC  =  ZERO )
-               MOVE    MCPDATA-REC  TO  PTNYUINRRK-REC
-               MOVE    "tbl_ptnyuinrrk" TO  MCP-TABLE
-               MOVE    "key45"          TO  MCP-PATHNAME
-               PERFORM  910-DBFETCH-SEC
+             MOVE    "tbl_ptnyuinrrk"   TO  MCP-TABLE
+             MOVE    "key45"            TO  MCP-PATHNAME
+             MOVE    "DBFETCH"          TO  MCP-FUNC
+             CALL    "ORCDBMAIN"            USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+             IF   MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC      TO  PTNYUINRRK-REC
+               MOVE    ZERO             TO  FLG-PTNYUINRRK
+             ELSE
+                 MOVE    1              TO  FLG-PTNYUINRRK
+             END-IF
            ELSE
-               INITIALIZE               PTNYUINRRK-REC
-               MOVE    1            TO  FLG-PTNYUINRRK
+             INITIALIZE                 PTNYUINRRK-REC
+             MOVE    1                  TO  FLG-PTNYUINRRK
            END-IF
       *
-           MOVE    "tbl_ptnyuinrrk" TO  MCP-TABLE
-           MOVE    "key45"          TO  MCP-PATHNAME
-           PERFORM  910-DBCLOSECURSOR-SEC
+           MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
+           MOVE    "key45"              TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
       *
            .
        900-PTNYUINRRK-KEY45-SEL-EXT.
@@ -1779,70 +1816,45 @@
       *    患者保険情報読み込み
       *****************************************************************
        910-PTHKNINF-KEY-SEL-SEC    SECTION.
-       
       *
-           MOVE    ZERO             TO  FLG-PTHKNINF
-      *
-           MOVE    PTHKNINF-REC     TO  MCPDATA-REC
-           MOVE    "tbl_pthkninf"   TO  MCP-TABLE
-           MOVE    "key"            TO  MCP-PATHNAME
-           PERFORM  910-DBSELECT-SEC
+           MOVE    ZERO               TO  FLG-PTHKNINF
+      * 
+           MOVE    PTHKNINF-REC       TO  MCPDATA-REC
+           MOVE    "tbl_pthkninf"     TO  MCP-TABLE
+           MOVE    "key"              TO  MCP-PATHNAME
+           MOVE    "DBSELECT"         TO  MCP-FUNC
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
            IF  ( MCP-RC  =  ZERO )
-               MOVE   MCPDATA-REC   TO  PTHKNINF-REC
+             MOVE    "tbl_pthkninf"   TO  MCP-TABLE
+             MOVE    "key"            TO  MCP-PATHNAME
+             MOVE    "DBFETCH"        TO  MCP-FUNC
+             CALL    "ORCDBMAIN"      USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+             IF  ( MCP-RC  =  ZERO )
+               MOVE    MCPDATA-REC    TO  PTHKNINF-REC
+               MOVE    ZERO           TO  FLG-PTHKNINF
+             ELSE
+               INITIALIZE             PTHKNINF-REC
+               MOVE    1              TO  FLG-PTHKNINF
+             END-IF
            ELSE
-               INITIALIZE               PTHKNINF-REC
-               MOVE    1            TO  FLG-PTHKNINF
+             INITIALIZE               PTHKNINF-REC
+             MOVE    1                TO  FLG-PTHKNINF
            END-IF
       *
-           MOVE    "tbl_pthkninf"   TO  MCP-TABLE
-           MOVE    "key"            TO  MCP-PATHNAME
-           PERFORM  910-DBCLOSECURSOR-SEC
+           MOVE    "tbl_pthkninf"     TO  MCP-TABLE
+           MOVE    "key"              TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"    TO  MCP-FUNC
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
       *
            .
        910-PTHKNINF-KEY-SEL-EXT.
-           EXIT.
-      *****************************************************************
-      *    ＤＢ検索処理
-      *****************************************************************
-       910-DBSELECT-SEC         SECTION.
-      *
-           MOVE    "DBSELECT"       TO  MCP-FUNC
-           CALL    "ORCDBMAIN"          USING
-                                    MCPAREA
-                                    MCPDATA-REC
-                                    SPA-AREA
-           IF  ( MCP-RC  =  ZERO )
-               PERFORM  910-DBFETCH-SEC
-           END-IF
-      *
-           .
-       910-DBSELECT-EXT.
-           EXIT.
-      *****************************************************************
-      *    ＤＢ読み込み処理
-      *****************************************************************
-       910-DBFETCH-SEC         SECTION.
-      *
-           MOVE    "DBFETCH"        TO  MCP-FUNC
-           CALL    "ORCDBMAIN"          USING
-                                    MCPAREA
-                                    MCPDATA-REC
-                                    SPA-AREA
-      *
-           .
-       910-DBFETCH-EXT.
-           EXIT.
-      *****************************************************************
-      *    ＤＢクローズ処理
-      *****************************************************************
-       910-DBCLOSECURSOR-SEC         SECTION.
-      *
-           MOVE    "DBCLOSECURSOR"  TO  MCP-FUNC
-           CALL    "ORCDBMAIN"          USING
-                                    MCPAREA
-                                    MCPDATA-REC
-                                    SPA-AREA
-      *
-           .
-       910-DBCLOSECURSOR-EXT.
            EXIT.

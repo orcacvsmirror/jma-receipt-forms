@@ -29,6 +29,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
+      *  01.00.02    @@@@-田中    11/04/04  DB検索時の不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1124,30 +1125,30 @@
       *    システム管理検索
            MOVE    SYS-5001-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-           MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key10"              TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF      MCP-RC              =   ZERO
-           MOVE    "tbl_syskanri"  TO  MCP-TABLE
-           MOVE    "key10"         TO  MCP-PATHNAME
-               PERFORM 900-KANRIMST-READ-SEC
-               IF      MCP-RC              =   ZERO
-                   MOVE    MCPDATA-REC     TO  SYS-5001-REC
-               END-IF
+           MOVE    "tbl_syskanri"      TO  MCP-TABLE
+           MOVE    "key10"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF   MCP-RC  =  ZERO
+             MOVE    "tbl_syskanri"    TO  MCP-TABLE
+             MOVE    "key10"           TO  MCP-PATHNAME
+             PERFORM  900-KANRIMST-READ-SEC
+             IF   MCP-RC  =   ZERO
+                 MOVE    MCPDATA-REC   TO  SYS-5001-REC
+             END-IF
            ELSE
-               INITIALIZE                  SYS-5001-REC
-               MOVE    1               TO  FLG-SYSKANRI
+             INITIALIZE                SYS-5001-REC
+             MOVE    1                 TO  FLG-SYSKANRI
            END-IF
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-            MOVE    "tbl_syskanri"      TO  MCP-TABLE
-            MOVE    "key10"             TO  MCP-PATHNAME
-            CALL    "ORCDBMAIN"         USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
+           MOVE    "tbl_syskanri"      TO  MCP-TABLE
+           MOVE    "key10"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
            .
        3102-SYS-5001-SEL-EXT.
            EXIT.
@@ -1585,18 +1586,37 @@
       *
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key10"             TO  MCP-PATHNAME
-           PERFORM 910-DBSELECT-SEC
-           IF      MCP-RC              =   ZERO
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           IF   MCP-RC  =   ZERO
+             MOVE    ZERO              TO  FLG-SYSKANRI
+             MOVE    "tbl_syskanri"    TO  MCP-TABLE
+             MOVE    "key10"           TO  MCP-PATHNAME
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF   MCP-RC  =  ZERO
                MOVE    ZERO            TO  FLG-SYSKANRI
-               MOVE    "tbl_syskanri"      TO  MCP-TABLE
-               MOVE    "key10"             TO  MCP-PATHNAME
-               PERFORM 910-DBFETCH-SEC
-           ELSE
+             ELSE
                MOVE    1               TO  FLG-SYSKANRI
+             END-IF
+           ELSE
+             MOVE    1                 TO  FLG-SYSKANRI
            END-IF
+      *
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
            MOVE    "key10"             TO  MCP-PATHNAME
-           PERFORM 910-DBCLOSECURSOR-SEC
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
       *
            .
        900-SYSKANRI-KEY10-EXT.
@@ -1606,15 +1626,15 @@
       *****************************************************************
        900-KANRIMST-READ-SEC         SECTION.
       *
-           MOVE    "DBFETCH"           TO  MCP-FUNC
+           MOVE    "DBFETCH"         TO  MCP-FUNC
            CALL    "ORCDBMAIN"       USING
                                      MCPAREA
                                      MCPDATA-REC
                                      SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    ZERO            TO  FLG-SYSKANRI
+           IF   MCP-RC  =   ZERO
+             MOVE    ZERO            TO  FLG-SYSKANRI
            ELSE
-               MOVE    1               TO  FLG-SYSKANRI
+             MOVE    1               TO  FLG-SYSKANRI
            END-IF
       *
            .
@@ -1628,13 +1648,13 @@
       *
            MOVE    PTINF-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-           MOVE    "tbl_ptinf"          TO  MCP-TABLE
-           MOVE    "key"                TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF      MCP-RC              =   ZERO
+           MOVE    "tbl_ptinf"         TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF      MCP-RC    =   ZERO
                MOVE    "DBFETCH"           TO  MCP-FUNC
                MOVE    "tbl_ptinf"         TO  MCP-TABLE
                MOVE    "key"               TO  MCP-PATHNAME
@@ -1732,33 +1752,33 @@
       *****************************************************************
        910-PTRSIINF-READ-SEC         SECTION.
       *
-           MOVE    PTRSIINF-REC        TO  MCPDATA-REC
-           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    PTRSIINF-REC         TO  MCPDATA-REC
+           MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "tbl_ptrsiinf"       TO  MCP-TABLE
            MOVE    "key"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    "DBFETCH"           TO  MCP-FUNC
-               MOVE    "tbl_ptrsiinf"       TO  MCP-TABLE
-               MOVE    "key"                TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"          USING
-                                            MCPAREA
-                                            MCPDATA-REC
-                                            SPA-AREA
-               IF      MCP-RC              =   ZERO
-                   MOVE    MCPDATA-REC     TO  PTRSIINF-REC
-                   MOVE    ZERO            TO  FLG-PTRSIINF
-               ELSE
-                   MOVE    1               TO  FLG-PTRSIINF
-               END-IF
+           IF   MCP-RC  =  ZERO
+             MOVE    "DBFETCH"          TO  MCP-FUNC
+             MOVE    "tbl_ptrsiinf"     TO  MCP-TABLE
+             MOVE    "key"              TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"        USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+             IF   MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC      TO  PTRSIINF-REC
+               MOVE    ZERO             TO  FLG-PTRSIINF
+             ELSE
+               MOVE    1                TO  FLG-PTRSIINF
+             END-IF
            ELSE
-               MOVE    1               TO  FLG-PTRSIINF
+             MOVE    1                  TO  FLG-PTRSIINF
            END-IF
       *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE    "tbl_ptrsiinf"       TO  MCP-TABLE
            MOVE    "key"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
@@ -1774,29 +1794,46 @@
       *****************************************************************
        900-PTNYUINRRK-KEY45-SEL-SEC         SECTION.
       *
-           MOVE    ZERO             TO  FLG-PTNYUINRRK
+           MOVE    ZERO                TO  FLG-PTNYUINRRK
       *
-           INITIALIZE                   PTNYUINRRK-REC
-           MOVE    SYU-HOSPNUM       TO  PTNYUINRRK-HOSPNUM
-           MOVE    SYU-PTID         TO  PTNYUINRRK-PTID
-           MOVE    SYU-DENPPRTYMD   TO  PTNYUINRRK-TENNYUYMD
-           MOVE    PTNYUINRRK-REC   TO  MCPDATA-REC
-           MOVE    "tbl_ptnyuinrrk" TO  MCP-TABLE
-           MOVE    "key45"          TO  MCP-PATHNAME
-           PERFORM  910-DBSELECT-SEC
+           INITIALIZE                  PTNYUINRRK-REC
+           MOVE    SYU-HOSPNUM         TO  PTNYUINRRK-HOSPNUM
+           MOVE    SYU-PTID            TO  PTNYUINRRK-PTID
+           MOVE    SYU-DENPPRTYMD      TO  PTNYUINRRK-TENNYUYMD
+           MOVE    PTNYUINRRK-REC      TO  MCPDATA-REC
+           MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
+           MOVE    "key45"             TO  MCP-PATHNAME
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
            IF  ( MCP-RC  =  ZERO )
-               MOVE    MCPDATA-REC  TO  PTNYUINRRK-REC
-               MOVE    "tbl_ptnyuinrrk" TO  MCP-TABLE
-               MOVE    "key45"          TO  MCP-PATHNAME
-               PERFORM  910-DBFETCH-SEC
+             MOVE    "tbl_ptnyuinrrk"  TO  MCP-TABLE
+             MOVE    "key45"           TO  MCP-PATHNAME
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC     TO  PTNYUINRRK-REC
+               MOVE    ZERO            TO  FLG-PTNYUINRRK
+             ELSE
+               MOVE    1               TO  FLG-PTNYUINRRK
+             END-IF
            ELSE
-               INITIALIZE               PTNYUINRRK-REC
-               MOVE    1            TO  FLG-PTNYUINRRK
+             INITIALIZE                PTNYUINRRK-REC
+             MOVE    1                 TO  FLG-PTNYUINRRK
            END-IF
       *
-           MOVE    "tbl_ptnyuinrrk" TO  MCP-TABLE
-           MOVE    "key45"          TO  MCP-PATHNAME
-           PERFORM  910-DBCLOSECURSOR-SEC
+           MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
+           MOVE    "key45"             TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
       *
            .
        900-PTNYUINRRK-KEY45-SEL-EXT.
@@ -1806,69 +1843,43 @@
       *****************************************************************
        910-PTHKNINF-KEY-SEL-SEC    SECTION.
       *
-           MOVE    ZERO             TO  FLG-PTHKNINF
-           
-           MOVE    PTHKNINF-REC     TO  MCPDATA-REC
-           MOVE    "tbl_pthkninf"   TO  MCP-TABLE
-           MOVE    "key"            TO  MCP-PATHNAME
-           PERFORM  910-DBSELECT-SEC
+           MOVE    ZERO               TO  FLG-PTHKNINF
+           MOVE    PTHKNINF-REC       TO  MCPDATA-REC
+           MOVE    "tbl_pthkninf"     TO  MCP-TABLE
+           MOVE    "key"              TO  MCP-PATHNAME
+           MOVE    "DBSELECT"         TO  MCP-FUNC
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
            IF  ( MCP-RC  =  ZERO )
-               MOVE   MCPDATA-REC   TO  PTHKNINF-REC
+             MOVE    "tbl_pthkninf"   TO  MCP-TABLE
+             MOVE    "key"            TO  MCP-PATHNAME
+             MOVE    "DBFETCH"        TO  MCP-FUNC
+             CALL    "ORCDBMAIN"      USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE   MCPDATA-REC     TO  PTHKNINF-REC
+               MOVE    ZERO           TO  FLG-PTHKNINF
+             ELSE
+               MOVE    1              TO  FLG-PTHKNINF
+             END-IF
            ELSE
-               INITIALIZE               PTHKNINF-REC
-               MOVE    1            TO  FLG-PTHKNINF
+             INITIALIZE               PTHKNINF-REC
+             MOVE    1                TO  FLG-PTHKNINF
            END-IF
       *
-           MOVE    "tbl_pthkninf"   TO  MCP-TABLE
-           MOVE    "key"          TO  MCP-PATHNAME
-           PERFORM  910-DBCLOSECURSOR-SEC
+           MOVE    "tbl_pthkninf"     TO  MCP-TABLE
+           MOVE    "key"              TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"    TO  MCP-FUNC
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
       *
       
            .
        910-PTHKNINF-KEY-SEL-EXT.
-           EXIT.
-      *****************************************************************
-      *    ＤＢ検索処理
-      *****************************************************************
-       910-DBSELECT-SEC         SECTION.
-      *
-           MOVE    "DBSELECT"       TO  MCP-FUNC
-           CALL    "ORCDBMAIN"          USING
-                                    MCPAREA
-                                    MCPDATA-REC
-                                    SPA-AREA
-           IF  ( MCP-RC  =  ZERO )
-               PERFORM  910-DBFETCH-SEC
-           END-IF
-      *
-           .
-       910-DBSELECT-EXT.
-           EXIT.
-      *****************************************************************
-      *    ＤＢ読み込み処理
-      *****************************************************************
-       910-DBFETCH-SEC         SECTION.
-      *
-           MOVE    "DBFETCH"        TO  MCP-FUNC
-           CALL    "ORCDBMAIN"          USING
-                                    MCPAREA
-                                    MCPDATA-REC
-                                    SPA-AREA
-      *
-           .
-       910-DBFETCH-EXT.
-           EXIT.
-      *****************************************************************
-      *    ＤＢクローズ処理
-      *****************************************************************
-       910-DBCLOSECURSOR-SEC         SECTION.
-      *
-           MOVE    "DBCLOSECURSOR"  TO  MCP-FUNC
-           CALL    "ORCDBMAIN"          USING
-                                    MCPAREA
-                                    MCPDATA-REC
-                                    SPA-AREA
-      *
-           .
-       910-DBCLOSECURSOR-EXT.
            EXIT.
