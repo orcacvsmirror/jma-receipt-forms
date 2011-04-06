@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/03/17  患者番号の編集処理を修正
+      *  01.00.03    @@@@-田中    11/04/04  患者番号桁数を最大20桁に変更
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -55,7 +56,7 @@
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
-           COPY    "A00000D500.INC".
+           COPY    "A00000D500V02.INC".
            COPY    "A00000D5002.INC".
       *
       *    スパ領域
@@ -1227,12 +1228,16 @@
                                               ORCSPTIDAREA
                                               SPA-AREA
                IF    SPTID-RC  =  ZERO
-                 MOVE    SPTID-PTNUM          TO   HC17-PTNUM(CNT-LINE)
+                 IF   SPTID-PTNUM(11:)  =  SPACE
+                   MOVE    SPTID-PTNUM        TO   HC17-PTNUM(CNT-LINE)
+                 ELSE
+                   MOVE    SPTID-PTNUM        TO   HC17-PTNUM2(CNT-LINE)
+                 END-IF
                ELSE
-                 MOVE    SPACE         TO   HC17-PTNUM (CNT-LINE)
+                 MOVE    SPACE         TO   HC17-PTNUM(CNT-LINE)
                END-IF
       *    氏名
-               MOVE    PTINF-NAME      TO   HC17-NAME  (CNT-LINE)
+               MOVE    PTINF-NAME      TO   HC17-NAME(CNT-LINE)
       *
       *    伝票番号枝番が１の場合は保険点数、保険別請求額の明細を印字(開始)
                IF     WRK-SMEI-DENPEDANUM(IDX-S)   =   1
@@ -1826,9 +1831,9 @@
            MOVE    LNK-PRTKANRI-PRIORITY   TO   SPRT-PRIORITY
       *
            IF   WRK-PARA-DENPPRTYMD  <  "20080401"
-             MOVE   "A00000D500O.red"         TO   SPRT-PRTID
+             MOVE   "A00000D500O.red"      TO   SPRT-PRTID
            ELSE
-             MOVE   "A00000D500N.red"         TO   SPRT-PRTID
+             MOVE   "A00000D500V02.red"    TO   SPRT-PRTID
            END-IF
       *
            MOVE    "日計表明細（窓口領収金）"   TO   SPRT-TITLE

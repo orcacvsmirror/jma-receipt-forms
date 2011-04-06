@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/03/17  患者番号の編集処理を修正
+      *  01.00.03    @@@@-田中    11/04/04  患者番号桁数を最大20桁に変更
       ******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -55,7 +56,7 @@
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
-           COPY    "A00000D600.INC".
+           COPY    "A00000D600V02.INC".
       *
       *    スパ領域
        01  STS-AREA.
@@ -739,9 +740,9 @@
                END-IF
       *
       *    患者情報読み込み
-               INITIALIZE                           PTINF-REC
+               INITIALIZE                        PTINF-REC
                MOVE    WRK-SMEI-HOSPNUM(IDX-S)   TO  PTINF-HOSPNUM
-               MOVE    WRK-SMEI-PTID(IDX-S)     TO  PTINF-PTID
+               MOVE    WRK-SMEI-PTID(IDX-S)      TO  PTINF-PTID
                PERFORM 900-PTINF-READ-SEC
       *
                ADD     1                   TO  CNT-LINE
@@ -750,14 +751,18 @@
                              TO  D600-RENNUM (CNT-LINE)
       *    患者番号
                INITIALIZE   ORCSPTIDAREA
-               MOVE  WRK-PARA-HOSPNUM  TO  SPTID-HOSPNUM
-               MOVE  WRK-SMEI-PTID(IDX-S)    TO  SPTID-PTID
+               MOVE    WRK-PARA-HOSPNUM        TO  SPTID-HOSPNUM
+               MOVE    WRK-SMEI-PTID(IDX-S)    TO  SPTID-PTID
                CALL "ORCSPTID"  USING ORCSPTIDAREA
                                       SPA-AREA
-               IF    SPTID-RC = ZERO
-                 MOVE  SPTID-PTNUM      TO  D600-PTNUM(CNT-LINE)
+               IF  SPTID-RC = ZERO
+                 IF  SPTID-PTNUM(11:)  =  SPACE
+                   MOVE    SPTID-PTNUM    TO  D600-PTNUM(CNT-LINE)
+                 ELSE
+                   MOVE    SPTID-PTNUM    TO  D600-PTNUM2(CNT-LINE)
+                 END-IF
                ELSE
-                 MOVE  SPACE            TO  D600-PTNUM(CNT-LINE)
+                 MOVE    SPACE            TO  D600-PTNUM(CNT-LINE)
                END-IF
       *    氏名
                MOVE    PTINF-NAME       TO  D600-NAME(CNT-LINE)
@@ -1311,10 +1316,11 @@
            IF   WRK-PARA-DENPPRTYMD   <   "20080401"
              MOVE    "A00000D600O.red"        TO  SPRT-PRTID
            ELSE
-             MOVE    "A00000D600N.red"        TO  SPRT-PRTID
+             MOVE    "A00000D600V02.red"        TO  SPRT-PRTID
            END-IF
            MOVE    "日計表明細（診療費請求明細）"  TO  SPRT-TITLE
            MOVE    D600                       TO  SPRT-PRTDATA
+             DISPLAY " D600   =  "  D600 
            MOVE    LNK-PRTKANRI-TERMID        TO  SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID          TO  SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM         TO  SPRT-PRTNM
