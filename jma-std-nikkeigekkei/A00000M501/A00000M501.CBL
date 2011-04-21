@@ -1794,7 +1794,6 @@
       *
            IF   FLG-SRYACCT  =  ZERO
                AND   ACCT-DAY(1 IDX7)   >   ZERO
-               AND   JYURRK-SRYKBN(1)  >  "00"
                AND   ACCT-SRYKBN  =  "11"
                AND   (JYURRK-DOUJI-RENNUM  =  1
                OR   JYURRK-DOUJI-RENNUM  =  ZERO)
