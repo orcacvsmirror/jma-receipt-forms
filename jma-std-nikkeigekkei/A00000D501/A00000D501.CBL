@@ -21,7 +21,7 @@
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 日次帳票
       *  コンポーネント名  : 日計表（ＨＣ１７）
-      *  管理者            : 
+      *  管理者            :
       *  作成日付    作業者       記述
       *  03/09/29    @@@@-有村    新規作成(ORCBD501のプログラムID変更Ver)
       *****************************************************************
@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     初診、再診、その他の判定条件を変更
       *                                     open-cobol1.0対応
+      *  01.00.02    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -51,7 +52,7 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域 
+      *    エラーファイル 名称領域
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
            COPY    "A00000D501.INC".
@@ -111,7 +112,7 @@
            03  IDX-S               PIC 9(05).
            03  IDX-N               PIC 9(05).
            03  IDX-MAX             PIC 9(05).
-           03  IDX7G.    
+           03  IDX7G.
               05  IDX7             PIC 9(02).
            03  IDX8                PIC 9(04).
       *
@@ -120,6 +121,8 @@
            03  JIHIIDX             PIC 9(04).
            03  IDX10               PIC 9(02).
            03  IDX11               PIC 9(02).
+      *
+           03  IDX-NG              PIC 9(01).
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -139,15 +142,15 @@
            03  WRK-SYSYMDWH          PIC X(22).
            03  WRK-RENNUM            PIC 9(03).
            03  WRK-PTNUM             PIC X(20).
-           03  WRK-PTNUM6            PIC 9(06). 
-      *  
+           03  WRK-PTNUM6            PIC 9(06).
+      *
            03  WRK-SYSYMD.
                05  WRK-SYSYY         PIC 9(04).
                05  WRK-SYSMM         PIC 9(02).
                05  WRK-SYSDD         PIC 9(02).
            03  WRK-SYMD.
                05  WRK-SYY           PIC 9(04).
-               05  WRK-SMM           PIC 9(02). 
+               05  WRK-SMM           PIC 9(02).
                05  WRK-SDD           PIC 9(02).
            03  WRK-HENYMDG           PIC X(22).
            03  WRK-NYUGAIKBN         PIC X(01).
@@ -169,9 +172,9 @@
                05  WRK-TJIHIN-FLG    PIC 9(01).
            03  WRK-4001-TENTANKA     PIC 9(02)V9(01).
       *
-      *    入院用印刷診療科件数 
+      *    入院用印刷診療科件数
            03  WRK-PRNSRKA-CNT       PIC 9(03).
-      *    外来用印刷診療科件数 
+      *    外来用印刷診療科件数
            03  WRK-PRGSRKA-CNT       PIC 9(03).
       *
            03  WRK-RENNUM-X          PIC ZZ9.
@@ -247,9 +250,9 @@
            03  SUM-JYUSHINKEN-GK    PIC 9(09).
       *
        01  WRK-SMEI-REC.
-           03  WRK-SMEI-TBL      OCCURS  15000.
+           03  WRK-SMEI-TBL      OCCURS  10000.
                05  WRK-SMEI-HOSPNUM         PIC 9(02).
-               05  WRK-SMEI-SORT-KEY. 
+               05  WRK-SMEI-SORT-KEY.
                    07  WRK-SMEI-NYUGAIKBN   PIC X(01).
                    07  WRK-SMEI-SRYKA       PIC X(02).
                    07  WRK-SMEI-PTID        PIC 9(10).
@@ -258,44 +261,25 @@
                05  WRK-SMEI-SKYMONEY        PIC S9(07).
                05  WRK-SMEI-NYUHEN-MONEY    PIC S9(07).
                05  WRK-SMEI-NYUHEN-YMD      PIC X(08).
-               05  WRK-SMEI-PTINFCRE-YMD    PIC X(08).
       *
       *    配列ソート時の退避エリア
-           03  WRK-SV-SMEI-TBL            PIC X(76).
+           03  WRK-SV-SMEI-TBL            PIC X(46).
       *
            03  WRK-SV-SMEI-DENPNUM        PIC 9(07).
       *
-       01   WRK-JYURRK-AREA.
-           03  WRK-JR-DENPNUM-SV             PIC  9(07).
-           03  WRK-JR-TBL           OCCURS  100. 
-               05  WRK-JR-SORT-KEY.
-                   07  WRK-JR-HOSPNUM        PIC  9(02).
-                   07  WRK-JR-PTID           PIC  9(10).
-                   07  WRK-JR-NYUGAIKBN      PIC  X(01).
-                   07  WRK-JR-DENPNUM        PIC  9(07).
-                   07  WRK-JR-SRYKA          PIC  X(02).
-                   07  WRK-JR-SRYYMD         PIC  X(08).
-                   07  WRK-JR-RENNUM         PIC  9(01).
-                   07  WRK-JR-DOUJI-RENNUM   PIC  9(01).
-                   07  WRK-JR-KAIKEI-RENNUM  PIC  9(03).
-                   07  WRK-JR-EDANUM         PIC  9(01).
-                   07  WRK-JR-LASTKBN        PIC  X(01). 
-      *    配列ソート時の退避エリア
-           03  WRK-JR-TBL-SV              PIC  X(59).
-      *
        01   WRK-JYUSHIN-AREA.
-           03   WRK-JYUSHIN-PTID-TBL    OCCURS 50000. 
+           03   WRK-JYUSHIN-PTID-TBL    OCCURS 10000.
                05   WRK-JYUSHIN-PTID      PIC  9(10).
       *
        01  WRK-CONS-AREA.
-      *    自費保険番号 
-           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)   VALUE   "980". 
-      *    労災保険番号 
-           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE   "971". 
-      *    自賠責保険番号 
-           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973". 
-      *    公害保険番号 
-           03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE   "975". 
+      *    自費保険番号
+           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)   VALUE   "980".
+      *    労災保険番号
+           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE   "971".
+      *    自賠責保険番号
+           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973".
+      *    公害保険番号
+           03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE   "975".
            COPY    "CPSHELLTBL.INC".
       *
       *****************************************************************
@@ -514,7 +498,7 @@
            IF   FLG-SYSKANRI   =   ZERO
              MOVE   MCPDATA-REC          TO   SYS-1001-REC
              MOVE   SYS-1001-HOSPNUM     TO   WRK-PARA-HOSPNUM
-           ELSE    
+           ELSE
              MOVE    "医療機関ＩＤが取得できませんでした。"
                                          TO   WRK-RECEERR
              PERFORM 500-ERR-HENSYU-SEC
@@ -539,7 +523,7 @@
            ELSE
              MOVE   SPACE                TO   WRK-TJIHIN(1)
            END-IF
-      *  
+      *
       *    区分12
            MOVE    SPACE                 TO   SYS-1013-REC
            INITIALIZE                         SYS-1013-REC
@@ -558,7 +542,7 @@
            ELSE
              MOVE  SPACE                 TO   WRK-TJIHIN(2)
            END-IF
-      *  
+      *
       *    区分13
            MOVE    SPACE                 TO   SYS-1013-REC
            INITIALIZE                         SYS-1013-REC
@@ -710,7 +694,7 @@
            ELSE
              MOVE   SPACE                TO  WRK-TJIHIN(10)
            END-IF
-      *  
+      *
       *    自費情報取得
       *    区分21
            MOVE    SPACE                 TO   SYS-1013-REC
@@ -749,7 +733,7 @@
            ELSE
              MOVE   SPACE                TO   WRK-TJIHI(2)
            END-IF
-      *  
+      *
       *    区分23
            MOVE    SPACE                 TO   SYS-1013-REC
            INITIALIZE                         SYS-1013-REC
@@ -768,7 +752,7 @@
            ELSE
              MOVE   SPACE                TO   WRK-TJIHI(3)
            END-IF
-      *  
+      *
       *    区分24
            MOVE    SPACE                 TO   SYS-1013-REC
            INITIALIZE                         SYS-1013-REC
@@ -901,7 +885,7 @@
            ELSE
              MOVE   SPACE                TO   WRK-TJIHI(10)
            END-IF
-      *  
+      *
       *    労災医療機関情報
            MOVE    SPACE                 TO   SYS-4001-REC
            INITIALIZE                         SYS-4001-REC
@@ -966,77 +950,38 @@
       *****************************************************************
        310-DATA-SELECT-SEC          SECTION.
       *
-           MOVE    0     TO   IDX-S
+           MOVE    ZERO        TO   IDX-S
       *
-      *    入院患者を取得
-           PERFORM 910-DBSELECT-SEC
+      *    外来・入院患者を取得
+           PERFORM  VARYING  IDX-NG   FROM 1  BY 1
+                    UNTIL    IDX-NG   >    2
       *
-           PERFORM  UNTIL   FLG-SYUMEI  =  1
-      * 
-             PERFORM   900-SYUNOU-READ-SEC
-             INITIALIZE   PTINF-REC
-             MOVE    SMEI-HOSPNUM       TO   PTINF-HOSPNUM
-             MOVE    SMEI-PTID          TO   PTINF-PTID
-             PERFORM   900-PTINF-READ-SEC
+             PERFORM   910-DBSELECT-SEC
+             PERFORM  UNTIL   FLG-SYUMEI  =  1
+               PERFORM   900-SYUNOU-READ-SEC
       *
-             IF  ( WRK-PARA-DENPPRTYMD   =   SMEI-NYUHEN-YMD
-                 AND WRK-PARA-HOSPNUM   =   SMEI-HOSPNUM )
-                 AND  FLG-SYUNOU   =  ZERO
-                 AND  SYU-DENPJTIKBN  NOT =  "3"
-                 AND  FLG-PTINF   =   ZERO
-                 AND  PTINF-TSTPTNUMKBN  NOT =  "1"
-      * 
-               ADD    1           TO    IDX-S
-               MOVE   SMEI-HOSPNUM     TO    WRK-SMEI-HOSPNUM(IDX-S)
-               MOVE   SMEI-NYUGAIKBN   TO   WRK-SMEI-NYUGAIKBN(IDX-S)
-               MOVE   SMEI-SRYKA       TO   WRK-SMEI-SRYKA(IDX-S)
-               MOVE   SMEI-PTID        TO   WRK-SMEI-PTID(IDX-S)
-               MOVE   SMEI-DENPNUM     TO   WRK-SMEI-DENPNUM(IDX-S)
-               MOVE   SMEI-DENPEDANUM  TO   WRK-SMEI-DENPEDANUM(IDX-S)
-               MOVE   SMEI-SKYMONEY    TO   WRK-SMEI-SKYMONEY(IDX-S)
-               MOVE   SMEI-NYUHEN-MONEY
-                                       TO   WRK-SMEI-NYUHEN-MONEY(IDX-S)
-               MOVE   SMEI-NYUHEN-YMD
-                                       TO   WRK-SMEI-NYUHEN-YMD(IDX-S)
-               MOVE   PTINF-CREYMD     TO   WRK-SMEI-PTINFCRE-YMD(IDX-S)
-             END-IF
-             PERFORM 910-DBFETCH-SEC
-           END-PERFORM
+               IF      FLG-SYUNOU             =  ZERO
+                 AND   SYU-DENPJTIKBN     NOT =  "3"
+                 AND ((SMEI-JOUTAIKBN     NOT =  "8"
+                 AND   SMEI-JOUTAIKBN     NOT =  "3")
+                 OR    SMEI-SKYMONEY      NOT =  0
+                 OR    SMEI-NYUHEN-MONEY  NOT =  0)
       *
-           PERFORM 910-DBCLOSE-SEC
-      *
-      *    外来患者を取得
-           PERFORM 920-DBSELECT-SEC
-      *
-           PERFORM  UNTIL   FLG-SYUMEI   =   1
-      * 
-             PERFORM 900-SYUNOU-READ-SEC
-             INITIALIZE   PTINF-REC 
-             MOVE   SMEI-HOSPNUM      TO   PTINF-HOSPNUM
-             MOVE   SMEI-PTID         TO   PTINF-PTID
-             PERFORM   900-PTINF-READ-SEC
-      *
-             IF  ( WRK-PARA-DENPPRTYMD  =  SMEI-NYUHEN-YMD
-                 AND WRK-PARA-HOSPNUM   =  SMEI-HOSPNUM )
-                 AND  FLG-SYUNOU   =  ZERO
-                 AND  SYU-DENPJTIKBN  NOT =  "3"
-                 AND  FLG-PTINF   =  ZERO
-                 AND  PTINF-TSTPTNUMKBN  NOT =  "1"
-      *
-               ADD     1               TO   IDX-S
-               MOVE   SMEI-HOSPNUM     TO   WRK-SMEI-HOSPNUM(IDX-S)
-               MOVE   SMEI-NYUGAIKBN   TO   WRK-SMEI-NYUGAIKBN(IDX-S)
-               MOVE   SMEI-SRYKA       TO   WRK-SMEI-SRYKA(IDX-S)
-               MOVE   SMEI-PTID        TO   WRK-SMEI-PTID(IDX-S)
-               MOVE   SMEI-DENPNUM     TO   WRK-SMEI-DENPNUM(IDX-S)
-               MOVE   SMEI-DENPEDANUM  TO   WRK-SMEI-DENPEDANUM(IDX-S)
-               MOVE   SMEI-SKYMONEY    TO   WRK-SMEI-SKYMONEY(IDX-S)
-               MOVE   SMEI-NYUHEN-MONEY 
-                                       TO   WRK-SMEI-NYUHEN-MONEY(IDX-S)
-               MOVE   SMEI-NYUHEN-YMD  TO   WRK-SMEI-NYUHEN-YMD(IDX-S)
-               MOVE   PTINF-CREYMD     TO   WRK-SMEI-PTINFCRE-YMD(IDX-S)
-             END-IF
-             PERFORM   920-DBFETCH-SEC
+                 ADD   1                TO  IDX-S
+                 MOVE  SMEI-HOSPNUM     TO  WRK-SMEI-HOSPNUM(IDX-S)
+                 MOVE  SMEI-NYUGAIKBN   TO  WRK-SMEI-NYUGAIKBN(IDX-S)
+                 MOVE  SMEI-SRYKA       TO  WRK-SMEI-SRYKA(IDX-S)
+                 MOVE  SMEI-PTID        TO  WRK-SMEI-PTID(IDX-S)
+                 MOVE  SMEI-DENPNUM     TO  WRK-SMEI-DENPNUM(IDX-S)
+                 MOVE  SMEI-DENPEDANUM  TO  WRK-SMEI-DENPEDANUM(IDX-S)
+                 MOVE  SMEI-SKYMONEY    TO  WRK-SMEI-SKYMONEY(IDX-S)
+                 MOVE  SMEI-NYUHEN-MONEY
+                                        TO  WRK-SMEI-NYUHEN-MONEY(IDX-S)
+                 MOVE  SMEI-NYUHEN-YMD  TO  WRK-SMEI-NYUHEN-YMD(IDX-S)
+               END-IF
+               PERFORM   910-DBFETCH-SEC
+             END-PERFORM
+             PERFORM   910-DBCLOSE-SEC
            END-PERFORM
       *
       *    ソート処理
@@ -1050,7 +995,7 @@
              PERFORM  UNTIL  IDX-S   NOT <   IDX-MAX
                PERFORM  UNTIL  IDX-N  >  IDX-MAX
                  IF  WRK-SMEI-SORT-KEY(IDX-S)
-                     >  WRK-SMEI-SORT-KEY(IDX-N) 
+                     >  WRK-SMEI-SORT-KEY(IDX-N)
                    MOVE   WRK-SMEI-TBL(IDX-N)  TO   WRK-SV-SMEI-TBL
                    MOVE   WRK-SMEI-TBL(IDX-S)  TO   WRK-SMEI-TBL(IDX-N)
                    MOVE   WRK-SV-SMEI-TBL      TO   WRK-SMEI-TBL(IDX-S)
@@ -1064,13 +1009,12 @@
              IF   IDX-MAX   =   ZERO
                MOVE   ZERO        TO   FLG-GET
                MOVE   1           TO   FLG-END
-             ELSE 
+             ELSE
                MOVE   1           TO   FLG-GET
                MOVE   ZERO        TO   FLG-END
              END-IF
            END-IF
       *
-           PERFORM   910-DBCLOSE-SEC
            MOVE     1             TO  IDX-S
       *
            .
@@ -1170,7 +1114,7 @@
                  ADD   SUM-OHKNKEN         TO   SUM-OHKNKEN-GK
                  ADD   SUM-SAHKNKEN        TO   SUM-SAHKNKEN-GK
                  PERFORM  VARYING   IDX2   FROM 1  BY 1
-                          UNTIL        IDX2   >  20 
+                          UNTIL        IDX2   >  20
                    ADD   SUM-MONEY(IDX2)   TO   SUM-MONEY-GK(IDX2)
                    ADD   SUM-RKEN(IDX2)    TO   SUM-RKEN-GK(IDX2)
                    ADD   SUM-SKEN(IDX2)    TO   SUM-SKEN-GK(IDX2)
@@ -1202,10 +1146,10 @@
                  INITIALIZE    WRK-PTID
                  EVALUATE  WRK-NYUGAIKBN
                    WHEN "1"
-      *    入院診療科数カウントアップ  
+      *    入院診療科数カウントアップ
                      ADD   1    TO   WRK-PRNSRKA-CNT
                    WHEN "2"
-      *    外来診療科数カウントアップ  
+      *    外来診療科数カウントアップ
                      ADD   1    TO   WRK-PRGSRKA-CNT
                  END-EVALUATE
       *
@@ -1225,7 +1169,6 @@
                      PERFORM   320-CNT-SEC
                    ELSE
       *    外来の場合は初診、再診別に件数を集計する。
-                     MOVE   WRK-SMEI-PTINFCRE-YMD(IDX-S) TO   WRK-CREYMD
                      PERFORM  900-JYURRK-SELECT-SEC
                      PERFORM  UNTIL  FLG-JYURRK  =  1
                        IF   JYURRK-DENPNUM  NOT =  WRK-DENPNUM
@@ -1233,7 +1176,7 @@
                        END-IF
                        PERFORM  900-JYURRK-FETCH-SEC
                      END-PERFORM
-                     PERFORM  900-JYURRK-CLOSE-SEC 
+                     PERFORM  900-JYURRK-CLOSE-SEC
       *
                    END-IF
                  END-IF
@@ -1261,7 +1204,7 @@
       *    配列のデータを全件出力した場合は合計表の印刷を行う為にループより脱出
              IF IDX-S   >   IDX-MAX
                MOVE    1     TO    FLG-END
-             END-IF 
+             END-IF
       *
            END-PERFORM
       *
@@ -1272,7 +1215,7 @@
            ADD   SUM-OHKNKEN     TO   SUM-OHKNKEN-GK
            ADD   SUM-SAHKNKEN    TO   SUM-SAHKNKEN-GK
            PERFORM  VARYING  IDX2   FROM  1   BY 1
-                    UNTIL  IDX2   >  20 
+                    UNTIL  IDX2   >  20
              ADD   SUM-MONEY(IDX2)     TO   SUM-MONEY-GK(IDX2)
              ADD   SUM-RKEN(IDX2)      TO   SUM-RKEN-GK(IDX2)
              ADD   SUM-SKEN(IDX2)      TO   SUM-SKEN-GK(IDX2)
@@ -1313,7 +1256,7 @@
       *    保険点数
            MOVE    ZERO      TO   SYU-TOTAL-HKNTEN
            EVALUATE      SYU-SYUHKNNUM
-             WHEN    OTHER    
+             WHEN    OTHER
                PERFORM  VARYING IDZ   FROM  1   BY  1
                         UNTIL   IDZ   >  16
                  ADD     SYU-HKNTEN (IDZ)
@@ -1322,9 +1265,9 @@
                MOVE    SYU-TOTAL-HKNTEN      TO   WRK-Z9
                ADD     SYU-TOTAL-HKNTEN      TO   SUM-HKNTEN
                MOVE  1                       TO   FLG-HKN
-           END-EVALUATE        
+           END-EVALUATE
       *    保険別金額（社保本人〜自賠責）
-           MOVE    ZERO                    TO   IDX 
+           MOVE    ZERO                    TO   IDX
            EVALUATE  SYU-SYUHKNNUM
              WHEN  SPACE
                MOVE    6                   TO   IDX
@@ -1332,22 +1275,22 @@
                MOVE    20                  TO   IDX
              WHEN  WRK-CONS-JIBAI-HKNNUM
                MOVE    19                  TO   IDX
-             WHEN    WRK-CONS-ROUSAI-HKNNUM    
+             WHEN    WRK-CONS-ROUSAI-HKNNUM
                MOVE    18                  TO   IDX
-             WHEN    WRK-CONS-JIHI-HKNNUM    
+             WHEN    WRK-CONS-JIHI-HKNNUM
              WHEN    "900"  THRU  "919"
                MOVE    17                  TO   IDX
              WHEN    "060"
              WHEN    "067"
              WHEN    "068"
              WHEN    "069"
-               IF   SYU-KOH1HKNNUM   =   "027" 
+               IF   SYU-KOH1HKNNUM   =   "027"
                  MOVE    5                 TO   IDX
                ELSE
                  MOVE    4                 TO   IDX
                END-IF
              WHEN    OTHER
-               IF   SYU-KOH1HKNNUM   =   "027" 
+               IF   SYU-KOH1HKNNUM   =   "027"
                  MOVE    3               TO   IDX
                ELSE
                  PERFORM 3201-PTHKNINF-HENSYU-SEC
@@ -1391,7 +1334,7 @@
                END-IF
       *
              COMPUTE WRK-MONEY   =   SYU-SKYMONEY   -   WRK-JIHI3
-      *              
+      *
              MOVE    WRK-MONEY     TO   WRK-Z9
              ADD     WRK-MONEY     TO   SUM-MONEY(IDX)
                IF  WRK-JIHI   >   ZERO
@@ -1402,21 +1345,21 @@
                                          +   SYU-JIHI-TAXARI(IDX2)
                    IF   WRK-JIHI2  >  ZERO
                      MOVE   WRK-JIHI2   TO   WRK-ZZ
-                     COMPUTE   JIHIIDX  =  IDX2  +  6 
+                     COMPUTE   JIHIIDX  =  IDX2  +  6
                      ADD   WRK-JIHI2    TO   SUM-MONEY(JIHIIDX)
                      MOVE    1          TO   FLG-JIHI(IDX2)
-                   END-IF 
+                   END-IF
                  END-PERFORM
                END-IF
            END-IF
       *
-           EVALUATE IDX 
-             WHEN 17 
+           EVALUATE IDX
+             WHEN 17
       *    自費の場合
                MOVE  SYU-SKYMONEY    TO   WRK-SYUEKI
-             WHEN 18 
+             WHEN 18
       *    労災の場合
-               COMPUTE  WRK-SYUEKI ROUNDED = 
+               COMPUTE  WRK-SYUEKI ROUNDED =
                           (SYU-TOTAL-HKNTEN  *  WRK-4001-TENTANKA)
                         +  WRK-JIHI
                         +  SYU-RSISHOSHIN-MONEY
@@ -1440,7 +1383,7 @@
       *    労災、自賠責以外の場合
                COMPUTE  WRK-SYUEKI  =  (SYU-TOTAL-HKNTEN * HKN-TENTNK)
                                     +  WRK-JIHI
-                                    +  SYU-CHOSEI 
+                                    +  SYU-CHOSEI
                                     +  SYU-YKZ-FTN
                                     +  SYU-RYOYOHI-SKJ
                                     +  SYU-RYOYOHI-SKJ-JIHI
@@ -1456,7 +1399,7 @@
                      COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
                    WHEN  2
                      COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
-                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10 
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
                    WHEN  3
                      IF   WRK-SYUEKI(8:1)  NOT =  0
                        COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
@@ -1464,7 +1407,7 @@
                      END-IF
                  END-EVALUATE
                END-IF
-           END-EVALUATE   
+           END-EVALUATE
            ADD    WRK-SYUEKI     TO   SUM-SYUEKI
            MOVE    1             TO   FLG-SYUEKI
       *
@@ -1486,7 +1429,7 @@
       *    保険点数
            MOVE    ZERO  TO  SYU-TOTAL-HKNTEN
            EVALUATE    SYU-SYUHKNNUM
-             WHEN    OTHER    
+             WHEN    OTHER
                PERFORM VARYING IDZ FROM  1   BY  1
                        UNTIL   IDZ  >  16
                  ADD   SYU-HKNTEN (IDZ)     TO   SYU-TOTAL-HKNTEN
@@ -1496,7 +1439,7 @@
                MOVE  1                      TO   FLG-HKN
            END-EVALUATE
       *    保険別金額（社保本人〜自賠責）
-           MOVE    ZERO                TO  IDX 
+           MOVE    ZERO                TO  IDX
            EVALUATE    SYU-SYUHKNNUM
              WHEN    SPACE
                MOVE    6                    TO   IDX
@@ -1513,7 +1456,7 @@
              WHEN    "067"
              WHEN    "068"
              WHEN    "069"
-               IF   SYU-KOH1HKNNUM   =   "027" 
+               IF   SYU-KOH1HKNNUM   =   "027"
                  MOVE    4                   TO   IDX
                ELSE
                  MOVE    3                   TO   IDX
@@ -1575,14 +1518,14 @@
                                       +  SYU-JIHI-TAXARI(IDX2)
                    IF   WRK-JIHI2   >   ZERO
                      MOVE   WRK-JIHI2     TO   WRK-ZZ
-                     COMPUTE   JIHIIDX   =   IDX2   +   6 
+                     COMPUTE   JIHIIDX   =   IDX2   +   6
                      ADD    WRK-JIHI2    TO   SUM-MONEY(JIHIIDX)
                      MOVE    1           TO   FLG-JIHI(IDX2)
-                   END-IF 
+                   END-IF
                  END-PERFORM
                END-IF
            END-IF
-           EVALUATE IDX 
+           EVALUATE IDX
              WHEN 17
       *    自費の場合
                MOVE    SYU-SKYMONEY  TO   WRK-SYUEKI
@@ -1628,7 +1571,7 @@
                      COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
                    WHEN  2
                      COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
-                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10 
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
                    WHEN  3
                      IF   WRK-SYUEKI(8:1)  NOT =  0
                        COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
@@ -1649,13 +1592,13 @@
       *****************************************************************
        320-CNT-SEC                    SECTION.
       *
-      *    保険別件数カウント 
+      *    保険別件数カウント
            ADD    1       TO   SUM-RKEN(IDX)
-      *    自費分件数カウント 
+      *    自費分件数カウント
            PERFORM  VARYING IDX2  FROM 1  BY  1
                     UNTIL  IDX2   >  10
              IF  FLG-JIHI(IDX2)  = 1
-               COMPUTE  JIHIIDX  =  IDX2  +  6 
+               COMPUTE  JIHIIDX  =  IDX2  +  6
                ADD     1       TO   SUM-RKEN(JIHIIDX)
              END-IF
            END-PERFORM
@@ -1694,7 +1637,7 @@
            PERFORM   900-JYURRK2-READ-SEC
       *
            INITIALIZE               SRYACCT-REC
-           MOVE    JYURRK-HOSPNUM         TO   ACCT-HOSPNUM 
+           MOVE    JYURRK-HOSPNUM         TO   ACCT-HOSPNUM
            MOVE    JYURRK-NYUGAIKBN       TO   ACCT-NYUGAIKBN
            MOVE    JYURRK-PTID            TO   ACCT-PTID
            MOVE    JYURRK-SRYKA           TO   ACCT-SRYKA
@@ -1718,7 +1661,6 @@
              IF   MCP-RC   =   ZERO
                MOVE    MCPDATA-REC        TO   SRYACCT-REC
                MOVE    ZERO               TO   FLG-SRYACCT
-      *--- 2010/12/07 ADD START ----------------------------------------
       *    同月に初診が2回目以降の時のデータを取得
                INITIALIZE  FLG-ACCTEND
                PERFORM  UNTIL  FLG-ACCTEND  =  1
@@ -1756,7 +1698,6 @@
                    END-IF
                  END-IF
                END-PERFORM
-      *--- 2010/12/07 ADD END   ----------------------------------------
              ELSE
                MOVE    1                  TO   FLG-SRYACCT
                INITIALIZE                 SRYACCT-REC
@@ -1793,16 +1734,16 @@
                PERFORM  900-SRYKARRKA-FETCH-SEC
              END-PERFORM
              PERFORM  900-SRYKARRKA-CLOSE-SEC
-             IF   WRK-SYOSINYMD  =  SYU-SRYYMD  
-      *    保険別件数カウント 
+             IF   WRK-SYOSINYMD  =  SYU-SRYYMD
+      *    保険別件数カウント
                ADD    1   TO   SUM-SKEN(IDX)
-      *    自費分件数カウント 
+      *    自費分件数カウント
                PERFORM  VARYING  IDX2  FROM  1  BY  1
                         UNTIL  IDX2  >  10
                  IF  FLG-JIHI(IDX2)  =  1
-                   COMPUTE  JIHIIDX  =  IDX2  +  6 
+                   COMPUTE  JIHIIDX  =  IDX2  +  6
                    ADD   1       TO  SUM-SKEN(JIHIIDX)
-                 END-IF  
+                 END-IF
                END-PERFORM
       *    保険点数件数カウント
                IF   FLG-HKN  =  1
@@ -1822,90 +1763,6 @@
                END-IF
              END-IF
            END-IF
-      *
-      *--- 2010/12/07 DELETE START -------------------------------------
-      *     INITIALIZE                SRYACCT-REC
-      *     MOVE    ZERO                TO   FLG-SRYACCT
-      *     MOVE    JYURRK-HOSPNUM      TO   ACCT-HOSPNUM
-      *     MOVE    JYURRK-NYUGAIKBN    TO   ACCT-NYUGAIKBN
-      *     MOVE    JYURRK-PTID         TO   ACCT-PTID
-      *     MOVE    JYURRK-SRYKA        TO   ACCT-SRYKA
-      *     MOVE    JYURRK-SRYYMD(1:6)  TO   ACCT-SRYYM
-      *     MOVE    "11"                TO   ACCT-SRYKBN
-      *     MOVE    SRYACCT-REC         TO   MCPDATA-REC
-      *     MOVE    "DBSELECT"          TO   MCP-FUNC
-      *     MOVE    "tbl_sryacct"       TO   MCP-TABLE
-      *     MOVE    "key3"              TO   MCP-PATHNAME
-      *     CALL    "ORCDBMAIN"         USING
-      *                                 MCPAREA
-      *                                 MCPDATA-REC
-      *                               SPA-AREA
-      *     IF   MCP-RC    =   ZERO
-      *       MOVE    "DBFETCH"         TO   MCP-FUNC
-      *       MOVE    "tbl_sryacct"     TO   MCP-TABLE
-      *       MOVE    "key3"            TO   MCP-PATHNAME
-      *       CALL    "ORCDBMAIN"       USING
-      *                                 MCPAREA
-      *                                 MCPDATA-REC
-      *                                 SPA-AREA
-      *       IF   MCP-RC  =  ZERO
-      *         MOVE  MCPDATA-REC     TO   SRYACCT-REC
-      *         MOVE  ZERO            TO   FLG-SRYACCT
-      **    同月に初診が2回目以降の時のデータを取得
-      *         INITIALIZE  FLG-ACCTEND
-      *         PERFORM  UNTIL  FLG-ACCTEND  =  1
-      *           IF  JYURRK-ZAINUM(1)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(2)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(3)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(4)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(5)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(6)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(7)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(8)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(9)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(10)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(11)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(12)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(13)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(14)  =  ACCT-ZAINUM
-      *               OR  JYURRK-ZAINUM(15)  =  ACCT-ZAINUM
-      *             MOVE    MCPDATA-REC       TO   SRYACCT-REC
-      *             MOVE    ZERO              TO   FLG-SRYACCT
-      *             MOVE    1                 TO   FLG-ACCTEND
-      *           ELSE
-      *             MOVE    "DBFETCH"         TO   MCP-FUNC
-      *             MOVE    "tbl_sryacct"     TO   MCP-TABLE
-      *             MOVE    "key3"            TO   MCP-PATHNAME
-      *             CALL    "ORCDBMAIN"       USING
-      *                                       MCPAREA
-      *                                       MCPDATA-REC
-      *                                       SPA-AREA
-      *             IF   MCP-RC  =  ZERO
-      *               MOVE    MCPDATA-REC     TO   SRYACCT-REC
-      *               MOVE    ZERO            TO   FLG-SRYACCT
-      *             ELSE
-      *               MOVE    1               TO   FLG-ACCTEND
-      *             END-IF
-      *           END-IF
-      *         END-PERFORM
-      *       ELSE
-      *         MOVE    1             TO   FLG-SRYACCT
-      *         INITIALIZE                 SRYACCT-REC
-      *       END-IF
-      *     ELSE
-      *       MOVE   1                TO   FLG-SRYACCT
-      *       INITIALIZE                   SRYACCT-REC
-      *     END-IF
-      **    診療会計情報CLOSE
-      *     MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-      *     MOVE    "tbl_sryacct"       TO  MCP-TABLE
-      *     MOVE    "key3"              TO   MCP-PATHNAME
-      *     MOVE    "key40"              TO   MCP-PATHNAME
-      *     CALL    "ORCDBMAIN"         USING
-      *                                 MCPAREA
-      *                                 MCPDATA-REC
-      *                                 SPA-AREA
-      *--- 2010/12/07 DELETE END   -------------------------------------
       *
            MOVE    ZERO           TO   FLG-JYURRK3
            COMPUTE  JYURRK-EDANUM  =  JYURRK-EDANUM  +  1
@@ -1943,77 +1800,22 @@
                                        MCPDATA-REC
                                        SPA-AREA
       *
-      *--- 2010/12/07 DELETE START -------------------------------------
-      *     IF  JYURRK-RENNUM  NOT = 1
-      *       INITIALIZE                     SRYACCT-REC
-      *       MOVE    JYURRK-HOSPNUM         TO   ACCT-HOSPNUM
-      *       MOVE    JYURRK-NYUGAIKBN       TO   ACCT-NYUGAIKBN
-      *       MOVE    JYURRK-PTID            TO   ACCT-PTID
-      *       MOVE    JYURRK-SRYKA           TO   ACCT-SRYKA
-      *       MOVE    JYURRK-SRYYMD(1:6)     TO   ACCT-SRYYM
-      *       MOVE    JYURRK-ZAINUM          TO   ACCT-ZAINUM
-      **
-      *       MOVE    SRYACCT-REC            TO   MCPDATA-REC
-      *       MOVE    "DBSELECT"             TO   MCP-FUNC
-      *       MOVE    "tbl_sryacct"          TO   MCP-TABLE
-      *       MOVE    "key5"                 TO   MCP-PATHNAME
-      *       CALL    "ORCDBMAIN"            USING
-      *                                      MCPAREA
-      *                                      MCPDATA-REC
-      *                                      SPA-AREA
-      **
-      *       IF   MCP-RC   =   ZERO
-      *         MOVE    "DBFETCH"            TO   MCP-FUNC
-      *         MOVE    "tbl_sryacct"        TO   MCP-TABLE
-      *         MOVE    "key5"               TO   MCP-PATHNAME
-      *         CALL    "ORCDBMAIN"          USING
-      *                                      MCPAREA
-      *                                      MCPDATA-REC
-      *                                      SPA-AREA
-      *         IF   MCP-RC   =   ZERO
-      *           MOVE    MCPDATA-REC        TO   SRYACCT-REC
-      *           MOVE    ZERO               TO   FLG-SRYACCT
-      *         ELSE     
-      *           MOVE    1                  TO   FLG-SRYACCT
-      *           INITIALIZE                 SRYACCT-REC
-      *         END-IF
-      *       ELSE
-      *         MOVE  1                      TO   FLG-SRYACCT
-      *         INITIALIZE                   SRYACCT-REC
-      *       END-IF
-      **
-      *       MOVE    "DBCLOSECURSOR"        TO   MCP-FUNC
-      *       MOVE    "tbl_sryacct"          TO   MCP-TABLE
-      *       MOVE    "key5"                 TO   MCP-PATHNAME
-      *       CALL    "ORCDBMAIN"            USING
-      *                                      MCPAREA
-      *                                      MCPDATA-REC
-      *                                      SPA-AREA
-      *     END-IF
-      **
-      *     IF  JYURRK-HKNKBN  =  "0"
-      *--- 2010/12/07 DELETE END   -------------------------------------
-      *
            IF   FLG-SRYACCT  =  ZERO
                AND   ACCT-DAY(1 IDX7)   >   ZERO
-      *--- 2010/12/07 DELETE START -------------------------------------
-      *         AND   JYURRK-RENNUM  =  1
-      *--- 2010/12/07 DELETE END   -------------------------------------
-               AND   JYURRK-SRYKBN(1)  >  "00"
                AND   ACCT-SRYKBN  =  "11"
-               AND   (JYURRK-DOUJI-RENNUM  =  1  
-               OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
+               AND   (JYURRK-DOUJI-RENNUM  =  1
+               OR   JYURRK-DOUJI-RENNUM  =  ZERO)
       *    初診件数としてカウントする。
-      *    保険別件数カウント 
+      *    保険別件数カウント
              ADD    1   TO   SUM-SAKEN(IDX)
              MOVE    JYURRK-DENPNUM   TO   WRK-DENPNUM
-      *    自費分件数カウント 
+      *    自費分件数カウント
              PERFORM  VARYING IDX2  FROM 1  BY  1
                       UNTIL    IDX2       >    10
                IF  FLG-JIHI(IDX2)  =  1
-                  COMPUTE  JIHIIDX  =  IDX2  +  6 
+                  COMPUTE  JIHIIDX  =  IDX2  +  6
                   ADD    1       TO   SUM-SAKEN(JIHIIDX)
-               END-IF 
+               END-IF
              END-PERFORM
       *    保険点数件数カウント
              IF   FLG-HKN   =   1
@@ -2031,7 +1833,7 @@
              IF  FLG-RYOSYU  =  1
                ADD    1          TO   SUM-SARYOSYUKEN
              END-IF
-           ELSE 
+           ELSE
       *
              PERFORM  VARYING  IDX10 FROM  1  BY  1
                       UNTIL  IDX10  >  15
@@ -2087,261 +1889,91 @@
                  MOVE    16               TO   IDX10
                END-IF
              END-PERFORM
-             MOVE    ACCT-HOSPNUM     TO   SRY-HOSPNUM
-             MOVE    ACCT-NYUGAIKBN   TO   SRY-NYUGAIKBN
-             MOVE    ACCT-PTID        TO   SRY-PTID
-             MOVE    ACCT-SRYKA       TO   SRY-SRYKA
-             MOVE    ACCT-SRYYM       TO   SRY-SRYYM
-             MOVE    ACCT-ZAINUM      TO   SRY-ZAINUM
-             PERFORM  900-SRYACT-SELECT-SEC
-             PERFORM  900-SRYACT-FETCH-SEC
-             PERFORM  900-SRYACT-CLOSE-SEC
              IF     FLG-SRYACCT    =  ZERO
                  AND   ACCT-DAY(1 IDX7)  >  ZERO
-                     AND   SRY-SRYKBN   =   "12"
                  AND   ACCT-SRYKBN   =  "12"
       *
       *    再診の件数としてカウントする。
-      *    保険別件数カウント 
+      *    保険別件数カウント
                ADD     1   TO   SUM-RKEN(IDX)
                MOVE    JYURRK-DENPNUM   TO   WRK-DENPNUM
-      *    自費分件数カウント 
+      *    自費分件数カウント
                PERFORM  VARYING  IDX2  FROM  1  BY  1
                         UNTIL  IDX2  >  10
                  IF   FLG-JIHI(IDX2)  =  1
-                   COMPUTE  JIHIIDX  =  IDX2  +  6 
+                   COMPUTE  JIHIIDX  =  IDX2  +  6
                    ADD    1      TO   SUM-RKEN(JIHIIDX)
-                 END-IF 
+                 END-IF
                END-PERFORM
-      *    保険点数件数カウント 
+      *    保険点数件数カウント
                IF  FLG-HKN  =  1
                  ADD    1     TO   SUM-RHKNKEN
-               END-IF 
+               END-IF
       *    医療収益計件数カウント
                IF  FLG-SYUEKI = 1
                  ADD    1     TO   SUM-RSYUEKIKEN
-               END-IF 
+               END-IF
       *    窓口請求金額件数カウント
                IF  FLG-SEIKYU = 1
                  ADD    1     TO   SUM-RSEIKYUKEN
-               END-IF 
-      *    窓口領収金額件数カウント 
+               END-IF
+      *    窓口領収金額件数カウント
                IF  FLG-RYOSYU = 1
                  ADD    1     TO   SUM-RRYOSYUKEN
-               END-IF 
+               END-IF
       *
              ELSE
                IF   FLG-JYURRK3  =  1
       *    その他の件数としてカウントする。
       *    保険別件数カウント
                  ADD     1   TO   SUM-OKEN(IDX)
-      *    自費分件数カウント 
+      *    自費分件数カウント
                  PERFORM  VARYING IDX2  FROM 1  BY  1
                           UNTIL    IDX2   >   10
                    IF  FLG-JIHI(IDX2)  = 1
-                     COMPUTE  JIHIIDX  =  IDX2  +  6 
+                     COMPUTE  JIHIIDX  =  IDX2  +  6
                      ADD     1    TO   SUM-OKEN(JIHIIDX)
-                   END-IF 
+                   END-IF
                  END-PERFORM
-      *    保険点数件数カウント 
+      *    保険点数件数カウント
                  IF  FLG-HKN  =  1
                    ADD   1  TO   SUM-OHKNKEN
-                 END-IF 
-      *    医療収益計件数カウント 
+                 END-IF
+      *    医療収益計件数カウント
                  IF  FLG-SYUEKI  =  1
                    ADD   1  TO   SUM-OSYUEKIKEN
-                 END-IF 
+                 END-IF
       *    窓口請求金額件数カウント
                  IF  FLG-SEIKYU = 1
                    ADD   1  TO   SUM-OSEIKYUKEN
-                 END-IF 
-      *    窓口領収金額件数カウント 
+                 END-IF
+      *    窓口領収金額件数カウント
                  IF  FLG-RYOSYU = 1
                    ADD   1  TO   SUM-ORYOSYUKEN
-                 END-IF 
+                 END-IF
                END-IF
              END-IF
       *
            END-IF
-      *--- 2010/12/07 DELETE START -------------------------------------
-      *     ELSE
-      **
-      *       IF   FLG-SRYACCT  =  ZERO
-      *         AND   ACCT-DAY(1 IDX7)   >   ZERO
-      *         AND   JYURRK-SRYKBN(1)  >  "00"
-      *         AND   ACCT-SRYKBN   =   "11"
-      *         AND   (JYURRK-DOUJI-RENNUM  =  1  
-      *         OR   JYURRK-DOUJI-RENNUM  =  ZERO)  
-      **    初診件数としてカウントする。
-      **    保険別件数カウント 
-      *         ADD    1   TO   SUM-SAKEN(IDX)
-      *         MOVE    JYURRK-DENPNUM   TO   WRK-DENPNUM
-      **    自費分件数カウント 
-      *         PERFORM  VARYING IDX2  FROM 1  BY  1
-      *                  UNTIL    IDX2       >    10
-      *           IF  FLG-JIHI(IDX2)  =  1
-      *              COMPUTE  JIHIIDX  =  IDX2  +  6 
-      *              ADD    1       TO   SUM-SAKEN(JIHIIDX)
-      *           END-IF 
-      *         END-PERFORM
-      **    保険点数件数カウント
-      *         IF   FLG-HKN   =   1
-      *           ADD    1          TO   SUM-SAHKNKEN
-      *         END-IF
-      **    医療収益計件数カウント
-      *         IF  FLG-SYUEKI  =  1
-      *           ADD    1          TO   SUM-SASYUEKIKEN
-      *         END-IF
-      **    窓口請求金額件数カウント
-      *         IF  FLG-SEIKYU  =  1
-      *           ADD    1          TO   SUM-SASEIKYUKEN
-      *         END-IF
-      **    窓口領収金額件数カウント
-      *         IF  FLG-RYOSYU  =  1
-      *           ADD    1          TO   SUM-SARYOSYUKEN
-      *         END-IF
-      *       ELSE
-      *       PERFORM  VARYING  IDX10 FROM  1  BY  1
-      *                UNTIL  IDX10  >  15
-      *         MOVE  JYURRK-ZAINUM(IDX10)  TO   ACCT-ZAINUM
-      *         MOVE  JYURRK-HOSPNUM     TO   ACCT-HOSPNUM
-      *         MOVE  JYURRK-NYUGAIKBN   TO   ACCT-NYUGAIKBN
-      *         MOVE  JYURRK-PTID        TO   ACCT-PTID
-      *         MOVE  JYURRK-SRYKA       TO   ACCT-SRYKA
-      *         MOVE  JYURRK-SRYYMD(1:6) TO   ACCT-SRYYM
-      *         MOVE  SRYACCT-REC        TO   MCPDATA-REC
-      *         MOVE  "DBSELECT"         TO   MCP-FUNC
-      *         MOVE  "tbl_sryacct"      TO   MCP-TABLE
-      *         MOVE  "key5"             TO   MCP-PATHNAME
-      *         CALL  "ORCDBMAIN"        USING
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      *                                  SPA-AREA
-      *         IF   MCP-RC   =  ZERO
-      *           MOVE   "DBFETCH"       TO   MCP-FUNC
-      *           MOVE    "tbl_sryacct"  TO   MCP-TABLE
-      *           MOVE    "key5"         TO   MCP-PATHNAME
-      *           CALL    "ORCDBMAIN"    USING
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      *                                  SPA-AREA
-      *           IF   MCP-RC   =  ZERO
-      *             MOVE   MCPDATA-REC   TO   SRYACCT-REC
-      *             MOVE   ZERO          TO   FLG-SRYACCT
-      *           ELSE
-      *             MOVE   1             TO   FLG-SRYACCT
-      *             INITIALIZE                SRYACCT-REC
-      *           END-IF
-      *         ELSE
-      *           MOVE    1              TO   FLG-SRYACCT
-      *           INITIALIZE                  SRYACCT-REC
-      *         END-IF
-      **
-      *         MOVE    "DBCLOSECURSOR"  TO   MCP-FUNC
-      *         MOVE    "tbl_sryacct"    TO   MCP-TABLE
-      *         MOVE    "key5"           TO   MCP-PATHNAME
-      *         CALL    "ORCDBMAIN"      USING
-      *                                  MCPAREA
-      *                                  MCPDATA-REC
-      *                                  SPA-AREA
-      *         IF  IDX10  <  15
-      *           COMPUTE   IDX11   =   IDX10  +   1
-      *           IF   JYURRK-ZAINUM(IDX11)  =  ZERO
-      *             MOVE    16               TO   IDX10
-      *           END-IF
-      *         END-IF
-      *         IF   ACCT-SRYKBN   =  "12"
-      *           MOVE    16               TO   IDX10
-      *         END-IF
-      *       END-PERFORM
-      *         IF     FLG-SRYACCT    =  ZERO
-      *           AND   ACCT-DAY(1 IDX7)  >  ZERO
-      *           AND   JYURRK-SRYKBN(1)  >  "00"
-      *           AND   ACCT-SRYKBN   =  "12"
-      **
-      **    再診の件数としてカウントする。
-      **    保険別件数カウント
-      *           ADD     1   TO   SUM-RKEN(IDX)
-      *           MOVE    JYURRK-DENPNUM   TO   WRK-DENPNUM
-      **    自費分件数カウント 
-      *           PERFORM  VARYING  IDX2  FROM  1  BY  1
-      *                    UNTIL  IDX2  >  10
-      *             IF   FLG-JIHI(IDX2)  =  1
-      *               COMPUTE  JIHIIDX  =  IDX2  +  6 
-      *               ADD    1      TO   SUM-RKEN(JIHIIDX)
-      *             END-IF 
-      *           END-PERFORM
-      **    保険点数件数カウント 
-      *           IF  FLG-HKN  =  1
-      *             ADD    1     TO   SUM-RHKNKEN
-      *           END-IF 
-      **    医療収益計件数カウント
-      *           IF  FLG-SYUEKI = 1
-      *             ADD    1     TO   SUM-RSYUEKIKEN
-      *           END-IF 
-      **    窓口請求金額件数カウント
-      *           IF  FLG-SEIKYU = 1
-      *             ADD    1     TO   SUM-RSEIKYUKEN
-      *           END-IF 
-      **    窓口領収金額件数カウント 
-      *           IF  FLG-RYOSYU = 1
-      *             ADD    1     TO   SUM-RRYOSYUKEN
-      *           END-IF 
-      **
-      *         ELSE
-      *           IF   FLG-JYURRK3  =  1
-      **    その他の件数としてカウントする。
-      **    保険別件数カウント 
-      *             ADD     1   TO   SUM-OKEN(IDX)
-      **    自費分件数カウント 
-      *             PERFORM  VARYING IDX2  FROM 1  BY  1
-      *                      UNTIL    IDX2   >   10
-      *               IF  FLG-JIHI(IDX2)  = 1
-      *                 COMPUTE  JIHIIDX  =  IDX2  +  6 
-      *                 ADD     1    TO   SUM-OKEN(JIHIIDX)
-      *               END-IF 
-      *             END-PERFORM
-      **    保険点数件数カウント 
-      *             IF  FLG-HKN  =  1
-      *               ADD   1  TO   SUM-OHKNKEN
-      *             END-IF 
-      **    医療収益計件数カウント 
-      *             IF  FLG-SYUEKI  =  1
-      *               ADD   1  TO   SUM-OSYUEKIKEN
-      *             END-IF 
-      **    窓口請求金額件数カウント
-      *             IF  FLG-SEIKYU = 1
-      *               ADD   1  TO   SUM-OSEIKYUKEN
-      *             END-IF 
-      **    窓口領収金額件数カウント 
-      *             IF  FLG-RYOSYU = 1
-      *               ADD   1  TO   SUM-ORYOSYUKEN
-      *             END-IF 
-      *           END-IF
-      *         END-IF
-      *       END-IF
-      **
-      *     END-IF
-      *--- 2010/12/07 DELETE END   -------------------------------------
       *
       *    現在処理中のレコードが同一患者のレコードでない場合は、
       *    受診者数のカウントを行う。(同日診療の場合は実患者数をカウントする。)
       *    但し、現状は科別集計においては受診者数の印字は行わない。
-           MOVE     1        TO      IDX3 
-           PERFORM  UNTIL  IDX3  >  50000
+           MOVE     1        TO     IDX3
+           PERFORM  UNTIL  IDX3  >  10000
              IF  WRK-SMEI-PTID(IDX-S)  =  WRK-JYUSHIN-PTID(IDX3)
       *    既に同日の診療が受診件数として計上されている場合は
       *    全科合計の受診者数に計上しない.
-               MOVE    50000     TO   IDX3
+               MOVE   10000    TO   IDX3
              END-IF
              IF  (WRK-JYUSHIN-PTID(IDX3)  =  ZERO)
-                 AND  (IDX3  NOT =  50000)
+                 AND  (IDX3  NOT =  10000)
       *    同日の診療が発生していない場合は全科合計の受診者数に計上する。
                MOVE   WRK-SMEI-PTID(IDX-S)  TO   WRK-JYUSHIN-PTID(IDX3)
-               ADD    1       TO   SUM-JYUSHINKEN-GK
-               MOVE   50000   TO   IDX3
+               ADD    1        TO   SUM-JYUSHINKEN-GK
+               MOVE   10000    TO   IDX3
              END-IF
-             ADD 1            TO   IDX3
+             ADD 1             TO   IDX3
            END-PERFORM
       *
            .
@@ -2371,13 +2003,13 @@
              WHEN    "067"
              WHEN    "068"
              WHEN    "069"
-               IF   SYU-KOH1HKNNUM   =   "027" 
+               IF   SYU-KOH1HKNNUM   =   "027"
                  MOVE    5             TO   IDX
                ELSE
                  MOVE    4             TO   IDX
                END-IF
              WHEN    OTHER
-               IF   SYU-KOH1HKNNUM   =  "027" 
+               IF   SYU-KOH1HKNNUM   =  "027"
                  MOVE    3             TO   IDX
                ELSE
                  PERFORM 3201-PTHKNINF-HENSYU-SEC
@@ -2404,7 +2036,7 @@
        330-HOKEN-GROUPING-SEC      SECTION.
       *
       *    保険別金額（社保本人〜自賠責）
-           MOVE    ZERO                TO  IDX 
+           MOVE    ZERO                TO  IDX
            EVALUATE    SYU-SYUHKNNUM
              WHEN    SPACE
                MOVE    6               TO   IDX
@@ -2414,7 +2046,7 @@
                MOVE    19              TO   IDX
              WHEN    WRK-CONS-ROUSAI-HKNNUM
                MOVE    18              TO   IDX
-             WHEN    WRK-CONS-JIHI-HKNNUM     
+             WHEN    WRK-CONS-JIHI-HKNNUM
              WHEN    "900"  THRU  "919"
                MOVE    17              TO   IDX
              WHEN    "039"
@@ -2476,7 +2108,7 @@
       *****************************************************************
       *    帳票<診療科合計>印刷処理
       *****************************************************************
-      *    
+      *
        330-TERM-KA-PRINT-SEC         SECTION.
       *
            INITIALIZE            HC17B
@@ -2488,7 +2120,7 @@
                MOVE   "入院"         TO   HC17B-NYUGAIKBN
       *      入院自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
-                        UNTIL    IDX2   >  10 
+                        UNTIL    IDX2   >  10
                  MOVE    WRK-TJIHIN(IDX2)  TO   HC17B-TJIHI(IDX2)
                END-PERFORM
                MOVE   "請求件数"    TO   HC17B-KENSU1(1)
@@ -2497,7 +2129,7 @@
                MOVE   "外来"        TO   HC17B-NYUGAIKBN
       *    外来自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
-                        UNTIL    IDX2   >    10 
+                        UNTIL    IDX2   >    10
                  MOVE    WRK-TJIHI(IDX2)    TO   HC17B-TJIHI(IDX2)
                END-PERFORM
                MOVE    "再診件数"           TO   HC17B-KENSU1(1)
@@ -2541,7 +2173,7 @@
       *    保険点数、件数合計
              MOVE    SUM-HKNTEN         TO   WRK-Z9
              MOVE    WRK-Z9             TO   HC17B-GHKNKEN
-             IF    WRK-NYUGAIKBN   =  "2" 
+             IF    WRK-NYUGAIKBN   =  "2"
                MOVE    SUM-SAHKNKEN     TO   WRK-Z9
                MOVE    WRK-Z9           TO   HC17B-SHKNKEN
                MOVE    SUM-SHKNKEN      TO   WRK-Z9
@@ -2603,7 +2235,7 @@
                MOVE    WRK-S9   TO   HC17B-GMONEY(IDX)
                MOVE    SUM-RKEN(IDX)       TO   WRK-Z9
                MOVE    WRK-Z9   TO   HC17B-RKENSU(IDX)
-               IF WRK-NYUGAIKBN =   "2" 
+               IF WRK-NYUGAIKBN =   "2"
                  MOVE   SUM-SAKEN(IDX)      TO   WRK-Z9
                  MOVE   WRK-Z9              TO   HC17B-SKENSU (IDX)
                  MOVE   SUM-SKEN (IDX)      TO   WRK-Z9
@@ -2617,7 +2249,7 @@
                   MOVE    SUM-OKEN (IDX)       TO  WRK-Z9
                   MOVE    WRK-Z9   TO  HC17B-OKENSU  (IDX)
                END-IF
-             END-IF 
+             END-IF
            END-PERFORM
       *
       *    医療収益計、窓口請求金額合計、窓口領収金額合計
@@ -2651,7 +2283,7 @@
              END-IF
       *
            END-IF
-      * 
+      *
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"                   TO   SPRT-MODE
            MOVE    LNK-PRTKANRI-RENNUM     TO   SPRT-RENNUM
@@ -2664,7 +2296,7 @@
            MOVE    LNK-PRTKANRI-PRIORITY   TO   SPRT-PRIORITY
            IF   WRK-PARA-DENPPRTYMD  <  "20080401"
              MOVE   "A00000D501O.red"      TO   SPRT-PRTID
-           ELSE 
+           ELSE
              MOVE   "A00000D501N.red"      TO   SPRT-PRTID
            END-IF
       *
@@ -2690,7 +2322,7 @@
       *****************************************************************
       *    帳票<入外区分別全科合計>印刷処理
       *****************************************************************
-      *    
+      *
        330-TERM-GK-PRINT-SEC         SECTION.
       *
            INITIALIZE            HC17B
@@ -2702,7 +2334,7 @@
                MOVE "入院"         TO  HC17B-NYUGAIKBN
       *    入院自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
-                        UNTIL    IDX2   >  10 
+                        UNTIL    IDX2   >  10
                  MOVE     WRK-TJIHIN(IDX2)   TO   HC17B-TJIHI(IDX2)
                END-PERFORM
                MOVE   "請求件数"    TO   HC17B-KENSU1(1)
@@ -2711,7 +2343,7 @@
                MOVE   "外来"         TO   HC17B-NYUGAIKBN
       *    外来自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
-                         UNTIL    IDX2  >  10 
+                         UNTIL    IDX2  >  10
                  MOVE   WRK-TJIHI(IDX2)   TO   HC17B-TJIHI(IDX2)
                END-PERFORM
                MOVE    "再診件数"      TO   HC17B-KENSU1(1)
@@ -2724,7 +2356,7 @@
                MOVE    "(新患数)"      TO   HC17B-KENSU3(2)
                MOVE  "受診者数"        TO   HC17B-TJYUSHIN
            END-EVALUATE
-      *    診療科名称 
+      *    診療科名称
            EVALUATE WRK-NYUGAIKBN
              WHEN "1"
                IF  WRK-PRNSRKA-CNT  >   1
@@ -2789,7 +2421,7 @@
       *    保険点数、件数合計
              MOVE    SUM-HKNTEN-GK    TO   WRK-Z9
              MOVE    WRK-Z9           TO   HC17B-GHKNKEN
-             IF   WRK-NYUGAIKBN   =   "2" 
+             IF   WRK-NYUGAIKBN   =   "2"
                 MOVE    SUM-SAHKNKEN-GK     TO  WRK-Z9
                 MOVE    WRK-Z9              TO   HC17B-SHKNKEN
                 MOVE    SUM-SHKNKEN-GK      TO   WRK-Z9
@@ -2823,13 +2455,13 @@
                EVALUATE WRK-NYUGAIKBN
                  WHEN "1"
       *    入院自費項目の設定
-                   MOVE   SUM-MONEY-GK(IDX)  TO   WRK-S9 
+                   MOVE   SUM-MONEY-GK(IDX)  TO   WRK-S9
                    MOVE   WRK-S9             TO   HC17B-GMONEY(IDX)
                    MOVE   SUM-RKEN-GK(IDX)   TO   WRK-Z9
                    MOVE   WRK-Z9             TO   HC17B-RKENSU(IDX)
                  WHEN "2"
       *    外来自費項目の設定
-                   MOVE   SUM-MONEY-GK(IDX)  TO   WRK-S9 
+                   MOVE   SUM-MONEY-GK(IDX)  TO   WRK-S9
                    MOVE   WRK-S9             TO   HC17B-GMONEY(IDX)
                    MOVE   SUM-RKEN-GK(IDX)   TO   WRK-Z9
                    MOVE   WRK-Z9             TO   HC17B-RKENSU(IDX)
@@ -2851,7 +2483,7 @@
                MOVE    WRK-S9               TO   HC17B-GMONEY(IDX)
                MOVE    SUM-RKEN-GK(IDX)     TO   WRK-Z9
                MOVE    WRK-Z9               TO   HC17B-RKENSU(IDX)
-               IF   WRK-NYUGAIKBN   =  "2" 
+               IF   WRK-NYUGAIKBN   =  "2"
                  MOVE    SUM-SAKEN-GK(IDX)  TO   WRK-Z9
                  MOVE    WRK-Z9             TO   HC17B-SKENSU(IDX)
                  MOVE    SUM-SKEN-GK (IDX)  TO   WRK-Z9
@@ -2865,7 +2497,7 @@
                  MOVE    SUM-OKEN-GK(IDX)   TO   WRK-Z9
                  MOVE    WRK-Z9             TO   HC17B-OKENSU(IDX)
                END-IF
-             END-IF 
+             END-IF
            END-PERFORM
       *
       *    医療収益計、窓口請求金額合計、窓口領収金額合計
@@ -2882,7 +2514,7 @@
            MOVE  WRK-Z9               TO   HC17B-RSYUEKIKEN
       *
       *    初診
-           IF WRK-NYUGAIKBN   =  "2" 
+           IF WRK-NYUGAIKBN   =  "2"
              MOVE    SUM-SASYUEKIKEN-GK  TO   WRK-Z9
              MOVE    WRK-Z9              TO   HC17B-SSYUEKIKEN
              MOVE    SUM-SSYUEKIKEN-GK   TO   WRK-Z9
@@ -2904,7 +2536,7 @@
       *
              END-IF
            END-IF
-      * 
+      *
            INITIALIZE                  ORCSPRTAREA
            MOVE   "INS"                      TO   SPRT-MODE
            MOVE   LNK-PRTKANRI-RENNUM        TO   SPRT-RENNUM
@@ -2917,7 +2549,7 @@
            MOVE   LNK-PRTKANRI-PRIORITY      TO   SPRT-PRIORITY
            IF    WRK-PARA-DENPPRTYMD   <  "20080401"
              MOVE   "A00000D501O.red"        TO   SPRT-PRTID
-           ELSE 
+           ELSE
              MOVE   "A00000D501N.red"        TO   SPRT-PRTID
            END-IF
            MOVE    "日計表合計（窓口領収金）"    TO   SPRT-TITLE
@@ -2953,7 +2585,7 @@
              MOVE    WRK-RECEERR       TO   RECEERR-REC
              WRITE   RECEERR-REC
              CLOSE   RECEERR-FILE
-      *       
+      *
       *    ジョブ管理開始処理
              MOVE    "JBE"             TO   SJOBKANRI-MODE
              INITIALIZE                     JOBKANRI-REC
@@ -2978,7 +2610,7 @@
       *    終了　　処理
       *****************************************************************
        300-END-SEC                 SECTION.
-      *     
+      *
       *    ステップ管理終了処理
            MOVE    "STE"             TO   SJOBKANRI-MODE
            INITIALIZE                JOBKANRI-REC
@@ -3023,7 +2655,7 @@
            INITIALIZE                  SYUMEI-REC
       *
            MOVE    WRK-PARA-HOSPNUM     TO   SMEI-HOSPNUM
-           MOVE    "1"                  TO   SMEI-NYUGAIKBN
+           MOVE    IDX-NG               TO   SMEI-NYUGAIKBN
            MOVE    WRK-PARA-DENPPRTYMD  TO   SMEI-NYUHEN-YMD
            MOVE    SYUMEI-REC           TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
@@ -3065,62 +2697,13 @@
            EXIT.
       *
       *****************************************************************
-      *    収納明細情報  入返金発行日で検索(外来患者)
-      *****************************************************************
-       920-DBSELECT-SEC                 SECTION.
-      *
-           INITIALIZE                  SYUMEI-REC
-      *
-           MOVE    WRK-PARA-HOSPNUM    TO   SMEI-HOSPNUM
-           MOVE    "2"                 TO   SMEI-NYUGAIKBN
-           MOVE    WRK-PARA-DENPPRTYMD TO   SMEI-NYUHEN-YMD
-           MOVE    SYUMEI-REC          TO   MCPDATA-REC
-           MOVE    "DBSELECT"          TO   MCP-FUNC
-           MOVE    "tbl_syumei"        TO   MCP-TABLE
-           MOVE    "key4"              TO   MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-           IF   MCP-RC   =   ZERO
-             PERFORM 920-DBFETCH-SEC
-           ELSE
-             MOVE    1                 TO   FLG-SYUMEI
-           END-IF        
-           .
-       920-DBSELECT-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *     収納明細情報を検索処理(外来患者)
-      *****************************************************************
-       920-DBFETCH-SEC                SECTION.
-      *
-           MOVE    "DBFETCH"           TO  MCP-FUNC
-           MOVE    "tbl_syumei"        TO  MCP-TABLE
-           MOVE    "key4"              TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-           IF   MCP-RC   =   ZERO
-             MOVE    ZERO              TO   FLG-SYUMEI
-             MOVE    MCPDATA-REC       TO   SYUMEI-REC
-           ELSE
-             MOVE    1                 TO   FLG-SYUMEI
-           END-IF  
-           .
-       920-DBFETCH-EXT.
-           EXIT.
-      *
-      *****************************************************************
       *    ＤＢ　クローズ処理
       *****************************************************************
        910-DBCLOSE-SEC                 SECTION.
       *
-           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
-           MOVE    "tbl_syumei"         TO   MCP-TABLE
-           MOVE    "key4"               TO   MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_syumei"         TO  MCP-TABLE
+           MOVE    "key4"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -3156,7 +2739,7 @@
            .
        900-JYURRK-READ-EXT.
            EXIT.
-      
+
       ******************************************************************
       *    受診履歴FETCH
       ******************************************************************
@@ -3179,7 +2762,7 @@
            .
        900-JYURRK-FETCH-EXT.
            EXIT.
-      
+
       ******************************************************************
       *    受診履歴CLOSE
       ******************************************************************
@@ -3301,8 +2884,8 @@
        900-HKNNUM-READ-SEC                 SECTION.
       *
            INITIALIZE                      HKNNUM-REC
-           MOVE    SYU-HOSPNUM          TO   HKN-HOSPNUM  
-           MOVE    SYU-SYUHKNNUM        TO   HKN-HKNNUM  
+           MOVE    SYU-HOSPNUM          TO   HKN-HOSPNUM
+           MOVE    SYU-SYUHKNNUM        TO   HKN-HKNNUM
            MOVE    WRK-PARA-DENPPRTYMD  TO   HKN-TEKSTYMD
            MOVE    ALL "9"              TO   HKN-TEKEDYMD
       *
@@ -3600,7 +3183,7 @@
            .
        900-HKNCOMBI-READ-EXT.
            EXIT.
-      *      
+      *
       *****************************************************************
       *    診療会計情報読込処理
       *****************************************************************
@@ -3645,7 +3228,7 @@
            .
        900-SRYACCT-READ-EXT.
            EXIT.
-      *      
+      *
       *****************************************************************
       *    受診履歴情報検索処理
       *****************************************************************
@@ -3737,7 +3320,7 @@
                                      MCPDATA-REC
                                      SPA-AREA
            IF   MCP-RC   =   ZERO
-             MOVE    MCPDATA-REC     TO   SRYKARRK-REC 
+             MOVE    MCPDATA-REC     TO   SRYKARRK-REC
              MOVE    ZERO            TO   FLG-SRYKARRK
            ELSE
              MOVE    1               TO   FLG-SRYKARRK
@@ -3782,7 +3365,7 @@
              MOVE    ZERO            TO   FLG-SRYACT
            ELSE
              MOVE    1               TO   FLG-SRYACT
-           END-IF        
+           END-IF
            .
        900-SRYACT-SELECT-EXT.
            EXIT.
@@ -3806,7 +3389,7 @@
            ELSE
              MOVE    1                TO   FLG-SRYACT
              INITIALIZE               SRYACT-REC
-           END-IF  
+           END-IF
            .
        900-SRYACT-FETCH-EXT.
            EXIT.
@@ -3837,7 +3420,6 @@
                                              MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
-      *                                  MCPDATA-REC.
                                         MCPDATA-REC
                                         SPA-AREA
                                         .

@@ -21,7 +21,7 @@
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 日次帳票
       *  コンポーネント名  : 日計表（ＨＣ１７）
-      *  管理者            : 
+      *  管理者            :
       *  作成日付    作業者       記述
       *  03/09/29    @@@@-有村    新規作成(ORCBD500のプログラムID変更Ver)
       *****************************************************************
@@ -31,6 +31,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/03/17  患者番号の編集処理を修正
       *  01.00.03    @@@@-田中    11/04/04  患者番号桁数を最大20桁に変更
+      *  01.00.04    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -46,13 +47,13 @@
       *
       *    エラーファイル
        FD  RECEERR-FILE.
-       01  RECEERR-REC             PIC X(200). 
+       01  RECEERR-REC             PIC X(200).
       *
        WORKING-STORAGE             SECTION.
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域 
+      *    エラーファイル 名称領域
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
@@ -104,6 +105,8 @@
       *
            03  IDX3                PIC 9(04).
       *
+           03  IDX-NG              PIC 9(01).
+      *
       *    パラメタ領域
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
@@ -124,7 +127,7 @@
            03  WRK-SYSYMDWH          PIC X(22).
            03  WRK-RENNUM            PIC 9(03).
            03  WRK-PTNUM             PIC X(20).
-      *  
+      *
            03  WRK-SYSYMD.
                05  WRK-SYSYY         PIC 9(04).
                05  WRK-SYSMM         PIC 9(02).
@@ -194,36 +197,32 @@
            03  SUM-GG-SEIKYU      PIC S9(10).
            03  SUM-GG-RYOSYU      PIC S9(10).
        01  WRK-SMEI-REC.
-           03  WRK-SMEI-TBL      OCCURS  15000.
+           03  WRK-SMEI-TBL      OCCURS  10000.
                05  WRK-SMEI-HOSPNUM         PIC 9(02).
                05  WRK-SMEI-PTID            PIC 9(10).
-               05  WRK-SMEI-SORT-KEY. 
+               05  WRK-SMEI-SORT-KEY.
                  07  WRK-SMEI-NYUGAIKBN     PIC X(01).
                  07  WRK-SMEI-SRYKA         PIC X(02).
                  07  WRK-SMEI-DENPNUM       PIC 9(07).
                  07  WRK-SMEI-DENPEDANUM    PIC 9(02).
-               05  WRK-SMEI-SORT-KEY2. 
-      *--- 2010/12/07 CHANGE START -------------------------------------
-      *           07  WRK-SMEI-NYUGAIKBN     PIC X(01).
-      *           07  WRK-SMEI-SRYKA         PIC X(02).
+               05  WRK-SMEI-SORT-KEY2.
                  07  WRK-SMEI-NYUGAIKBN2    PIC X(01).
                  07  WRK-SMEI-SRYKA2        PIC X(02).
-      *--- 2010/12/07 CHANGE END   -------------------------------------
                  07  WRK-SMEI-PTNUM         PIC X(20).
                05  WRK-SMEI-SKYMONEY        PIC S9(07).
                05  WRK-SMEI-NYUHEN-MONEY    PIC S9(07).
                05  WRK-SMEI-NYUHEN-YMD      PIC X(08).
-           03  WRK-SV-SMEI-TBL              PIC X(68). 
+           03  WRK-SV-SMEI-TBL              PIC X(69).
       *
        01  WRK-CONS-AREA.
-      *    自費保険番号 
-           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)   VALUE   "980". 
-      *    労災保険番号 
-           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE   "971". 
-      *    自賠責保険番号 
-           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973". 
-      *    公害保険番号 
-           03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE   "975". 
+      *    自費保険番号
+           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)   VALUE   "980".
+      *    労災保険番号
+           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE   "971".
+      *    自賠責保険番号
+           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973".
+      *    公害保険番号
+           03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE   "975".
       *
            COPY    "CPSHELLTBL.INC".
       *
@@ -294,17 +293,17 @@
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   ジョブ管理ＤＢ制御サブ
+      *    ジョブ管理ＤＢ制御サブ
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
            COPY    "CPORCSPRT.INC".
       *
-      *   日付変換サブ
+      *    日付変換サブ
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   患者番号変換サブ
+      *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
       *
       *    ＤＢ検索
@@ -449,7 +448,7 @@
            ELSE
              MOVE    SPACE             TO   WRK-TJIHIN(1)
            END-IF
-      *  
+      *
       *    区分12
            MOVE    SPACE               TO   SYS-1013-REC
            INITIALIZE                       SYS-1013-REC
@@ -467,7 +466,7 @@
            ELSE
              MOVE   SPACE               TO   WRK-TJIHIN(2)
            END-IF
-      *  
+      *
       *    区分13
            MOVE    SPACE                TO   SYS-1013-REC
            INITIALIZE                        SYS-1013-REC
@@ -485,7 +484,7 @@
            ELSE
              MOVE   SPACE               TO   WRK-TJIHIN(3)
            END-IF
-      *  
+      *
       *    区分14
            MOVE    SPACE                TO   SYS-1013-REC
            INITIALIZE                        SYS-1013-REC
@@ -611,7 +610,7 @@
            ELSE
              MOVE   SPACE               TO   WRK-TJIHIN(10)
            END-IF
-      *  
+      *
       *    自費情報取得
       *    区分21
            MOVE    SPACE                TO   SYS-1013-REC
@@ -630,7 +629,7 @@
            ELSE
              MOVE   SPACE               TO   WRK-TJIHI(1)
            END-IF
-      *  
+      *
       *    区分22
            MOVE    SPACE                TO   SYS-1013-REC
            INITIALIZE                        SYS-1013-REC
@@ -648,7 +647,7 @@
            ELSE
              MOVE  SPACE                TO   WRK-TJIHI(2)
            END-IF
-      *  
+      *
       *    区分23
            MOVE    SPACE                TO   SYS-1013-REC
            INITIALIZE                        SYS-1013-REC
@@ -701,7 +700,7 @@
                MOVE  SYS-1013-JIHINAME  TO   WRK-TJIHI(5)
            ELSE
                MOVE  SPACE              TO   WRK-TJIHI(5)
-           END-IF                                     
+           END-IF
       *
       *    区分26
            MOVE    SPACE                TO   SYS-1013-REC
@@ -720,7 +719,7 @@
            ELSE
              MOVE   SPACE               TO   WRK-TJIHI(6)
            END-IF
-      *  
+      *
       *    区分27
            MOVE    SPACE                TO   SYS-1013-REC
            INITIALIZE                        SYS-1013-REC
@@ -738,7 +737,7 @@
            ELSE
              MOVE   SPACE               TO   WRK-TJIHI(7)
            END-IF
-      *  
+      *
       *    区分28
            MOVE    SPACE                TO   SYS-1013-REC
            INITIALIZE                        SYS-1013-REC
@@ -756,7 +755,7 @@
            ELSE
              MOVE   SPACE               TO   WRK-TJIHI(8)
            END-IF
-      *  
+      *
       *    区分29
            MOVE    SPACE                TO   SYS-1013-REC
            INITIALIZE                        SYS-1013-REC
@@ -774,7 +773,7 @@
            ELSE
              MOVE   SPACE               TO   WRK-TJIHI(9)
            END-IF
-      *  
+      *
       *    区分20
            MOVE    SPACE                TO   SYS-1013-REC
            INITIALIZE                        SYS-1013-REC
@@ -792,7 +791,7 @@
            ELSE
              MOVE   SPACE               TO   WRK-TJIHI(10)
            END-IF
-      *  
+      *
       *    労災医療機関情報
            MOVE    SPACE                TO   SYS-4001-REC
            INITIALIZE                        SYS-4001-REC
@@ -875,86 +874,41 @@
       *****************************************************************
        310-DATA-SELECT-SEC          SECTION.
       *
-           MOVE     0       TO   IDX-S
-      *    入院患者を取得
-           PERFORM 910-DBSELECT-SEC
+           MOVE     ZERO        TO   IDX-S
       *
-           PERFORM   UNTIL   FLG-SYUMEI  =  1
-             PERFORM   900-SYUNOU-READ-SEC
-             INITIALIZE            PTINF-REC 
-             MOVE   SMEI-HOSPNUM     TO   PTINF-HOSPNUM
-             MOVE   SMEI-PTID        TO   PTINF-PTID
-             PERFORM   900-PTINF-READ-SEC
-             PERFORM   900-PTNUM-READ-SEC
-             IF  ( WRK-PARA-DENPPRTYMD        =   SMEI-NYUHEN-YMD
-                 AND  WRK-PARA-HOSPNUM        =  SMEI-HOSPNUM )
-                 AND  FLG-SYUNOU              =  ZERO
-                 AND  SYU-DENPJTIKBN      NOT =  "3"
-                 AND  FLG-PTINF               =  ZERO
-                 AND  PTINF-TSTPTNUMKBN   NOT =  "1"
+      *    外来・入院患者を取得
+           PERFORM  VARYING  IDX-NG   FROM 1  BY 1
+                    UNTIL    IDX-NG   >    2
       *
-               IF   ( SMEI-JOUTAIKBN        NOT =  "8"
-                   AND  SMEI-JOUTAIKBN      NOT =  "3" )
-                   OR  SMEI-SKYMONEY        NOT =  0
-                   OR  SMEI-NYUHEN-MONEY    NOT =  0
-                 ADD     1                TO   IDX-S
-                 MOVE   SMEI-HOSPNUM      TO   WRK-SMEI-HOSPNUM(IDX-S)
-                 MOVE   SMEI-NYUGAIKBN    TO   WRK-SMEI-NYUGAIKBN(IDX-S)
-                 MOVE   SMEI-SRYKA        TO   WRK-SMEI-SRYKA(IDX-S)
-                 MOVE   SMEI-PTID         TO   WRK-SMEI-PTID(IDX-S)
-                 MOVE   SMEI-DENPNUM      TO   WRK-SMEI-DENPNUM(IDX-S)
-                 MOVE   SMEI-DENPEDANUM 
-                                      TO   WRK-SMEI-DENPEDANUM(IDX-S)
-                 MOVE   SMEI-SKYMONEY     TO   WRK-SMEI-SKYMONEY(IDX-S)
-                 MOVE   SMEI-NYUHEN-MONEY 
-                                      TO   WRK-SMEI-NYUHEN-MONEY(IDX-S)
-                 MOVE   SMEI-NYUHEN-YMD
-                                      TO   WRK-SMEI-NYUHEN-YMD(IDX-S)
-                 MOVE   PTNUM-PTNUM       TO   WRK-SMEI-PTNUM(IDX-S)
+             PERFORM   910-DBSELECT-SEC
+             PERFORM   UNTIL   FLG-SYUMEI  =  1
+               PERFORM   900-SYUNOU-READ-SEC
+      *
+               IF      FLG-SYUNOU               =  ZERO
+                 AND   SYU-DENPJTIKBN       NOT =  "3"
+                 AND ((SMEI-JOUTAIKBN       NOT =  "8"
+                 AND   SMEI-JOUTAIKBN       NOT =  "3")
+                 OR    SMEI-SKYMONEY        NOT =  0
+                 OR    SMEI-NYUHEN-MONEY    NOT =  0)
+      *
+                 PERFORM   900-PTNUM-READ-SEC
+      *
+                 ADD   1                 TO  IDX-S
+                 MOVE  SMEI-HOSPNUM      TO  WRK-SMEI-HOSPNUM(IDX-S)
+                 MOVE  SMEI-NYUGAIKBN    TO  WRK-SMEI-NYUGAIKBN(IDX-S)
+                 MOVE  SMEI-SRYKA        TO  WRK-SMEI-SRYKA(IDX-S)
+                 MOVE  SMEI-PTID         TO  WRK-SMEI-PTID(IDX-S)
+                 MOVE  SMEI-DENPNUM      TO  WRK-SMEI-DENPNUM(IDX-S)
+                 MOVE  SMEI-DENPEDANUM   TO  WRK-SMEI-DENPEDANUM(IDX-S)
+                 MOVE  SMEI-SKYMONEY     TO  WRK-SMEI-SKYMONEY(IDX-S)
+                 MOVE  SMEI-NYUHEN-MONEY
+                                       TO  WRK-SMEI-NYUHEN-MONEY(IDX-S)
+                 MOVE  SMEI-NYUHEN-YMD   TO  WRK-SMEI-NYUHEN-YMD(IDX-S)
+                 MOVE  PTNUM-PTNUM       TO  WRK-SMEI-PTNUM(IDX-S)
                END-IF
-             END-IF
-             PERFORM 910-DBFETCH-SEC
-           END-PERFORM
-      *
-           PERFORM 910-DBCLOSE-SEC
-      *
-      *    外来患者を取得
-           PERFORM 920-DBSELECT-SEC
-      *
-           PERFORM  UNTIL   FLG-SYUMEI   =   1
-             PERFORM   900-SYUNOU-READ-SEC
-             INITIALIZE   PTINF-REC
-             MOVE   SMEI-HOSPNUM   TO   PTINF-HOSPNUM
-             MOVE   SMEI-PTID      TO   PTINF-PTID
-             PERFORM   900-PTINF-READ-SEC
-             PERFORM   900-PTNUM-READ-SEC
-      *
-             IF  ( WRK-PARA-DENPPRTYMD        =   SMEI-NYUHEN-YMD
-                 AND WRK-PARA-HOSPNUM         =   SMEI-HOSPNUM )
-                 AND  FLG-SYUNOU              =   ZERO
-                 AND  SYU-DENPJTIKBN      NOT =  "3"
-                 AND  FLG-PTINF               =   ZERO
-                 AND  PTINF-TSTPTNUMKBN   NOT =  "1"
-      *
-               IF   ( SMEI-JOUTAIKBN        NOT =  "8"
-                   AND   SMEI-JOUTAIKBN     NOT =  "3" ) 
-                   OR    SMEI-SKYMONEY      NOT =  0
-                   OR    SMEI-NYUHEN-MONEY  NOT =  0
-                 ADD     1               TO   IDX-S
-                 MOVE   SMEI-HOSPNUM     TO   WRK-SMEI-HOSPNUM(IDX-S)
-                 MOVE   SMEI-NYUGAIKBN   TO   WRK-SMEI-NYUGAIKBN(IDX-S)
-                 MOVE   SMEI-SRYKA       TO   WRK-SMEI-SRYKA(IDX-S)
-                 MOVE   SMEI-PTID        TO   WRK-SMEI-PTID(IDX-S)
-                 MOVE   SMEI-DENPNUM     TO   WRK-SMEI-DENPNUM(IDX-S)
-                 MOVE   SMEI-DENPEDANUM  TO   WRK-SMEI-DENPEDANUM(IDX-S)
-                 MOVE   SMEI-SKYMONEY    TO   WRK-SMEI-SKYMONEY(IDX-S)
-                 MOVE   SMEI-NYUHEN-MONEY
-                                   TO    WRK-SMEI-NYUHEN-MONEY(IDX-S)
-                 MOVE   SMEI-NYUHEN-YMD  TO   WRK-SMEI-NYUHEN-YMD(IDX-S)
-                 MOVE   PTNUM-PTNUM      TO   WRK-SMEI-PTNUM(IDX-S)
-               END-IF
-             END-IF
-             PERFORM 920-DBFETCH-SEC
+               PERFORM   910-DBFETCH-SEC
+             END-PERFORM
+             PERFORM   910-DBCLOSE-SEC
            END-PERFORM
       *
       *    ソート処理
@@ -969,14 +923,14 @@
                PERFORM  UNTIL IDX-N  >  IDX-MAX
                  IF  WRK-PARA-SORTKBN   =   "1"
                    IF  WRK-SMEI-SORT-KEY2(IDX-S)  >
-                       WRK-SMEI-SORT-KEY2(IDX-N) 
+                       WRK-SMEI-SORT-KEY2(IDX-N)
                      MOVE WRK-SMEI-TBL(IDX-N)  TO   WRK-SV-SMEI-TBL
                      MOVE WRK-SMEI-TBL(IDX-S)  TO   WRK-SMEI-TBL(IDX-N)
                      MOVE WRK-SV-SMEI-TBL      TO   WRK-SMEI-TBL(IDX-S)
                    END-IF
                  ELSE
                    IF  WRK-SMEI-SORT-KEY(IDX-S)  >
-                       WRK-SMEI-SORT-KEY(IDX-N) 
+                       WRK-SMEI-SORT-KEY(IDX-N)
                      MOVE WRK-SMEI-TBL(IDX-N)  TO   WRK-SV-SMEI-TBL
                      MOVE WRK-SMEI-TBL(IDX-S)  TO   WRK-SMEI-TBL(IDX-N)
                      MOVE WRK-SV-SMEI-TBL      TO   WRK-SMEI-TBL(IDX-S)
@@ -991,13 +945,12 @@
              IF   IDX-MAX  =  ZERO
                MOVE   ZERO    TO   FLG-GET
                MOVE   1       TO   FLG-END
-             ELSE 
+             ELSE
                MOVE   1       TO   FLG-GET
                MOVE   ZERO    TO   FLG-END
              END-IF
            END-IF
       *
-           PERFORM 910-DBCLOSE-SEC
            MOVE     1         TO   IDX-S
       *
            .
@@ -1020,14 +973,14 @@
                MOVE   "入院"         TO   D5002-NYUGAIKBN
       *    入院自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
-                        UNTIL  IDX2   >  10 
+                        UNTIL  IDX2   >  10
                  MOVE   WRK-TJIHIN(IDX2)   TO   D5002-TJIHI(IDX2)
                END-PERFORM
              WHEN  "2"
                MOVE   "外来"         TO   D5002-NYUGAIKBN
       *    自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
-                        UNTIL    IDX2   >  10 
+                        UNTIL    IDX2   >  10
                  MOVE   WRK-TJIHI(IDX2)   TO   D5002-TJIHI(IDX2)
                END-PERFORM
            END-EVALUATE
@@ -1069,14 +1022,14 @@
                MOVE   "入院"         TO   HC17-NYUGAIKBN
       *    入院自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
-                        UNTIL  IDX2   >  10 
+                        UNTIL  IDX2   >  10
                  MOVE   WRK-TJIHIN(IDX2)   TO   HC17-TJIHI(IDX2)
                END-PERFORM
              WHEN  "2"
                MOVE   "外来"         TO   HC17-NYUGAIKBN
       *    外来自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
-                        UNTIL    IDX2   >  10 
+                        UNTIL    IDX2   >  10
                  MOVE   WRK-TJIHI(IDX2)   TO   HC17-TJIHI(IDX2)
                END-PERFORM
            END-EVALUATE
@@ -1166,7 +1119,7 @@
                  MOVE   ZERO                       TO  CNT-LINE
                  MOVE   WRK-SMEI-NYUGAIKBN(IDX-S)  TO  WRK-NYUGAIKBN
                  MOVE   WRK-SMEI-SRYKA(IDX-S)      TO  WRK-SRYKA
-               END-IF      
+               END-IF
       *
       *    診療科ブレイクチェック処理
                IF WRK-SMEI-SRYKA(IDX-S)  NOT =  WRK-SRYKA
@@ -1281,8 +1234,8 @@
       *
              IF IDX-S   >   IDX-MAX
                MOVE    1      TO   FLG-END
-             END-IF 
-           END-PERFORM     
+             END-IF
+           END-PERFORM
       *
            PERFORM 3001-SYOUKEI-SET-SEC
            PERFORM 3000-GOUKEI-SET-SEC
@@ -1320,7 +1273,7 @@
       *
            END-EVALUATE
       *    保険別金額（社保本人〜自賠責）
-           MOVE    ZERO                  TO   IDX 
+           MOVE    ZERO                  TO   IDX
            EVALUATE    SYU-SYUHKNNUM
              WHEN    SPACE
                MOVE    6                 TO   IDX
@@ -1405,7 +1358,7 @@
                                        +   SYU-JIHI-TAXARI(IDX2)
                    IF   WRK-JIHI2  >  ZERO
                      MOVE   WRK-JIHI2      TO   WRK-ZZ
-                     COMPUTE JIHIIDX = IDX2 + 6 
+                     COMPUTE JIHIIDX = IDX2 + 6
                      MOVE   WRK-ZZ    TO   HC17-MONEY(JIHIIDX CNT-LINE)
                      ADD   WRK-JIHI2  TO   SUM-MONEY(JIHIIDX)
                      ADD   1          TO   SUM-KEN(JIHIIDX)
@@ -1418,7 +1371,7 @@
                END-IF
            END-IF
       *
-           EVALUATE IDX 
+           EVALUATE IDX
              WHEN 17
       *    自費の場合
                MOVE   SYU-SKYMONEY         TO   WRK-SYUEKI
@@ -1463,7 +1416,7 @@
                      COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
                    WHEN  2
                      COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
-                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10 
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
                    WHEN  3
                      IF   WRK-SYUEKI(7:1)  NOT =  0
                        COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
@@ -1598,7 +1551,7 @@
                                         +   SYU-JIHI-TAXARI(IDX2)
                    IF   WRK-JIHI2  >  ZERO
                      MOVE WRK-JIHI2  TO  WRK-ZZ
-                     COMPUTE  JIHIIDX  =  IDX2  +  6 
+                     COMPUTE  JIHIIDX  =  IDX2  +  6
                      MOVE   WRK-ZZ     TO   HC17-MONEY(JIHIIDX CNT-LINE)
                      ADD    WRK-JIHI2  TO   SUM-MONEY(JIHIIDX)
                      ADD    1          TO   SUM-KEN(JIHIIDX)
@@ -1658,7 +1611,7 @@
                      COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
                    WHEN  2
                      COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
-                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10 
+                     COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  *  10
                    WHEN  3
                      IF   WRK-SYUEKI(7:1)  NOT =  0
                        COMPUTE  WRK-SYUEKI  =  WRK-SYUEKI  /  10
@@ -1912,7 +1865,7 @@
              MOVE    WRK-RECEERR       TO   RECEERR-REC
              WRITE   RECEERR-REC
              CLOSE   RECEERR-FILE
-      *       
+      *
       *    ジョブ管理開始処理
              MOVE    "JBE"             TO   SJOBKANRI-MODE
              INITIALIZE                  JOBKANRI-REC
@@ -1937,7 +1890,7 @@
       *    終了　　処理
       *****************************************************************
        300-END-SEC                 SECTION.
-      *     
+      *
       *    ステップ管理終了処理
            MOVE    "STE"               TO   SJOBKANRI-MODE
            INITIALIZE                       JOBKANRI-REC
@@ -1982,7 +1935,7 @@
            INITIALIZE                  SYUMEI-REC
       *
            MOVE    WRK-PARA-HOSPNUM    TO   SMEI-HOSPNUM
-           MOVE    "1"                 TO   SMEI-NYUGAIKBN
+           MOVE    IDX-NG              TO   SMEI-NYUGAIKBN
            MOVE    WRK-PARA-DENPPRTYMD TO   SMEI-NYUHEN-YMD
            MOVE    SYUMEI-REC          TO   MCPDATA-REC
            MOVE    "DBSELECT"          TO   MCP-FUNC
@@ -2018,58 +1971,9 @@
              MOVE    MCPDATA-REC       TO   SYUMEI-REC
            ELSE
                MOVE    1               TO   FLG-SYUMEI
-           END-IF  
+           END-IF
            .
        910-DBFETCH-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    収納明細情報  入返金発行日で検索(外来患者)
-      *****************************************************************
-       920-DBSELECT-SEC                 SECTION.
-      *
-           INITIALIZE                  SYUMEI-REC
-      *
-           MOVE    WRK-PARA-HOSPNUM     TO   SMEI-HOSPNUM
-           MOVE    "2"                  TO   SMEI-NYUGAIKBN
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SMEI-NYUHEN-YMD
-           MOVE    SYUMEI-REC           TO   MCPDATA-REC
-           MOVE    "DBSELECT"           TO   MCP-FUNC
-           MOVE    "tbl_syumei"         TO   MCP-TABLE
-           MOVE    "key4"               TO   MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF    MCP-RC   =   ZERO
-              PERFORM   920-DBFETCH-SEC
-           ELSE
-             MOVE    1                  TO  FLG-SYUMEI
-           END-IF
-           .
-       920-DBSELECT-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *     収納明細情報を検索処理(外来患者)
-      *****************************************************************
-       920-DBFETCH-SEC                SECTION.
-      *
-           MOVE    "DBFETCH"           TO   MCP-FUNC
-           MOVE    "tbl_syumei"        TO   MCP-TABLE
-           MOVE    "key4"              TO   MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-           IF   MCP-RC   =   ZERO
-             MOVE    ZERO              TO   FLG-SYUMEI
-             MOVE    MCPDATA-REC       TO   SYUMEI-REC
-           ELSE
-             MOVE    1                 TO   FLG-SYUMEI
-           END-IF
-           .
-       920-DBFETCH-EXT.
            EXIT.
       *
       *****************************************************************
@@ -2077,13 +1981,13 @@
       *****************************************************************
        910-DBCLOSE-SEC                 SECTION.
       *
-           MOVE    "DBCLOSECURSOR"     TO   MCP-FUNC
-           MOVE    "tbl_syumei"        TO   MCP-TABLE
-           MOVE    "key4"              TO   MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_syumei"         TO  MCP-TABLE
+           MOVE    "key4"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
            .
        910-DBCLOSE-EXT.
            EXIT.
@@ -2399,7 +2303,6 @@
                                         MCPDATA-REC
                                         SPA-AREA
       *
-      *
            .
        900-PTINF-READ-EXT.
            EXIT.
@@ -2537,7 +2440,7 @@
            .
        900-HKNCOMBI-READ-EXT.
            EXIT.
-      *      
+      *
       *****************************************************************
       *    ＤＢ　オープン処理
       *****************************************************************
