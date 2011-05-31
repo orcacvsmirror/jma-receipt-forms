@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/04/04  DB検索時の不具合を修正
+      *  01.00.03    @@@@-門間    11/05/26  主保険＋マル長の請求対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -754,6 +755,13 @@
              MOVE    SPACE              TO      HCN03-RSIBUN
              MOVE    SPACE              TO      HCN03-RSIEN
            END-IF
+      *
+      *    マル長の公費負担を保険適用金額へ
+           IF      SYU-HKNTEKKBN   =   "1"
+             MOVE    SYU-KOH-FTN         TO  SYU-HKNTEKMONEY
+             MOVE    ZERO                TO  SYU-KOH-FTN
+           END-IF
+      *
       *    保険適用分
            MOVE    SYU-HKNTEKMONEY         TO  WRK-KINGAKU-Z
            MOVE    WRK-KINGAKU-Z           TO  WRK-ZHENSYU12

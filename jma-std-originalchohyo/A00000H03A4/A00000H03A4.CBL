@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *                           11/01/13  医学管理料 → 医学管理等
+      *  01.00.02    @@@@-門間    11/05/26  主保険＋マル長の請求対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1042,6 +1043,12 @@
                MOVE    SPACE               TO  HC03-HKNRYO15
                MOVE    SPACE               TO  HC03-HKNRYO16
                MOVE    ALL "*"             TO  HC03-GOKTEN
+           END-IF
+      *
+      *    マル長の公費負担を保険適用金額へ
+           IF      SYU-HKNTEKKBN   =   "1"
+             MOVE    SYU-KOH-FTN         TO  SYU-HKNTEKMONEY
+             MOVE    ZERO                TO  SYU-KOH-FTN
            END-IF
       *
       *    保険適用分
