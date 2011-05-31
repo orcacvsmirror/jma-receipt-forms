@@ -21,14 +21,15 @@
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 月次帳票
       *  コンポーネント名  : 日計表
-      *  管理者            : 
+      *  管理者            :
       *  作成日付    作業者        記述
       *  04/01/05    @@@@-半田     新規作成
       *****************************************************************
       *  プログラム修正履歴
-      *  Maj/Min/Rev 修正者       日付      内容
-      *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
-      *                                     open-cobol1.0対応
+      *  Maj/Min/Rev 修正者        日付      内容
+      *  01.00.01    @@@@-門間     11/01/07  コメント履歴削除
+      *                                      open-cobol1.0対応
+      *  01.00.02    @@@@-門間     11/05/26  処理速度の改善
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -52,18 +53,17 @@
       *
       *    エラーファイル
        FD  RECEERR-FILE.
-       01  RECEERR-REC             PIC X(200). 
+       01  RECEERR-REC             PIC X(200).
       *
       *    未収金／預り金対象者抽出ファイル
        FD  L300T-FILE.
            COPY    "A00000L300TMP.INC".
       *
-      *
        WORKING-STORAGE             SECTION.
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域 
+      *    エラーファイル 名称領域
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
@@ -106,7 +106,7 @@
            03  FLG-HKNJAINF        PIC 9(01).
            03  FLG-PTNYUINRRK      PIC 9(01).
            03  FLG-SRYKA-ALL       PIC 9(01).
-           03  INP-STS             PIC 9(01). 
+           03  INP-STS             PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -128,7 +128,7 @@
            03  IDX4              PIC 9(04).
            03  IDX5              PIC 9(04).
            03  IDX6              PIC 9(04).
-           03  IDX7G.    
+           03  IDX7G.
               05  IDX7           PIC 9(02).
            03  IDX8              PIC 9(04).
            03  IDX               PIC 9(04).
@@ -160,10 +160,10 @@
            03  WRK-SYSYMDWH          PIC X(22).
            03  WRK-RENNUM            PIC 9(03).
            03  WRK-PTNUM             PIC X(20).
-           03  WRK-PTNUM6            PIC 9(06). 
-           03  WRK-SYUHKNNUM         PIC X(03). 
+           03  WRK-PTNUM6            PIC 9(06).
+           03  WRK-SYUHKNNUM         PIC X(03).
            03  WRK-CHK-SRYKA         PIC X(02).
-      *  
+      *
            03  WRK-SYSYMD.
                05  WRK-SYSYY         PIC 9(04).
                05  WRK-SYSMM         PIC 9(02).
@@ -230,17 +230,17 @@
       *
        01  WRK-SRYKA-AERA.
            03  WRK-SRYKAMAX        PIC    9(03).
-           03  WRK-SRYKA-TBL       OCCURS 100.    
+           03  WRK-SRYKA-TBL       OCCURS 100.
                05  WRK-SRYKA       PIC  X(02).
                05  WRK-SRYKANAME   PIC  X(20).
       *
        01  WRK-CONS-AREA.
-      *    自費保険番号 
-           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)   VALUE   "980". 
-      *    労災保険番号 
-           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE   "971". 
-      *    自賠責保険番号 
-           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973". 
+      *    自費保険番号
+           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)   VALUE   "980".
+      *    労災保険番号
+           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE   "971".
+      *    自賠責保険番号
+           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973".
       *
            COPY    "CPSHELLTBL.INC".
       *
@@ -339,7 +339,7 @@
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
       *    ファイルデイレクトリ位置指定サブ
            COPY    "CPMKPASS.INC".
@@ -353,7 +353,6 @@
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
-      *
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
@@ -412,8 +411,8 @@
                                                LNK-PRTKANRI-SHELLID
                                                LNK-PRTKANRI-PRIORITY
                                                LNK-PRTKANRI-TERMID
-                                               LNK-PRTKANRI-OPID    
-                                               LNK-PRTKANRI-PRTNM    
+                                               LNK-PRTKANRI-OPID
+                                               LNK-PRTKANRI-PRTNM
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
                                                WRK-PARA-HOSPNUM
@@ -436,7 +435,7 @@
            MOVE    "未収金・預り金個人別月計表"
                                    TO  JOB-SHELLMSG
            CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
+                                   ORCSJOBKANRIAREA
                                    JOBKANRI-REC
                                    SPA-AREA
       *
@@ -453,14 +452,14 @@
       *    システム日付セット
            MOVE    LNK-PRTKANRI-SKYYMD TO  WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG         TO  WRK-SYSYMDWH 
+           MOVE    WRK-HENYMDG         TO  WRK-SYSYMDWH
       *
       *    集計日付セット
            INITIALIZE  WRK-SYMD
            MOVE    WRK-PARA-SRYYM(1:6) TO  WRK-SYMD(1:6)
            MOVE    "01"                TO  WRK-SYMD(7:2)
            PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG(1:16)   TO  WRK-PARA-SRYYMWH 
+           MOVE    WRK-HENYMDG(1:16)   TO  WRK-PARA-SRYYMWH
       *
       *    対象年月最終日取得
            INITIALIZE  WRK-SYMD
@@ -486,7 +485,7 @@
                MOVE    SYS-1001-HOSPNUM    TO  WRK-PARA-HOSPNUM
                MOVE    SYS-1001-BEDSU      TO  WRK-SYS-BEDSU
                MOVE    SYS-1001-BEDSUIPN   TO  WRK-SYS-BEDSUIPN
-           ELSE    
+           ELSE
                MOVE    "医療機関ＩＤが取得できませんでした。"
                                            TO  WRK-RECEERR
                PERFORM 500-ERR-HENSYU-SEC
@@ -500,30 +499,30 @@
                                             SYS-1005-EDYUKYMD(7:2)
            MOVE    SPA-HOSPNUM          TO  SYS-1005-HOSPNUM
            PERFORM 820-SYSKANRI-DBSELECT-SEC
-           MOVE   1        TO     IDX1 
+           MOVE   1        TO     IDX1
            PERFORM  UNTIL  FLG-SYSKANRI3 = 1
-                IF   FLG-SYSKANRI3 = ZERO
-                      MOVE SYS-1005-KBNCD      TO WRK-SRYKA(IDX1)  
-                      MOVE SYS-1005-SRYKANAME1 TO WRK-SRYKANAME(IDX1)
-                      ADD  1        TO     IDX1 
-                END-IF  
-                PERFORM 820-SYSKANRI-DBFETCH-SEC
+               IF   FLG-SYSKANRI3 = ZERO
+                   MOVE  SYS-1005-KBNCD       TO  WRK-SRYKA(IDX1)
+                   MOVE  SYS-1005-SRYKANAME1  TO  WRK-SRYKANAME(IDX1)
+                   ADD   1                    TO  IDX1
+               END-IF
+               PERFORM 820-SYSKANRI-DBFETCH-SEC
            END-PERFORM
-           SUBTRACT  1        FROM IDX1  
-           MOVE  IDX1         TO   WRK-SRYKAMAX 
+           SUBTRACT  1        FROM IDX1
+           MOVE  IDX1         TO   WRK-SRYKAMAX
            PERFORM 820-SYSKANRI-DBCLOSE-SEC
       *
-           IF WRK-PARA-SRYKA  =    SPACE
-      ***  全診療印刷フラグON
-              MOVE   1        TO   FLG-SRYKA-ALL
+           IF   WRK-PARA-SRYKA  =    SPACE
+      *      全診療印刷フラグON
+             MOVE   1                 TO  FLG-SRYKA-ALL
            ELSE
-      ***  特定診療科のインデクスを取得
-              MOVE   WRK-PARA-SRYKA    TO      WRK-CHK-SRYKA
-              PERFORM 320-SRYKA-GROUPING-SEC
-              IF     IDX2  NOT  =      ZERO 
-      ***            診療科入力値エラーの場合
-                MOVE  1           TO      INP-STS
-              END-IF
+      *      特定診療科のインデクスを取得
+             MOVE   WRK-PARA-SRYKA    TO  WRK-CHK-SRYKA
+             PERFORM 320-SRYKA-GROUPING-SEC
+             IF     IDX2  NOT  =      ZERO
+      *        診療科入力値エラーの場合
+               MOVE  1                  TO  INP-STS
+             END-IF
            END-IF
       *
            IF   WRK-PARA-NYUGAIKBN  NOT =  SPACE  AND  "1"  AND  "2"
@@ -554,19 +553,19 @@
            CLOSE               L300T-FILE
            OPEN    I-O         L300T-FILE
       *
-      * 未収金対象者抽出
-           PERFORM 910-DBSELECT-SEC
-           PERFORM 320-MISYU-GET-SEC
+      *    未収金対象者抽出
+           PERFORM   910-DBSELECT-SEC
+           PERFORM   320-MISYU-GET-SEC
       *
-      * 預り金対象者抽出
-           PERFORM 911-DBSELECT-SEC
-           PERFORM 320-AZUKARI-GET-SEC
+      *    預り金対象者抽出
+           PERFORM   911-DBSELECT-SEC
+           PERFORM   320-AZUKARI-GET-SEC
       *
            CLOSE               L300T-FILE
            OPEN    INPUT       L300T-FILE
       *
-      * 帳票編集印刷処理
-           PERFORM 325-CTRL-PRT-SEC
+      *    帳票編集印刷処理
+           PERFORM   325-CTRL-PRT-SEC
       *
            CLOSE               L300T-FILE
       *
@@ -594,32 +593,11 @@
       *****************************************************************
        320-MISYU-GET-SEC      SECTION.
       *
-           PERFORM  UNTIL      FLG-SYUNOU  = 1
-      *
-            INITIALIZE         PTINF-REC
-            MOVE WRK-PARA-HOSPNUM TO     PTINF-HOSPNUM
-            MOVE SYU-PTID        TO     PTINF-PTID
-            PERFORM 900-PTINF-READ-SEC
-      *
-      *    集計対象年月のデータであるかをチェックする。 
-            IF      SYU-HOSPNUM              =  WRK-PARA-HOSPNUM
-               AND  SYU-SRYYMD             <=  WRK-PARA-SRYLYMD
-               AND  SYU-CREATEKBN       NOT =  "3"
-               AND  SYU-DENPJTIKBN      NOT =  "3"
-               AND  FLG-PTINF           =      ZERO
-               AND  PTINF-TSTPTNUMKBN   NOT =  "1"   
-               AND ( FLG-SRYKA-ALL       =  1
-                OR ( FLG-SRYKA-ALL   NOT =  1
-                 AND WRK-PARA-SRYKA      =  SYU-SRYKA ) )
-      *
-               IF SYU-NYUKIN-TOTAL <    SYU-SKYMONEY
-                  MOVE    1        TO   FLG-GET
-                  PERFORM 320-MISYU-GET-SUB-SEC
-               END-IF
-            END-IF
-            PERFORM 910-DBFETCH-SEC
-           END-PERFORM           
-           PERFORM 910-DBCLOSE-SEC
+           PERFORM  UNTIL  FLG-SYUNOU  =  1
+             PERFORM   320-MISYU-GET-SUB-SEC
+             PERFORM   910-DBFETCH-SEC
+           END-PERFORM
+           PERFORM   910-DBCLOSE-SEC
       *
            .
        320-MISYU-GET-EXT.
@@ -630,34 +608,11 @@
       *****************************************************************
        320-AZUKARI-GET-SEC      SECTION.
       *
-           PERFORM  UNTIL      FLG-SRYACT  = 1
-      *
-            INITIALIZE                  PTINF-REC
-            MOVE WRK-PARA-HOSPNUM TO     PTINF-HOSPNUM
-            MOVE SRY-PTID        TO     PTINF-PTID
-            PERFORM 900-PTINF-READ-SEC
-      *
-      *    集計対象年月のデータであるかをチェックする。 
-            IF      SRY-HOSPNUM            =  WRK-PARA-HOSPNUM
-               AND  SRY-SRYYM            <=  WRK-PARA-SRYYM
-               AND  FLG-PTINF             =  ZERO
-               AND  PTINF-TSTPTNUMKBN NOT =  "1"   
-               AND ( FLG-SRYKA-ALL        =  1
-                OR ( FLG-SRYKA-ALL   NOT  =  1
-                 AND WRK-PARA-SRYKA       =  SRY-SRYKA ) )
-      *
-               PERFORM VARYING   IDX3        FROM 1  BY  1  
-                       UNTIL     IDX3        >    5
-                 IF   SRY-SRYCD(IDX3)        =    WRK-INI-AZUKARICD
-                  AND SRY-JIHIMONEY(IDX3)    >    ZERO
-                    MOVE    1                TO   FLG-GET
-                    PERFORM 320-AZUKARI-GET-SUB-SEC
-                 END-IF
-               END-PERFORM 
-            END-IF
-            PERFORM 911-DBFETCH-SEC
-           END-PERFORM           
-           PERFORM 911-DBCLOSE-SEC
+           PERFORM  UNTIL  FLG-SRYACT  =  1
+             PERFORM   320-AZUKARI-GET-SUB-SEC
+             PERFORM   911-DBFETCH-SEC
+           END-PERFORM
+           PERFORM   911-DBCLOSE-SEC
       *
            .
        320-AZUKARI-GET-EXT.
@@ -668,60 +623,62 @@
       *****************************************************************
        320-MISYU-GET-SUB-SEC      SECTION.
       *
-      * 患者番号情報抽出
+      *    患者マスタ情報抽出
+           INITIALIZE                        PTINF-REC
+           MOVE     WRK-PARA-HOSPNUM   TO    PTINF-HOSPNUM
+           MOVE     SYU-PTID           TO    PTINF-PTID
+           PERFORM  900-PTINF-READ-SEC
+      *
+      *    患者番号情報抽出
            INITIALIZE                        PTNUM-REC
-           MOVE     WRK-PARA-HOSPNUM    TO    PTNUM-HOSPNUM
+           MOVE     WRK-PARA-HOSPNUM   TO    PTNUM-HOSPNUM
            MOVE     SYU-PTID           TO    PTNUM-PTID
            PERFORM  940-PTNUM-READ-SEC
       *
-      * 患者保険情報抽出
+      *    患者保険情報抽出
            INITIALIZE                        PTHKNINF-REC
-           MOVE     WRK-PARA-HOSPNUM    TO    PTHKN-HOSPNUM
-      *--- 20110107 CHANGE START ---------------------------------------
-      *MOVE     SYU-PTID           TO    PTHKN-PTID
+           MOVE     WRK-PARA-HOSPNUM   TO    PTHKN-HOSPNUM
            MOVE     SYU-PTID           TO    PTHKN-PTID
-      *--- 20110107 CHANGE END   ---------------------------------------
            PERFORM  950-PTHKNINF-SELECT-SEC
            PERFORM  UNTIL ( PTHKN-HKNJANUM   NOT =  SPACE
                         AND PTHKN-SAKJOKBN   NOT =  "1" )
-                       OR   FLG-PTHKNINF         =   1 
+                       OR   FLG-PTHKNINF         =   1
                     PERFORM  950-PTHKNINF-FETCH-SEC
            END-PERFORM
            PERFORM  950-PTHKNINF-CLOSE-SEC
       *
-      * 患者公費情報抽出
+      *    患者公費情報抽出
            INITIALIZE                        PTKOHINF-REC
-           MOVE     WRK-PARA-HOSPNUM    TO    PTKOH-HOSPNUM
+           MOVE     WRK-PARA-HOSPNUM   TO    PTKOH-HOSPNUM
            MOVE     SYU-PTID           TO    PTKOH-PTID
            PERFORM  950-PTKOHINF-SELECT-SEC
            PERFORM  UNTIL ( PTKOH-KOHNUM     NOT =  SPACE
                         AND PTKOH-SAKJOKBN   NOT =  "1" )
-                       OR   FLG-PTKOHINF         =   1 
+                       OR   FLG-PTKOHINF         =   1
                     PERFORM  950-PTKOHINF-FETCH-SEC
            END-PERFORM
            PERFORM  950-PTKOHINF-CLOSE-SEC
       *
-      * 保険者情報抽出
+      *    保険者情報抽出
            INITIALIZE                        HKNJAINF-REC
-           MOVE     WRK-PARA-HOSPNUM    TO    HKNJA-HOSPNUM
+           MOVE     WRK-PARA-HOSPNUM   TO    HKNJA-HOSPNUM
            MOVE     PTHKN-HKNJA-G      TO    HKNJA-HKNJANUM
            PERFORM  960-HKNJA-READ-SEC
       *
-      * 頭書登録年月日取得
-             PERFORM  321-GET-F-JYURRK-SEC
+      *    頭書登録年月日取得
+           PERFORM  321-GET-F-JYURRK-SEC
       *
-      * 最終来院日取得
-             PERFORM  321-GET-LASTDAY-SEC
+      *    最終来院日取得
+           PERFORM  321-GET-LASTDAY-SEC
       *
-      * 入外別レコード
-      *
+      *    入外別レコード
            INITIALIZE                  L300T
            INITIALIZE                  FLG-INVALID
            MOVE    SYU-NYUGAIKBN    TO    L300T-NYUGAIKBN
            MOVE    SYU-SRYKA        TO    L300T-SRYKA
            MOVE    PTNUM-PTNUM      TO    L300T-PTNUM
            READ L300T-FILE
-                KEY      IS      L300T-KEY  
+                KEY      IS      L300T-KEY
                 INVALID  KEY     MOVE  1  TO FLG-INVALID
            END-READ
       *
@@ -730,16 +687,16 @@
            IF   WRK-PARA-NYUGAIKBN  NOT =  "3"
               AND  ( WRK-PARA-NYUGAIKBN  =  L300T-NYUGAIKBN
               OR  WRK-PARA-NYUGAIKBN  =  SPACE )
-             IF   FLG-INVALID      =    ZERO 
-               INITIALIZE       FLG-INVALID     
+             IF   FLG-INVALID      =    ZERO
+               INITIALIZE       FLG-INVALID
                REWRITE L300T
-                       INVALID  KEY  
+                       INVALID  KEY
                        MOVE  1  TO FLG-INVALID
                END-REWRITE
              ELSE
-               INITIALIZE       FLG-INVALID     
+               INITIALIZE       FLG-INVALID
                WRITE   L300T
-                       INVALID  KEY  
+                       INVALID  KEY
                        MOVE  1  TO FLG-INVALID
                END-WRITE
              END-IF
@@ -747,29 +704,28 @@
       *
            IF   WRK-PARA-NYUGAIKBN  =  "3"  OR  SPACE
       *    入院／外来レコード
-      *
-             INITIALIZE                 L300T     
+             INITIALIZE                 L300T
              INITIALIZE                 FLG-INVALID
-             MOVE    "9"                TO   L300T-NYUGAIKBN 
+             MOVE    "9"                TO   L300T-NYUGAIKBN
              MOVE    SYU-SRYKA          TO   L300T-SRYKA
              MOVE    PTNUM-PTNUM        TO   L300T-PTNUM
              READ  L300T-FILE
-                  KEY      IS      L300T-KEY  
+                  KEY      IS      L300T-KEY
                   INVALID  KEY     MOVE  1  TO FLG-INVALID
              END-READ
       *
              PERFORM  320-MISYU-GET-SUB2-SEC
       *
              IF   FLG-INVALID      =    ZERO
-               INITIALIZE       FLG-INVALID     
+               INITIALIZE       FLG-INVALID
                REWRITE L300T
-                     INVALID  KEY  
+                     INVALID  KEY
                      MOVE  1  TO FLG-INVALID
                END-REWRITE
-             ELSE 
-               INITIALIZE       FLG-INVALID     
+             ELSE
+               INITIALIZE       FLG-INVALID
                WRITE L300T
-                     INVALID  KEY  
+                     INVALID  KEY
                      MOVE  1  TO FLG-INVALID
                END-WRITE
              END-IF
@@ -784,38 +740,38 @@
       *****************************************************************
        320-MISYU-GET-SUB2-SEC      SECTION.
       *
-      * 患者カナ氏名
-             MOVE PTINF-KANANAME   TO    L300T-KANANAME
+      *    患者カナ氏名
+           MOVE PTINF-KANANAME   TO    L300T-KANANAME
       *
-      * 患者氏名
-             MOVE PTINF-NAME       TO    L300T-NAME
+      *    患者氏名
+           MOVE PTINF-NAME       TO    L300T-NAME
       *
-      * 保険者番号
-             MOVE PTHKN-HKNJANUM   TO    L300T-HKNJANUM
+      *    保険者番号
+           MOVE PTHKN-HKNJANUM   TO    L300T-HKNJANUM
       *
-      * 保険者名
-             MOVE HKNJA-HKNJANAME  TO    L300T-HKNJANAME
+      *    保険者名
+           MOVE HKNJA-HKNJANAME  TO    L300T-HKNJANAME
       *
-      * 患者生年月日
-             MOVE PTINF-BIRTHDAY   TO    L300T-BIRTHDAY
+      *    患者生年月日
+           MOVE PTINF-BIRTHDAY   TO    L300T-BIRTHDAY
       *
-      * 続柄
-             MOVE PTINF-ZOKUGARA   TO    L300T-ZOKU
+      *    続柄
+           MOVE PTINF-ZOKUGARA   TO    L300T-ZOKU
       *
-      * 公費番号
-             MOVE PTKOH-KOHNUM     TO    L300T-KOHNUM
+      *    公費番号
+           MOVE PTKOH-KOHNUM     TO    L300T-KOHNUM
       *
-      * 頭書登録年月日
-             MOVE WRK-F-SRYYMD     TO    L300T-ATAMAYMD 
+      *    頭書登録年月日
+           MOVE WRK-F-SRYYMD     TO    L300T-ATAMAYMD
       *
-      * 最終来院日
-             MOVE WRK-L-SRYYMD     TO    L300T-LASTYMD 
+      *    最終来院日
+           MOVE WRK-L-SRYYMD     TO    L300T-LASTYMD
       *
-      * 請求金額
-             ADD  SYU-SKYMONEY     TO    L300T-SKYMONEY
+      *    請求金額
+           ADD  SYU-SKYMONEY     TO    L300T-SKYMONEY
       *
-      * 入金合計額
-             ADD  SYU-NYUKIN-TOTAL TO    L300T-NYUKIN-TOTAL
+      *    入金合計額
+           ADD  SYU-NYUKIN-TOTAL TO    L300T-NYUKIN-TOTAL
       *
            .
        320-MISYU-GET-SUB2-EXT.
@@ -826,105 +782,109 @@
       *****************************************************************
        320-AZUKARI-GET-SUB-SEC      SECTION.
       *
-      * 患者番号情報抽出
+      *    患者マスタ情報抽出
+           INITIALIZE                        PTINF-REC
+           MOVE     WRK-PARA-HOSPNUM   TO    PTINF-HOSPNUM
+           MOVE     SRY-PTID           TO    PTINF-PTID
+           PERFORM  900-PTINF-READ-SEC
+      *
+      *    患者番号情報抽出
            INITIALIZE                        PTNUM-REC
-           MOVE     WRK-PARA-HOSPNUM    TO    PTNUM-HOSPNUM
+           MOVE     WRK-PARA-HOSPNUM   TO    PTNUM-HOSPNUM
            MOVE     SRY-PTID           TO    PTNUM-PTID
            PERFORM  940-PTNUM-READ-SEC
       *
-      * 患者保険情報抽出
+      *    患者保険情報抽出
            INITIALIZE                        PTHKNINF-REC
-           MOVE     WRK-PARA-HOSPNUM    TO    PTHKN-HOSPNUM
+           MOVE     WRK-PARA-HOSPNUM   TO    PTHKN-HOSPNUM
            MOVE     SRY-PTID           TO    PTHKN-PTID
            PERFORM  950-PTHKNINF-SELECT-SEC
            PERFORM  UNTIL ( PTHKN-HKNJANUM   NOT =  SPACE
                         AND PTHKN-SAKJOKBN   NOT =  "1" )
-                       OR   FLG-PTHKNINF         =   1 
+                       OR   FLG-PTHKNINF         =   1
                     PERFORM  950-PTHKNINF-FETCH-SEC
            END-PERFORM
            PERFORM  950-PTHKNINF-CLOSE-SEC
       *
-      * 患者公費情報抽出
+      *    患者公費情報抽出
            INITIALIZE                        PTKOHINF-REC
-           MOVE     WRK-PARA-HOSPNUM    TO    PTKOH-HOSPNUM
+           MOVE     WRK-PARA-HOSPNUM   TO    PTKOH-HOSPNUM
            MOVE     SRY-PTID           TO    PTKOH-PTID
            PERFORM  950-PTKOHINF-SELECT-SEC
            PERFORM  UNTIL ( PTKOH-KOHNUM     NOT =  SPACE
                         AND PTKOH-SAKJOKBN   NOT =  "1" )
-                       OR   FLG-PTKOHINF         =   1 
+                       OR   FLG-PTKOHINF         =   1
                     PERFORM  950-PTKOHINF-FETCH-SEC
            END-PERFORM
            PERFORM  950-PTKOHINF-CLOSE-SEC
       *
-      * 保険者情報抽出
+      *    保険者情報抽出
            INITIALIZE                        HKNJAINF-REC
-           MOVE     WRK-PARA-HOSPNUM    TO    HKNJA-HOSPNUM
+           MOVE     WRK-PARA-HOSPNUM   TO    HKNJA-HOSPNUM
            MOVE     PTHKN-HKNJA-G      TO    HKNJA-HKNJANUM
            PERFORM  960-HKNJA-READ-SEC
       *
-      * 頭書登録年月日取得
+      *    頭書登録年月日取得
            PERFORM  321-GET-F-JYURRK-SEC
       *
-      * 最終来院日取得
+      *    最終来院日取得
            PERFORM  321-GET-LASTDAY-SEC
       *
-      * 入外別レコード
-      *
+      *    入外別レコード
            INITIALIZE                  L300T
            INITIALIZE                  FLG-INVALID
            MOVE    SRY-NYUGAIKBN       TO   L300T-NYUGAIKBN
            MOVE    SRY-SRYKA           TO   L300T-SRYKA
            MOVE    PTNUM-PTNUM         TO   L300T-PTNUM
            READ L300T-FILE
-                KEY      IS      L300T-KEY  
+                KEY      IS      L300T-KEY
                 INVALID  KEY     MOVE  1  TO FLG-INVALID
            END-READ
       *
-           PERFORM  320-AZUKARI-GET-SUB2-SEC 
+           PERFORM  320-AZUKARI-GET-SUB2-SEC
       *
            IF   WRK-PARA-NYUGAIKBN  NOT =  "3"
                AND  ( WRK-PARA-NYUGAIKBN  =  L300T-NYUGAIKBN
                OR  WRK-PARA-NYUGAIKBN  =  SPACE )
-             IF   FLG-INVALID      =    ZERO 
-               INITIALIZE       FLG-INVALID     
+             IF   FLG-INVALID      =    ZERO
+               INITIALIZE       FLG-INVALID
                REWRITE L300T
-                      INVALID  KEY  
+                      INVALID  KEY
                       MOVE  1  TO FLG-INVALID
                END-REWRITE
              ELSE
-               INITIALIZE       FLG-INVALID     
+               INITIALIZE       FLG-INVALID
                WRITE   L300T
-                       INVALID  KEY  
+                       INVALID  KEY
                        MOVE  1  TO FLG-INVALID
                END-WRITE
              END-IF
            END-IF
       *
-      * 入院／外来レコード
-      *
-           INITIALIZE                  L300T     
+      *    入院／外来レコード
+           INITIALIZE                  L300T
            INITIALIZE                  FLG-INVALID
            MOVE    "9"                 TO   L300T-NYUGAIKBN
            MOVE    SRY-SRYKA           TO   L300T-SRYKA
            MOVE    PTNUM-PTNUM         TO   L300T-PTNUM
            READ   L300T-FILE
-                KEY      IS      L300T-KEY  
+                KEY      IS      L300T-KEY
                 INVALID  KEY     MOVE  1  TO FLG-INVALID
            END-READ
       *
-           PERFORM  320-AZUKARI-GET-SUB2-SEC 
+           PERFORM  320-AZUKARI-GET-SUB2-SEC
       *
            IF   WRK-PARA-NYUGAIKBN  =  "3"  OR  SPACE
              IF   FLG-INVALID  =  ZERO
-               INITIALIZE       FLG-INVALID     
+               INITIALIZE       FLG-INVALID
                REWRITE L300T
-                       INVALID  KEY  
+                       INVALID  KEY
                        MOVE  1  TO FLG-INVALID
                END-REWRITE
-             ELSE 
-               INITIALIZE       FLG-INVALID     
+             ELSE
+               INITIALIZE       FLG-INVALID
                WRITE L300T
-                     INVALID  KEY  
+                     INVALID  KEY
                      MOVE  1  TO FLG-INVALID
                END-WRITE
              END-IF
@@ -939,34 +899,40 @@
       *****************************************************************
        320-AZUKARI-GET-SUB2-SEC      SECTION.
       *
-      * 患者カナ氏名
-             MOVE PTINF-KANANAME   TO    L300T-KANANAME
+      *    患者カナ氏名
+           MOVE PTINF-KANANAME   TO    L300T-KANANAME
       *
-      * 患者氏名
-             MOVE PTINF-NAME       TO    L300T-NAME
+      *    患者氏名
+           MOVE PTINF-NAME       TO    L300T-NAME
       *
-      * 保険者番号
-             MOVE PTHKN-HKNJANUM   TO    L300T-HKNJANUM
+      *    保険者番号
+           MOVE PTHKN-HKNJANUM   TO    L300T-HKNJANUM
       *
-      * 保険者名
-             MOVE HKNJA-HKNJANAME  TO    L300T-HKNJANAME
+      *    保険者名
+           MOVE HKNJA-HKNJANAME  TO    L300T-HKNJANAME
       *
-      * 患者生年月日
-             MOVE PTINF-BIRTHDAY   TO    L300T-BIRTHDAY
+      *    患者生年月日
+           MOVE PTINF-BIRTHDAY   TO    L300T-BIRTHDAY
       *
-      * 続柄
-             MOVE PTINF-ZOKUGARA   TO    L300T-ZOKU
+      *    続柄
+           MOVE PTINF-ZOKUGARA   TO    L300T-ZOKU
       *
-      * 公費番号
-             MOVE PTKOH-KOHNUM     TO    L300T-KOHNUM
+      *    公費番号
+           MOVE PTKOH-KOHNUM     TO    L300T-KOHNUM
       *
-      * 頭書登録年月日
-             MOVE WRK-F-SRYYMD     TO    L300T-ATAMAYMD 
+      *    頭書登録年月日
+           MOVE WRK-F-SRYYMD     TO    L300T-ATAMAYMD
       *
-      * 最終来院日
-             MOVE WRK-L-SRYYMD     TO    L300T-LASTYMD 
-      * 預り金
-             ADD  SRY-JIHIMONEY(IDX3) TO L300T-AZUKARI
+      *    最終来院日
+           MOVE WRK-L-SRYYMD     TO    L300T-LASTYMD
+      *
+      *    預り金
+           PERFORM VARYING   IDX3        FROM 1  BY  1
+                   UNTIL     IDX3        >    5
+             IF  SRY-SRYCD(IDX3)  =  WRK-INI-AZUKARICD
+               ADD  SRY-JIHIMONEY(IDX3) TO  L300T-AZUKARI
+             END-IF
+           END-PERFORM
       *
            .
        320-AZUKARI-GET-SUB2-EXT.
@@ -977,43 +943,43 @@
       *****************************************************************
        321-GET-F-JYURRK-SEC      SECTION.
       *
-           INITIALIZE                 WRK-FN-SRYYMD 
+           INITIALIZE                 WRK-FN-SRYYMD
       *
       *    外来受診患者読み込み
            INITIALIZE                 JYURRK-REC
-           MOVE WRK-PARA-HOSPNUM   TO  JYURRK-HOSPNUM
-           MOVE PTINF-PTID        TO  JYURRK-PTID 
+           MOVE WRK-PARA-HOSPNUM  TO  JYURRK-HOSPNUM
+           MOVE PTINF-PTID        TO  JYURRK-PTID
            MOVE "1"               TO  JYURRK-NYUGAIKBN
-           MOVE "00000000"        TO  JYURRK-SRYYMD 
-           MOVE "99999999"        TO  JYURRK-UPSRYYMD 
+           MOVE "00000000"        TO  JYURRK-SRYYMD
+           MOVE "99999999"        TO  JYURRK-UPSRYYMD
            PERFORM  970-JYURRK-SELECT-SEC
            PERFORM  970-JYURRK-FETCH-SEC
       *
            PERFORM  UNTIL  FLG-JYURRK  =     1
                IF   JYURRK-HOSPNUM      =     WRK-PARA-HOSPNUM
-                    MOVE JYURRK-SRYYMD TO  WRK-FN-SRYYMD
-                    MOVE   1          TO     FLG-JYURRK
+                    MOVE  JYURRK-SRYYMD  TO  WRK-FN-SRYYMD
+                    MOVE  1              TO  FLG-JYURRK
                END-IF
                PERFORM  970-JYURRK-FETCH-SEC
            END-PERFORM
            PERFORM   970-JYURRK-CLOSE-SEC
       *
-           INITIALIZE                 WRK-FG-SRYYMD 
+           INITIALIZE                 WRK-FG-SRYYMD
       *
       *    外来受診患者読み込み
            INITIALIZE                 JYURRK-REC
-           MOVE WRK-PARA-HOSPNUM   TO  JYURRK-HOSPNUM
-           MOVE PTINF-PTID        TO  JYURRK-PTID 
+           MOVE WRK-PARA-HOSPNUM  TO  JYURRK-HOSPNUM
+           MOVE PTINF-PTID        TO  JYURRK-PTID
            MOVE "2"               TO  JYURRK-NYUGAIKBN
-           MOVE "00000000"        TO  JYURRK-SRYYMD 
-           MOVE "99999999"        TO  JYURRK-UPSRYYMD 
+           MOVE "00000000"        TO  JYURRK-SRYYMD
+           MOVE "99999999"        TO  JYURRK-UPSRYYMD
            PERFORM  970-JYURRK-SELECT-SEC
            PERFORM  970-JYURRK-FETCH-SEC
       *
            PERFORM  UNTIL  FLG-JYURRK  =     1
                IF   JYURRK-HOSPNUM      =     WRK-PARA-HOSPNUM
-                    MOVE JYURRK-SRYYMD  TO  WRK-FG-SRYYMD
-                    MOVE   1         TO   FLG-JYURRK
+                    MOVE  JYURRK-SRYYMD  TO  WRK-FG-SRYYMD
+                    MOVE  1              TO  FLG-JYURRK
                END-IF
                PERFORM  970-JYURRK-FETCH-SEC
            END-PERFORM
@@ -1031,7 +997,7 @@
                  MOVE WRK-FG-SRYYMD TO   WRK-F-SRYYMD
              END-IF
             END-IF
-           END-IF       
+           END-IF
       *
            .
        321-GET-F-JYURRK-EXT.
@@ -1041,21 +1007,21 @@
       *****************************************************************
        321-GET-LASTDAY-SEC      SECTION.
       *
-           INITIALIZE                     WRK-LN-SRYYMD 
+           INITIALIZE                     WRK-LN-SRYYMD
       *
       *    外来受診患者読み込み
            INITIALIZE                     PTNYUINRRK-REC
-           MOVE WRK-PARA-HOSPNUM       TO  PTNYUINRRK-HOSPNUM
-           MOVE PTINF-PTID            TO  PTNYUINRRK-PTID 
+           MOVE WRK-PARA-HOSPNUM      TO  PTNYUINRRK-HOSPNUM
+           MOVE PTINF-PTID            TO  PTNYUINRRK-PTID
            PERFORM  980-PTNYUINRRK-READ-SEC
            MOVE PTNYUINRRK-TAIINYMD   TO  WRK-LN-SRYYMD
       *
-           INITIALIZE                     WRK-LG-SRYYMD 
+           INITIALIZE                     WRK-LG-SRYYMD
       *
       *    外来受診患者読み込み
            INITIALIZE                     JYURRK-REC
-           MOVE WRK-PARA-HOSPNUM       TO  JYURRK-HOSPNUM
-           MOVE PTINF-PTID            TO  JYURRK-PTID 
+           MOVE WRK-PARA-HOSPNUM      TO  JYURRK-HOSPNUM
+           MOVE PTINF-PTID            TO  JYURRK-PTID
            MOVE "2"                   TO  JYURRK-NYUGAIKBN
            PERFORM  980-JYURRK-READ-SEC
            MOVE JYURRK-SRYYMD         TO  WRK-LG-SRYYMD
@@ -1072,7 +1038,7 @@
                  MOVE WRK-LG-SRYYMD TO   WRK-L-SRYYMD
              END-IF
             END-IF
-           END-IF       
+           END-IF
       *
            .
        321-GET-LASTDAY-EXT.
@@ -1088,13 +1054,13 @@
       *    抽出患者情報読み込み
            INITIALIZE                 L300T
            START   L300T-FILE
-                   KEY IS          >= L300T-KEY  
+                   KEY IS          >= L300T-KEY
            END-START
       *
            PERFORM 910-L300T-READ-SEC
            MOVE    L300T-NYUGAIKBN    TO  WRK-PR-NYUGAIKBN
            MOVE    L300T-SRYKA        TO  WRK-PR-SRYKA
-           MOVE    1                  TO  IDX2  
+           MOVE    1                  TO  IDX2
            PERFORM UNTIL    FLG-ATEND =   1
                IF  FLG-ATEND NOT = 1
                    PERFORM  325-DTL-HEN-SEC
@@ -1112,7 +1078,7 @@
       *****************************************************************
        325-DTL-HEN-SEC                SECTION.
       *
-      * 入外区分のブレイクチェック
+      *    入外区分のブレイクチェック
            IF    L300T-NYUGAIKBN   NOT =   WRK-PR-NYUGAIKBN
                  PERFORM  330-TERM-HEN-SEC
                  MOVE     1            TO  IDX2
@@ -1128,33 +1094,33 @@
                  MOVE  L300T-SRYKA     TO  WRK-PR-SRYKA
            END-IF
       *
-      * 明細数オーバーのチェック
+      *    明細数オーバーのチェック
            IF    IDX2     >          20
                  PERFORM  330-TERM-HEN-SEC
                  MOVE     1          TO  IDX2
                  INITIALIZE              L300
            END-IF
       *
-      * 患者番号
+      *    患者番号
            MOVE  L300T-PTNUM         TO  L300-PTNUM (IDX2)
-      * 患者カナ氏名
+      *    患者カナ氏名
            MOVE  L300T-KANANAME      TO  L300-KANANAME (IDX2)
-      * 患者氏名
+      *    患者氏名
            MOVE  L300T-NAME          TO  L300-NAME (IDX2)
       *
-      * 保険者番号
+      *    保険者番号
            MOVE  L300T-HKNJANUM      TO  L300-HKNJANUM (IDX2)
       *
-      * 保険者名FLG-HKNJAINF
+      *    保険者名FLG-HKNJAINF
            MOVE  L300T-HKNJANAME     TO  L300-HKNJANAME (IDX2)
       *
-      * 生年月日
+      *    生年月日
            MOVE  L300T-BIRTHDAY(1:4) TO  L300-BIRTHDAY (IDX2)(1:4)
            MOVE  "/"                 TO  L300-BIRTHDAY (IDX2)(5:1)
            MOVE  L300T-BIRTHDAY(5:2) TO  L300-BIRTHDAY (IDX2)(6:2)
            MOVE  "/"                 TO  L300-BIRTHDAY (IDX2)(8:1)
            MOVE  L300T-BIRTHDAY(7:2) TO  L300-BIRTHDAY (IDX2)(9:2)
-      * 年齢
+      *    年齢
            MOVE  LNK-PRTKANRI-SKYYMD TO  WRK-SYSYMD
            MOVE  L300T-BIRTHDAY      TO  WRK-BIRTHDAY
            COMPUTE WRK-NENREI        =   WRK-SYSYY
@@ -1164,27 +1130,27 @@
            END-IF
            MOVE    WRK-NENREI        TO  WRK-Z3
            MOVE    WRK-Z3            TO  L300-AGE (IDX2)
-      * 続柄
+      *    続柄
            MOVE    L300T-ZOKU        TO  L300-ZOKU (IDX2)
-      * 公費番号
+      *    公費番号
            MOVE    L300T-KOHNUM      TO  L300-KOHNUM (IDX2)
-      * 頭書登録年月日
+      *    頭書登録年月日
            IF  L300T-ATAMAYMD     NOT =  SPACE
                MOVE  L300T-ATAMAYMD(1:4) TO  L300-ATAMAYMD (IDX2)(1:4)
                MOVE  "/"                 TO  L300-ATAMAYMD (IDX2)(5:1)
                MOVE  L300T-ATAMAYMD(5:2) TO  L300-ATAMAYMD (IDX2)(6:2)
                MOVE  "/"                 TO  L300-ATAMAYMD (IDX2)(8:1)
                MOVE  L300T-ATAMAYMD(7:2) TO  L300-ATAMAYMD (IDX2)(9:2)
-           END-IF 
-      * 未収金
+           END-IF
+      *    未収金
            COMPUTE  WRK-MISYU        =
                     L300T-SKYMONEY   -   L300T-NYUKIN-TOTAL
            MOVE  WRK-MISYU           TO  WRK--9-9
            MOVE  WRK--9-9            TO  L300-MISYU (IDX2)
-      * 預り金
+      *    預り金
            MOVE  L300T-AZUKARI       TO  WRK--9-9
            MOVE  WRK--9-9            TO  L300-AZUKARI (IDX2)
-      * 最終来院日
+      *    最終来院日
            IF  L300T-LASTYMD      NOT =  SPACE
             IF L300T-LASTYMD          =  "99999999"
                MOVE  "  入院中"          TO  L300-LASTYMD (IDX2)
@@ -1194,15 +1160,15 @@
                MOVE  L300T-LASTYMD(5:2)  TO  L300-LASTYMD (IDX2)(6:2)
                MOVE  "/"                 TO  L300-LASTYMD (IDX2)(8:1)
                MOVE  L300T-LASTYMD(7:2)  TO  L300-LASTYMD (IDX2)(9:2)
-            END-IF 
-           END-IF 
-      * 連番
-           ADD   1                   TO  WRK-PRDTLCNT 
-           MOVE  WRK-PRDTLCNT        TO  WRK-Z5 
+            END-IF
+           END-IF
+      *    連番
+           ADD   1                   TO  WRK-PRDTLCNT
+           MOVE  WRK-PRDTLCNT        TO  WRK-Z5
            MOVE  WRK-Z5              TO  L300-NO (IDX2)
       *
-      * 印字明細数カウントアップ
-           ADD   1                   TO  IDX2  
+      *    印字明細数カウントアップ
+           ADD   1                   TO  IDX2
       *
            .
        325-DTL-HEN-EXT.
@@ -1213,15 +1179,15 @@
       *****************************************************************
        320-SRYKA-GROUPING-SEC      SECTION.
       *
-             MOVE  1               TO  IDX1
-             MOVE  WRK-SRYKAMAX    TO  IDX2 
-             PERFORM  UNTIL  IDX1   >  IDX2
-                      IF     WRK-SRYKA(IDX1)  = WRK-CHK-SRYKA
-                             MOVE ZERO  TO      IDX2
-                      ELSE
-                             ADD   1    TO      IDX1
-                      END-IF
-             END-PERFORM
+           MOVE  1               TO  IDX1
+           MOVE  WRK-SRYKAMAX    TO  IDX2
+           PERFORM  UNTIL  IDX1   >  IDX2
+             IF  WRK-SRYKA(IDX1)  =  WRK-CHK-SRYKA
+               MOVE  ZERO            TO  IDX2
+             ELSE
+               ADD   1               TO  IDX1
+             END-IF
+           END-PERFORM
       *
            .
        320-SRYKA-GROUPING-EXT.
@@ -1230,9 +1196,9 @@
       *****************************************************************
       *    帳票編集処理
       *****************************************************************
-      *    
+      *
        330-TERM-HEN-SEC         SECTION.
-      * 
+      *
            MOVE    WRK-PARA-SRYYMWH        TO  L300-SRYYM
            MOVE    WRK-SYSYMDWH            TO  L300-PRTYMD
       *
@@ -1241,40 +1207,40 @@
            MOVE    CNT-PAGE                TO  WRK-PAGE
            MOVE    WRK-PAGE                TO  L300-PAGE
       *    メッセージ
-      * 
+      *
            IF   INP-STS  NOT =  ZERO
              EVALUATE  INP-STS
-                WHEN  1
-                  MOVE    "入力された診療科コードに誤りがあります" 
-                                     TO   L300-JOBMSG
-                WHEN  2
-                  MOVE    "入力された入外区分に誤りがあります" 
-                                     TO   L300-JOBMSG
+               WHEN  1
+                 MOVE    "入力された診療科コードに誤りがあります"
+                                    TO   L300-JOBMSG
+               WHEN  2
+                 MOVE    "入力された入外区分に誤りがあります"
+                                    TO   L300-JOBMSG
              END-EVALUATE
            ELSE
              IF  WRK-PRDTLCNT =      ZERO
-               MOVE "＊＊＊  対象データが存在しません  ＊＊＊" 
+               MOVE "＊＊＊  対象データが存在しません  ＊＊＊"
                                      TO   L300-JOBMSG
              END-IF
            END-IF
-      * 
+      *
       *    入外区分
            EVALUATE  WRK-PR-NYUGAIKBN
-               WHEN  "1"
-                     MOVE  "入院"        TO  L300-NYUGAIKBN
-               WHEN  "2"
-                     MOVE  "外来"        TO  L300-NYUGAIKBN
-               WHEN  "9"
-                     MOVE  "入院／外来"  TO  L300-NYUGAIKBN
+             WHEN  "1"
+               MOVE  "入院"        TO  L300-NYUGAIKBN
+             WHEN  "2"
+               MOVE  "外来"        TO  L300-NYUGAIKBN
+             WHEN  "9"
+               MOVE  "入院／外来"  TO  L300-NYUGAIKBN
            END-EVALUATE
-      * 
+      *
       *    診療科情報
-           MOVE   WRK-PR-SRYKA           TO  WRK-CHK-SRYKA
-           PERFORM 320-SRYKA-GROUPING-SEC
-           IF IDX2   =   ZERO
-              MOVE   WRK-SRYKANAME(IDX1) TO  L300-SRYKA
+           MOVE   WRK-PR-SRYKA          TO  WRK-CHK-SRYKA
+           PERFORM   320-SRYKA-GROUPING-SEC
+           IF  IDX2  =  ZERO
+             MOVE   WRK-SRYKANAME(IDX1) TO  L300-SRYKA
            END-IF
-      * 
+      *
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"               TO  SPRT-MODE
            MOVE    LNK-PRTKANRI-RENNUM TO  SPRT-RENNUM
@@ -1284,7 +1250,7 @@
                                        TO  SPRT-TBL-GROUP
            MOVE    LNK-PRTKANRI-SRYYM  TO  SPRT-SRYYM
            MOVE    LNK-PRTKANRI-SKYYMD TO  SPRT-SKYYMD
-           MOVE    LNK-PRTKANRI-SHELLID 
+           MOVE    LNK-PRTKANRI-SHELLID
                                        TO  SPRT-SHELLID
            MOVE    LNK-PRTKANRI-SHORI-RENNUM
                                        TO  SPRT-SHORI-RENNUM
@@ -1323,7 +1289,7 @@
                MOVE    WRK-RECEERR         TO  RECEERR-REC
                WRITE   RECEERR-REC
                CLOSE   RECEERR-FILE
-      *         
+      *
       *        ジョブ管理開始処理
                MOVE    "JBE"           TO  SJOBKANRI-MODE
                INITIALIZE                  JOBKANRI-REC
@@ -1334,12 +1300,12 @@
                MOVE    WRK-RECEERR     TO  JOB-YOBI
                MOVE    "9999"          TO  JOB-ERRCD
                CALL    "ORCSJOB"       USING
-                                       ORCSJOBKANRIAREA  
+                                       ORCSJOBKANRIAREA
                                        JOBKANRI-REC
                                        SPA-AREA
            END-IF
       *
-           MOVE    1                   TO  FLG-END     
+           MOVE    1                   TO  FLG-END
       *
            .
        500-ERR-HENSYU-EXT.
@@ -1349,7 +1315,7 @@
       *    終了　　処理
       *****************************************************************
        300-END-SEC                 SECTION.
-      *     
+      *
       *    ステップ管理終了処理
            MOVE    "STE"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
@@ -1359,7 +1325,7 @@
                                    TO  JOB-SHELLID
            MOVE    CNT-PAGE        TO  JOB-UPDCNT
            CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
+                                   ORCSJOBKANRIAREA
                                    JOBKANRI-REC
                                    SPA-AREA
       *
@@ -1405,23 +1371,35 @@
       *****************************************************************
       *    収納情報検索
       *****************************************************************
-       910-DBSELECT-SEC                 SECTION.
+       910-DBSELECT-SEC                  SECTION.
       *
-           INITIALIZE                  SYUNOU-REC
+           INITIALIZE                    SYUNOU-REC
+           MOVE    SPA-HOSPNUM           TO  SYU-HOSPNUM
+           IF  WRK-PARA-NYUGAIKBN  =  SPACE  OR  "3"
+             MOVE    "%"                 TO  SYU-NYUGAIKBN
+           ELSE
+             MOVE    WRK-PARA-NYUGAIKBN  TO  SYU-NYUGAIKBN
+           END-IF
+           MOVE    WRK-PARA-SRYLYMD      TO  SYU-SRYYMD
+           IF  FLG-SRYKA-ALL  =  1
+             MOVE    "%"                 TO  SYU-SRYKA
+           ELSE
+             MOVE    WRK-PARA-SRYKA      TO  SYU-SRYKA
+           END-IF
       *
-           MOVE    SPA-HOSPNUM     TO  SYU-HOSPNUM
-           MOVE    SYUNOU-REC      TO  MCPDATA-REC
-           MOVE    "DBSELECT"      TO  MCP-FUNC
-           MOVE    "tbl_syunou"        TO  MCP-TABLE
-           MOVE    "all"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-          IF      MCP-RC           =   ZERO
-               PERFORM 910-DBFETCH-SEC
-          ELSE
-               MOVE    1           TO  FLG-SYUNOU
+           MOVE    SYUNOU-REC            TO  MCPDATA-REC
+           MOVE    "DBSELECT"            TO  MCP-FUNC
+           MOVE    "tbl_syunou"          TO  MCP-TABLE
+           MOVE    "key81"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             PERFORM 910-DBFETCH-SEC
+           ELSE
+             MOVE    1                   TO  FLG-SYUNOU
            END-IF
            .
        910-DBSELECT-EXT.
@@ -1430,20 +1408,21 @@
       *****************************************************************
       *     収納情報検索
       *****************************************************************
-       910-DBFETCH-SEC                SECTION.
+       910-DBFETCH-SEC                   SECTION.
       *
-           MOVE    "DBFETCH"            TO  MCP-FUNC
-           MOVE    "tbl_syunou"        TO  MCP-TABLE
-           MOVE    "all"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    ZERO          TO  FLG-SYUNOU
-               MOVE    MCPDATA-REC   TO  SYUNOU-REC
+           MOVE    "DBFETCH"             TO  MCP-FUNC
+           MOVE    "tbl_syunou"          TO  MCP-TABLE
+           MOVE    "key81"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             MOVE    ZERO                TO  FLG-SYUNOU
+             MOVE    MCPDATA-REC         TO  SYUNOU-REC
            ELSE
-               MOVE    1             TO  FLG-SYUNOU
+             MOVE    1                   TO  FLG-SYUNOU
            END-IF
            .
        910-DBFETCH-EXT.
@@ -1452,15 +1431,16 @@
       *****************************************************************
       *    ＤＢ　クローズ処理
       *****************************************************************
-       910-DBCLOSE-SEC                 SECTION.
+       910-DBCLOSE-SEC                   SECTION.
       *
-           MOVE    "DBCLOSECURSOR"   TO  MCP-FUNC
-           MOVE    "tbl_syunou"        TO  MCP-TABLE
-           MOVE    "all"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
+           MOVE    "DBCLOSECURSOR"       TO  MCP-FUNC
+           MOVE    "tbl_syunou"          TO  MCP-TABLE
+           MOVE    "key81"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
            .
        910-DBCLOSE-EXT.
            EXIT.
@@ -1468,45 +1448,63 @@
       *****************************************************************
       *    診療行為情報検索
       *****************************************************************
-       911-DBSELECT-SEC                 SECTION.
+       911-DBSELECT-SEC                  SECTION.
       *
-           INITIALIZE                  SRYACT-REC
-      *
-           MOVE    SPA-HOSPNUM     TO  SRY-HOSPNUM
-           MOVE    SRYACT-REC      TO  MCPDATA-REC
-           MOVE    "DBSELECT"      TO  MCP-FUNC
-           MOVE    "tbl_sryact"        TO  MCP-TABLE
-           MOVE    "all"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-          IF      MCP-RC           =    ZERO
-               PERFORM 911-DBFETCH-SEC
+           INITIALIZE                    SRYACT-REC
+           MOVE    SPA-HOSPNUM           TO  SRY-HOSPNUM
+           IF  WRK-PARA-NYUGAIKBN  =  SPACE  OR  "3"
+             MOVE    "%"                 TO  SRY-NYUGAIKBN
            ELSE
-               MOVE    1           TO   FLG-SRYACT
+             MOVE    WRK-PARA-NYUGAIKBN  TO  SRY-NYUGAIKBN
+           END-IF
+           MOVE    WRK-PARA-SRYYM        TO  SRY-SRYYM
+           IF  FLG-SRYKA-ALL  =  1
+             MOVE    "%"                 TO  SRY-SRYKA
+           ELSE
+             MOVE    WRK-PARA-SRYKA      TO  SRY-SRYKA
+           END-IF
+           MOVE    WRK-INI-AZUKARICD     TO  SRY-SRYCD(1)
+                                             SRY-SRYCD(2)
+                                             SRY-SRYCD(3)
+                                             SRY-SRYCD(4)
+                                             SRY-SRYCD(5)
+      *
+           MOVE    SRYACT-REC            TO  MCPDATA-REC
+           MOVE    "DBSELECT"            TO  MCP-FUNC
+           MOVE    "tbl_sryact"          TO  MCP-TABLE
+           MOVE    "key18"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             PERFORM 911-DBFETCH-SEC
+           ELSE
+             MOVE    1                   TO  FLG-SRYACT
            END-IF
            .
        911-DBSELECT-EXT.
            EXIT.
       *
       *****************************************************************
-      *     診療行為情報検索
+      *    診療行為情報検索
       *****************************************************************
-       911-DBFETCH-SEC                SECTION.
+       911-DBFETCH-SEC                   SECTION.
       *
-           MOVE    "DBFETCH"        TO  MCP-FUNC
-           MOVE    "tbl_sryact"        TO  MCP-TABLE
-           MOVE    "all"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    ZERO          TO  FLG-SRYACT
-               MOVE    MCPDATA-REC   TO  SRYACT-REC
+           MOVE    "DBFETCH"             TO  MCP-FUNC
+           MOVE    "tbl_sryact"          TO  MCP-TABLE
+           MOVE    "key18"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             MOVE    ZERO                TO  FLG-SRYACT
+             MOVE    MCPDATA-REC         TO  SRYACT-REC
            ELSE
-               MOVE    1             TO  FLG-SRYACT
+             MOVE    1                   TO  FLG-SRYACT
            END-IF
            .
        911-DBFETCH-EXT.
@@ -1515,15 +1513,16 @@
       *****************************************************************
       *    ＤＢ　クローズ処理
       *****************************************************************
-       911-DBCLOSE-SEC                 SECTION.
+       911-DBCLOSE-SEC                   SECTION.
       *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_sryact"        TO  MCP-TABLE
-           MOVE    "all"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
+           MOVE    "DBCLOSECURSOR"       TO  MCP-FUNC
+           MOVE    "tbl_sryact"          TO  MCP-TABLE
+           MOVE    "key18"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+      *
            .
        911-DBCLOSE-EXT.
            EXIT.
@@ -1533,7 +1532,7 @@
       *****************************************************************
        910-L300T-READ-SEC               SECTION.
       *
-           READ L300T-FILE  
+           READ L300T-FILE
                 NEXT AT  END  MOVE  1  TO  FLG-ATEND
            END-READ
       *
@@ -1545,7 +1544,7 @@
       *****************************************************************
        800-SYSKANRI-READ-SEC           SECTION.
       *
-           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "DBSELECT"         TO  MCP-FUNC
            MOVE    "tbl_syskanri"     TO  MCP-TABLE
            MOVE    "key10"            TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
@@ -1639,7 +1638,7 @@
                 PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
-           END-IF        
+           END-IF
            .
        820-SYSKANRI-DBSELECT-EXT.
            EXIT.
@@ -1661,7 +1660,7 @@
                MOVE    MCPDATA-REC  TO  SYS-1005-REC
            ELSE
                MOVE    1                           TO  FLG-SYSKANRI3
-           END-IF  
+           END-IF
            .
        820-SYSKANRI-DBFETCH-EXT.
            EXIT.
@@ -1688,10 +1687,10 @@
        900-SYUNOU-READ-SEC                 SECTION.
       *
            INITIALIZE                 SYUNOU-REC
-           MOVE    SMEI-HOSPNUM   TO  SYU-HOSPNUM  
-           MOVE    SMEI-NYUGAIKBN TO  SYU-NYUGAIKBN  
-           MOVE    SMEI-PTID      TO  SYU-PTID  
-           MOVE    SMEI-DENPNUM   TO  SYU-DENPNUM  
+           MOVE    SMEI-HOSPNUM   TO  SYU-HOSPNUM
+           MOVE    SMEI-NYUGAIKBN TO  SYU-NYUGAIKBN
+           MOVE    SMEI-PTID      TO  SYU-PTID
+           MOVE    SMEI-DENPNUM   TO  SYU-DENPNUM
       *
            MOVE    SYUNOU-REC     TO  MCPDATA-REC
            MOVE    "DBSELECT"     TO  MCP-FUNC
@@ -2005,7 +2004,7 @@
                MOVE    ZERO        TO  FLG-JYURRK
            ELSE
                MOVE    1           TO  FLG-JYURRK
-           END-IF        
+           END-IF
            .
        970-JYURRK-SELECT-EXT.
            EXIT.
@@ -2028,7 +2027,7 @@
            ELSE
                MOVE    1            TO  FLG-JYURRK
                INITIALIZE               JYURRK-REC
-           END-IF  
+           END-IF
            .
        970-JYURRK-FETCH-EXT.
            EXIT.
