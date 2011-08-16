@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間     11/01/07  コメント履歴削除
       *                                      open-cobol1.0対応
       *  01.00.02    @@@@-門間     11/05/26  処理速度の改善
+      *  01.00.03    @@@@-門間     11/08/04  預り金が正しく集計されるように修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -141,6 +142,8 @@
            03  JIHIIDX           PIC 9(04).
            03  NG                PIC 9(04).
       *
+           03  AZU-IDX           PIC 9(02).
+      *
       *    パラメタ領域
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
@@ -173,18 +176,6 @@
                05  WRK-SMM           PIC 9(02).
                05  WRK-SDD           PIC 9(02).
            03  WRK-HENYMDG           PIC X(22).
-      *
-           03  WRK-MONEY             PIC 9(08).
-           03  WRK-JIHI              PIC 9(08).
-           03  WRK-SYUEKI            PIC 9(08).
-      *
-           03  WRK-JIHI2            PIC 9(08).
-           03  WRK-TJIHI-G       OCCURS  5.
-               05  WRK-TJIHI        PIC X(08).
-               05  WRK-TJIHI-FLG    PIC 9(01).
-           03  WRK-TJIHIN-G       OCCURS  5.
-               05  WRK-TJIHIN       PIC X(08).
-               05  WRK-TJIHIN-FLG   PIC 9(01).
       *
            03  WRK-4001-TENTANKA PIC 9(02)V9(01).
       *
@@ -227,6 +218,11 @@
            03  WRK-F-SRYYMD         PIC X(08).
            03  WRK-FN-SRYYMD        PIC X(08).
            03  WRK-FG-SRYYMD        PIC X(08).
+      *
+       01  WRK-AZU-AREA.
+           03  WRK-AZU-KAISU         PIC 9(03).
+           03  WRK-AZU               PIC 9(08).
+           03  WRK-AZU-G             PIC 9(11).
       *
        01  WRK-SRYKA-AERA.
            03  WRK-SRYKAMAX        PIC    9(03).
@@ -398,6 +394,9 @@
            INITIALIZE                  CNT-AREA
            INITIALIZE                  WRK-SRYKA-AERA
            INITIALIZE                  SPA-AREA
+      *
+           INITIALIZE                  WRK-AZU-AREA
+      *
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -841,6 +840,8 @@
                 INVALID  KEY     MOVE  1  TO FLG-INVALID
            END-READ
       *
+           INITIALIZE  WRK-AZU-AREA
+      *
            PERFORM  320-AZUKARI-GET-SUB2-SEC
       *
            IF   WRK-PARA-NYUGAIKBN  NOT =  "3"
@@ -871,6 +872,8 @@
                 KEY      IS      L300T-KEY
                 INVALID  KEY     MOVE  1  TO FLG-INVALID
            END-READ
+      *
+           INITIALIZE  WRK-AZU-AREA
       *
            PERFORM  320-AZUKARI-GET-SUB2-SEC
       *
@@ -927,12 +930,24 @@
            MOVE WRK-L-SRYYMD     TO    L300T-LASTYMD
       *
       *    預り金
-           PERFORM VARYING   IDX3        FROM 1  BY  1
-                   UNTIL     IDX3        >    5
+           PERFORM  VARYING  IDX3  FROM  1  BY  1
+                    UNTIL    IDX3  >     5
+                    OR       WRK-AZU  NOT =  ZERO
              IF  SRY-SRYCD(IDX3)  =  WRK-INI-AZUKARICD
-               ADD  SRY-JIHIMONEY(IDX3) TO  L300T-AZUKARI
+               MOVE  SRY-JIHIMONEY(IDX3)  TO  WRK-AZU
              END-IF
            END-PERFORM
+      *
+           PERFORM  980-SRYACCT-READ-SEC
+           PERFORM  VARYING  AZU-IDX  FROM  1  BY  1
+                    UNTIL    AZU-IDX  >    31
+             IF  ACCT-DAY(1 AZU-IDX)  NOT =  ZERO
+               ADD  ACCT-DAY(1 AZU-IDX)  TO  WRK-AZU-KAISU
+             END-IF
+           END-PERFORM
+      *
+           COMPUTE  WRK-AZU-G  =  WRK-AZU  *  WRK-AZU-KAISU
+           ADD  WRK-AZU-G        TO    L300T-AZUKARI
       *
            .
        320-AZUKARI-GET-SUB2-EXT.
@@ -2053,28 +2068,37 @@
       *****************************************************************
        980-SRYACCT-READ-SEC         SECTION.
       *
-           MOVE    SRYACCT-REC       TO  MCPDATA-REC
-           MOVE    "DBSELECT"            TO  MCP-FUNC
+           INITIALIZE                  SRYACCT-REC
+           MOVE    SRY-HOSPNUM         TO  ACCT-HOSPNUM
+           MOVE    SRY-NYUGAIKBN       TO  ACCT-NYUGAIKBN
+           MOVE    SRY-PTID            TO  ACCT-PTID
+           MOVE    SRY-SRYKA           TO  ACCT-SRYKA
+           MOVE    SRY-SRYYM           TO  ACCT-SRYYM
+           MOVE    SRY-SRYKBN          TO  ACCT-SRYKBN
+           MOVE    SRY-ZAINUM          TO  ACCT-ZAINUM
+      *
+           MOVE    SRYACCT-REC         TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_sryacct"       TO  MCP-TABLE
-           MOVE    "key3"              TO  MCP-PATHNAME
+           MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
            IF      MCP-RC              =   ZERO
-               MOVE    "DBFETCH"       TO  MCP-FUNC
-               MOVE    "tbl_sryacct"       TO  MCP-TABLE
-               MOVE    "key3"              TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"         USING
-                                           MCPAREA
-                                           MCPDATA-REC
-                                           SPA-AREA
+               MOVE    "DBFETCH"         TO  MCP-FUNC
+               MOVE    "tbl_sryacct"     TO  MCP-TABLE
+               MOVE    "key"             TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"       USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
                IF      MCP-RC              =   ZERO
-                   MOVE    MCPDATA-REC   TO  SRYACCT-REC
-                   MOVE    ZERO                    TO  FLG-SRYACCT
+                   MOVE    MCPDATA-REC       TO  SRYACCT-REC
+                   MOVE    ZERO              TO  FLG-SRYACCT
                ELSE
-                   MOVE    1                   TO  FLG-SRYACCT
-                   INITIALIZE                  SRYACCT-REC
+                   MOVE    1                 TO  FLG-SRYACCT
+                   INITIALIZE                SRYACCT-REC
                END-IF
            ELSE
                MOVE    1                   TO  FLG-SRYACCT
@@ -2083,7 +2107,7 @@
       *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
            MOVE    "tbl_sryacct"       TO  MCP-TABLE
-           MOVE    "key3"              TO  MCP-PATHNAME
+           MOVE    "key"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
