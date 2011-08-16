@@ -31,6 +31,8 @@
       *                                     初診、再診、その他の判定条件を変更
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/01/27  処理速度の改善
+      *  01.00.03    @@@@-門間    11/08/04  0件印字指定を行った場合、医師の22人目以降が
+      *                                     印字されない不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -859,90 +861,87 @@
        110-DR-PARA-HENSYU-SEC                   SECTION.
       *
            IF   WRK-SEL-DRCD    =        SPACE
-                MOVE    "1010"           TO  FLG-820SYS
-                INITIALIZE                   SYS-1010-REC
-               MOVE  D100LNK-HOSPNUM     TO  SYS-1010-HOSPNUM
-                MOVE    "1010"           TO  SYS-1010-KANRICD
-                MOVE    D100LNK-YMD2     TO  WRK-SYSYMD
-                MOVE  D100LNK-YMD1       TO  SYS-1010-EDYUKYMD
-                MOVE  D100LNK-YMD2       TO  SYS-1010-STYUKYMD
-                PERFORM 820-SYSKANRI-DBSELECT-SEC
-                MOVE     1               TO  I3 
-                PERFORM  UNTIL  FLG-SYSKANRI3 NOT = ZERO
-                   IF  SYS-1010-KBNCD(1:1)      = "1"
-                     IF  D100LNK-ZERO  =  1
-                         MOVE SYS-1010-KBNCD(2:4)
-                                           TO   WRK-DRCD2(I3)  
-                         MOVE SYS-1010-NAME
-                                           TO   WRK-DRNAME2(I3)
-                     ELSE
-                         MOVE SYS-1010-KBNCD(2:4)
-                                           TO   SUM-DRCD(I3)  
-                         MOVE SYS-1010-NAME
-                                           TO   SUM-DRNAME(I3)
-                     END-IF
-                     ADD  1            TO   I3
-                   END-IF
-                   PERFORM  820-SYSKANRI-DBFETCH-SEC
-                END-PERFORM
+             MOVE  "1010"             TO  FLG-820SYS
+             INITIALIZE                   SYS-1010-REC
+             MOVE  D100LNK-HOSPNUM    TO  SYS-1010-HOSPNUM
+             MOVE  "1010"             TO  SYS-1010-KANRICD
+             MOVE  D100LNK-YMD2       TO  WRK-SYSYMD
+             MOVE  D100LNK-YMD1       TO  SYS-1010-EDYUKYMD
+             MOVE  D100LNK-YMD2       TO  SYS-1010-STYUKYMD
+             PERFORM 820-SYSKANRI-DBSELECT-SEC
+             MOVE     1               TO  I3 
       *
-                PERFORM  820-SYSKANRI-DBCLOSE-SEC
-                IF  D100LNK-ZERO  =  1
-                  PERFORM  910-DBSELECT-SEC
-                  PERFORM  UNTIL      FLG-SYUNOU  = 1
-                    IF     D100LNK-YMD1  <=  SYU-DENPPRTYMD
-                      AND  D100LNK-YMD2  >=  SYU-DENPPRTYMD
-                      IF       D100LNK-SRYKACD      =  SPACE
-                          AND  D100LNK-DRCD         =  SPACE
-                        PERFORM  110-ZERO-SEC
-                      END-IF
-                      
-                      IF       D100LNK-SRYKACD  NOT =  SPACE
-                          AND  D100LNK-DRCD     NOT =  SPACE
-                        IF     D100LNK-SRYKACD      =  SYU-SRYKA
-                          AND  D100LNK-DRCD(2:4)    =  SYU-DRCD
-                          PERFORM  110-ZERO-SEC
-                        END-IF
-                      END-IF
-                      
-                      IF       D100LNK-SRYKACD  NOT =  SPACE
-                          AND  D100LNK-DRCD         =  SPACE
-                        IF     D100LNK-SRYKACD      =  SYU-SRYKA
-                          PERFORM  110-ZERO-SEC
-                        END-IF
-                      END-IF
-                        
-                      IF       D100LNK-DRCD     NOT =  SPACE
-                          AND  D100LNK-SRYKACD      =  SPACE
-                        IF     D100LNK-DRCD(2:4)    =  SYU-DRCD
-                          PERFORM  110-ZERO-SEC
-                        END-IF
-                      END-IF
-                    END-IF
-                    PERFORM 910-DBFETCH-SEC
-                  END-PERFORM
-                  PERFORM 910-DBCLOSE-SEC
-                    
-                  
-                  MOVE  1  TO  I3
-                  PERFORM  VARYING  I8  FROM  1  BY  1
-                           UNTIL    I8  >     20
-                    IF  WRK-DRFLG2(I8)  =  1
-                      MOVE   WRK-DRCD2(I8)     TO   SUM-DRCD(I3)
-                      MOVE   WRK-DRNAME2(I8)   TO   SUM-DRNAME(I3)
-                      ADD    1                 TO   I3
-                    END-IF
-                  END-PERFORM
-                END-IF
+             PERFORM  UNTIL  FLG-SYSKANRI3 NOT = ZERO
+               IF  SYS-1010-KBNCD(1:1)      = "1"
+                 IF  D100LNK-ZERO  =  1
+                   MOVE SYS-1010-KBNCD(2:4)  TO   WRK-DRCD2(I3)
+                   MOVE SYS-1010-NAME        TO   WRK-DRNAME2(I3)
+                 ELSE
+                   MOVE SYS-1010-KBNCD(2:4)  TO   SUM-DRCD(I3)
+                   MOVE SYS-1010-NAME        TO   SUM-DRNAME(I3)
+                 END-IF
+                 ADD  1            TO   I3
+               END-IF
+               PERFORM  820-SYSKANRI-DBFETCH-SEC
+             END-PERFORM
+             PERFORM  820-SYSKANRI-DBCLOSE-SEC
+      *
+             IF  D100LNK-ZERO  =  1
+               PERFORM  910-DBSELECT-SEC
+               PERFORM  UNTIL      FLG-SYUNOU  = 1
+      *
+                 IF     D100LNK-YMD1  <=  SYU-DENPPRTYMD
+                   AND  D100LNK-YMD2  >=  SYU-DENPPRTYMD
+                   IF       D100LNK-SRYKACD      =  SPACE
+                       AND  D100LNK-DRCD         =  SPACE
+                     PERFORM  110-ZERO-SEC
+                   END-IF
+      *
+                   IF       D100LNK-SRYKACD  NOT =  SPACE
+                       AND  D100LNK-DRCD     NOT =  SPACE
+                     IF     D100LNK-SRYKACD      =  SYU-SRYKA
+                       AND  D100LNK-DRCD(2:4)    =  SYU-DRCD
+                       PERFORM  110-ZERO-SEC
+                     END-IF
+                   END-IF
+      *
+                   IF       D100LNK-SRYKACD  NOT =  SPACE
+                       AND  D100LNK-DRCD         =  SPACE
+                     IF     D100LNK-SRYKACD      =  SYU-SRYKA
+                       PERFORM  110-ZERO-SEC
+                     END-IF
+                   END-IF
+      *
+                   IF       D100LNK-DRCD     NOT =  SPACE
+                       AND  D100LNK-SRYKACD      =  SPACE
+                     IF     D100LNK-DRCD(2:4)    =  SYU-DRCD
+                       PERFORM  110-ZERO-SEC
+                     END-IF
+                   END-IF
+                 END-IF
+                 PERFORM 910-DBFETCH-SEC
+               END-PERFORM
+               PERFORM 910-DBCLOSE-SEC
+      *
+               MOVE  1  TO  I3
+               PERFORM  VARYING  I8  FROM  1  BY  1
+                        UNTIL    I8  >     200
+                 IF  WRK-DRFLG2(I8)  =  1
+                   MOVE   WRK-DRCD2(I8)     TO   SUM-DRCD(I3)
+                   MOVE   WRK-DRNAME2(I8)   TO   SUM-DRNAME(I3)
+                   ADD    1                 TO   I3
+                 END-IF
+               END-PERFORM
+             END-IF
            ELSE
-                MOVE WRK-SEL-DRCD        TO   SUM-DRCD(1)  
-                MOVE WRK-SEL-DRNAME      TO   SUM-DRNAME(1)
-                MOVE 2                   TO   I3
+             MOVE WRK-SEL-DRCD        TO   SUM-DRCD(1)
+             MOVE WRK-SEL-DRNAME      TO   SUM-DRNAME(1)
+             MOVE 2                   TO   I3
            END-IF
       *
-           MOVE     ALL "9"              TO   SUM-DRCD(I3)  
-           MOVE     "計"                 TO   SUM-DRNAME(I3)  
-           MOVE     I3                   TO   SUM-DRMAX   
+           MOVE    ALL "9"          TO   SUM-DRCD(I3)
+           MOVE    "計"             TO   SUM-DRNAME(I3)
+           MOVE    I3               TO   SUM-DRMAX
       *
            .
        110-DR-PARA-HENSYU-EXT.
