@@ -31,6 +31,10 @@
       *                                     open-cobol1.0ÂÐ±þ
       *  01.00.02    @@@@-Ìç´Ö    11/02/09  ½¸·×½èÍý¤ò½¤Àµ
       *  01.00.03    @@@@-Ìç´Ö    11/02/21  ¼ýÇ¼¾ðÊó¼èÆÀ¾ò·ï¤ò½¤Àµ
+      *  01.00.04    @@@@-Ìç´Ö    11/08/04  ¼ÂÆü¿ô¤ÎÃÍ¤¬Àµ¤·¤¯½¸·×¤µ¤ì¤ë¤è¤¦¤Ë½¤Àµ
+      *                                     ËÜ¿ÍÉéÃ´³Û¤ËÃ¼¿ô¤¬É½¼¨¤µ¤ì¤Ê¤¤¤è¤¦¤Ë½¤Àµ
+      *                                     Æ±´µ¼Ô¤Ë¤Æ¸øÈñ1¤È¸øÈñ2¤ò»ÈÍÑ¤·¤¿¾ì¹ç¡¢
+      *                                     °õ»ú¤µ¤ì¤ë¤è¤¦¤Ë½¤Àµ
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -189,6 +193,13 @@
            03  WRK-NISSU1           PIC 9(02).
            03  WRK-NISSU2           PIC 9(02).
       *
+       01  WRK-SRY-AREA.
+           03  WRK-SRY-TBL          OCCURS 31.
+             05  WRK-SRYFLG         PIC 9(01).
+           03  WRK-DAY              PIC 9(02).
+           03  WRK-JIHI1            PIC S9(09).
+           03  WRK-JIHI2            PIC S9(09).
+      *
        01  PGOPTION-AREA.
            03  CITY-CITYNAME        PIC X(40).
            03  KOHS-KAIPAGE         PIC 9(01).
@@ -312,6 +323,7 @@
            INITIALIZE  IDX-AREA
            INITIALIZE  KEY-AREA
            INITIALIZE  SPA-AREA
+           INITIALIZE  WRK-SRY-AREA
       *
            ACCEPT    SYS-YMD       FROM    DATE
            ACCEPT    SYS-TIME      FROM    TIME
@@ -467,7 +479,7 @@
            PERFORM  900-KOHSKY-SELECT-SEC
            PERFORM  UNTIL  FLG-KOHSKY  =  1
       *
-             PERFORM  2002-HENSYU-SEC
+             PERFORM  20021-KOHCHK-SELECT-SEC
              PERFORM  900-KOHSKY-FETCH-SEC
       *
            END-PERFORM
@@ -485,153 +497,214 @@
       *****************************************************************
        2002-HENSYU-SEC  SECTION.
       *
-           INITIALIZE          FLG-KOHCHK
-           PERFORM  20021-KOHCHK-SELECT-SEC
+           PERFORM  900-SEIKYU-SELECT-SEC
+           PERFORM  910-SYUNOU-SELECT-SEC
+           PERFORM  UNTIL  FLG-SYUNOU  =  1
+             IF        SYU-DENPJTIKBN       NOT =  "3"
+               AND  (( RECE02-KOHNUM(IDX7)      =  SYU-KOH1HKNNUM
+               AND     SYU-KOH1HKNNUM       NOT =  SPACE )
+               OR    ( RECE02-KOHNUM(IDX7)      =  SYU-KOH2HKNNUM
+               AND     SYU-KOH2HKNNUM       NOT =  SPACE )
+               OR    ( RECE02-KOHNUM(IDX7)      =  SYU-KOH3HKNNUM
+               AND     SYU-KOH3HKNNUM       NOT =  SPACE )
+               OR    ( RECE02-KOHNUM(IDX7)      =  SYU-KOH4HKNNUM
+               AND     SYU-KOH4HKNNUM       NOT =  SPACE ))
+               AND     RECE02-SRYYM             =  SYU-SRYYMD(1:6)
       *
-           IF   FLG-KOHCHK  =  1
-             PERFORM  900-SEIKYU-SELECT-SEC
-             PERFORM  910-SYUNOU-SELECT-SEC
-             PERFORM  UNTIL  FLG-SYUNOU  =  1
-               IF        SYU-DENPJTIKBN       NOT =  "3"
-                 AND  (( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH1HKNNUM
-                 AND     SYU-KOH1HKNNUM       NOT =  SPACE )
-                 OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH2HKNNUM
-                 AND     SYU-KOH2HKNNUM       NOT =  SPACE )
-                 OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH3HKNNUM
-                 AND     SYU-KOH3HKNNUM       NOT =  SPACE )
-                 OR    ( RECE02-KOHNUM(IDX7 - 1)  =  SYU-KOH4HKNNUM
-                 AND     SYU-KOH4HKNNUM       NOT =  SPACE ))
-                 AND     RECE02-SRYYM             =  SYU-SRYYMD(1:6)
+      *        ¥Ç¡¼¥¿ÀßÄê
+               MOVE    RECE10-HOSPNUM        TO   MF100-HOSPNUM
+               MOVE    RECE10-PTNUM          TO   MF100-PTNUM
+               MOVE    RECE10-PTID           TO   MF100-PTID
+               MOVE    RECE10-SRYYM          TO   MF100-SRYYM
+               MOVE    RECE10-NYUGAIKBN      TO   MF100-NYUGAIKBN
+               MOVE    RECE10-RECEKA         TO   MF100-SRYKA
+               MOVE    RECE10-TEISYUTUSAKI   TO   MF100-TEISYUTUSAKI
+               MOVE    RECE10-RECESYUBETU    TO   MF100-RECESYUBETU
+               MOVE    RECE10-HKNJANUM       TO   MF100-HKNJANUM
+               MOVE    RECE10-TEKSTYMD       TO   MF100-TEKSTYMD
+               MOVE    PTINF-NAME            TO   MF100-NAME
+               MOVE    PTINF-KANANAME        TO   MF100-FURIGANA
+               MOVE    PTINF-SEX             TO   MF100-SEX
+               MOVE    RECE10-KIGO           TO   MF100-KIGO
+               MOVE    RECE10-NUM            TO   MF100-NUM
+               MOVE    RECE10-KYURATE        TO   MF100-KYURATE
+               MOVE    RECE10-RJNHKNNUM      TO   MF100-RJNHKNNUM
       *
-      *          ¥Ç¡¼¥¿ÀßÄê
-                 MOVE    RECE10-HOSPNUM        TO   MF100-HOSPNUM
-                 MOVE    RECE10-PTNUM          TO   MF100-PTNUM
-                 MOVE    RECE10-PTID           TO   MF100-PTID
-                 MOVE    RECE10-SRYYM          TO   MF100-SRYYM
-                 MOVE    RECE10-NYUGAIKBN      TO   MF100-NYUGAIKBN
-                 MOVE    RECE10-RECEKA         TO   MF100-SRYKA
-                 MOVE    RECE10-TEISYUTUSAKI   TO   MF100-TEISYUTUSAKI
-                 MOVE    RECE10-RECESYUBETU    TO   MF100-RECESYUBETU
-                 MOVE    RECE10-HKNJANUM       TO   MF100-HKNJANUM
-                 MOVE    RECE10-TEKSTYMD       TO   MF100-TEKSTYMD
-                 MOVE    PTINF-NAME            TO   MF100-NAME
-                 MOVE    PTINF-KANANAME        TO   MF100-FURIGANA
-                 MOVE    PTINF-SEX             TO   MF100-SEX
-                 MOVE    RECE10-KIGO           TO   MF100-KIGO
-                 MOVE    RECE10-NUM            TO   MF100-NUM
-                 MOVE    RECE10-KYURATE        TO   MF100-KYURATE
-                 MOVE    RECE10-RJNHKNNUM      TO   MF100-RJNHKNNUM
+               IF  RECE10-NYUGAIKBN  =  "1"
       *
-                 IF  RECE10-NYUGAIKBN  =  "1"
+                 MOVE  SYU-SKYSTYMD(7:2)    TO  WRK-NISSU1
+                 MOVE  SYU-SKYEDYMD(7:2)    TO  WRK-NISSU2
+                 COMPUTE  WRK-NISSU1  =  (WRK-NISSU2  -  WRK-NISSU1)
+                                      +  1
+                 ADD    WRK-NISSU1          TO  MF100-JNISSU
+                 ADD    SYU-TOTAL-HKNTEN    TO  MF100-TOTALTEN
       *
-                   MOVE  SYU-SKYSTYMD(7:2)    TO  WRK-NISSU1
-                   MOVE  SYU-SKYEDYMD(7:2)    TO  WRK-NISSU2
-                   COMPUTE  WRK-NISSU1  =  (WRK-NISSU2  -  WRK-NISSU1)
-                                        +  1
-                   ADD    WRK-NISSU1          TO  MF100-JNISSU
-                   ADD    SYU-TOTAL-HKNTEN    TO  MF100-TOTALTEN
-      *
-                   IF   SYU-KOH1HKNNUM  =  MF100-KOHNUM
+                 IF   SYU-KOH1HKNNUM  =  MF100-KOHNUM
+      *            Æü¿ô²Ã»»
+                   ADD   SYU-KOH1SKJ-NISSU    TO  MF100-SKJKAISU
+      *            ÀÁµá³Û²Ã»»
+                   ADD   SYU-KOH1SKJ-RYOYOHI  TO  MF100-SKJSKY
+      *            É¸½àÉéÃ´³Û²Ã»»
+                   ADD   SYU-KOH1SKJ-FTN      TO  MF100-SKJFTN
+                 ELSE
+                   IF  SYU-KOH2HKNNUM  =  MF100-KOHNUM
       *              Æü¿ô²Ã»»
-                     ADD   SYU-KOH1SKJ-NISSU    TO  MF100-SKJKAISU
+                     ADD   SYU-KOH2SKJ-NISSU    TO  MF100-SKJKAISU
       *              ÀÁµá³Û²Ã»»
-                     ADD   SYU-KOH1SKJ-RYOYOHI  TO  MF100-SKJSKY
+                     ADD   SYU-KOH2SKJ-RYOYOHI  TO  MF100-SKJSKY
       *              É¸½àÉéÃ´³Û²Ã»»
-                     ADD   SYU-KOH1SKJ-FTN      TO  MF100-SKJFTN
+                     ADD   SYU-KOH2SKJ-FTN      TO  MF100-SKJFTN
                    ELSE
-                     IF  SYU-KOH2HKNNUM  =  MF100-KOHNUM
+                     IF  SYU-KOH3HKNNUM  =  MF100-KOHNUM
       *                Æü¿ô²Ã»»
-                       ADD   SYU-KOH2SKJ-NISSU    TO  MF100-SKJKAISU
+                       ADD   SYU-KOH3SKJ-NISSU    TO  MF100-SKJKAISU
       *                ÀÁµá³Û²Ã»»
-                       ADD   SYU-KOH2SKJ-RYOYOHI  TO  MF100-SKJSKY
+                       ADD   SYU-KOH3SKJ-RYOYOHI  TO  MF100-SKJSKY
       *                É¸½àÉéÃ´³Û²Ã»»
-                       ADD   SYU-KOH2SKJ-FTN      TO  MF100-SKJFTN
+                       ADD   SYU-KOH3SKJ-FTN      TO  MF100-SKJFTN
                      ELSE
-                       IF  SYU-KOH3HKNNUM  =  MF100-KOHNUM
+                       IF  SYU-KOH4HKNNUM  =  MF100-KOHNUM
       *                  Æü¿ô²Ã»»
-                         ADD   SYU-KOH3SKJ-NISSU    TO  MF100-SKJKAISU
+                         ADD   SYU-KOH4SKJ-NISSU    TO  MF100-SKJKAISU
       *                  ÀÁµá³Û²Ã»»
-                         ADD   SYU-KOH3SKJ-RYOYOHI  TO  MF100-SKJSKY
+                         ADD   SYU-KOH4SKJ-RYOYOHI  TO  MF100-SKJSKY
       *                  É¸½àÉéÃ´³Û²Ã»»
-                         ADD   SYU-KOH3SKJ-FTN      TO  MF100-SKJFTN
+                         ADD   SYU-KOH4SKJ-FTN      TO  MF100-SKJFTN
                        ELSE
-                         IF  SYU-KOH4HKNNUM  =  MF100-KOHNUM
-      *                    Æü¿ô²Ã»»
-                           ADD   SYU-KOH4SKJ-NISSU    TO  MF100-SKJKAISU
-      *                    ÀÁµá³Û²Ã»»
-                           ADD   SYU-KOH4SKJ-RYOYOHI  TO  MF100-SKJSKY
-      *                    É¸½àÉéÃ´³Û²Ã»»
-                           ADD   SYU-KOH4SKJ-FTN      TO  MF100-SKJFTN
-                         ELSE
-      *                    Æü¿ô²Ã»»
-                           ADD   SYU-SYUSKJ-NISSU     TO  MF100-SKJKAISU
-      *                    ÀÁµá³Û²Ã»»
-                           ADD   SYU-SYUSKJ-RYOYOHI   TO  MF100-SKJSKY
-      *                    É¸½àÉéÃ´³Û²Ã»»
-                           ADD   SYU-SYUSKJ-FTN       TO  MF100-SKJFTN
-                         END-IF
+      *                  Æü¿ô²Ã»»
+                         ADD   SYU-SYUSKJ-NISSU     TO  MF100-SKJKAISU
+      *                  ÀÁµá³Û²Ã»»
+                         ADD   SYU-SYUSKJ-RYOYOHI   TO  MF100-SKJSKY
+      *                  É¸½àÉéÃ´³Û²Ã»»
+                         ADD   SYU-SYUSKJ-FTN       TO  MF100-SKJFTN
                        END-IF
                      END-IF
                    END-IF
-      *
-                 ELSE
-      *
-                   ADD    1                        TO   MF100-JNISSU
-                   ADD    SYU-TOTAL-HKNTEN         TO   MF100-TOTALTEN
                  END-IF
       *
-      *          ¸øÈñÌ¾¼èÆÀ
-                 MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
-                 PERFORM  950-HKNNUM-SET-SEC
-                 MOVE    HKN-TANSEIDONAME          TO   MF100-KOHNAME
+               ELSE
       *
-      *          Â¾Ë¡¸øÈñ¾ðÊóÀßÄê
-                 MOVE    1                         TO   IDX1
-                 IF   RECE10-RJNHKNNUM  NOT =  SPACE
-                   MOVE   "27"                     TO   MF100-TAHO(IDX1)
-                   ADD    1                        TO   IDX1
+                 MOVE   SYU-SRYYMD(7:2)          TO  WRK-DAY
+      *
+                 IF  WRK-SRYFLG(WRK-DAY)  =  ZERO
+                   ADD     1                     TO  MF100-JNISSU
+                   MOVE    1                     TO  WRK-SRYFLG(WRK-DAY)
                  END-IF
       *
-                 IF   RECE10-ETC-KOHNUM(1)   =   "972"
-                     OR  RECE10-ETC-KOHNUM(2)   =   "972"
-                     OR  RECE10-ETC-KOHNUM(3)   =   "972"
-                     OR  RECE10-ETC-KOHNUM(4)   =   "972"
-                   MOVE  "Ä¹"                      TO   MF100-TAHO(IDX1)
-                   ADD   1                         TO   IDX1
-                 END-IF
-      *
-                 PERFORM  VARYING  IDX2   FROM    1   BY  1
-                          UNTIL    IDX2   >   4
-                          OR   IDX1   >   4
-                          OR   RECE10-KOHNUM(IDX2)  =  SPACE
-                   IF     RECE10-KOHNUM(IDX2)(1:1)  =  "0"
-                     MOVE     RECE10-KOHNUM(IDX2)  TO   WRK-KOHNUM
-                     PERFORM  950-HKNNUM-SET-SEC
-                     MOVE     HKN-HBTNUM           TO   MF100-TAHO(IDX1)
-                     ADD      1                    TO   IDX1
-                   END-IF
-                 END-PERFORM
-      *
-      *          ¼ýÇ¼¾ðÊó¤è¤ê¡¢ËÜ¿ÍÉéÃ´³Û¤ò½¸·×
-                 COMPUTE  WRK-SKYMONEY      =    SYU-SKYMONEY
-                                            -    SYU-JIHI-TOTAL
-                                            -    SYU-JIHI-TOTAL-TAX
-                 ADD      WRK-SKYMONEY      TO   MF100-FTNMONEY
-      *
-      *          ¸øÈñÈÖ¹æ¤Ç¥½¡¼¥È¤¹¤ë
-                 MOVE     MF100-KOHNUM      TO   MF100-KOHNUM-KEY
-      *
+                 ADD    SYU-TOTAL-HKNTEN         TO   MF100-TOTALTEN
                END-IF
-               PERFORM  910-SYUNOU-FETCH-SEC
-             END-PERFORM
       *
-             PERFORM  910-SYUNOU-CLOSE-SEC
-             IF  FLG-KBN   =   ZERO
-               WRITE    MF100-REC
-               ADD     1        TO   CNT-MF100
-             ELSE
-               REWRITE  MF100-REC
+      *        ¸øÈñÌ¾¼èÆÀ
+               MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
+               PERFORM  950-HKNNUM-SET-SEC
+               MOVE    HKN-TANSEIDONAME          TO   MF100-KOHNAME
+      *
+      *        Â¾Ë¡¸øÈñ¾ðÊóÀßÄê
+               MOVE    1                         TO   IDX1
+               IF   RECE10-RJNHKNNUM  NOT =  SPACE
+                 MOVE   "27"                     TO   MF100-TAHO(IDX1)
+                 ADD    1                        TO   IDX1
+               END-IF
+      *
+               IF   RECE10-ETC-KOHNUM(1)   =   "972"
+                   OR  RECE10-ETC-KOHNUM(2)   =   "972"
+                   OR  RECE10-ETC-KOHNUM(3)   =   "972"
+                   OR  RECE10-ETC-KOHNUM(4)   =   "972"
+                 MOVE  "Ä¹"                      TO   MF100-TAHO(IDX1)
+                 ADD   1                         TO   IDX1
+               END-IF
+      *
+               PERFORM  VARYING  IDX2   FROM    1   BY  1
+                        UNTIL    IDX2   >   4
+                        OR   IDX1   >   4
+                        OR   RECE10-KOHNUM(IDX2)  =  SPACE
+                 IF     RECE10-KOHNUM(IDX2)(1:1)  =  "0"
+                   MOVE     RECE10-KOHNUM(IDX2)  TO   WRK-KOHNUM
+                   PERFORM  950-HKNNUM-SET-SEC
+                   MOVE     HKN-HBTNUM           TO   MF100-TAHO(IDX1)
+                   ADD      1                    TO   IDX1
+                 END-IF
+               END-PERFORM
+      *
+      *        ¼ýÇ¼¾ðÊó¤è¤ê¡¢ËÜ¿ÍÉéÃ´³Û¤ò½¸·×
+      *        ¼«ÈñÃ¼¿ô½èÍý
+               INITIALIZE  WRK-JIHI1
+                           WRK-JIHI2
+      *
+               EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2J
+               WHEN  1
+                 COMPUTE  WRK-JIHI1 ROUNDED = SYU-JIHI-TOTAL / 10
+                 COMPUTE  WRK-JIHI1 = WRK-JIHI1 * 10
+                 COMPUTE  WRK-JIHI2 ROUNDED = SYU-JIHI-TOTAL-TAX / 10
+                 COMPUTE  WRK-JIHI2 = WRK-JIHI2 * 10
+               WHEN  2
+                 COMPUTE  WRK-JIHI1 = SYU-JIHI-TOTAL / 10
+                 COMPUTE  WRK-JIHI1 = WRK-JIHI1 * 10
+                 COMPUTE  WRK-JIHI2 = SYU-JIHI-TOTAL-TAX / 10
+                 COMPUTE  WRK-JIHI2 = WRK-JIHI2 * 10 
+               WHEN  3
+                 MOVE     SYU-JIHI-TOTAL      TO  WRK-JIHI1
+                 MOVE     SYU-JIHI-TOTAL-TAX  TO  WRK-JIHI2
+                 IF   SYU-JIHI-TOTAL(7:1)      NOT =  0
+                   COMPUTE  WRK-JIHI1 = SYU-JIHI-TOTAL / 10
+                   COMPUTE  WRK-JIHI1 = WRK-JIHI1 * 10 + 10
+                 END-IF
+                 IF   SYU-JIHI-TOTAL-TAX(7:1)  NOT =  0
+                   COMPUTE  WRK-JIHI2 = SYU-JIHI-TOTAL-TAX  /  10
+                   COMPUTE  WRK-JIHI2 = WRK-JIHI2 * 10 + 10
+                 END-IF
+               WHEN  4
+                 MOVE     SYU-JIHI-TOTAL      TO  WRK-JIHI1
+                 MOVE     SYU-JIHI-TOTAL-TAX  TO  WRK-JIHI2
+               WHEN  0
+                 EVALUATE  SYS-1001-DISCOUNT-HASU-KBN2
+                 WHEN  1
+                   COMPUTE  WRK-JIHI1 ROUNDED = SYU-JIHI-TOTAL / 10
+                   COMPUTE  WRK-JIHI1 = WRK-JIHI1 * 10
+                   COMPUTE  WRK-JIHI2 ROUNDED = SYU-JIHI-TOTAL-TAX / 10
+                   COMPUTE  WRK-JIHI2 = WRK-JIHI2 * 10
+                 WHEN  2
+                   COMPUTE  WRK-JIHI1 = SYU-JIHI-TOTAL / 10
+                   COMPUTE  WRK-JIHI1 = WRK-JIHI1 * 10
+                   COMPUTE  WRK-JIHI2 = SYU-JIHI-TOTAL-TAX / 10
+                   COMPUTE  WRK-JIHI2 = WRK-JIHI2 * 10
+                 WHEN  3
+                   MOVE     SYU-JIHI-TOTAL      TO  WRK-JIHI1
+                   MOVE     SYU-JIHI-TOTAL-TAX  TO  WRK-JIHI2
+                   IF   SYU-JIHI-TOTAL(7:1)      NOT =  0
+                     COMPUTE  WRK-JIHI1 = SYU-JIHI-TOTAL / 10
+                     COMPUTE  WRK-JIHI1 = WRK-JIHI1 * 10 + 10
+                   END-IF
+                   IF   SYU-JIHI-TOTAL-TAX(7:1)  NOT =  0
+                     COMPUTE  WRK-JIHI2 = SYU-JIHI-TOTAL-TAX / 10
+                     COMPUTE  WRK-JIHI2 = WRK-JIHI2 * 10 + 10
+                   END-IF
+                 WHEN  4
+                   MOVE     SYU-JIHI-TOTAL      TO  WRK-JIHI1
+                   MOVE     SYU-JIHI-TOTAL-TAX  TO  WRK-JIHI2
+                 END-EVALUATE
+               END-EVALUATE
+      *
+               COMPUTE  WRK-SKYMONEY      =    SYU-SKYMONEY
+                                          -    WRK-JIHI1
+                                          -    WRK-JIHI2
+                                          -    SYU-TOTAL-TGMONEY
+                                          -    SYU-TOTAL-TGMONEY-TAX
+               ADD      WRK-SKYMONEY      TO   MF100-FTNMONEY
+      *
+      *        ¸øÈñÈÖ¹æ¤Ç¥½¡¼¥È¤¹¤ë
+               MOVE     MF100-KOHNUM      TO   MF100-KOHNUM-KEY
+      *
              END-IF
+             PERFORM  910-SYUNOU-FETCH-SEC
+           END-PERFORM
+      *
+           PERFORM  910-SYUNOU-CLOSE-SEC
+           IF  FLG-KBN   =   ZERO
+             WRITE    MF100-REC
+             ADD     1        TO   CNT-MF100
+           ELSE
+             REWRITE  MF100-REC
            END-IF
       *
            .
@@ -670,7 +743,15 @@
                OR  KOHI-KOHNUM(36)   OR  KOHI-KOHNUM(37)
                OR  KOHI-KOHNUM(38)   OR  KOHI-KOHNUM(39)
                OR  KOHI-KOHNUM(40)
+      *
+               INITIALIZE  MF100-REC
+                           FLG-KOHCHK
+                           WRK-SRY-AREA
                PERFORM  9001-CHK-SEC
+               IF   FLG-KOHCHK  =  1
+                 PERFORM  2002-HENSYU-SEC
+               END-IF
+      *
              END-IF
            END-PERFORM
       *
