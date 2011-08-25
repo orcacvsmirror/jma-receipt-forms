@@ -35,6 +35,7 @@
       *                                     本人負担額に端数が表示されないように修正
       *                                     同患者にて公費1と公費2を使用した場合、
       *                                     印字されるように修正
+      *  01.00.05    @@@@-門間    11/08/22  実日数(外来)は公費請求テーブルを参照するように変更
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -193,10 +194,6 @@
            03  WRK-NISSU1           PIC 9(02).
            03  WRK-NISSU2           PIC 9(02).
       *
-       01  WRK-SRY-AREA.
-           03  WRK-SRY-TBL          OCCURS 31.
-             05  WRK-SRYFLG         PIC 9(01).
-           03  WRK-DAY              PIC 9(02).
            03  WRK-JIHI1            PIC S9(09).
            03  WRK-JIHI2            PIC S9(09).
       *
@@ -323,7 +320,6 @@
            INITIALIZE  IDX-AREA
            INITIALIZE  KEY-AREA
            INITIALIZE  SPA-AREA
-           INITIALIZE  WRK-SRY-AREA
       *
            ACCEPT    SYS-YMD       FROM    DATE
            ACCEPT    SYS-TIME      FROM    TIME
@@ -498,6 +494,69 @@
        2002-HENSYU-SEC  SECTION.
       *
            PERFORM  900-SEIKYU-SELECT-SEC
+      *
+      *    データ設定
+           MOVE    RECE10-HOSPNUM        TO   MF100-HOSPNUM
+           MOVE    RECE10-PTNUM          TO   MF100-PTNUM
+           MOVE    RECE10-PTID           TO   MF100-PTID
+           MOVE    RECE10-SRYYM          TO   MF100-SRYYM
+           MOVE    RECE10-NYUGAIKBN      TO   MF100-NYUGAIKBN
+           MOVE    RECE10-RECEKA         TO   MF100-SRYKA
+           MOVE    RECE10-TEISYUTUSAKI   TO   MF100-TEISYUTUSAKI
+           MOVE    RECE10-RECESYUBETU    TO   MF100-RECESYUBETU
+           MOVE    RECE10-HKNJANUM       TO   MF100-HKNJANUM
+           MOVE    RECE10-TEKSTYMD       TO   MF100-TEKSTYMD
+           MOVE    PTINF-NAME            TO   MF100-NAME
+           MOVE    PTINF-KANANAME        TO   MF100-FURIGANA
+           MOVE    PTINF-SEX             TO   MF100-SEX
+           MOVE    RECE10-KIGO           TO   MF100-KIGO
+           MOVE    RECE10-NUM            TO   MF100-NUM
+           MOVE    RECE10-KYURATE        TO   MF100-KYURATE
+           MOVE    RECE10-RJNHKNNUM      TO   MF100-RJNHKNNUM
+      *
+      *    公費名取得
+           MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
+           PERFORM  950-HKNNUM-SET-SEC
+           MOVE    HKN-TANSEIDONAME          TO   MF100-KOHNAME
+      *
+      *    他法公費情報設定
+           MOVE    1                         TO   IDX1
+           IF   RECE10-RJNHKNNUM  NOT =  SPACE
+             MOVE   "27"                     TO   MF100-TAHO(IDX1)
+             ADD    1                        TO   IDX1
+           END-IF
+      *
+           IF   RECE10-ETC-KOHNUM(1)   =   "972"
+               OR  RECE10-ETC-KOHNUM(2)   =   "972"
+               OR  RECE10-ETC-KOHNUM(3)   =   "972"
+               OR  RECE10-ETC-KOHNUM(4)   =   "972"
+             MOVE  "長"                      TO   MF100-TAHO(IDX1)
+             ADD   1                         TO   IDX1
+           END-IF
+      *
+           PERFORM  VARYING  IDX2   FROM    1   BY  1
+                    UNTIL    IDX2   >   4
+                    OR   IDX1   >   4
+                    OR   RECE10-KOHNUM(IDX2)  =  SPACE
+             IF     RECE10-KOHNUM(IDX2)(1:1)  =  "0"
+               MOVE     RECE10-KOHNUM(IDX2)  TO   WRK-KOHNUM
+               PERFORM  950-HKNNUM-SET-SEC
+               MOVE     HKN-HBTNUM           TO   MF100-TAHO(IDX1)
+               ADD      1                    TO   IDX1
+             END-IF
+           END-PERFORM
+      *
+      *    公費番号でソートする
+           MOVE     MF100-KOHNUM      TO   MF100-KOHNUM-KEY
+      *
+      *    公費請求テーブルより、実日数(外来)を集計
+           IF  RECE02-NYUGAIKBN  =  "2"
+      *      実日数(外来)
+             MOVE    RECE02-JNISSU(IDX7 + 1)   TO   MF100-JNISSU
+           END-IF
+      *
+      *    収納テーブルより、実日数、点数、本人負担額、回数(食事療養費)、
+      *    請求額(食事療養費)、負担額(食事療養費)を集計
            PERFORM  910-SYUNOU-SELECT-SEC
            PERFORM  UNTIL  FLG-SYUNOU  =  1
              IF        SYU-DENPJTIKBN       NOT =  "3"
@@ -511,71 +570,40 @@
                AND     SYU-KOH4HKNNUM       NOT =  SPACE ))
                AND     RECE02-SRYYM             =  SYU-SRYYMD(1:6)
       *
-      *        データ設定
-               MOVE    RECE10-HOSPNUM        TO   MF100-HOSPNUM
-               MOVE    RECE10-PTNUM          TO   MF100-PTNUM
-               MOVE    RECE10-PTID           TO   MF100-PTID
-               MOVE    RECE10-SRYYM          TO   MF100-SRYYM
-               MOVE    RECE10-NYUGAIKBN      TO   MF100-NYUGAIKBN
-               MOVE    RECE10-RECEKA         TO   MF100-SRYKA
-               MOVE    RECE10-TEISYUTUSAKI   TO   MF100-TEISYUTUSAKI
-               MOVE    RECE10-RECESYUBETU    TO   MF100-RECESYUBETU
-               MOVE    RECE10-HKNJANUM       TO   MF100-HKNJANUM
-               MOVE    RECE10-TEKSTYMD       TO   MF100-TEKSTYMD
-               MOVE    PTINF-NAME            TO   MF100-NAME
-               MOVE    PTINF-KANANAME        TO   MF100-FURIGANA
-               MOVE    PTINF-SEX             TO   MF100-SEX
-               MOVE    RECE10-KIGO           TO   MF100-KIGO
-               MOVE    RECE10-NUM            TO   MF100-NUM
-               MOVE    RECE10-KYURATE        TO   MF100-KYURATE
-               MOVE    RECE10-RJNHKNNUM      TO   MF100-RJNHKNNUM
+               IF  SYU-NYUGAIKBN  =  "1"
       *
-               IF  RECE10-NYUGAIKBN  =  "1"
-      *
+      *          実日数(入院)
                  MOVE  SYU-SKYSTYMD(7:2)    TO  WRK-NISSU1
                  MOVE  SYU-SKYEDYMD(7:2)    TO  WRK-NISSU2
                  COMPUTE  WRK-NISSU1  =  (WRK-NISSU2  -  WRK-NISSU1)
                                       +  1
                  ADD    WRK-NISSU1          TO  MF100-JNISSU
+      *          点数(入院)
                  ADD    SYU-TOTAL-HKNTEN    TO  MF100-TOTALTEN
       *
+      *          回数(食事療養費)、請求額(食事療養費)、負担額(食事療養費)
                  IF   SYU-KOH1HKNNUM  =  MF100-KOHNUM
-      *            日数加算
                    ADD   SYU-KOH1SKJ-NISSU    TO  MF100-SKJKAISU
-      *            請求額加算
                    ADD   SYU-KOH1SKJ-RYOYOHI  TO  MF100-SKJSKY
-      *            標準負担額加算
                    ADD   SYU-KOH1SKJ-FTN      TO  MF100-SKJFTN
                  ELSE
                    IF  SYU-KOH2HKNNUM  =  MF100-KOHNUM
-      *              日数加算
                      ADD   SYU-KOH2SKJ-NISSU    TO  MF100-SKJKAISU
-      *              請求額加算
                      ADD   SYU-KOH2SKJ-RYOYOHI  TO  MF100-SKJSKY
-      *              標準負担額加算
                      ADD   SYU-KOH2SKJ-FTN      TO  MF100-SKJFTN
                    ELSE
                      IF  SYU-KOH3HKNNUM  =  MF100-KOHNUM
-      *                日数加算
                        ADD   SYU-KOH3SKJ-NISSU    TO  MF100-SKJKAISU
-      *                請求額加算
                        ADD   SYU-KOH3SKJ-RYOYOHI  TO  MF100-SKJSKY
-      *                標準負担額加算
                        ADD   SYU-KOH3SKJ-FTN      TO  MF100-SKJFTN
                      ELSE
                        IF  SYU-KOH4HKNNUM  =  MF100-KOHNUM
-      *                  日数加算
                          ADD   SYU-KOH4SKJ-NISSU    TO  MF100-SKJKAISU
-      *                  請求額加算
                          ADD   SYU-KOH4SKJ-RYOYOHI  TO  MF100-SKJSKY
-      *                  標準負担額加算
                          ADD   SYU-KOH4SKJ-FTN      TO  MF100-SKJFTN
                        ELSE
-      *                  日数加算
                          ADD   SYU-SYUSKJ-NISSU     TO  MF100-SKJKAISU
-      *                  請求額加算
                          ADD   SYU-SYUSKJ-RYOYOHI   TO  MF100-SKJSKY
-      *                  標準負担額加算
                          ADD   SYU-SYUSKJ-FTN       TO  MF100-SKJFTN
                        END-IF
                      END-IF
@@ -584,50 +612,12 @@
       *
                ELSE
       *
-                 MOVE   SYU-SRYYMD(7:2)          TO  WRK-DAY
-      *
-                 IF  WRK-SRYFLG(WRK-DAY)  =  ZERO
-                   ADD     1                     TO  MF100-JNISSU
-                   MOVE    1                     TO  WRK-SRYFLG(WRK-DAY)
-                 END-IF
-      *
+      *          点数(外来)
                  ADD    SYU-TOTAL-HKNTEN         TO   MF100-TOTALTEN
+      *
                END-IF
       *
-      *        公費名取得
-               MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
-               PERFORM  950-HKNNUM-SET-SEC
-               MOVE    HKN-TANSEIDONAME          TO   MF100-KOHNAME
-      *
-      *        他法公費情報設定
-               MOVE    1                         TO   IDX1
-               IF   RECE10-RJNHKNNUM  NOT =  SPACE
-                 MOVE   "27"                     TO   MF100-TAHO(IDX1)
-                 ADD    1                        TO   IDX1
-               END-IF
-      *
-               IF   RECE10-ETC-KOHNUM(1)   =   "972"
-                   OR  RECE10-ETC-KOHNUM(2)   =   "972"
-                   OR  RECE10-ETC-KOHNUM(3)   =   "972"
-                   OR  RECE10-ETC-KOHNUM(4)   =   "972"
-                 MOVE  "長"                      TO   MF100-TAHO(IDX1)
-                 ADD   1                         TO   IDX1
-               END-IF
-      *
-               PERFORM  VARYING  IDX2   FROM    1   BY  1
-                        UNTIL    IDX2   >   4
-                        OR   IDX1   >   4
-                        OR   RECE10-KOHNUM(IDX2)  =  SPACE
-                 IF     RECE10-KOHNUM(IDX2)(1:1)  =  "0"
-                   MOVE     RECE10-KOHNUM(IDX2)  TO   WRK-KOHNUM
-                   PERFORM  950-HKNNUM-SET-SEC
-                   MOVE     HKN-HBTNUM           TO   MF100-TAHO(IDX1)
-                   ADD      1                    TO   IDX1
-                 END-IF
-               END-PERFORM
-      *
-      *        収納情報より、本人負担額を集計
-      *        自費端数処理
+      *        本人負担額、自費端数処理
                INITIALIZE  WRK-JIHI1
                            WRK-JIHI2
       *
@@ -692,14 +682,12 @@
                                           -    SYU-TOTAL-TGMONEY-TAX
                ADD      WRK-SKYMONEY      TO   MF100-FTNMONEY
       *
-      *        公費番号でソートする
-               MOVE     MF100-KOHNUM      TO   MF100-KOHNUM-KEY
-      *
              END-IF
              PERFORM  910-SYUNOU-FETCH-SEC
            END-PERFORM
       *
            PERFORM  910-SYUNOU-CLOSE-SEC
+      *
            IF  FLG-KBN   =   ZERO
              WRITE    MF100-REC
              ADD     1        TO   CNT-MF100
@@ -746,7 +734,6 @@
       *
                INITIALIZE  MF100-REC
                            FLG-KOHCHK
-                           WRK-SRY-AREA
                PERFORM  9001-CHK-SEC
                IF   FLG-KOHCHK  =  1
                  PERFORM  2002-HENSYU-SEC
