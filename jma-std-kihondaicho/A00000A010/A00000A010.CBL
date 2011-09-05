@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/08/26  診療分類の判別処理を追加
+      *  01.00.03    @@@@-門間    11/09/05  診療分類の判別処理を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1930,14 +1931,10 @@
                    MOVE  "80"    TO    A010T-OUTTYPE
                    MOVE  "80"    TO    A010T3-OUTTYPE
                  WHEN  "90"
-                   MOVE  "90"    TO    A010T-OUTTYPE
-                   MOVE  "90"    TO    A010T3-OUTTYPE
+                 WHEN  "92"
                  WHEN  "97"
                    MOVE  "90"    TO    A010T-OUTTYPE
                    MOVE  "90"    TO    A010T3-OUTTYPE
-                 WHEN  "92"
-                   MOVE  "92"    TO    A010T-OUTTYPE
-                   MOVE  "92"    TO    A010T3-OUTTYPE
                END-EVALUATE
              WHEN  "610000000"   THRU  "619999999"
       *    内服薬
