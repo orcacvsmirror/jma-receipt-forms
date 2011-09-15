@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/05/26  主保険＋マル長の請求対応
+      *  01.00.03    @@@@-門間    11/09/12  複数科保険の本家区分の印字修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -182,11 +183,8 @@
            03  WRK-Z73-G.
                05  WRK-FIL3            PIC X(14).
            03  WRK-Z72-H2              PIC ZZZ,ZZZ.
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     03  WRK-Z72-HS2             REDEFINES  WRK-Z72-H2.
            03  WRK-Z72-HS2             REDEFINES  WRK-Z72-H2
                                        PIC ---,---.
-      *--- 20110107 CHANGE END   ---------------------------------------
       *
        01  CONST-AREA.
            03  CONST-H200401           PIC X(08)   VALUE "20080401".
@@ -326,13 +324,12 @@
            INITIALIZE                  FLG-AREA
            INITIALIZE                  STS-AREA
            INITIALIZE                  WRK-AREA
+                                       HKNCOMBI-REC
       *
            ACCEPT  SYS-TIME            FROM    TIME
       *
-      *
       *    各ＤＢ読込
            PERFORM 100-SYORI-SEC
-      *
       *
       *        対象の伝票番号分のみ
            IF  (ORCHC03-PARAFLG  =  1)
