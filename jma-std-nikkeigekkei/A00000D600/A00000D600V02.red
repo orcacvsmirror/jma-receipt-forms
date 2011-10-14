@@ -23,7 +23,7 @@
     </element>
     <element name="NYUHEN-YMD" occurs="1">
       <appinfo>
-        <embed object="string" length="22"/>
+        <embed object="string" length="50"/>
       </appinfo>
     </element>
     <element name="NYUGAIKBN" occurs="1">
@@ -2998,10 +2998,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O116">
       <attribute name="obj_pos">
-        <point val="2.65,2.5"/>
+        <point val="0.8,2"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="2.65,2.2213;6.5385,2.5713"/>
+        <rectangle val="0.8,1.7213;9.3547,2.0713"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#NYUHEN-YMD#</string>
@@ -3012,7 +3012,7 @@
       <attribute name="text">
         <composite type="text">
           <attribute name="string">
-            <string>#&#202;&#191;&#192;&#174;&#163;&#177;&#163;&#177;&#199;&#175;&#163;&#177;&#163;&#177;&#183;&#238;&#163;&#177;&#163;&#184;&#198;&#252;#</string>
+            <string>#&#202;&#191;&#192;&#174;&#163;&#177;&#163;&#177;&#199;&#175;&#163;&#177;&#163;&#177;&#183;&#238;&#163;&#177;&#163;&#184;&#198;&#252; &#161;&#193; &#202;&#191;&#192;&#174;&#163;&#185;&#163;&#185;&#199;&#175;&#163;&#185;&#163;&#185;&#183;&#238;&#163;&#185;&#163;&#185;&#198;&#252;#</string>
           </attribute>
           <attribute name="font">
             <font name="Courier"/>
@@ -3021,7 +3021,7 @@
             <real val="0.35"/>
           </attribute>
           <attribute name="pos">
-            <point val="2.65,2.5"/>
+            <point val="0.8,2"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -3082,10 +3082,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O118">
       <attribute name="obj_pos">
-        <point val="0.85,2.5"/>
+        <point val="0.8,2.55"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="0.85,2.2213;2.6175,2.5713"/>
+        <rectangle val="0.8,2.2713;2.5675,2.6213"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#MIDASI#</string>
@@ -3105,7 +3105,7 @@
             <real val="0.35"/>
           </attribute>
           <attribute name="pos">
-            <point val="0.85,2.5"/>
+            <point val="0.8,2.55"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>

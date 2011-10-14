@@ -23,7 +23,7 @@
     </element>
     <element name="NYUHEN-YMD" occurs="1">
       <appinfo>
-        <embed object="string" length="22"/>
+        <embed object="string" length="50"/>
       </appinfo>
     </element>
     <element name="NYUGAIKBN" occurs="1">
@@ -2957,10 +2957,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O115">
       <attribute name="obj_pos">
-        <point val="2.65,2.5"/>
+        <point val="0.8,2.05"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="2.65,2.2213;6.5385,2.5713"/>
+        <rectangle val="0.8,1.7713;4.6885,2.1213"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#NYUHEN-YMD#</string>
@@ -2980,7 +2980,7 @@
             <real val="0.35"/>
           </attribute>
           <attribute name="pos">
-            <point val="2.65,2.5"/>
+            <point val="0.8,2.05"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>
@@ -3041,10 +3041,10 @@
     </object>
     <object type="Embed - Text" version="0" id="O117">
       <attribute name="obj_pos">
-        <point val="0.85,2.5"/>
+        <point val="0.8,2.55"/>
       </attribute>
       <attribute name="obj_bb">
-        <rectangle val="0.85,2.2213;2.6175,2.5713"/>
+        <rectangle val="0.8,2.2713;2.5675,2.6213"/>
       </attribute>
       <attribute name="dnode_path">
         <string>#MIDASI#</string>
@@ -3064,7 +3064,7 @@
             <real val="0.35"/>
           </attribute>
           <attribute name="pos">
-            <point val="0.85,2.5"/>
+            <point val="0.8,2.55"/>
           </attribute>
           <attribute name="color">
             <color val="#000000"/>

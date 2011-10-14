@@ -32,6 +32,7 @@
       *  01.00.02    @@@@-田中    11/03/17  患者番号の編集処理を修正
       *  01.00.03    @@@@-田中    11/04/04  患者番号桁数を最大20桁に変更
       *  01.00.04    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
+      *  01.00.05    @@@@-田中    11/09/29  集計対象日を範囲指定に変更
       ******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -61,165 +62,170 @@
       *
       *    スパ領域
        01  STS-AREA.
-           03  STS-RECEERR         PIC X(02).
+           03  STS-RECEERR               PIC X(02).
       *
       *    フラグ領域
        01  FLG-AREA.
-           03  FLG-GET             PIC 9(01).
-           03  FLG-END             PIC 9(01).
-           03  FLG-SYSKANRI        PIC 9(01).
-           03  FLG-SYSKANRI2       PIC 9(01).
-           03  FLG-INPUT           PIC 9(01).
-           03  FLG-HKNCOMBI        PIC 9(01).
-           03  FLG-PTINF           PIC 9(01).
-           03  FLG-PTHKNINF        PIC 9(01).
-           03  FLG-PTRSIINF        PIC 9(01).
-           03  FLG-SYUMEI          PIC 9(01).
-           03  FLG-SYUNOU          PIC 9(01).
-           03  FLG-HKNNUM          PIC 9(01).
+           03  FLG-GET                   PIC 9(01).
+           03  FLG-END                   PIC 9(01).
+           03  FLG-SYSKANRI              PIC 9(01).
+           03  FLG-SYSKANRI2             PIC 9(01).
+           03  FLG-INPUT                 PIC 9(01).
+           03  FLG-HKNCOMBI              PIC 9(01).
+           03  FLG-PTINF                 PIC 9(01).
+           03  FLG-PTHKNINF              PIC 9(01).
+           03  FLG-PTRSIINF              PIC 9(01).
+           03  FLG-SYUMEI                PIC 9(01).
+           03  FLG-SYUNOU                PIC 9(01).
+           03  FLG-HKNNUM                PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
-           03  CNT-LINE            PIC 9(02).
-           03  CNT-PAGE            PIC 9(06).
+           03  CNT-LINE                  PIC 9(02).
+           03  CNT-PAGE                  PIC 9(06).
       *
       *    システム領域
        01  SYS-AREA.
            03  SYS-YMD.
-               05  SYS-YY          PIC 9(02).
-               05  SYS-MM          PIC 9(02).
-               05  SYS-DD          PIC 9(02).
+               05  SYS-YY                PIC 9(02).
+               05  SYS-MM                PIC 9(02).
+               05  SYS-DD                PIC 9(02).
       *
       *    添字領域
        01  IDX-AREA.
-           03  IDX                 PIC 9(04).
-           03  IDY                 PIC 9(04).
-           03  IDZ                 PIC 9(04).
-           03  IDX-S               PIC 9(05).
-           03  IDX-N               PIC 9(05).
-           03  IDX-MAX             PIC 9(05).
-           03  IDX-SUM             PIC 9(04).
+           03  IDX                       PIC 9(04).
+           03  IDY                       PIC 9(04).
+           03  IDZ                       PIC 9(04).
+           03  IDX-S                     PIC 9(05).
+           03  IDX-N                     PIC 9(05).
+           03  IDX-MAX                   PIC 9(05).
+           03  IDX-SUM                   PIC 9(04).
       *
-           03  IDX2                PIC 9(04).
-           03  JIHIIDX             PIC 9(04).
+           03  IDX2                      PIC 9(04).
+           03  JIHIIDX                   PIC 9(04).
       *
-           03  IDX-NG              PIC 9(01).
+           03  IDX-NG                    PIC 9(01).
+           03  IDX-DAY                   PIC 9(02).
+           03  IDX-STDAY                 PIC 9(02).
+           03  IDX-EDDAY                 PIC 9(02).
       *
       *    パラメタ領域
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
-           03  WRK-PARA-JOBID      PIC 9(07).
-           03  WRK-PARA-SHELLID    PIC X(08).
-           03  WRK-PARA-HOSPNUM    PIC 9(02).
-           03  WRK-PARA-DENPPRTYMD PIC X(08).
-           03  WRK-PARA-SORTKBN    PIC X(01).
+           03  WRK-PARA-JOBID            PIC 9(07).
+           03  WRK-PARA-SHELLID          PIC X(08).
+           03  WRK-PARA-HOSPNUM          PIC 9(02).
+           03  WRK-PARA-DENPSTYMD        PIC X(08).
+           03  WRK-PARA-DENPEDYMD        PIC X(08).
+           03  WRK-PARA-SORTKBN          PIC X(01).
       *
       *    一時領域
        01  WRK-AREA.
-           03  WRK-PATH              PIC X(64).
+           03  WRK-PATH                  PIC X(64).
       *
-           03  WRK-RECEERR           PIC X(200).
+           03  WRK-RECEERR               PIC X(200).
       *
-           03  WRK-PARA-DENPPRTYMDWH PIC X(22).
-           03  WRK-SYSYMDWH          PIC X(22).
-           03  WRK-RENNUM            PIC 9(03).
-           03  WRK-PTNUM             PIC X(20).
+           03  WRK-PARA-DENPSTYMDWH      PIC X(22).
+           03  WRK-PARA-DENPEDYMDWH      PIC X(22).
+           03  WRK-SYSYMDWH              PIC X(22).
+           03  WRK-RENNUM                PIC 9(03).
+           03  WRK-PTNUM                 PIC X(20).
       *
            03  WRK-SYSYMD.
-               05  WRK-SYSYY         PIC 9(04).
-               05  WRK-SYSMM         PIC 9(02).
-               05  WRK-SYSDD         PIC 9(02).
+               05  WRK-SYSYY             PIC 9(04).
+               05  WRK-SYSMM             PIC 9(02).
+               05  WRK-SYSDD             PIC 9(02).
            03  WRK-SYMD.
-               05  WRK-SYY           PIC 9(04).
-               05  WRK-SMM           PIC 9(02).
-               05  WRK-SDD           PIC 9(02).
-           03  WRK-HENYMDG           PIC X(22).
+               05  WRK-SYY               PIC 9(04).
+               05  WRK-SMM               PIC 9(02).
+               05  WRK-SDD               PIC 9(02).
+           03  WRK-HENYMDG               PIC X(22).
            03  WRK-BIRTHDAY.
-            05 WRK-BIRTHY            PIC 9(04).
-            05 WRK-BIRTHM            PIC 9(02).
-            05 WRK-BIRTHD            PIC 9(02).
-           03  WRK-NENREI            PIC 9(03).
-           03  WRK-NYUGAIKBN         PIC X(01).
-           03  WRK-SRYKA             PIC X(02).
-           03  WRK-FTNRATE           PIC 9(01)V9(02).
-           03  WRK-KYFRATE           PIC 9(01)V9(02).
+            05 WRK-BIRTHY                PIC 9(04).
+            05 WRK-BIRTHM                PIC 9(02).
+            05 WRK-BIRTHD                PIC 9(02).
+           03  WRK-NENREI                PIC 9(03).
+           03  WRK-NYUGAIKBN             PIC X(01).
+           03  WRK-SRYKA                 PIC X(02).
+           03  WRK-FTNRATE               PIC 9(01)V9(02).
+           03  WRK-KYFRATE               PIC 9(01)V9(02).
       *
-           03  WRK-SYUHKN-KBN        PIC 9(01).
-           03  WRK-MONEY             PIC 9(08).
-           03  WRK-JIHI              PIC 9(08).
-           03  WRK-SYUEKI            PIC 9(08).
-           03  WRK-JIHI2             PIC 9(08).
-           03  WRK-JIHI3             PIC 9(08).
-           03  WRK-JIHI4             PIC 9(08).
-           03  WRK-4001-TENTANKA     PIC 9(02)V9(01).
-           03  WRK-4001-KSNMONEY     PIC 9(08).
-           03  WRK-RSI-MONEY1        PIC S9(09)V9(01).
-           03  WRK-RSI-MONEY2        PIC S9(09)V9(01).
+           03  WRK-SYUHKN-KBN            PIC 9(01).
+           03  WRK-MONEY                 PIC 9(08).
+           03  WRK-JIHI                  PIC 9(08).
+           03  WRK-SYUEKI                PIC 9(08).
+           03  WRK-JIHI2                 PIC 9(08).
+           03  WRK-JIHI3                 PIC 9(08).
+           03  WRK-JIHI4                 PIC 9(08).
+           03  WRK-4001-TENTANKA         PIC 9(02)V9(01).
+           03  WRK-4001-KSNMONEY         PIC 9(08).
+           03  WRK-RSI-MONEY1            PIC S9(09)V9(01).
+           03  WRK-RSI-MONEY2            PIC S9(09)V9(01).
       *
-           03  WRK-RENNUM-X          PIC ZZ9.
-           03  WRK-PAGE              PIC ZZ9.
-           03  WRK-Z9                PIC ZZZZZZ9.
-           03  WRK-ZZ                PIC ZZZZZZZ.
-           03  WRK-ZZ9               PIC ZZZZZZZ9.
-           03  WRK-ZZZ               PIC ZZZZZZZZ.
-           03  WRK-S9                PIC -------9.
-           03  WRK-SZ                PIC -------Z.
-           03  WRK-SZ9               PIC --------9.
-           03  WRK-SZZ               PIC --------Z.
-           03  WRK-Z9-3              PIC ZZ9.
-           03  WRK-Z9-7              PIC ZZZZZZ9.
-           03  WRK-ZZ-7              PIC ZZZZZZZ.
-           03  WRK-Z9-8              PIC ZZZZZZZ9.
-           03  WRK-S9-8              PIC -------9.
-           03  WRK-SZ-8              PIC -------Z.
+           03  WRK-RENNUM-X              PIC ZZ9.
+           03  WRK-PAGE                  PIC ZZ9.
+           03  WRK-Z9                    PIC ZZZZZZ9.
+           03  WRK-ZZ                    PIC ZZZZZZZ.
+           03  WRK-ZZ9                   PIC ZZZZZZZ9.
+           03  WRK-ZZZ                   PIC ZZZZZZZZ.
+           03  WRK-S9                    PIC -------9.
+           03  WRK-SZ                    PIC -------Z.
+           03  WRK-SZ9                   PIC --------9.
+           03  WRK-SZZ                   PIC --------Z.
+           03  WRK-Z9-3                  PIC ZZ9.
+           03  WRK-Z9-7                  PIC ZZZZZZ9.
+           03  WRK-ZZ-7                  PIC ZZZZZZZ.
+           03  WRK-Z9-8                  PIC ZZZZZZZ9.
+           03  WRK-S9-8                  PIC -------9.
+           03  WRK-SZ-8                  PIC -------Z.
       *
-       01  SUM-AREA                             VALUE   ZERO.
-           03  SUM-HKNTEN      PIC 9(08).
-           03  SUM-HKNKEN      PIC 9(08).
-           03  SUM-OCC         OCCURS  14.
-               05  SUM-MONEY   PIC 9(08).
-               05  SUM-KEN     PIC 9(08).
-           03  SUM-SEIKYU      PIC S9(08).
-           03  SUM-RYOSYU      PIC S9(08).
-           03  SUM-SEIKYUKEN   PIC 9(08).
-           03  SUM-RYOSYUKEN   PIC 9(08).
+       01  SUM-AREA                      VALUE ZERO.
+           03  SUM-HKNTEN                PIC 9(08).
+           03  SUM-HKNKEN                PIC 9(08).
+           03  SUM-OCC                   OCCURS 14.
+               05  SUM-MONEY             PIC 9(08).
+               05  SUM-KEN               PIC 9(08).
+           03  SUM-SEIKYU                PIC S9(08).
+           03  SUM-RYOSYU                PIC S9(08).
+           03  SUM-SEIKYUKEN             PIC 9(08).
+           03  SUM-RYOSYUKEN             PIC 9(08).
       *
-       01  SUM-G-AREA                           VALUE   ZERO.
-           03  SUM-G-HKNTEN      PIC 9(09).
-           03  SUM-G-OCC         OCCURS  16.
-               05  SUM-G-TEN     PIC 9(09).
-           03  SUM-G-HKNFTN      PIC S9(09).
-           03  SUM-G-JIHIFTN     PIC S9(09).
-           03  SUM-G-SEIKYU      PIC S9(09).
-           03  SUM-G-RYOSYU      PIC S9(09).
+       01  SUM-G-AREA                    VALUE ZERO.
+           03  SUM-G-HKNTEN              PIC 9(09).
+           03  SUM-G-OCC                 OCCURS 16.
+             05  SUM-G-TEN               PIC 9(09).
+           03  SUM-G-HKNFTN              PIC S9(09).
+           03  SUM-G-JIHIFTN             PIC S9(09).
+           03  SUM-G-SEIKYU              PIC S9(09).
+           03  SUM-G-RYOSYU              PIC S9(09).
       *
        01  WRK-SMEI-REC.
-           03  WRK-SMEI-TBL      OCCURS  10000.
-               05  WRK-SMEI-HOSPNUM         PIC 9(02).
-               05  WRK-SMEI-PTID            PIC 9(10).
-               05  WRK-SMEI-SORT-KEY.
-                 07  WRK-SMEI-NYUGAIKBN     PIC X(01).
-                 07  WRK-SMEI-SRYKA         PIC X(02).
-                 07  WRK-SMEI-DENPNUM       PIC 9(07).
-                 07  WRK-SMEI-DENPEDANUM    PIC 9(02).
-               05  WRK-SMEI-SORT-KEY2.
-                 07  WRK-SMEI-NYUGAIKBN2    PIC X(01).
-                 07  WRK-SMEI-SRYKA2        PIC X(02).
-                 07  WRK-SMEI-PTNUM         PIC X(20).
-               05  WRK-SMEI-SKYMONEY        PIC S9(07).
-               05  WRK-SMEI-NYUHEN-MONEY    PIC S9(07).
-               05  WRK-SMEI-NYUHEN-YMD      PIC X(08).
-           03  WRK-SV-SMEI-TBL              PIC X(69).
+           03  WRK-SMEI-TBL              OCCURS 10000.
+             05  WRK-SMEI-HOSPNUM        PIC 9(02).
+             05  WRK-SMEI-PTID           PIC 9(10).
+             05  WRK-SMEI-SORT-KEY.
+               07  WRK-SMEI-NYUGAIKBN    PIC X(01).
+               07  WRK-SMEI-SRYKA        PIC X(02).
+               07  WRK-SMEI-DENPNUM      PIC 9(07).
+               07  WRK-SMEI-DENPEDANUM   PIC 9(02).
+             05  WRK-SMEI-SORT-KEY2.
+               07  WRK-SMEI-NYUGAIKBN2   PIC X(01).
+               07  WRK-SMEI-SRYKA2       PIC X(02).
+               07  WRK-SMEI-PTNUM        PIC X(20).
+             05  WRK-SMEI-SKYMONEY       PIC S9(07).
+             05  WRK-SMEI-NYUHEN-MONEY   PIC S9(07).
+             05  WRK-SMEI-NYUHEN-YMD     PIC X(08).
+           03  WRK-SV-SMEI-TBL           PIC X(69).
       *
        01  WRK-CONS-AREA.
       *    自費保険番号
-           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)   VALUE   "980".
+           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)   VALUE "980".
       *    労災保険番号
-           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE   "971".
+           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE "971".
       *    自賠責保険番号
-           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973".
+           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE "973".
       *    公害保険番号
-           03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE   "975".
+           03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE "975".
       *
            COPY    "CPSHELLTBL.INC".
       *
@@ -237,16 +243,16 @@
            COPY    "CPSK1005.INC".
       *
       *    患者番号構成管理情報
-           COPY  "CPSK1009.INC".
+           COPY    "CPSK1009.INC".
       *
       *    自費管理情報
-           COPY  "CPSK1013.INC".
+           COPY    "CPSK1013.INC".
       *
       *    出力先プリンタ名割り当て情報
-           COPY  "CPSK1031.INC".
+           COPY    "CPSK1031.INC".
       *
       *    労災医療機関情報
-           COPY  "CPSK4001.INC".
+           COPY    "CPSK4001.INC".
       *
       *    患者保険マスタ
        01  PTHKNINF-REC.
@@ -330,12 +336,11 @@
       *****************************************************************
        000-PROC-SEC                SECTION.
       *
-           PERFORM 100-INIT-SEC
+           PERFORM  100-INIT-SEC
       *
-           PERFORM 200-MAIN-SEC
-                   UNTIL       FLG-END     =   1
+           PERFORM  200-MAIN-SEC  UNTIL  FLG-END  =  1
       *
-           PERFORM 300-END-SEC
+           PERFORM  300-END-SEC
       *
            STOP    RUN
            .
@@ -371,7 +376,8 @@
                                                WRK-PARA-SHELLID
                                                WRK-PARA-HOSPNUM
                                                RECEERR
-                                               WRK-PARA-DENPPRTYMD
+                                               WRK-PARA-DENPSTYMD
+                                               WRK-PARA-DENPEDYMD
                                                WRK-PARA-SORTKBN
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
@@ -391,6 +397,15 @@
                                    JOBKANRI-REC
                                    SPA-AREA
       *
+      *    入力パラチェック
+           IF  WRK-PARA-DENPEDYMD  =  SPACE
+             MOVE    WRK-PARA-DENPSTYMD  TO  WRK-PARA-DENPEDYMD
+           END-IF
+           IF   WRK-PARA-DENPSTYMD  >  WRK-PARA-DENPEDYMD
+             MOVE    "集計範囲が不正です"    TO  WRK-RECEERR
+             PERFORM  500-ERR-HENSYU-SEC
+           END-IF
+      *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
            .
@@ -402,58 +417,66 @@
       *****************************************************************
        110-PARA-HENSYU-SEC                   SECTION.
       *
-      *    システム日付セット
-           MOVE    LNK-PRTKANRI-SKYYMD TO  WRK-SYMD
-           PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG         TO  WRK-SYSYMDWH
+      *    対象期間セット
+           MOVE    WRK-PARA-DENPSTYMD(7:2)   TO  IDX-STDAY
+           MOVE    WRK-PARA-DENPEDYMD(7:2)   TO  IDX-EDDAY
       *
-      *    対象年月日編集
-           MOVE    WRK-PARA-DENPPRTYMD TO    WRK-SYMD
-           PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG         TO  WRK-PARA-DENPPRTYMDWH
+      *    システム日付セット
+           MOVE    LNK-PRTKANRI-SKYYMD   TO  WRK-SYMD
+           PERFORM  31012-SEIWA-HEN-SEC
+           MOVE    WRK-HENYMDG           TO  WRK-SYSYMDWH
+      *
+      *    対象期間開始年月日編集
+           MOVE    WRK-PARA-DENPSTYMD    TO  WRK-SYMD
+           PERFORM  31012-SEIWA-HEN-SEC
+           MOVE    WRK-HENYMDG           TO  WRK-PARA-DENPSTYMDWH
+      *
+      *    対象期間終了年月日編集
+           MOVE    WRK-PARA-DENPEDYMD    TO  WRK-SYMD
+           PERFORM  31012-SEIWA-HEN-SEC
+           MOVE    WRK-HENYMDG           TO  WRK-PARA-DENPEDYMDWH
       *
       *    医療機関ＩＤ編集
-           MOVE    SPACE               TO  SYS-1001-REC
-           INITIALIZE                  SYS-1001-REC
-           MOVE    "1001"              TO  SYS-1001-KANRICD
-           MOVE    "*"                 TO  SYS-1001-KBNCD
-           MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
-           MOVE  WRK-PARA-DENPPRTYMD   TO  SYS-1001-EDYUKYMD
-                                           SYS-1001-STYUKYMD
-           MOVE    SYS-1001-REC        TO  MCPDATA-REC
-           PERFORM 800-SYSKANRI-READ-SEC
-           IF      FLG-SYSKANRI        =   ZERO
-               MOVE    MCPDATA-REC         TO  SYS-1001-REC
-               MOVE    SYS-1001-HOSPNUM    TO  WRK-PARA-HOSPNUM
+           MOVE    SPACE                 TO  SYS-1001-REC
+           INITIALIZE                    SYS-1001-REC
+           MOVE    "1001"                TO  SYS-1001-KANRICD
+           MOVE    "*"                   TO  SYS-1001-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1001-HOSPNUM
+           MOVE    WRK-PARA-DENPSTYMD    TO  SYS-1001-EDYUKYMD
+           MOVE    WRK-PARA-DENPEDYMD    TO  SYS-1001-STYUKYMD
+           MOVE    SYS-1001-REC          TO  MCPDATA-REC
+           PERFORM  800-SYSKANRI-READ-SEC
+           IF   FLG-SYSKANRI  =  ZERO
+             MOVE    MCPDATA-REC         TO  SYS-1001-REC
+             MOVE    SYS-1001-HOSPNUM    TO  WRK-PARA-HOSPNUM
            ELSE
-               MOVE    "医療機関ＩＤが取得できませんでした。"
-                                           TO  WRK-RECEERR
-               PERFORM 500-ERR-HENSYU-SEC
+             MOVE    "医療機関ＩＤが取得できませんでした。"
+                                         TO  WRK-RECEERR
+             PERFORM  500-ERR-HENSYU-SEC
            END-IF
       *
       *    労災医療機関情報
-           MOVE    SPACE                   TO  SYS-4001-REC
-           INITIALIZE                          SYS-4001-REC
-           MOVE    "4001"                  TO  SYS-4001-KANRICD
-           MOVE    "*"                     TO  SYS-4001-KBNCD
-           MOVE    SPA-HOSPNUM             TO  SYS-4001-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD     TO  WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD       TO  SYS-4001-EDYUKYMD
-                                               SYS-4001-STYUKYMD
-           MOVE    SYS-4001-REC            TO  MCPDATA-REC
-           PERFORM 810-SYSKANRI-READ-SEC
-           IF      FLG-SYSKANRI2        =   ZERO
-                   MOVE  MCPDATA-REC       TO  SYS-4001-REC
-                   EVALUATE  SYS-4001-TENKBN
-                       WHEN  "1"
-                             MOVE  11.5   TO  WRK-4001-TENTANKA
-                       WHEN  "2"
-                             MOVE  12     TO  WRK-4001-TENTANKA
-                       WHEN  OTHER
-                             MOVE  10     TO  WRK-4001-TENTANKA
-                  END-EVALUATE
+           MOVE    SPACE                 TO  SYS-4001-REC
+           INITIALIZE                    SYS-4001-REC
+           MOVE    "4001"                TO  SYS-4001-KANRICD
+           MOVE    "*"                   TO  SYS-4001-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-4001-HOSPNUM
+           MOVE    WRK-PARA-DENPSTYMD    TO  SYS-4001-EDYUKYMD
+           MOVE    WRK-PARA-DENPEDYMD    TO  SYS-4001-STYUKYMD
+           MOVE    SYS-4001-REC          TO  MCPDATA-REC
+           PERFORM  800-SYSKANRI-READ-SEC
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE  MCPDATA-REC           TO  SYS-4001-REC
+             EVALUATE  SYS-4001-TENKBN
+               WHEN  "1"
+                 MOVE    11.5            TO  WRK-4001-TENTANKA
+               WHEN  "2"
+                 MOVE    12              TO  WRK-4001-TENTANKA
+               WHEN  OTHER
+                 MOVE    10              TO  WRK-4001-TENTANKA
+             END-EVALUATE
            ELSE
-                  MOVE  10   TO  WRK-4001-TENTANKA
+             MOVE    10         TO  WRK-4001-TENTANKA
            END-IF
       *
            .
@@ -467,21 +490,22 @@
       *
            PERFORM  310-DATA-SELECT-SEC
       *
-           PERFORM              UNTIL   FLG-END     =   1
-      *        帳票編集<明細>処理
-               PERFORM 320-BODY-HEN-SEC
-      *        帳票印刷処理
-               IF  FLG-GET = 1
-                    PERFORM 390-PRINT-OUT-SEC
-               END-IF
+           PERFORM  UNTIL  FLG-END  =  1
+      *    帳票編集<明細>処理
+             PERFORM  320-BODY-HEN-SEC
+      *    帳票印刷処理
+             IF  FLG-GET = 1
+                 DISPLAY "PRINT  END"
+               PERFORM  390-PRINT-OUT-SEC
+             END-IF
            END-PERFORM
       *
-      *        帳票印刷処理
-           IF  FLG-GET = ZERO
-              PERFORM 310-HEAD-HEN-SEC
-              MOVE  "＊＊＊  対象データが１件も存在しません。  ＊＊＊"
-                   TO   D600-JOBMSG
-               PERFORM 390-PRINT-OUT-SEC
+      *    帳票印刷処理
+           IF  FLG-GET  =  ZERO
+             PERFORM  310-HEAD-HEN-SEC
+             MOVE    "＊＊＊  対象データが１件も存在しません。  ＊＊＊"
+                           TO   D600-JOBMSG
+             PERFORM  390-PRINT-OUT-SEC
            END-IF
       *
            .
@@ -496,38 +520,44 @@
            MOVE     ZERO        TO    IDX-S
       *
       *    外来・入院患者を取得
-           PERFORM  VARYING  IDX-NG   FROM 1  BY 1
-                    UNTIL    IDX-NG   >    2
+           PERFORM  VARYING  IDX-NG  FROM  1  BY 1
+                    UNTIL  IDX-NG  >  2
       *
-             PERFORM   910-DBSELECT-SEC
-             PERFORM   UNTIL   FLG-SYUMEI  =  1
-               PERFORM   900-SYUNOU-READ-SEC
+             PERFORM  VARYING  IDX-DAY  FROM  IDX-STDAY  BY 1
+                      UNTIL  IDX-DAY  >  IDX-EDDAY
+               PERFORM  910-DBSELECT-SEC
+               PERFORM  UNTIL  FLG-SYUMEI  =  1
+                 PERFORM  900-SYUNOU-READ-SEC
       *
-               IF      FLG-SYUNOU            =  ZERO
-                 AND   SYU-DENPJTIKBN    NOT =  "3"
-                 AND ((SMEI-JOUTAIKBN    NOT =  "8"
-                 AND   SMEI-JOUTAIKBN    NOT =  "3")
-                  OR   SMEI-SKYMONEY     NOT = 0
-                  OR   SMEI-NYUHEN-MONEY NOT = 0)
+                 IF      FLG-SYUNOU            =  ZERO
+                   AND   SYU-DENPJTIKBN    NOT =  "3"
+                   AND ((SMEI-JOUTAIKBN    NOT =  "8"
+                   AND   SMEI-JOUTAIKBN    NOT =  "3")
+                    OR   SMEI-SKYMONEY     NOT = 0
+                    OR   SMEI-NYUHEN-MONEY NOT = 0)
       *
-                 PERFORM   900-PTNUM-READ-SEC
+                   PERFORM   900-PTNUM-READ-SEC
       *
-                 ADD   1                  TO  IDX-S
-                 MOVE  SMEI-HOSPNUM       TO  WRK-SMEI-HOSPNUM(IDX-S)
-                 MOVE  SMEI-NYUGAIKBN     TO  WRK-SMEI-NYUGAIKBN(IDX-S)
-                 MOVE  SMEI-SRYKA         TO  WRK-SMEI-SRYKA(IDX-S)
-                 MOVE  SMEI-PTID          TO  WRK-SMEI-PTID(IDX-S)
-                 MOVE  SMEI-DENPNUM       TO  WRK-SMEI-DENPNUM(IDX-S)
-                 MOVE  SMEI-DENPEDANUM    TO  WRK-SMEI-DENPEDANUM(IDX-S)
-                 MOVE  SMEI-SKYMONEY      TO  WRK-SMEI-SKYMONEY(IDX-S)
-                 MOVE  SMEI-NYUHEN-MONEY
+                   ADD   1                TO  IDX-S
+                   MOVE  SMEI-HOSPNUM     TO  WRK-SMEI-HOSPNUM(IDX-S)
+                   MOVE  SMEI-NYUGAIKBN   TO  WRK-SMEI-NYUGAIKBN(IDX-S)
+                   MOVE  SMEI-SRYKA       TO  WRK-SMEI-SRYKA(IDX-S)
+                   MOVE  SMEI-NYUGAIKBN   TO  WRK-SMEI-NYUGAIKBN2(IDX-S)
+                   MOVE  SMEI-SRYKA       TO  WRK-SMEI-SRYKA2(IDX-S)
+                   MOVE  SMEI-PTID        TO  WRK-SMEI-PTID(IDX-S)
+                   MOVE  SMEI-DENPNUM     TO  WRK-SMEI-DENPNUM(IDX-S)
+                   MOVE  SMEI-DENPEDANUM  TO  WRK-SMEI-DENPEDANUM(IDX-S)
+                   MOVE  SMEI-SKYMONEY    TO  WRK-SMEI-SKYMONEY(IDX-S)
+                   MOVE  SMEI-NYUHEN-MONEY
                                         TO  WRK-SMEI-NYUHEN-MONEY(IDX-S)
-                 MOVE  SMEI-NYUHEN-YMD    TO  WRK-SMEI-NYUHEN-YMD(IDX-S)
-                 MOVE  PTNUM-PTNUM        TO  WRK-SMEI-PTNUM(IDX-S)
-               END-IF
-               PERFORM   910-DBFETCH-SEC
+                   MOVE  SMEI-NYUHEN-YMD  TO  WRK-SMEI-NYUHEN-YMD(IDX-S)
+             DISPLAY "PTNUM-PTNUM  =  "PTNUM-PTNUM
+                   MOVE  PTNUM-PTNUM      TO  WRK-SMEI-PTNUM(IDX-S)
+                 END-IF
+                 PERFORM   910-DBFETCH-SEC
+               END-PERFORM
+               PERFORM   910-DBCLOSE-SEC
              END-PERFORM
-             PERFORM   910-DBCLOSE-SEC
            END-PERFORM
       *
       *    ソート処理
@@ -584,9 +614,21 @@
            MOVE    ZERO                TO  CNT-LINE
            ADD     1                   TO  CNT-PAGE
       *
-           INITIALIZE                      D600
+           INITIALIZE                  D600
       *
-           MOVE    WRK-PARA-DENPPRTYMDWH  TO  D600-SYSYMD
+      *    システム日付
+           MOVE    WRK-SYSYMDWH        TO  D600-SYSYMD
+      *
+      *    対象日
+           IF  WRK-PARA-DENPSTYMD  =  WRK-PARA-DENPEDYMD
+             MOVE     WRK-PARA-DENPSTYMDWH    TO  D600-NYUHEN-YMD
+           ELSE
+             STRING    WRK-PARA-DENPSTYMDWH   DELIMITED  BY  SIZE
+                       "　〜　"               DELIMITED  BY  SIZE
+                       WRK-PARA-DENPEDYMDWH   DELIMITED  BY  SIZE
+                                              INTO  D600-NYUHEN-YMD
+             END-STRING
+           END-IF
       *
            MOVE    CNT-PAGE            TO  WRK-PAGE
            MOVE    WRK-PAGE            TO  D600-PAGE
@@ -599,23 +641,22 @@
                    MOVE "外来"         TO  D600-NYUGAIKBN
       *
            END-EVALUATE
-           MOVE    "入院料"       TO   D600-NYUINRYO
+           MOVE    "入院料"            TO   D600-NYUINRYO
       *
       *    診療科名称取得
            INITIALIZE                       SYS-1005-REC
            MOVE    "1005"               TO  SYS-1005-KANRICD
            MOVE    WRK-SRYKA            TO  SYS-1005-KBNCD
            MOVE    SPA-HOSPNUM          TO  SYS-1005-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO  WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO  SYS-1005-EDYUKYMD
-                                            SYS-1005-STYUKYMD
+           MOVE    WRK-PARA-DENPSTYMD   TO  SYS-1005-EDYUKYMD
+           MOVE    WRK-PARA-DENPEDYMD   TO  SYS-1005-STYUKYMD
            MOVE    SYS-1005-REC         TO  MCPDATA-REC
-           PERFORM 820-SYSKANRI-READ-SEC
-           IF      FLG-SYSKANRI2        =   ZERO
-               MOVE  MCPDATA-REC        TO  SYS-1005-REC
-               MOVE  SYS-1005-SRYKANAME TO  D600-SRYKA
+           PERFORM  800-SYSKANRI-READ-SEC
+           IF  FLG-SYSKANRI2        =   ZERO
+             MOVE  MCPDATA-REC        TO  SYS-1005-REC
+             MOVE  SYS-1005-SRYKANAME TO  D600-SRYKA
            ELSE
-               MOVE  SPACE              TO  D600-SRYKA
+             MOVE  SPACE              TO  D600-SRYKA
            END-IF
       *
            .
@@ -643,7 +684,7 @@
              IF    FLG-SYUNOU = ZERO
       *
       *    入外区分ブレイクチェック処理
-               IF WRK-SMEI-NYUGAIKBN(IDX-S)  NOT = WRK-NYUGAIKBN
+               IF  WRK-SMEI-NYUGAIKBN(IDX-S)  NOT =  WRK-NYUGAIKBN
       *
                  PERFORM 3001-SYOUKEI-SET-SEC
       *
@@ -660,10 +701,14 @@
                END-IF
       *
       *    診療科ブレイクチェック処理
-               IF WRK-SMEI-SRYKA(IDX-S)  NOT = WRK-SRYKA
+               DISPLAY "WRK-SMEI-SRYKA(IDX-S)  =  "WRK-SMEI-SRYKA(IDX-S)
+               DISPLAY "WRK-SRYKA  =  "WRK-SRYKA
+               DISPLAY "WRK-SMEI-PTID(IDX-S) =  "WRK-SMEI-PTID(IDX-S)
+               IF   WRK-SMEI-SRYKA(IDX-S)  NOT =  WRK-SRYKA
       *
                  PERFORM 3001-SYOUKEI-SET-SEC
       *
+                 DISPLAY "PRINT"
       *    帳票編集<見出し>処理
                  PERFORM 390-PRINT-OUT-SEC
       *
@@ -1248,14 +1293,13 @@
            MOVE    LNK-PRTKANRI-SHELLID       TO  SPRT-SHELLID
            MOVE    LNK-PRTKANRI-SHORI-RENNUM  TO  SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY      TO  SPRT-PRIORITY
-           IF   WRK-PARA-DENPPRTYMD   <   "20080401"
+           IF   WRK-PARA-DENPSTYMD   <   "20080401"
              MOVE    "A00000D600O.red"        TO  SPRT-PRTID
            ELSE
              MOVE    "A00000D600V02.red"        TO  SPRT-PRTID
            END-IF
            MOVE    "日計表明細（診療費請求明細）"  TO  SPRT-TITLE
            MOVE    D600                       TO  SPRT-PRTDATA
-             DISPLAY " D600   =  "  D600
            MOVE    LNK-PRTKANRI-TERMID        TO  SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID          TO  SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM         TO  SPRT-PRTNM
@@ -1316,19 +1360,18 @@
        300-END-SEC                 SECTION.
       *
       *    ステップ管理終了処理
-           MOVE    "STE"           TO  SJOBKANRI-MODE
+           MOVE    "STE"               TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
-           MOVE    SPA-HOSPNUM     TO  JOB-HOSPNUM
-           MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
-           MOVE    WRK-PARA-SHELLID
-                                   TO  JOB-SHELLID
-           MOVE    CNT-PAGE        TO  JOB-UPDCNT
-           CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA
-                                   JOBKANRI-REC
-                                   SPA-AREA
+           MOVE    SPA-HOSPNUM         TO  JOB-HOSPNUM
+           MOVE    WRK-PARA-JOBID      TO  JOB-JOBID
+           MOVE    WRK-PARA-SHELLID    TO  JOB-SHELLID
+           MOVE    CNT-PAGE            TO  JOB-UPDCNT
+           CALL    "ORCSJOB"           USING
+                                       ORCSJOBKANRIAREA
+                                       JOBKANRI-REC
+                                       SPA-AREA
       *
-           PERFORM 900-DBDISCONNECT-SEC
+           PERFORM  900-DBDISCONNECT-SEC
       *
            .
        300-END-EXT.
@@ -1339,12 +1382,13 @@
       *****************************************************************
        31012-SEIWA-HEN-SEC        SECTION.
       *
-           INITIALIZE                      STS-AREA-DAY
-           INITIALIZE                      LNK-DAY2-AREA
+           INITIALIZE                  STS-AREA-DAY
+           INITIALIZE                  LNK-DAY2-AREA
            MOVE    "21"                TO  LNK-DAY2-IRAI
            MOVE    WRK-SYMD            TO  LNK-DAY2-YMD
-           CALL    "ORCSDAY"           USING   STS-AREA-DAY
-                                               LNK-DAY2-AREA
+           CALL    "ORCSDAY"           USING
+                                       STS-AREA-DAY
+                                       LNK-DAY2-AREA
            MOVE    LNK-DAY2-EDTYMD3    TO  WRK-HENYMDG
            INSPECT WRK-HENYMDG    REPLACING  ALL "  "  BY  "　"
            .
@@ -1356,11 +1400,12 @@
       *****************************************************************
        910-DBSELECT-SEC                 SECTION.
       *
-           INITIALIZE                  SYUMEI-REC
+           INITIALIZE                   SYUMEI-REC
       *
            MOVE    WRK-PARA-HOSPNUM     TO  SMEI-HOSPNUM
            MOVE    IDX-NG               TO  SMEI-NYUGAIKBN
-           MOVE    WRK-PARA-DENPPRTYMD  TO  SMEI-NYUHEN-YMD
+           MOVE    WRK-PARA-DENPSTYMD(1:6)  TO  SMEI-NYUHEN-YMD(1:6)
+           MOVE    IDX-DAY              TO  SMEI-NYUHEN-YMD(7:2)
            MOVE    SYUMEI-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "tbl_syumei"         TO  MCP-TABLE
@@ -1369,10 +1414,10 @@
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-          IF      MCP-RC              =   ZERO
-                PERFORM 910-DBFETCH-SEC
+           IF  MCP-RC  =  ZERO
+             PERFORM  910-DBFETCH-SEC
            ELSE
-               MOVE    1               TO  FLG-SYUMEI
+            MOVE    1               TO  FLG-SYUMEI
            END-IF
            .
        910-DBSELECT-EXT.
@@ -1383,18 +1428,18 @@
       *****************************************************************
        910-DBFETCH-SEC                SECTION.
       *
-           MOVE    "DBFETCH"            TO  MCP-FUNC
-           MOVE    "tbl_syumei"         TO  MCP-TABLE
-           MOVE    "key4"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF      MCP-RC            =   ZERO
-               MOVE    ZERO          TO  FLG-SYUMEI
-               MOVE    MCPDATA-REC   TO  SYUMEI-REC
+           MOVE    "DBFETCH"         TO  MCP-FUNC
+           MOVE    "tbl_syumei"      TO  MCP-TABLE
+           MOVE    "key4"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF  MCP-RC  =  ZERO
+             MOVE    ZERO            TO  FLG-SYUMEI
+             MOVE    MCPDATA-REC     TO  SYUMEI-REC
            ELSE
-               MOVE    1             TO  FLG-SYUMEI
+             MOVE    1               TO  FLG-SYUMEI
            END-IF
            .
        910-DBFETCH-EXT.
@@ -1405,13 +1450,13 @@
       *****************************************************************
        910-DBCLOSE-SEC                 SECTION.
       *
-           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
-           MOVE    "tbl_syumei"         TO  MCP-TABLE
-           MOVE    "key4"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
+           MOVE    "DBCLOSECURSOR"   TO  MCP-FUNC
+           MOVE    "tbl_syumei"      TO  MCP-TABLE
+           MOVE    "key4"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
            .
        910-DBCLOSE-EXT.
            EXIT.
@@ -1523,11 +1568,11 @@
            INITIALIZE                      HKNNUM-REC
            MOVE    SYU-HOSPNUM         TO  HKN-HOSPNUM
            MOVE    SYU-SYUHKNNUM       TO  HKN-HKNNUM
-           MOVE    WRK-PARA-DENPPRTYMD TO  HKN-TEKSTYMD
-           MOVE    ALL "9"             TO  HKN-TEKEDYMD
+           MOVE    WRK-PARA-DENPEDYMD  TO  HKN-TEKSTYMD
+           MOVE    WRK-PARA-DENPSTYMD  TO  HKN-TEKEDYMD
       *
-           MOVE    HKNNUM-REC     TO  MCPDATA-REC
-           MOVE    "DBSELECT"     TO  MCP-FUNC
+           MOVE    HKNNUM-REC          TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_hknnum"        TO  MCP-TABLE
            MOVE    "key5"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
@@ -1606,88 +1651,6 @@
            EXIT.
       *
       *****************************************************************
-      *    管理マスタ読み込み
-      *****************************************************************
-       810-SYSKANRI-READ-SEC           SECTION.
-      *
-           MOVE    "DBSELECT"           TO  MCP-FUNC
-           MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key10"              TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    "DBFETCH"           TO  MCP-FUNC
-               MOVE    "tbl_syskanri"       TO  MCP-TABLE
-               MOVE    "key10"              TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"          USING
-                                            MCPAREA
-                                            MCPDATA-REC
-                                            SPA-AREA
-               IF      MCP-RC              =   ZERO
-                   MOVE    ZERO            TO  FLG-SYSKANRI2
-               ELSE
-                   MOVE    1               TO  FLG-SYSKANRI2
-               END-IF
-           ELSE
-               MOVE    1               TO  FLG-SYSKANRI2
-           END-IF
-      *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key10"              TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-      *
-           .
-       810-SYSKANRI-READ-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    管理マスタ読み込み
-      *****************************************************************
-       820-SYSKANRI-READ-SEC           SECTION.
-      *
-           MOVE    "DBSELECT"           TO  MCP-FUNC
-           MOVE    "tbl_syskanri"       TO   MCP-TABLE
-           MOVE    "key10"              TO   MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF      MCP-RC               =   ZERO
-               MOVE    "DBFETCH"        TO  MCP-FUNC
-               MOVE    "tbl_syskanri"       TO  MCP-TABLE
-               MOVE    "key10"              TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"          USING
-                                            MCPAREA
-                                            MCPDATA-REC
-                                            SPA-AREA
-               IF      MCP-RC           =   ZERO
-                   MOVE    ZERO         TO  FLG-SYSKANRI2
-               ELSE
-                   MOVE    1            TO  FLG-SYSKANRI2
-               END-IF
-           ELSE
-               MOVE    1                TO  FLG-SYSKANRI2
-           END-IF
-      *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key10"              TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-      *
-           .
-       820-SYSKANRI-READ-EXT.
-           EXIT.
-      *
-      *****************************************************************
       *    患者マスター読込処理
       *****************************************************************
        900-PTINF-READ-SEC         SECTION.
@@ -1738,6 +1701,7 @@
        900-PTNUM-READ-SEC         SECTION.
       *
            INITIALIZE                    PTNUM-REC
+           MOVE    SMEI-HOSPNUM          TO   PTNUM-HOSPNUM
            MOVE    SMEI-PTID             TO   PTNUM-PTID
            MOVE    PTNUM-REC             TO   MCPDATA-REC
            MOVE    "DBSELECT"            TO   MCP-FUNC
