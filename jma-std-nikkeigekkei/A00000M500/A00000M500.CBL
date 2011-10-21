@@ -31,6 +31,7 @@
       *                                     初診、再診、その他の判定条件を変更
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
+      *  01.00.03    @@@@-田中    11/10/13  CSVファイル作成機能追加 
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -116,9 +117,15 @@
            03  IDX-MAX                PIC 9(07).
            03  IDX10                  PIC 9(02).
            03  IDX11                  PIC 9(02).
+           03  IDX12                  PIC 9(02).
+           03  IDX13                  PIC 9(02).
       *
            03  JIHIIDX                PIC 9(04).
            03  NG                     PIC 9(04).
+           03  IDX-ST                 PIC 9(03).
+           03  IDX-ED                 PIC 9(03).
+           03  IDX-LEN                PIC 9(05).
+           03  IDXP                   PIC 9(05).
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -207,6 +214,86 @@
            03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE   "975".
       *
            COPY    "CPSHELLTBL.INC".
+      *
+       01  WRK-CSV-AREA.
+           03  WRK-ITEM-SIZE           PIC 9(03)  VALUE 100.
+           03  WRK-ITEM                PIC X(100)  VALUE SPACE.
+           03  WRK-CSVDATA             PIC X(20000) VALUE SPACE.
+      *
+       01  CSV-HEAD01-AREA.
+           03  CSV-HEAD01-G.
+             05  CSV-HEAD01-VAL.
+               07  CSV-HEAD01-HKN1      PIC X(50)  VALUE "社保本人".
+               07  CSV-HEAD01-HKN2      PIC X(50)  VALUE "社保家族".
+               07  CSV-HEAD01-HKN3      PIC X(50).
+               07  CSV-HEAD01-HKN4      PIC X(50).
+               07  CSV-HEAD01-HKN5      PIC X(50).
+               07  CSV-HEAD01-HKN6      PIC X(50)  VALUE "公費単独".
+               07  CSV-HEAD01-HKN7      PIC X(50)  VALUE "自費".
+               07  CSV-HEAD01-HKN8      PIC X(50)  VALUE "労災".
+               07  CSV-HEAD01-HKN9      PIC X(50)  VALUE "自賠責".
+               07  CSV-HEAD01-HKN10     PIC X(50)  VALUE "公害".
+               07  CSV-HEAD01-HKN11     PIC X(50)  VALUE "合計".
+             05  CSV-HEAD01-R           REDEFINES CSV-HEAD01-VAL.
+               07  CSV-HEAD01-ITEM      PIC X(50)  OCCURS 11.
+             05  CSV-HEAD01-MAX         PIC 9(05)  VALUE 11.
+      *
+       01  CSV-HEAD02-AREA.
+           03  CSV-HEAD02-G.
+             05  CSV-HEAD02-VAL.
+               07  CSV-HEAD02-KENSU1    PIC X(50).
+               07  CSV-HEAD02-KENSU2    PIC X(50).
+               07  CSV-HEAD02-KENSU3    PIC X(50).
+               07  CSV-HEAD02-KENSU4    PIC X(50).
+               07  CSV-HEAD02-SSU       PIC X(50)  VALUE "初・再診料".
+               07  CSV-HEAD02-SDO       PIC X(50)  VALUE "医学管理等".
+               07  CSV-HEAD02-ZTK       PIC X(50)  VALUE "在宅医療".
+               07  CSV-HEAD02-TYK       PIC X(50)  VALUE "投薬".
+               07  CSV-HEAD02-CSY       PIC X(50)  VALUE "注射".
+               07  CSV-HEAD02-SYC       PIC X(50)  VALUE "処置".
+               07  CSV-HEAD02-SJT       PIC X(50)  VALUE "手術".
+               07  CSV-HEAD02-MSI       PIC X(50)  VALUE "麻酔".
+               07  CSV-HEAD02-KNS       PIC X(50)  VALUE "検査".
+               07  CSV-HEAD02-GZU       PIC X(50)  VALUE "画像診断".
+               07  CSV-HEAD02-ETC       PIC X(50)
+                                        VALUE "リハビリテーション".
+               07  CSV-HEAD02-SSN       PIC X(50)
+                                        VALUE "精神科専門療法".
+               07  CSV-HEAD02-HOU       PIC X(50)  VALUE "放射線治療".
+               07  CSV-HEAD02-BYR       PIC X(50)  VALUE "病理診断".
+               07  CSV-HEAD02-NYN       PIC X(50)  VALUE "入院料(点数)".
+               07  CSV-HEAD02-RYO       PIC X(50)  VALUE "療養担当手当".
+               07  CSV-HEAD02-TOTAL-TEN PIC X(50)  VALUE "点数（合計）".
+               07  CSV-HEAD02-HKNTEK    PIC X(50)
+                                        VALUE "保険適用外金額".
+               07  CSV-HEAD02-SKJ       PIC X(50)
+                                        VALUE "食事療養費・生活療養費".
+               07  CSV-HEAD02-SKJFTN    PIC X(50)
+                                        VALUE "食事負担額・生活負担額".
+               07  CSV-HEAD02-RMSAGAKU  PIC X(50)
+                                        VALUE "室料差額".
+               07  CSV-HEAD02-JIHI-G.
+                 09  CSV-HEAD02-JIHINAME1   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD02-JIHINAME2   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD02-JIHINAME3   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD02-JIHINAME4   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD02-JIHINAME5   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD02-JIHINAME6   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD02-JIHINAME7   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD02-JIHINAME8   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD02-JIHINAME9   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD02-JIHINAME10  PIC X(50)  VALUE SPACE.
+               07  CSV-HEAD02-JIHI-R        REDEFINES CSV-HEAD02-JIHI-G.
+                 09  CSV-HEAD02-JIHI-OCC    OCCURS 10.
+                   11  CSV-HEAD02-JIHI-NAME PIC X(50).
+               07  CSV-HEAD02-JIHI-TAC    PIC X(50)  VALUE "自費消費税".
+               07  CSV-HEAD02-TOTAL-JIHI  PIC X(50)  VALUE "自費(合計)".
+               07  CSV-HEAD02-HKNMONEY  PIC X(50)  VALUE "保険分金額".
+               07  CSV-HEAD02-FTNNMONEY PIC X(50)  VALUE "患者負担金額".
+               07  CSV-HEAD02-SYUEKI    PIC X(50)  VALUE "医療収益(計)".
+             05  CSV-HEAD02-R           REDEFINES CSV-HEAD02-VAL.
+               07  CSV-HEAD02-ITEM      PIC X(50)  OCCURS 40.
+             05  CSV-HEAD02-MAX         PIC 9(05)  VALUE 40.
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -303,6 +390,9 @@
       *
       *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
+      *
+      *    統計ＣＳＶ制御サブ
+           COPY    "CPORCSTOUKEICSV.INC".
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
@@ -994,292 +1084,291 @@
            MOVE    ZERO              TO   SYU-TOTAL-HKNTEN
       *    診療科保険点数
            ADD    SYU-SSU-HKNTEN     TO   YOSO (NG IDX1 IDX 5)
-           ADD    SYU-SSU-HKNTEN     TO   YOSO (NG IDX1 10 5)
+           ADD    SYU-SSU-HKNTEN     TO   YOSO (NG IDX1 11 5)
            ADD    SYU-SSU-HKNTEN     TO   YOSO (NG IDX3 IDX 5)
-           ADD    SYU-SSU-HKNTEN     TO   YOSO (NG IDX3 10 5)
+           ADD    SYU-SSU-HKNTEN     TO   YOSO (NG IDX3 11 5)
            ADD    SYU-SSU-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    指導料保険点数
            ADD    SYU-SDO-HKNTEN     TO   YOSO (NG IDX1 IDX 6)
-           ADD    SYU-SDO-HKNTEN     TO   YOSO (NG IDX1 10 6)
+           ADD    SYU-SDO-HKNTEN     TO   YOSO (NG IDX1 11 6)
            ADD    SYU-SDO-HKNTEN     TO   YOSO (NG IDX3 IDX 6)
-           ADD    SYU-SDO-HKNTEN     TO   YOSO (NG IDX3 10 6)
+           ADD    SYU-SDO-HKNTEN     TO   YOSO (NG IDX3 11 6)
            ADD    SYU-SDO-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    在宅料保険点数
            ADD    SYU-ZTK-HKNTEN     TO   YOSO (NG IDX1 IDX 7)
-           ADD    SYU-ZTK-HKNTEN     TO   YOSO (NG IDX1 10 7)
+           ADD    SYU-ZTK-HKNTEN     TO   YOSO (NG IDX1 11 7)
            ADD    SYU-ZTK-HKNTEN     TO   YOSO (NG IDX3 IDX 7)
-           ADD    SYU-ZTK-HKNTEN     TO   YOSO (NG IDX3 10 7)
+           ADD    SYU-ZTK-HKNTEN     TO   YOSO (NG IDX3 11 7)
            ADD    SYU-ZTK-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    投薬料保険点数
            ADD    SYU-TYK-HKNTEN     TO   YOSO (NG IDX1 IDX 8)
-           ADD    SYU-TYK-HKNTEN     TO   YOSO (NG IDX1 10 8)
+           ADD    SYU-TYK-HKNTEN     TO   YOSO (NG IDX1 11 8)
            ADD    SYU-TYK-HKNTEN     TO   YOSO (NG IDX3 IDX 8)
-           ADD    SYU-TYK-HKNTEN     TO   YOSO (NG IDX3 10 8)
+           ADD    SYU-TYK-HKNTEN     TO   YOSO (NG IDX3 11 8)
            ADD    SYU-TYK-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    注射料保険点数
            ADD    SYU-CSY-HKNTEN     TO   YOSO (NG IDX1 IDX 9)
-           ADD    SYU-CSY-HKNTEN     TO   YOSO (NG IDX1 10 9)
+           ADD    SYU-CSY-HKNTEN     TO   YOSO (NG IDX1 11 9)
            ADD    SYU-CSY-HKNTEN     TO   YOSO (NG IDX3 IDX 9)
-           ADD    SYU-CSY-HKNTEN     TO   YOSO (NG IDX3 10 9)
+           ADD    SYU-CSY-HKNTEN     TO   YOSO (NG IDX3 11 9)
            ADD    SYU-CSY-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    処置料保険点数
            ADD    SYU-SYC-HKNTEN     TO   YOSO (NG IDX1 IDX 10)
-           ADD    SYU-SYC-HKNTEN     TO   YOSO (NG IDX1 10 10)
+           ADD    SYU-SYC-HKNTEN     TO   YOSO (NG IDX1 11 10)
            ADD    SYU-SYC-HKNTEN     TO   YOSO (NG IDX3 IDX 10)
-           ADD    SYU-SYC-HKNTEN     TO   YOSO (NG IDX3 10 10)
+           ADD    SYU-SYC-HKNTEN     TO   YOSO (NG IDX3 11 10)
            ADD    SYU-SYC-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    手術料保険点数
            ADD    SYU-SJT-HKNTEN     TO   YOSO (NG IDX1 IDX 11)
-           ADD    SYU-SJT-HKNTEN     TO   YOSO (NG IDX1 10 11)
+           ADD    SYU-SJT-HKNTEN     TO   YOSO (NG IDX1 11 11)
            ADD    SYU-SJT-HKNTEN     TO   YOSO (NG IDX3 IDX 11)
-           ADD    SYU-SJT-HKNTEN     TO   YOSO (NG IDX3 10 11)
+           ADD    SYU-SJT-HKNTEN     TO   YOSO (NG IDX3 11 11)
            ADD    SYU-SJT-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    麻酔点数
            ADD    SYU-MSI-HKNTEN     TO   YOSO (NG IDX1 IDX 12)
-           ADD    SYU-MSI-HKNTEN     TO   YOSO (NG IDX1 10 12)
+           ADD    SYU-MSI-HKNTEN     TO   YOSO (NG IDX1 11 12)
            ADD    SYU-MSI-HKNTEN     TO   YOSO (NG IDX3 IDX 12)
-           ADD    SYU-MSI-HKNTEN     TO   YOSO (NG IDX3 10 12)
+           ADD    SYU-MSI-HKNTEN     TO   YOSO (NG IDX3 11 12)
            ADD    SYU-MSI-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    検査料保険点数
            ADD    SYU-KNS-HKNTEN     TO   YOSO (NG IDX1 IDX 13)
-           ADD    SYU-KNS-HKNTEN     TO   YOSO (NG IDX1 10 13)
+           ADD    SYU-KNS-HKNTEN     TO   YOSO (NG IDX1 11 13)
            ADD    SYU-KNS-HKNTEN     TO   YOSO (NG IDX3 IDX 13)
-           ADD    SYU-KNS-HKNTEN     TO   YOSO (NG IDX3 10 13)
+           ADD    SYU-KNS-HKNTEN     TO   YOSO (NG IDX3 11 13)
            ADD    SYU-KNS-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    X線料保険点数
            ADD    SYU-GZU-HKNTEN     TO   YOSO (NG IDX1 IDX 14)
-           ADD    SYU-GZU-HKNTEN     TO   YOSO (NG IDX1 10 14)
+           ADD    SYU-GZU-HKNTEN     TO   YOSO (NG IDX1 11 14)
            ADD    SYU-GZU-HKNTEN     TO   YOSO (NG IDX3 IDX 14)
-           ADD    SYU-GZU-HKNTEN     TO   YOSO (NG IDX3 10 14)
+           ADD    SYU-GZU-HKNTEN     TO   YOSO (NG IDX3 11 14)
            ADD    SYU-GZU-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    リハ点数
            ADD    SYU-ETC-HKNTEN     TO   YOSO (NG IDX1 IDX 15)
-           ADD    SYU-ETC-HKNTEN     TO   YOSO (NG IDX1 10 15)
+           ADD    SYU-ETC-HKNTEN     TO   YOSO (NG IDX1 11 15)
            ADD    SYU-ETC-HKNTEN     TO   YOSO (NG IDX3 IDX 15)
-           ADD    SYU-ETC-HKNTEN     TO   YOSO (NG IDX3 10 15)
+           ADD    SYU-ETC-HKNTEN     TO   YOSO (NG IDX3 11 15)
            ADD    SYU-ETC-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    精神科専門点数
            ADD    SYU-SSN-HKNTEN     TO   YOSO (NG IDX1 IDX 16)
-           ADD    SYU-SSN-HKNTEN     TO   YOSO (NG IDX1 10 16)
+           ADD    SYU-SSN-HKNTEN     TO   YOSO (NG IDX1 11 16)
            ADD    SYU-SSN-HKNTEN     TO   YOSO (NG IDX3 IDX 16)
-           ADD    SYU-SSN-HKNTEN     TO   YOSO (NG IDX3 10 16)
+           ADD    SYU-SSN-HKNTEN     TO   YOSO (NG IDX3 11 16)
            ADD    SYU-SSN-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    放射線治療点数
            ADD    SYU-HOU-HKNTEN     TO   YOSO (NG IDX1 IDX 17)
-           ADD    SYU-HOU-HKNTEN     TO   YOSO (NG IDX1 10 17)
+           ADD    SYU-HOU-HKNTEN     TO   YOSO (NG IDX1 11 17)
            ADD    SYU-HOU-HKNTEN     TO   YOSO (NG IDX3 IDX 17)
-           ADD    SYU-HOU-HKNTEN     TO   YOSO (NG IDX3 10 17)
+           ADD    SYU-HOU-HKNTEN     TO   YOSO (NG IDX3 11 17)
            ADD    SYU-HOU-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    病理診断点数
-           ADD    SYU-BYR-HKNTEN     TO   YOSO (NG IDX1 IDX 40)
-           ADD    SYU-BYR-HKNTEN     TO   YOSO (NG IDX1 10 40)
-           ADD    SYU-BYR-HKNTEN     TO   YOSO (NG IDX3 IDX 40)
-           ADD    SYU-BYR-HKNTEN     TO   YOSO (NG IDX3 10 40)
+           ADD    SYU-BYR-HKNTEN     TO   YOSO (NG IDX1 IDX 18)
+           ADD    SYU-BYR-HKNTEN     TO   YOSO (NG IDX1 11 18)
+           ADD    SYU-BYR-HKNTEN     TO   YOSO (NG IDX3 IDX 18)
+           ADD    SYU-BYR-HKNTEN     TO   YOSO (NG IDX3 11 18)
            ADD    SYU-BYR-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    入院料保険点数
-           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX1 IDX 18)
-           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX1 10 18)
-           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX3 IDX 18)
-           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX3 10 18)
+           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX1 IDX 19)
+           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX1 11 19)
+           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX3 IDX 19)
+           ADD    SYU-NYN-HKNTEN   TO   YOSO (NG IDX3 11 19)
            ADD    SYU-NYN-HKNTEN   TO   SYU-TOTAL-HKNTEN
       *
       *    療養担当手当点数
-           ADD    SYU-RYO-HKNTEN     TO   YOSO (NG IDX1 IDX 19)
-           ADD    SYU-RYO-HKNTEN     TO   YOSO (NG IDX1 10 19)
-           ADD    SYU-RYO-HKNTEN     TO   YOSO (NG IDX3 IDX 19)
-           ADD    SYU-RYO-HKNTEN     TO   YOSO (NG IDX3 10 19)
+           ADD    SYU-RYO-HKNTEN     TO   YOSO (NG IDX1 IDX 20)
+           ADD    SYU-RYO-HKNTEN     TO   YOSO (NG IDX1 11 20)
+           ADD    SYU-RYO-HKNTEN     TO   YOSO (NG IDX3 IDX 20)
+           ADD    SYU-RYO-HKNTEN     TO   YOSO (NG IDX3 11 20)
            ADD    SYU-RYO-HKNTEN     TO   SYU-TOTAL-HKNTEN
       *
       *    合計保険点数
-           ADD    SYU-TOTAL-HKNTEN   TO   YOSO (NG IDX1 IDX 20)
-           ADD    SYU-TOTAL-HKNTEN   TO   YOSO (NG IDX1 10 20)
-           ADD    SYU-TOTAL-HKNTEN   TO   YOSO (NG IDX3 IDX 20)
-           ADD    SYU-TOTAL-HKNTEN   TO   YOSO (NG IDX3 10 20)
+           ADD    SYU-TOTAL-HKNTEN   TO   YOSO (NG IDX1 IDX 21)
+           ADD    SYU-TOTAL-HKNTEN   TO   YOSO (NG IDX1 11 21)
+           ADD    SYU-TOTAL-HKNTEN   TO   YOSO (NG IDX3 IDX 21)
+           ADD    SYU-TOTAL-HKNTEN   TO   YOSO (NG IDX3 11 21)
       *
       *    保険適用外金額
-           ADD    SYU-TOTAL-TGMONEY       TO   YOSO (NG IDX1 IDX 21)
-           ADD    SYU-TOTAL-TGMONEY       TO   YOSO (NG IDX1 10  21)
-           ADD    SYU-TOTAL-TGMONEY-TAX   TO   YOSO (NG IDX1 IDX 21)
-           ADD    SYU-TOTAL-TGMONEY-TAX   TO   YOSO (NG IDX1 10  21)
-           ADD    SYU-TOTAL-TGMONEY       TO   YOSO (NG IDX3 IDX 21)
-           ADD    SYU-TOTAL-TGMONEY       TO   YOSO (NG IDX3 10  21)
-           ADD    SYU-TOTAL-TGMONEY-TAX   TO   YOSO (NG IDX3 IDX 21)
-           ADD    SYU-TOTAL-TGMONEY-TAX   TO   YOSO (NG IDX3 10  21)
+           ADD    SYU-TOTAL-TGMONEY       TO   YOSO (NG IDX1 IDX 22)
+           ADD    SYU-TOTAL-TGMONEY       TO   YOSO (NG IDX1 11  22)
+           ADD    SYU-TOTAL-TGMONEY-TAX   TO   YOSO (NG IDX1 IDX 22)
+           ADD    SYU-TOTAL-TGMONEY-TAX   TO   YOSO (NG IDX1 11  22)
+           ADD    SYU-TOTAL-TGMONEY       TO   YOSO (NG IDX3 IDX 22)
+           ADD    SYU-TOTAL-TGMONEY       TO   YOSO (NG IDX3 11  22)
+           ADD    SYU-TOTAL-TGMONEY-TAX   TO   YOSO (NG IDX3 IDX 22)
+           ADD    SYU-TOTAL-TGMONEY-TAX   TO   YOSO (NG IDX3 11  22)
       *
       *    負担金の集計
            IF   NG   =   1
       *    入院の場合
       *    食事療養費
-             COMPUTE   YOSO (NG IDX1 IDX 22)  =  YOSO (NG IDX1 IDX 22)
+             COMPUTE   YOSO (NG IDX1 IDX 23)  =  YOSO (NG IDX1 IDX 23)
                                               +  SYU-RYOYOHI-SKJ
                                               +  SYU-RYOYOHI-SKJ-JIHI
                                               +  SYU-RYOYOHI-LIFE
-             COMPUTE   YOSO (NG IDX1 10 22)   =  YOSO (NG IDX1 10 22)
+             COMPUTE   YOSO (NG IDX1 11 23)   =  YOSO (NG IDX1 11 23)
                                               +  SYU-RYOYOHI-SKJ
                                               +  SYU-RYOYOHI-SKJ-JIHI
                                               +  SYU-RYOYOHI-LIFE
-             COMPUTE   YOSO (NG IDX3 IDX 22)  =  YOSO (NG IDX3 IDX 22)
+             COMPUTE   YOSO (NG IDX3 IDX 23)  =  YOSO (NG IDX3 IDX 23)
                                               +  SYU-RYOYOHI-SKJ
                                               +  SYU-RYOYOHI-SKJ-JIHI
                                               +  SYU-RYOYOHI-LIFE
-             COMPUTE   YOSO (NG IDX3 10 22)   =  YOSO (NG IDX3 10 22)
+             COMPUTE   YOSO (NG IDX3 11 23)   =  YOSO (NG IDX3 11 23)
                                               +  SYU-RYOYOHI-SKJ
                                               +  SYU-RYOYOHI-SKJ-JIHI
                                               +  SYU-RYOYOHI-LIFE
       *    食事負担額
-             COMPUTE   YOSO (NG IDX1 IDX 23)  =  YOSO (NG IDX1 IDX 23)
+             COMPUTE   YOSO (NG IDX1 IDX 24)  =  YOSO (NG IDX1 IDX 24)
                                             +  SYU-SKYMONEY-SKJ-KEI
                                             +  SYU-SKYMONEY-SKJ-JIHI-KEI
                                             +  SYU-SKYMONEY-LIFE-KEI
-             COMPUTE   YOSO (NG IDX1 10 23)  =  YOSO (NG IDX1 10 23)
+             COMPUTE   YOSO (NG IDX1 11 24)  =  YOSO (NG IDX1 11 24)
                                             +  SYU-SKYMONEY-SKJ-KEI
                                             +  SYU-SKYMONEY-SKJ-JIHI-KEI
                                             +  SYU-SKYMONEY-LIFE-KEI
-             COMPUTE   YOSO (NG IDX3 IDX 23)  =  YOSO (NG IDX3 IDX 23)
+             COMPUTE   YOSO (NG IDX3 IDX 24)  =  YOSO (NG IDX3 IDX 24)
                                             +  SYU-SKYMONEY-SKJ-KEI
                                             +  SYU-SKYMONEY-SKJ-JIHI-KEI
                                             +  SYU-SKYMONEY-LIFE-KEI
-             COMPUTE   YOSO (NG IDX3 10 23)  =  YOSO (NG IDX3 10 23)
+             COMPUTE   YOSO (NG IDX3 11 24)  =  YOSO (NG IDX3 11 24)
                                             +  SYU-SKYMONEY-SKJ-KEI
                                             +  SYU-SKYMONEY-SKJ-JIHI-KEI
                                             +  SYU-SKYMONEY-LIFE-KEI
       *    室料差額
-             ADD SYU-RMSAGAKU        TO   YOSO (NG IDX1 IDX 24)
-             ADD SYU-RMSAGAKU        TO   YOSO (NG IDX1 10 24)
-             ADD SYU-RMSAGAKU        TO   YOSO (NG IDX3 IDX 24)
-             ADD SYU-RMSAGAKU        TO   YOSO (NG IDX3 10 24)
+             ADD SYU-RMSAGAKU        TO   YOSO (NG IDX1 IDX 25)
+             ADD SYU-RMSAGAKU        TO   YOSO (NG IDX1 11 25)
+             ADD SYU-RMSAGAKU        TO   YOSO (NG IDX3 IDX 25)
+             ADD SYU-RMSAGAKU        TO   YOSO (NG IDX3 11 25)
            ELSE
       *    外来の場合
       *    薬剤一部負担金
-             ADD    SYU-YKZ-FTN      TO   YOSO (NG IDX1 IDX 24)
-             ADD    SYU-YKZ-FTN      TO   YOSO (NG IDX1 10 24)
-             ADD    SYU-YKZ-FTN      TO   YOSO (NG IDX3 IDX 24)
-             ADD    SYU-YKZ-FTN      TO   YOSO (NG IDX3 10 24)
+             ADD    SYU-YKZ-FTN      TO   YOSO (NG IDX1 IDX 25)
+             ADD    SYU-YKZ-FTN      TO   YOSO (NG IDX1 11 25)
+             ADD    SYU-YKZ-FTN      TO   YOSO (NG IDX3 IDX 25)
+             ADD    SYU-YKZ-FTN      TO   YOSO (NG IDX3 11 25)
            END-IF
       *    自費1
-           ADD    SYU-JIHI-1         TO   YOSO (NG IDX1 IDX 25)
-           ADD    SYU-JIHI-1         TO   YOSO (NG IDX1 10 25)
-           ADD    SYU-JIHI-1-TAX     TO   YOSO (NG IDX1 IDX 25)
-           ADD    SYU-JIHI-1-TAX     TO   YOSO (NG IDX1 10 25)
-           ADD    SYU-JIHI-1         TO   YOSO (NG IDX3 IDX 25)
-           ADD    SYU-JIHI-1         TO   YOSO (NG IDX3 10 25)
-           ADD    SYU-JIHI-1-TAX     TO   YOSO (NG IDX3 IDX 25)
-           ADD    SYU-JIHI-1-TAX     TO   YOSO (NG IDX3 10 25)
+           ADD    SYU-JIHI-1         TO   YOSO (NG IDX1 IDX 26)
+           ADD    SYU-JIHI-1         TO   YOSO (NG IDX1 11 26)
+           ADD    SYU-JIHI-1-TAX     TO   YOSO (NG IDX1 IDX 26)
+           ADD    SYU-JIHI-1-TAX     TO   YOSO (NG IDX1 11 26)
+           ADD    SYU-JIHI-1         TO   YOSO (NG IDX3 IDX 26)
+           ADD    SYU-JIHI-1         TO   YOSO (NG IDX3 11 26)
+           ADD    SYU-JIHI-1-TAX     TO   YOSO (NG IDX3 IDX 26)
+           ADD    SYU-JIHI-1-TAX     TO   YOSO (NG IDX3 11 26)
       *
       *    自費2
-           ADD    SYU-JIHI-2         TO   YOSO (NG IDX1 IDX 26)
-           ADD    SYU-JIHI-2         TO   YOSO (NG IDX1 10 26)
-           ADD    SYU-JIHI-2-TAX     TO   YOSO (NG IDX1 IDX 26)
-           ADD    SYU-JIHI-2-TAX     TO   YOSO (NG IDX1 10 26)
-           ADD    SYU-JIHI-2         TO   YOSO (NG IDX3 IDX 26)
-           ADD    SYU-JIHI-2         TO   YOSO (NG IDX3 10 26)
-           ADD    SYU-JIHI-2-TAX     TO   YOSO (NG IDX3 IDX 26)
-           ADD    SYU-JIHI-2-TAX     TO   YOSO (NG IDX3 10 26)
+           ADD    SYU-JIHI-2         TO   YOSO (NG IDX1 IDX 27)
+           ADD    SYU-JIHI-2         TO   YOSO (NG IDX1 11 27)
+           ADD    SYU-JIHI-2-TAX     TO   YOSO (NG IDX1 IDX 27)
+           ADD    SYU-JIHI-2-TAX     TO   YOSO (NG IDX1 11 27)
+           ADD    SYU-JIHI-2         TO   YOSO (NG IDX3 IDX 27)
+           ADD    SYU-JIHI-2         TO   YOSO (NG IDX3 11 27)
+           ADD    SYU-JIHI-2-TAX     TO   YOSO (NG IDX3 IDX 27)
+           ADD    SYU-JIHI-2-TAX     TO   YOSO (NG IDX3 11 27)
       *
       *    自費3
-           ADD    SYU-JIHI-3         TO   YOSO (NG IDX1 IDX 27)
-           ADD    SYU-JIHI-3         TO   YOSO (NG IDX1 10 27)
-           ADD    SYU-JIHI-3-TAX     TO   YOSO (NG IDX1 IDX 27)
-           ADD    SYU-JIHI-3-TAX     TO   YOSO (NG IDX1 10 27)
-           ADD    SYU-JIHI-3         TO   YOSO (NG IDX3 IDX 27)
-           ADD    SYU-JIHI-3         TO   YOSO (NG IDX3 10 27)
-           ADD    SYU-JIHI-3-TAX     TO   YOSO (NG IDX3 IDX 27)
-           ADD    SYU-JIHI-3-TAX     TO   YOSO (NG IDX3 10 27)
+           ADD    SYU-JIHI-3         TO   YOSO (NG IDX1 IDX 28)
+           ADD    SYU-JIHI-3         TO   YOSO (NG IDX1 11 28)
+           ADD    SYU-JIHI-3-TAX     TO   YOSO (NG IDX1 IDX 28)
+           ADD    SYU-JIHI-3-TAX     TO   YOSO (NG IDX1 11 28)
+           ADD    SYU-JIHI-3         TO   YOSO (NG IDX3 IDX 28)
+           ADD    SYU-JIHI-3         TO   YOSO (NG IDX3 11 28)
+           ADD    SYU-JIHI-3-TAX     TO   YOSO (NG IDX3 IDX 28)
+           ADD    SYU-JIHI-3-TAX     TO   YOSO (NG IDX3 11 28)
       *
       *    自費4
-           ADD    SYU-JIHI-4         TO   YOSO (NG IDX1 IDX 28)
-           ADD    SYU-JIHI-4         TO   YOSO (NG IDX1 10 28)
-           ADD    SYU-JIHI-4-TAX     TO   YOSO (NG IDX1 IDX 28)
-           ADD    SYU-JIHI-4-TAX     TO   YOSO (NG IDX1 10 28)
-           ADD    SYU-JIHI-4         TO   YOSO (NG IDX3 IDX 28)
-           ADD    SYU-JIHI-4         TO   YOSO (NG IDX3 10 28)
-           ADD    SYU-JIHI-4-TAX     TO   YOSO (NG IDX3 IDX 28)
-           ADD    SYU-JIHI-4-TAX     TO   YOSO (NG IDX3 10 28)
+           ADD    SYU-JIHI-4         TO   YOSO (NG IDX1 IDX 29)
+           ADD    SYU-JIHI-4         TO   YOSO (NG IDX1 11 29)
+           ADD    SYU-JIHI-4-TAX     TO   YOSO (NG IDX1 IDX 29)
+           ADD    SYU-JIHI-4-TAX     TO   YOSO (NG IDX1 11 29)
+           ADD    SYU-JIHI-4         TO   YOSO (NG IDX3 IDX 29)
+           ADD    SYU-JIHI-4         TO   YOSO (NG IDX3 11 29)
+           ADD    SYU-JIHI-4-TAX     TO   YOSO (NG IDX3 IDX 29)
+           ADD    SYU-JIHI-4-TAX     TO   YOSO (NG IDX3 11 29)
       *
       *    自費5
-           ADD    SYU-JIHI-5         TO   YOSO (NG IDX1 IDX 29)
-           ADD    SYU-JIHI-5         TO   YOSO (NG IDX1 10 29)
-           ADD    SYU-JIHI-5-TAX     TO   YOSO (NG IDX1 IDX 29)
-           ADD    SYU-JIHI-5-TAX     TO   YOSO (NG IDX1 10 29)
-           ADD    SYU-JIHI-5         TO   YOSO (NG IDX3 IDX 29)
-           ADD    SYU-JIHI-5         TO   YOSO (NG IDX3 10 29)
-           ADD    SYU-JIHI-5-TAX     TO   YOSO (NG IDX3 IDX 29)
-           ADD    SYU-JIHI-5-TAX     TO   YOSO (NG IDX3 10 29)
+           ADD    SYU-JIHI-5         TO   YOSO (NG IDX1 IDX 30)
+           ADD    SYU-JIHI-5         TO   YOSO (NG IDX1 11 30)
+           ADD    SYU-JIHI-5-TAX     TO   YOSO (NG IDX1 IDX 30)
+           ADD    SYU-JIHI-5-TAX     TO   YOSO (NG IDX1 11 30)
+           ADD    SYU-JIHI-5         TO   YOSO (NG IDX3 IDX 30)
+           ADD    SYU-JIHI-5         TO   YOSO (NG IDX3 11 30)
+           ADD    SYU-JIHI-5-TAX     TO   YOSO (NG IDX3 IDX 30)
+           ADD    SYU-JIHI-5-TAX     TO   YOSO (NG IDX3 11 30)
       *
       *    自費6
-           ADD    SYU-JIHI-6         TO   YOSO (NG IDX1 IDX 30)
-           ADD    SYU-JIHI-6         TO   YOSO (NG IDX1 10 30)
-           ADD    SYU-JIHI-6-TAX     TO   YOSO (NG IDX1 IDX 30)
-           ADD    SYU-JIHI-6-TAX     TO   YOSO (NG IDX1 10 30)
-           ADD    SYU-JIHI-6         TO   YOSO (NG IDX3 IDX 30)
-           ADD    SYU-JIHI-6         TO   YOSO (NG IDX3 10 30)
-           ADD    SYU-JIHI-6-TAX     TO   YOSO (NG IDX3 IDX 30)
-           ADD    SYU-JIHI-6-TAX     TO   YOSO (NG IDX3 10 30)
+           ADD    SYU-JIHI-6         TO   YOSO (NG IDX1 IDX 31)
+           ADD    SYU-JIHI-6         TO   YOSO (NG IDX1 11 31)
+           ADD    SYU-JIHI-6-TAX     TO   YOSO (NG IDX1 IDX 31)
+           ADD    SYU-JIHI-6-TAX     TO   YOSO (NG IDX1 11 31)
+           ADD    SYU-JIHI-6         TO   YOSO (NG IDX3 IDX 31)
+           ADD    SYU-JIHI-6         TO   YOSO (NG IDX3 11 31)
+           ADD    SYU-JIHI-6-TAX     TO   YOSO (NG IDX3 IDX 31)
+           ADD    SYU-JIHI-6-TAX     TO   YOSO (NG IDX3 11 31)
       *
       *    自費7
-           ADD    SYU-JIHI-7         TO   YOSO (NG IDX1 IDX 31)
-           ADD    SYU-JIHI-7         TO   YOSO (NG IDX1 10 31)
-           ADD    SYU-JIHI-7-TAX     TO   YOSO (NG IDX1 IDX 31)
-           ADD    SYU-JIHI-7-TAX     TO   YOSO (NG IDX1 10 31)
-           ADD    SYU-JIHI-7         TO   YOSO (NG IDX3 IDX 31)
-           ADD    SYU-JIHI-7         TO   YOSO (NG IDX3 10 31)
-           ADD    SYU-JIHI-7-TAX     TO   YOSO (NG IDX3 IDX 31)
-           ADD    SYU-JIHI-7-TAX     TO   YOSO (NG IDX3 10 31)
+           ADD    SYU-JIHI-7         TO   YOSO (NG IDX1 IDX 32)
+           ADD    SYU-JIHI-7         TO   YOSO (NG IDX1 11 32)
+           ADD    SYU-JIHI-7-TAX     TO   YOSO (NG IDX1 IDX 32)
+           ADD    SYU-JIHI-7-TAX     TO   YOSO (NG IDX1 11 32)
+           ADD    SYU-JIHI-7         TO   YOSO (NG IDX3 IDX 32)
+           ADD    SYU-JIHI-7         TO   YOSO (NG IDX3 11 32)
+           ADD    SYU-JIHI-7-TAX     TO   YOSO (NG IDX3 IDX 32)
+           ADD    SYU-JIHI-7-TAX     TO   YOSO (NG IDX3 11 32)
       *
       *    自費8
-           ADD    SYU-JIHI-8         TO   YOSO (NG IDX1 IDX 32)
-           ADD    SYU-JIHI-8         TO   YOSO (NG IDX1 10 32)
-           ADD    SYU-JIHI-8-TAX     TO   YOSO (NG IDX1 IDX 32)
-           ADD    SYU-JIHI-8-TAX     TO   YOSO (NG IDX1 10 32)
-           ADD    SYU-JIHI-8         TO   YOSO (NG IDX3 IDX 32)
-           ADD    SYU-JIHI-8         TO   YOSO (NG IDX3 10 32)
-           ADD    SYU-JIHI-8-TAX     TO   YOSO (NG IDX3 IDX 32)
-           ADD    SYU-JIHI-8-TAX     TO   YOSO (NG IDX3 10 32)
+           ADD    SYU-JIHI-8         TO   YOSO (NG IDX1 IDX 33)
+           ADD    SYU-JIHI-8         TO   YOSO (NG IDX1 11 33)
+           ADD    SYU-JIHI-8-TAX     TO   YOSO (NG IDX1 IDX 33)
+           ADD    SYU-JIHI-8-TAX     TO   YOSO (NG IDX1 11 33)
+           ADD    SYU-JIHI-8         TO   YOSO (NG IDX3 IDX 33)
+           ADD    SYU-JIHI-8         TO   YOSO (NG IDX3 11 33)
+           ADD    SYU-JIHI-8-TAX     TO   YOSO (NG IDX3 IDX 33)
+           ADD    SYU-JIHI-8-TAX     TO   YOSO (NG IDX3 11 33)
       *
       *    自費9
-           ADD    SYU-JIHI-9         TO   YOSO (NG IDX1 IDX 33)
-           ADD    SYU-JIHI-9         TO   YOSO (NG IDX1 10 33)
-           ADD    SYU-JIHI-9-TAX     TO   YOSO (NG IDX1 IDX 33)
-           ADD    SYU-JIHI-9-TAX     TO   YOSO (NG IDX1 10 33)
-           ADD    SYU-JIHI-9         TO   YOSO (NG IDX3 IDX 33)
-           ADD    SYU-JIHI-9         TO   YOSO (NG IDX3 10 33)
-           ADD    SYU-JIHI-9-TAX     TO   YOSO (NG IDX3 IDX 33)
-           ADD    SYU-JIHI-9-TAX     TO   YOSO (NG IDX3 10 33)
+           ADD    SYU-JIHI-9         TO   YOSO (NG IDX1 IDX 34)
+           ADD    SYU-JIHI-9         TO   YOSO (NG IDX1 11 34)
+           ADD    SYU-JIHI-9-TAX     TO   YOSO (NG IDX1 IDX 34)
+           ADD    SYU-JIHI-9-TAX     TO   YOSO (NG IDX1 11 34)
+           ADD    SYU-JIHI-9         TO   YOSO (NG IDX3 IDX 34)
+           ADD    SYU-JIHI-9         TO   YOSO (NG IDX3 11 34)
+           ADD    SYU-JIHI-9-TAX     TO   YOSO (NG IDX3 IDX 34)
+           ADD    SYU-JIHI-9-TAX     TO   YOSO (NG IDX3 11 34)
       *
       *    自費10
-           ADD    SYU-JIHI-10        TO   YOSO (NG IDX1 IDX 34)
-           ADD    SYU-JIHI-10        TO   YOSO (NG IDX1 10 34)
-           ADD    SYU-JIHI-10-TAX    TO   YOSO (NG IDX1 IDX 34)
-           ADD    SYU-JIHI-10-TAX    TO   YOSO (NG IDX1 10 34)
-           ADD    SYU-JIHI-10        TO   YOSO (NG IDX3 IDX 34)
-           ADD    SYU-JIHI-10        TO   YOSO (NG IDX3 10 34)
-           ADD    SYU-JIHI-10-TAX    TO   YOSO (NG IDX3 IDX 34)
-           ADD    SYU-JIHI-10-TAX    TO   YOSO (NG IDX3 10 34)
+           ADD    SYU-JIHI-10        TO   YOSO (NG IDX1 IDX 35)
+           ADD    SYU-JIHI-10        TO   YOSO (NG IDX1 11 35)
+           ADD    SYU-JIHI-10-TAX    TO   YOSO (NG IDX1 IDX 35)
+           ADD    SYU-JIHI-10-TAX    TO   YOSO (NG IDX1 11 35)
+           ADD    SYU-JIHI-10        TO   YOSO (NG IDX3 IDX 35)
+           ADD    SYU-JIHI-10        TO   YOSO (NG IDX3 11 35)
+           ADD    SYU-JIHI-10-TAX    TO   YOSO (NG IDX3 IDX 35)
+           ADD    SYU-JIHI-10-TAX    TO   YOSO (NG IDX3 11 35)
       *
       *    自費消費税
-           ADD    SYU-JIHI-TAX       TO   YOSO (NG IDX1 IDX 35)
-           ADD    SYU-JIHI-TAX       TO   YOSO (NG IDX1 10 35)
-           ADD    SYU-JIHI-TAX       TO   YOSO (NG IDX3 IDX 35)
-           ADD    SYU-JIHI-TAX       TO   YOSO (NG IDX3 10 35)
+           ADD    SYU-JIHI-TAX       TO   YOSO (NG IDX1 IDX 36)
+           ADD    SYU-JIHI-TAX       TO   YOSO (NG IDX1 11 36)
+           ADD    SYU-JIHI-TAX       TO   YOSO (NG IDX3 IDX 36)
+           ADD    SYU-JIHI-TAX       TO   YOSO (NG IDX3 11 36)
       *
       *    自費合計
            IF   SYU-SRYYMD  <=  "20070331"
-             COMPUTE  YOSO (NG IDX1 IDX 36)  =  YOSO (NG IDX1 IDX 25)
-                                             +  YOSO (NG IDX1 IDX 26)
+             COMPUTE  YOSO (NG IDX1 IDX 37)  =  YOSO (NG IDX1 IDX 26)
                                              +  YOSO (NG IDX1 IDX 27)
                                              +  YOSO (NG IDX1 IDX 28)
                                              +  YOSO (NG IDX1 IDX 29)
@@ -1289,19 +1378,19 @@
                                              +  YOSO (NG IDX1 IDX 33)
                                              +  YOSO (NG IDX1 IDX 34)
                                              +  YOSO (NG IDX1 IDX 35)
-             COMPUTE  YOSO (NG IDX1 10  36)  =  YOSO (NG IDX1 10  25)
-                                             +  YOSO (NG IDX1 10  26)
-                                             +  YOSO (NG IDX1 10  27)
-                                             +  YOSO (NG IDX1 10  28)
-                                             +  YOSO (NG IDX1 10  29)
-                                             +  YOSO (NG IDX1 10  30)
-                                             +  YOSO (NG IDX1 10  31)
-                                             +  YOSO (NG IDX1 10  32)
-                                             +  YOSO (NG IDX1 10  33)
-                                             +  YOSO (NG IDX1 10  34)
-                                             +  YOSO (NG IDX1 10  35)
-             COMPUTE  YOSO (NG IDX3 IDX 36)  =  YOSO (NG IDX3 IDX 25)
-                                             +  YOSO (NG IDX3 IDX 26)
+                                             +  YOSO (NG IDX1 IDX 36)
+             COMPUTE  YOSO (NG IDX1 11  37)  =  YOSO (NG IDX1 11  26)
+                                             +  YOSO (NG IDX1 11  27)
+                                             +  YOSO (NG IDX1 11  28)
+                                             +  YOSO (NG IDX1 11  29)
+                                             +  YOSO (NG IDX1 11  30)
+                                             +  YOSO (NG IDX1 11  31)
+                                             +  YOSO (NG IDX1 11  32)
+                                             +  YOSO (NG IDX1 11  33)
+                                             +  YOSO (NG IDX1 11  34)
+                                             +  YOSO (NG IDX1 11  35)
+                                             +  YOSO (NG IDX1 11  36)
+             COMPUTE  YOSO (NG IDX3 IDX 37)  =  YOSO (NG IDX3 IDX 26)
                                              +  YOSO (NG IDX3 IDX 27)
                                              +  YOSO (NG IDX3 IDX 28)
                                              +  YOSO (NG IDX3 IDX 29)
@@ -1311,20 +1400,20 @@
                                              +  YOSO (NG IDX3 IDX 33)
                                              +  YOSO (NG IDX3 IDX 34)
                                              +  YOSO (NG IDX3 IDX 35)
-             COMPUTE  YOSO (NG IDX3 10  36)  =  YOSO (NG IDX3 10  25)
-                                             +  YOSO (NG IDX3 10  26)
-                                             +  YOSO (NG IDX3 10  27)
-                                             +  YOSO (NG IDX3 10  28)
-                                             +  YOSO (NG IDX3 10  29)
-                                             +  YOSO (NG IDX3 10  30)
-                                             +  YOSO (NG IDX3 10  31)
-                                             +  YOSO (NG IDX3 10  32)
-                                             +  YOSO (NG IDX3 10  33)
-                                             +  YOSO (NG IDX3 10  34)
-                                             +  YOSO (NG IDX3 10  35)
+                                             +  YOSO (NG IDX3 IDX 36)
+             COMPUTE  YOSO (NG IDX3 11  37)  =  YOSO (NG IDX3 11  26)
+                                             +  YOSO (NG IDX3 11  27)
+                                             +  YOSO (NG IDX3 11  28)
+                                             +  YOSO (NG IDX3 11  29)
+                                             +  YOSO (NG IDX3 11  30)
+                                             +  YOSO (NG IDX3 11  31)
+                                             +  YOSO (NG IDX3 11  32)
+                                             +  YOSO (NG IDX3 11  33)
+                                             +  YOSO (NG IDX3 11  34)
+                                             +  YOSO (NG IDX3 11  35)
+                                             +  YOSO (NG IDX3 11  36)
            ELSE
-             COMPUTE  YOSO (NG IDX1 IDX 36)  =  YOSO (NG IDX1 IDX 25)
-                                             +  YOSO (NG IDX1 IDX 26)
+             COMPUTE  YOSO (NG IDX1 IDX 37)  =  YOSO (NG IDX1 IDX 26)
                                              +  YOSO (NG IDX1 IDX 27)
                                              +  YOSO (NG IDX1 IDX 28)
                                              +  YOSO (NG IDX1 IDX 29)
@@ -1333,18 +1422,18 @@
                                              +  YOSO (NG IDX1 IDX 32)
                                              +  YOSO (NG IDX1 IDX 33)
                                              +  YOSO (NG IDX1 IDX 34)
-             COMPUTE  YOSO (NG IDX1 10  36)  =  YOSO (NG IDX1 10  25)
-                                             +  YOSO (NG IDX1 10  26)
-                                             +  YOSO (NG IDX1 10  27)
-                                             +  YOSO (NG IDX1 10  28)
-                                             +  YOSO (NG IDX1 10  29)
-                                             +  YOSO (NG IDX1 10  30)
-                                             +  YOSO (NG IDX1 10  31)
-                                             +  YOSO (NG IDX1 10  32)
-                                             +  YOSO (NG IDX1 10  33)
-                                             +  YOSO (NG IDX1 10  34)
-             COMPUTE  YOSO (NG IDX3 IDX 36)  =  YOSO (NG IDX3 IDX 25)
-                                             +  YOSO (NG IDX3 IDX 26)
+                                             +  YOSO (NG IDX1 IDX 35)
+             COMPUTE  YOSO (NG IDX1 11  37)  =  YOSO (NG IDX1 11  26)
+                                             +  YOSO (NG IDX1 11  27)
+                                             +  YOSO (NG IDX1 11  28)
+                                             +  YOSO (NG IDX1 11  29)
+                                             +  YOSO (NG IDX1 11  30)
+                                             +  YOSO (NG IDX1 11  31)
+                                             +  YOSO (NG IDX1 11  32)
+                                             +  YOSO (NG IDX1 11  33)
+                                             +  YOSO (NG IDX1 11  34)
+                                             +  YOSO (NG IDX1 11  35)
+             COMPUTE  YOSO (NG IDX3 IDX 37)  =  YOSO (NG IDX3 IDX 26)
                                              +  YOSO (NG IDX3 IDX 27)
                                              +  YOSO (NG IDX3 IDX 28)
                                              +  YOSO (NG IDX3 IDX 29)
@@ -1353,22 +1442,23 @@
                                              +  YOSO (NG IDX3 IDX 32)
                                              +  YOSO (NG IDX3 IDX 33)
                                              +  YOSO (NG IDX3 IDX 34)
-             COMPUTE  YOSO (NG IDX3 10  36)  =  YOSO (NG IDX3 10  25)
-                                             +  YOSO (NG IDX3 10  26)
-                                             +  YOSO (NG IDX3 10  27)
-                                             +  YOSO (NG IDX3 10  28)
-                                             +  YOSO (NG IDX3 10  29)
-                                             +  YOSO (NG IDX3 10  30)
-                                             +  YOSO (NG IDX3 10  31)
-                                             +  YOSO (NG IDX3 10  32)
-                                             +  YOSO (NG IDX3 10  33)
-                                             +  YOSO (NG IDX3 10  34)
+                                             +  YOSO (NG IDX3 IDX 35)
+             COMPUTE  YOSO (NG IDX3 11  37)  =  YOSO (NG IDX3 11  26)
+                                             +  YOSO (NG IDX3 11  27)
+                                             +  YOSO (NG IDX3 11  28)
+                                             +  YOSO (NG IDX3 11  29)
+                                             +  YOSO (NG IDX3 11  30)
+                                             +  YOSO (NG IDX3 11  31)
+                                             +  YOSO (NG IDX3 11  32)
+                                             +  YOSO (NG IDX3 11  33)
+                                             +  YOSO (NG IDX3 11  34)
+                                             +  YOSO (NG IDX3 11  35)
            END-IF
       *
-           ADD    SYU-SKYMONEY        TO   YOSO (NG IDX1 IDX 38)
-           ADD    SYU-SKYMONEY        TO   YOSO (NG IDX1 10 38)
-           ADD    SYU-SKYMONEY        TO   YOSO (NG IDX3 IDX 38)
-           ADD    SYU-SKYMONEY        TO   YOSO (NG IDX3 10 38)
+           ADD    SYU-SKYMONEY        TO   YOSO (NG IDX1 IDX 39)
+           ADD    SYU-SKYMONEY        TO   YOSO (NG IDX1 11 39)
+           ADD    SYU-SKYMONEY        TO   YOSO (NG IDX3 IDX 39)
+           ADD    SYU-SKYMONEY        TO   YOSO (NG IDX3 11 39)
       *
            EVALUATE IDX
              WHEN 7
@@ -1394,7 +1484,7 @@
              WHEN 9
       *    自賠責の場合
                MOVE   SYU-RSIJIBAI-SKYMONEY     TO   WRK-SYUEKI
-             WHEN 11
+             WHEN 10
       *    公害の場合
                COMPUTE WRK-JIHI4  =  SYU-TOTAL-TGMONEY
                                   +  SYU-TOTAL-TGMONEY-TAX
@@ -1439,23 +1529,23 @@
       *
            END-EVALUATE
       *
-           COMPUTE   YOSO (NG IDX1 IDX 39)  =  YOSO (NG IDX1 IDX 39)
+           COMPUTE   YOSO (NG IDX1 IDX 40)  =  YOSO (NG IDX1 IDX 40)
                                             +  WRK-SYUEKI
-           COMPUTE   YOSO (NG IDX1 10 39)   =  YOSO (NG IDX1 10 39)
+           COMPUTE   YOSO (NG IDX1 11 40)   =  YOSO (NG IDX1 11 40)
                                             +  WRK-SYUEKI
-           COMPUTE   YOSO (NG IDX3 IDX 39)  =  YOSO (NG IDX3 IDX 39)
+           COMPUTE   YOSO (NG IDX3 IDX 40)  =  YOSO (NG IDX3 IDX 40)
                                             +  WRK-SYUEKI
-           COMPUTE   YOSO (NG IDX3 10 39)   =  YOSO (NG IDX3 10 39)
+           COMPUTE   YOSO (NG IDX3 11 40)   =  YOSO (NG IDX3 11 40)
                                             +  WRK-SYUEKI
       *
-           COMPUTE   YOSO (NG IDX1 IDX 37)  =  YOSO (NG IDX1 IDX 39)
-                                            -  YOSO (NG IDX1 IDX 38)
-           COMPUTE   YOSO (NG IDX1 10 37)   =  YOSO (NG IDX1 10 39)
-                                            -  YOSO (NG IDX1 10 38)
-           COMPUTE   YOSO (NG IDX3 IDX 37)  =  YOSO (NG IDX3 IDX 39)
-                                            -  YOSO (NG IDX3 IDX 38)
-           COMPUTE   YOSO (NG IDX3 10 37)   =  YOSO (NG IDX3 10 39)
-                                            -  YOSO (NG IDX3 10 38)
+           COMPUTE   YOSO (NG IDX1 IDX 38)  =  YOSO (NG IDX1 IDX 40)
+                                            -  YOSO (NG IDX1 IDX 39)
+           COMPUTE   YOSO (NG IDX1 11 38)   =  YOSO (NG IDX1 11 40)
+                                            -  YOSO (NG IDX1 11 39)
+           COMPUTE   YOSO (NG IDX3 IDX 38)  =  YOSO (NG IDX3 IDX 40)
+                                            -  YOSO (NG IDX3 IDX 39)
+           COMPUTE   YOSO (NG IDX3 11 38)   =  YOSO (NG IDX3 11 40)
+                                            -  YOSO (NG IDX3 11 39)
       *
            IF   NG  =  2
       *    外来の場合は初診、再診件数を取得する。
@@ -1614,14 +1704,14 @@
       *    初診の件数としてカウントする。
                  IF   JYURRK-NYUGAIKBN = 1
                    ADD     1            TO   YOSO (1 IDX6 IDX 1)
-                   ADD     1            TO   YOSO (1 IDX6 10 1)
+                   ADD     1            TO   YOSO (1 IDX6 11 1)
                    ADD     1            TO   YOSO (1 IDX3 IDX 1)
-                   ADD     1            TO   YOSO (1 IDX3 10 1)
+                   ADD     1            TO   YOSO (1 IDX3 11 1)
                  ELSE
                    ADD     1            TO   YOSO (2 IDX6 IDX 1)
-                   ADD     1            TO   YOSO (2 IDX6 10 1)
+                   ADD     1            TO   YOSO (2 IDX6 11 1)
                    ADD     1            TO   YOSO (2 IDX3 IDX 1)
-                   ADD     1            TO   YOSO (2 IDX3 10 1)
+                   ADD     1            TO   YOSO (2 IDX3 11 1)
                  END-IF
                  MOVE    JYURRK-DENPNUM   TO   WRK-DENPNUM
                ELSE
@@ -1688,14 +1778,14 @@
       *
                    IF   JYURRK-NYUGAIKBN  =  1
                      ADD    1            TO   YOSO(1 IDX6 IDX 2)
-                     ADD    1            TO   YOSO(1 IDX6 10 2)
+                     ADD    1            TO   YOSO(1 IDX6 11 2)
                      ADD    1            TO   YOSO(1 IDX3 IDX 2)
-                     ADD    1            TO   YOSO(1 IDX3 10 2)
+                     ADD    1            TO   YOSO(1 IDX3 11 2)
                    ELSE
                      ADD    1            TO   YOSO(2 IDX6 IDX 2)
-                     ADD    1            TO   YOSO(2 IDX6 10 2)
+                     ADD    1            TO   YOSO(2 IDX6 11 2)
                      ADD    1            TO   YOSO(2 IDX3 IDX 2)
-                     ADD    1            TO   YOSO(2 IDX3 10 2)
+                     ADD    1            TO   YOSO(2 IDX3 11 2)
                    END-IF
                    MOVE    JYURRK-DENPNUM   TO   WRK-DENPNUM
       *
@@ -1704,14 +1794,14 @@
       *    その他の件数としてカウントする。
                      IF   JYURRK-NYUGAIKBN  =  1
                        ADD    1           TO   YOSO(1 IDX6 IDX 3)
-                       ADD    1           TO   YOSO(1 IDX6 10 3)
+                       ADD    1           TO   YOSO(1 IDX6 11 3)
                        ADD    1           TO   YOSO(1 IDX3 IDX 3)
-                       ADD    1           TO   YOSO(1 IDX3 10 3)
+                       ADD    1           TO   YOSO(1 IDX3 11 3)
                      ELSE
                        ADD    1           TO   YOSO(2 IDX6 IDX 3)
-                       ADD    1           TO   YOSO(2 IDX6 10 3)
+                       ADD    1           TO   YOSO(2 IDX6 11 3)
                        ADD    1           TO   YOSO(2 IDX3 IDX 3)
-                       ADD    1           TO   YOSO(2 IDX3 10 3)
+                       ADD    1           TO   YOSO(2 IDX3 11 3)
                      END-IF
                    END-IF
                  END-IF
@@ -1755,15 +1845,15 @@
                END-IF
                IF  PTNYUINRRK-NYUINYMD(1:6)  =   WRK-PARA-PRTYM
                  ADD     1        TO   YOSO (1 IDX1 IDX 1)
-                 ADD     1        TO   YOSO (1 IDX1 10 1)
+                 ADD     1        TO   YOSO (1 IDX1 11 1)
                  ADD     1        TO   YOSO (1 IDX3 IDX 1)
-                 ADD     1        TO   YOSO (1 IDX3 10 1)
+                 ADD     1        TO   YOSO (1 IDX3 11 1)
                END-IF
                IF  PTNYUINRRK-TAIINYMD(1:6) =   WRK-PARA-PRTYM
                  ADD     1        TO   YOSO (1 IDX1 IDX 2)
-                 ADD     1        TO   YOSO (1 IDX1 10 2)
+                 ADD     1        TO   YOSO (1 IDX1 11 2)
                  ADD     1        TO   YOSO (1 IDX3 IDX 2)
-                 ADD     1        TO   YOSO (1 IDX3 10 2)
+                 ADD     1        TO   YOSO (1 IDX3 11 2)
                END-IF
              END-IF
              PERFORM   910-DBFETCH2-SEC
@@ -1813,7 +1903,7 @@
              WHEN    "900"  THRU  "919"
                MOVE    7               TO   IDX
              WHEN    WRK-CONS-KOGAI-HKNNUM
-               MOVE    11              TO   IDX
+               MOVE    10              TO   IDX
              WHEN    "060"
              WHEN    "067"
              WHEN    "068"
@@ -1864,7 +1954,7 @@
              WHEN    "900"  THRU  "919"
                MOVE    7               TO   IDX
              WHEN    WRK-CONS-KOGAI-HKNNUM
-               MOVE    11      TO   IDX
+               MOVE    10      TO   IDX
              WHEN    "060"
              WHEN    "067"
              WHEN    "068"
@@ -1915,7 +2005,7 @@
              WHEN    "900"  THRU  "919"
                MOVE    7               TO   IDX
              WHEN    WRK-CONS-KOGAI-HKNNUM
-               MOVE    11              TO   IDX
+               MOVE    10              TO   IDX
              WHEN    "039"
              WHEN    "040"
                MOVE    5               TO   IDX
@@ -1967,7 +2057,7 @@
              WHEN    "900"  THRU  "919"
                MOVE    7                   TO   IDX
              WHEN    WRK-CONS-KOGAI-HKNNUM
-               MOVE    11                  TO   IDX
+               MOVE    10                  TO   IDX
              WHEN    "039"
              WHEN    "040"
                MOVE    5                   TO   IDX
@@ -2146,8 +2236,7 @@
                            IF   IDX3   NOT =   3
                                AND  IDX3   NOT =   4
       *    自費行は有効である場合に数値を転送する。
-                             IF  IDX3 = 25
-                                 OR   IDX3  =  26
+                             IF  IDX3  =  26
                                  OR   IDX3  =  27
                                  OR   IDX3  =  28
                                  OR   IDX3  =  29
@@ -2156,20 +2245,15 @@
                                  OR   IDX3  =  32
                                  OR   IDX3  =  33
                                  OR   IDX3  =  34
-                               COMPUTE   IDX8   =   IDX3   -   24
+                                 OR   IDX3  =  35
                                MOVE YOSO(NG IDX1 IDX2 IDX3)  TO   WRK-S9
                                MOVE WRK-S9   TO   HC90-YOSO(IDX2 IDX3)
                              ELSE
       *    自費行以外の場合は数値を転送する。
                                MOVE YOSO(NG IDX1 IDX2 IDX3)  TO  WRK-S9
-                               IF  IDX3  >  34
-                                 IF   IDX3  =  40
-                                   COMPUTE   IDX9   =   IDX3   -   5
-                                   MOVE  WRK-S9 TO HC90-YOSO(IDX2 IDX9)
-                                 ELSE
-                                   COMPUTE IDX9 = IDX3 - 34
-                                   MOVE  WRK-S9 TO HC901-YOSO(IDX2 IDX9)
-                                 END-IF
+                               IF  IDX3  >  35
+                                 COMPUTE  IDX9  =  IDX3  -  35
+                                 MOVE  WRK-S9 TO HC901-YOSO(IDX2 IDX9)
                                ELSE
                                  MOVE WRK-S9  TO   HC90-YOSO(IDX2 IDX3)
                                END-IF
@@ -2178,12 +2262,12 @@
                          WHEN "2"
       *    外来集計情報のデータ転送
                            IF  IDX3   NOT = 4
-                               AND  IDX3   NOT =   22
+                               AND  IDX3   NOT =   20
                                AND  IDX3   NOT =   23
                                AND  IDX3   NOT =   24
+                               AND  IDX3   NOT =   25
       *    自費行は有効である場合に数値を転送する。
-                             IF  IDX3  =  25
-                                 OR  IDX3  =  26
+                             IF  IDX3  =  26
                                  OR  IDX3  =  27
                                  OR  IDX3  =  28
                                  OR  IDX3  =  29
@@ -2192,20 +2276,15 @@
                                  OR  IDX3  =  32
                                  OR  IDX3  =  33
                                  OR  IDX3  =  34
-                               COMPUTE  IDX8  =  IDX3  -  24
+                                 OR  IDX3  =  35
                                MOVE   YOSO(NG IDX1 IDX2 IDX3) TO  WRK-S9
                                MOVE   WRK-S9   TO   HC90-YOSO(IDX2 IDX3)
                              ELSE
       *    自費行以外の場合は数値を転送する。
                                MOVE   YOSO(NG IDX1 IDX2 IDX3) TO  WRK-S9
-                               IF  IDX3  >  34
-                                 IF  IDX3  =  40
-                                   COMPUTE   IDX9   =   IDX3   -   5
-                                   MOVE  WRK-S9 TO  HC90-YOSO(IDX2 IDX9)
-                                 ELSE
-                                   COMPUTE   IDX9   =   IDX3   -   34
-                                   MOVE  WRK-S9 TO HC901-YOSO(IDX2 IDX9)
-                                 END-IF
+                               IF  IDX3  >  35
+                                 COMPUTE   IDX9   =   IDX3   -   35
+                                 MOVE  WRK-S9  TO  HC901-YOSO(IDX2 IDX9)
                                ELSE
                                  MOVE  WRK-S9  TO  HC90-YOSO(IDX2 IDX3)
                                END-IF
@@ -2272,6 +2351,15 @@
                      MOVE    2       TO      IDX1
                    END-IF
       *
+      *    CSVヘッダ処理
+                   PERFORM  400-CSV-HEAD-SEC
+      *
+      *    CSV編集処理
+                   PERFORM  400-CSV-DATA-SEC
+      *
+      *    CSV出力処理
+                   PERFORM  230-TOUKEICSV-SEC
+      *
       *    診療科、入外区分判別終わり
                  END-IF
                END-IF
@@ -2285,6 +2373,264 @@
        330-TERM-HEN-EXT.
            EXIT.
       *
+      *****************************************************************
+      *    CSVヘッダ編集処理
+      *****************************************************************
+       400-CSV-HEAD-SEC            SECTION.
+      *
+           MOVE    1                 TO  IDXP
+      *    対象年月
+           INITIALIZE                WRK-ITEM
+           STRING    "対象年月："    DELIMITED  BY  SIZE
+                     HC90-SRYYMD     DELIMITED  BY  SIZE
+                                     INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    入外区分セット 
+           INITIALIZE                WRK-ITEM
+           STRING    "入外区分："    DELIMITED  BY  SIZE
+                     HC90-NYUGAIKBN  DELIMITED  BY  SIZE
+                                     INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    診療科セット 
+           INITIALIZE                WRK-ITEM
+           STRING    "診療科："      DELIMITED  BY  SIZE
+                     HC90-TSRYKA     DELIMITED  BY  SIZE
+                                     INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    システム日付セット 
+           MOVE    WRK-SYSYMDWH      TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+      *    保険名称セット
+           MOVE    SPACE           TO  CSV-HEAD01-HKN3
+           MOVE    "国保"          TO  CSV-HEAD01-HKN4
+           MOVE    "後期高齢"      TO  CSV-HEAD01-HKN5
+           MOVE    SPACE             TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *    各項目名称セット
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL  IDX4  >  CSV-HEAD01-MAX
+             IF  IDX4  NOT =  3
+               MOVE    CSV-HEAD01-ITEM(IDX4)     TO  WRK-ITEM
+               IF   IDX4  >=  CSV-HEAD01-MAX
+                 PERFORM  810-CSVDATA-EDIT-SEC
+               ELSE
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
+             END-IF
+           END-PERFORM
+           .
+      *
+       400-CSV-HEAD-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV編集処理
+      *****************************************************************
+       400-CSV-DATA-SEC            SECTION.
+      *
+      *    名称セット
+           IF  NG  =  1
+      *    入院件数
+             MOVE    "入院件数"         TO  CSV-HEAD02-KENSU1
+      *    退院件数
+             MOVE    "退院件数"         TO  CSV-HEAD02-KENSU2
+      *    その他件数
+             MOVE    SPACE              TO  CSV-HEAD02-KENSU3
+           ELSE
+      *    初診件数
+             MOVE    "初診件数"         TO  CSV-HEAD02-KENSU1
+      *    再診件数
+             MOVE    "再診件数"         TO  CSV-HEAD02-KENSU2
+      *    その他件数
+             MOVE    "その他件数"       TO  CSV-HEAD02-KENSU3
+           END-IF
+      *    自費名称
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL  IDX4  >  10
+             IF  NG  =  1
+               MOVE    WRK-TJIHIN(IDX4)  TO  CSV-HEAD02-JIHI-NAME(IDX4)
+             ELSE
+               MOVE    WRK-TJIHI(IDX4)   TO  CSV-HEAD02-JIHI-NAME(IDX4)
+             END-IF
+           END-PERFORM
+      *
+           PERFORM  VARYING  IDX12  FROM  1  BY  1
+                    UNTIL  IDX12  >  CSV-HEAD02-MAX
+             IF  ( IDX12  NOT =  4
+      *    外来集計情報のデータ転送
+                 AND  IDX12  NOT =  20
+                 AND  IDX12  NOT =  23
+                 AND  IDX12  NOT =  24
+                 AND  IDX12  NOT =  25
+                 AND  NG  =  2 )
+                 OR  ( IDX12  NOT =  3
+                 AND  IDX12  NOT =  4
+                 AND  NG  =  1 )
+      *    項目名セット
+               MOVE    CSV-HEAD02-ITEM(IDX12)    TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+               PERFORM  VARYING  IDX13  FROM  1  BY  1
+                        UNTIL  IDX13  >  CSV-HEAD01-MAX
+      *    集計データセット
+                 IF  IDX13  NOT =  3
+                   MOVE    YOSO(NG IDX1 IDX13 IDX12)   TO  WRK-S9
+                   MOVE    WRK-S9          TO  WRK-ITEM
+                   IF   IDX13  >=  CSV-HEAD01-MAX
+                     PERFORM  810-CSVDATA-EDIT-SEC
+                   ELSE
+                     PERFORM  800-CSVDATA-EDIT-SEC
+                   END-IF
+                 END-IF
+               END-PERFORM
+             END-IF
+           END-PERFORM
+      *
+           .
+       400-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       800-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM  820-CSVDATA-EDIT-SEC
+           PERFORM  800-PUT-DELIMITER-SEC
+           .
+      *
+       801-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       810-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM  820-CSVDATA-EDIT-SEC
+           PERFORM  800-PUT-CR-SEC
+           .
+      *
+       810-CSVDATA-EDIT-EXE.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       820-CSVDATA-EDIT-SEC            SECTION.
+      *
+           IF   WRK-ITEM  NOT =  SPACE
+             PERFORM  800-GET-ITEM-SIZE-SEC
+             STRING  WRK-ITEM(IDX-ST:IDX-ED)  DELIMITED   BY  SIZE
+                                              INTO  WRK-CSVDATA
+                                              WITH  POINTER  IDXP
+             END-STRING
+           END-IF
+           .
+      *
+       820-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    区切り文字編集処理
+      *****************************************************************
+       800-PUT-DELIMITER-SEC           SECTION.
+      *
+           STRING    ","   DELIMITED   BY  SIZE
+           INTO      WRK-CSVDATA
+           WITH      POINTER   IDXP
+           END-STRING
+      *
+           .
+       800-PUT-DELIMITER-EXT.
+           EXIT.
+      *****************************************************************
+      *    改行文字編集処理
+      *****************************************************************
+       800-PUT-CR-SEC                  SECTION.
+      *
+           STRING    X"0D"   DELIMITED BY  SIZE
+           INTO      WRK-CSVDATA
+           WITH      POINTER   IDXP
+           END-STRING
+      *
+           .
+       800-PUT-CR-EXT.
+           EXIT.
+      *****************************************************************
+      *    項目サイズ取得処理
+      *****************************************************************
+       800-GET-ITEM-SIZE-SEC           SECTION.
+      *
+           MOVE    ZERO            TO  IDX-ST
+                                       IDX-ED
+      *
+           PERFORM  VARYING  IDX-LEN  FROM  1  BY  1
+                    UNTIL  IDX-LEN  >  WRK-ITEM-SIZE
+                    OR  WRK-ITEM(IDX-LEN:)    =  SPACE
+      *
+             IF  IDX-ST  =  ZERO
+               IF  WRK-ITEM(IDX-LEN:1)  NOT =  SPACE
+                 MOVE    IDX-LEN      TO  IDX-ST
+                 MOVE    1            TO  IDX-ED
+               END-IF
+             ELSE
+               COMPUTE  IDX-ED  =  IDX-ED  +  1
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+       800-GET-ITEM-SIZE-EXT.
+           EXIT.
+      *****************************************************************
+      *    ＣＳＶ出力処理
+      *****************************************************************
+       230-TOUKEICSV-SEC               SECTION.
+      *
+           IF  WRK-PARA-PRTYM  >=  "200804"
+             INITIALIZE                     ORCSTOUKEICSVAREA
+             MOVE    "INS"                  TO  STOUKEICSV-MODE
+             MOVE    LNK-PRTKANRI-TBL-KEY   TO  STOUKEICSV-TBL-KEY
+             MOVE    LNK-PRTKANRI-RENNUM    TO  STOUKEICSV-RENNUM
+             MOVE    LNK-PRTKANRI-TBL-GROUP TO  STOUKEICSV-TBL-GROUP
+             MOVE    LNK-PRTKANRI-SHORI-RENNUM
+                                            TO  STOUKEICSV-SHORI-RENNUM
+             MOVE    LNK-PRTKANRI-SHELLID   TO  STOUKEICSV-SHELLID
+             MOVE    LNK-PRTKANRI-SRYYM     TO  STOUKEICSV-SRYYM
+             MOVE    ZERO                   TO  STOUKEICSV-PTID
+             MOVE    WRK-PARA-NYUGAIKBN     TO  STOUKEICSV-NYUGAIKBN
+             MOVE    "/var/tmp/"            TO  STOUKEICSV-TO-FOLDER
+      *
+             STRING  SPA-HOSPNUM            DELIMITED  BY  SIZE
+                     "shinryoutensugekkei_"   DELIMITED  BY  SIZE
+                     WRK-PARA-PRTYM         DELIMITED  BY  SIZE
+                     ".csv"                 DELIMITED  BY  SIZE
+                                            INTO  STOUKEICSV-TO-DATA
+             END-STRING
+             MOVE    "2"                    TO  STOUKEICSV-CODE-TYPE
+             MOVE    WRK-CSVDATA            TO  STOUKEICSV-CSVDATA
+             MOVE    "保険別診療点数月計表" TO  STOUKEICSV-TITLE
+      *
+             CALL    "ORCSTOUKEICSV"     USING
+                                         ORCSTOUKEICSVAREA
+                                         SPA-AREA
+             IF  ( STOUKEICSV-RETURN  =  ZERO )
+               CONTINUE
+             ELSE
+               MOVE    "統計ＣＳＶＤＢに更新できませんでした"
+                                         TO  WRK-RECEERR
+               PERFORM  500-ERR-HENSYU-SEC
+             END-IF
+      *
+             INITIALIZE                  WRK-CSVDATA
+           END-IF
+      *
+           .
+      *
+       230-TOUKEICSV-EXT.
+           EXIT.
       *****************************************************************
       *    エラー出力処理
       *****************************************************************

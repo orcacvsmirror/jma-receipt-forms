@@ -32,6 +32,7 @@
       *  01.00.02    @@@@-ÅÄÃæ    11/03/17  ´µ¼ÔÈÖ¹æ¤ÎÊÔ½¸½èÍý¤ò½¤Àµ
       *  01.00.03    @@@@-ÅÄÃæ    11/04/04  ´µ¼ÔÈÖ¹æ·å¿ô¤òºÇÂç20·å¤ËÊÑ¹¹
       *  01.00.04    @@@@-Ìç´Ö    11/04/18  ½èÍýÂ®ÅÙ¤Î²þÁ±¡¢¥³¥á¥ó¥ÈÍúÎòºï½ü
+      *  01.00.05    @@@@-ÅÄÃæ    11/10/04  CSV¥Õ¥¡¥¤¥ëºîÀ®µ¡Ç½ÄÉ²Ã 
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -77,11 +78,13 @@
            03  FLG-SYUMEI          PIC 9(01).
            03  FLG-SYUNOU          PIC 9(01).
            03  FLG-HKNNUM          PIC 9(01).
+           03  FLG-FIRST           PIC 9(01).
       *
       *    ¥«¥¦¥ó¥ÈÎÎ°è
        01  CNT-AREA.
            03  CNT-LINE            PIC 9(02).
            03  CNT-PAGE            PIC 9(06).
+           03  CNT-CSV             PIC 9(06).
       *
       *    ¥·¥¹¥Æ¥àÎÎ°è
        01  SYS-AREA.
@@ -92,30 +95,33 @@
       *
       *    Åº»úÎÎ°è
        01  IDX-AREA.
-           03  IDX                 PIC 9(04).
-           03  IDY                 PIC 9(04).
-           03  IDZ                 PIC 9(04).
-           03  IDX-S               PIC 9(05).
-           03  IDX-N               PIC 9(05).
-           03  IDX-MAX             PIC 9(05).
-      *
-           03  IDX2                PIC 9(04).
-           03  JIHIIDX             PIC 9(04).
-           03  IDX-SUM             PIC 9(04).
-      *
-           03  IDX3                PIC 9(04).
-      *
-           03  IDX-NG              PIC 9(01).
+           03  IDX                   PIC 9(04).
+           03  IDZ                   PIC 9(04).
+           03  IDX-S                 PIC 9(05).
+           03  IDX-N                 PIC 9(05).
+           03  IDX-MAX               PIC 9(05).
+           03  JIHIIDX               PIC 9(04).
+           03  IDX-SUM               PIC 9(04).
+           03  IDX1                  PIC 9(04).
+           03  IDX2                  PIC 9(04).
+           03  IDX3                  PIC 9(04).
+           03  IDX4                  PIC 9(03).
+           03  IDX5                  PIC 9(03).
+           03  IDX-NG                PIC 9(01).
+           03  IDX-ST                PIC 9(03).
+           03  IDX-ED                PIC 9(03).
+           03  IDXP                  PIC 9(05).
+           03  IDX-JIHI              PIC 9(02).
       *
       *    ¥Ñ¥é¥á¥¿ÎÎ°è
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
-           03  WRK-PARA-JOBID      PIC 9(07).
-           03  WRK-PARA-SHELLID    PIC X(08).
-           03  WRK-PARA-HOSPNUM    PIC 9(02).
-           03  WRK-PARA-DENPPRTYMD PIC X(08).
-           03  WRK-PARA-SORTKBN    PIC X(01).
-           03  WRK-PARA-GOKEIKBN   PIC X(01).
+           03  WRK-PARA-JOBID        PIC 9(07).
+           03  WRK-PARA-SHELLID      PIC X(08).
+           03  WRK-PARA-HOSPNUM      PIC 9(02).
+           03  WRK-PARA-DENPPRTYMD   PIC X(08).
+           03  WRK-PARA-SORTKBN      PIC X(01).
+           03  WRK-PARA-GOKEIKBN     PIC X(01).
       *
       *    °ì»þÎÎ°è
        01  WRK-AREA.
@@ -147,57 +153,57 @@
            03  WRK-JIHI2            PIC 9(07).
            03  WRK-JIHI3            PIC 9(07).
       *
-           03  WRK-TJIHI-G       OCCURS  10.
-               05  WRK-TJIHI     PIC X(08).
-           03  WRK-TJIHIN-G      OCCURS  10.
-               05  WRK-TJIHIN    PIC X(08).
+           03  WRK-TJIHI-G          OCCURS  10.
+               05  WRK-TJIHI        PIC X(08).
+           03  WRK-TJIHIN-G         OCCURS  10.
+               05  WRK-TJIHIN       PIC X(08).
       *
-           03  WRK-4001-TENTANKA PIC 9(02)V9(01).
+           03  WRK-4001-TENTANKA    PIC 9(02)V9(01).
       *
-           03  WRK-RENNUM-X          PIC ZZ9.
-           03  WRK-PAGE              PIC ZZ9.
-           03  WRK-Z9                PIC ZZZZZZ9.
-           03  WRK-ZZ                PIC ZZZZZZZ.
-           03  WRK-ZZ9               PIC ZZZZZZZ9.
-           03  WRK-ZZZ               PIC ZZZZZZZZ.
-           03  WRK-S9                PIC -------9.
-           03  WRK-SZ                PIC -------Z.
-           03  WRK-SZ9               PIC --------9.
-           03  WRK-SZZ               PIC --------Z.
-           03  WRK-S9-2              PIC ------9.
-           03  WRK-Z9-2              PIC ------Z.
-           03  WRK-COMPFTN           PIC S9(10).
-           03  WRK-SZ10              PIC ---------Z.
+           03  WRK-RENNUM-X         PIC ZZ9.
+           03  WRK-PAGE             PIC ZZ9.
+           03  WRK-Z9               PIC ZZZZZZ9.
+           03  WRK-ZZ               PIC ZZZZZZZ.
+           03  WRK-ZZ9              PIC ZZZZZZZ9.
+           03  WRK-ZZZ              PIC ZZZZZZZZ.
+           03  WRK-S9               PIC -------9.
+           03  WRK-SZ               PIC -------Z.
+           03  WRK-SZ9              PIC --------9.
+           03  WRK-SZZ              PIC --------Z.
+           03  WRK-S9-2             PIC ------9.
+           03  WRK-Z9-2             PIC ------Z.
+           03  WRK-COMPFTN          PIC S9(10).
+           03  WRK-SZ10             PIC ---------Z.
       *
-       01  SUM-AREA                             VALUE   ZERO.
-           03  SUM-HKNTEN      PIC 9(08).
-           03  SUM-HKNKEN      PIC 9(08).
-           03  SUM-OCC         OCCURS  20.
-               05  SUM-MONEY   PIC S9(08).
-               05  SUM-KEN     PIC 9(08).
-           03  SUM-SYUEKI      PIC 9(08).
-           03  SUM-SEIKYU      PIC S9(08).
-           03  SUM-RYOSYU      PIC S9(08).
-           03  SUM-SEIKYUKEN   PIC 9(08).
-           03  SUM-RYOSYUKEN   PIC 9(08).
+       01  SUM-AREA                 VALUE ZERO.
+           03  SUM-HKNTEN           PIC 9(08).
+           03  SUM-HKNKEN           PIC 9(08).
+           03  SUM-OCC              OCCURS 20.
+               05  SUM-MONEY        PIC S9(08).
+               05  SUM-KEN          PIC 9(08).
+           03  SUM-SYUEKI           PIC 9(08).
+           03  SUM-SEIKYU           PIC S9(08).
+           03  SUM-RYOSYU           PIC S9(08).
+           03  SUM-SEIKYUKEN        PIC 9(08).
+           03  SUM-RYOSYUKEN        PIC 9(08).
       *
-       01  SUM-G-AREA                           VALUE   ZERO.
-           03  SUM-G-HKNTEN      PIC 9(09).
-           03  SUM-G-OCC         OCCURS  20.
-               05  SUM-G-MONEY   PIC S9(09).
-           03  SUM-G-SYUEKI      PIC S9(09).
-           03  SUM-G-SEIKYU      PIC S9(09).
-           03  SUM-G-RYOSYU      PIC S9(09).
+       01  SUM-G-AREA               VALUE ZERO.
+           03  SUM-G-HKNTEN         PIC 9(09).
+           03  SUM-G-OCC            OCCURS 20.
+               05  SUM-G-MONEY      PIC S9(09).
+           03  SUM-G-SYUEKI         PIC S9(09).
+           03  SUM-G-SEIKYU         PIC S9(09).
+           03  SUM-G-RYOSYU         PIC S9(09).
       *
-       01  SUM-GG-AREA            VALUE   ZERO.
-           03  SUM-GG-HKNTEN      PIC 9(09).
-           03  SUM-GG-SYUEKI      PIC S9(10).
-           03  SUM-GG-OCC         OCCURS  20.
-               05  SUM-GG-MONEY   PIC S9(08).
-           03  SUM-GG-SEIKYU      PIC S9(10).
-           03  SUM-GG-RYOSYU      PIC S9(10).
+       01  SUM-GG-AREA              VALUE   ZERO.
+           03  SUM-GG-HKNTEN        PIC 9(09).
+           03  SUM-GG-SYUEKI        PIC S9(10).
+           03  SUM-GG-OCC           OCCURS  20.
+               05  SUM-GG-MONEY     PIC S9(08).
+           03  SUM-GG-SEIKYU        PIC S9(10).
+           03  SUM-GG-RYOSYU        PIC S9(10).
        01  WRK-SMEI-REC.
-           03  WRK-SMEI-TBL      OCCURS  10000.
+           03  WRK-SMEI-TBL         OCCURS  10000.
                05  WRK-SMEI-HOSPNUM         PIC 9(02).
                05  WRK-SMEI-PTID            PIC 9(10).
                05  WRK-SMEI-SORT-KEY.
@@ -216,15 +222,66 @@
       *
        01  WRK-CONS-AREA.
       *    ¼«ÈñÊÝ¸±ÈÖ¹æ
-           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)   VALUE   "980".
+           03  WRK-CONS-JIHI-HKNNUM    PIC X(03)  VALUE "980".
       *    Ï«ºÒÊÝ¸±ÈÖ¹æ
-           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)   VALUE   "971".
+           03  WRK-CONS-ROUSAI-HKNNUM  PIC X(03)  VALUE "971".
       *    ¼«ÇåÀÕÊÝ¸±ÈÖ¹æ
-           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)   VALUE   "973".
+           03  WRK-CONS-JIBAI-HKNNUM   PIC X(03)  VALUE "973".
       *    ¸ø³²ÊÝ¸±ÈÖ¹æ
-           03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE   "975".
+           03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)  VALUE "975".
       *
            COPY    "CPSHELLTBL.INC".
+      *
+       01  WRK-CSV-AREA.
+           03  WRK-ITEM-SIZE           PIC 9(03)    VALUE 100.
+           03  WRK-ITEM                PIC X(100)   VALUE SPACE.
+           03  WRK-CSVDATA             PIC X(20000) VALUE SPACE.
+      *
+       01  CSV-HEAD-AREA.
+           03  CSV-HEAD-G.
+             05  CSV-HEAD-VAL.
+               07  CSV-HEAD-DENPNUM       PIC X(50) VALUE "ÅÁÉ¼ÈÖ¹æ".
+               07  CSV-HEAD-PTNUM         PIC X(50) VALUE "´µ¼ÔÈÖ¹æ".
+               07  CSV-HEAD-PTNAME        PIC X(50) VALUE "´µ¼Ô»áÌ¾".
+               07  CSV-HEAD-HKNTEN        PIC X(50)
+                                          VALUE "ÊÝ¸±ÅÀ¿ô(ÅÀ)".
+               07  CSV-HEAD-SYUEKI        PIC X(50)
+                                          VALUE "°åÎÅ¼ý±×(Áí·×³Û)".
+               07  CSV-HEAD-HKN1          PIC X(50).
+               07  CSV-HEAD-HKN2          PIC X(50).
+               07  CSV-HEAD-HKN3          PIC X(50).
+               07  CSV-HEAD-HKN4          PIC X(50).
+               07  CSV-HEAD-HKN5          PIC X(50).
+               07  CSV-HEAD-HKN6          PIC X(50).
+               07  CSV-HEAD-JIHI-G.
+                 09  CSV-HEAD-SKY-JIHI1   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI2   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI3   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI4   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI5   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI6   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI7   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI8   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI9   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI10  PIC X(50)  VALUE SPACE.
+               07  CSV-HEAD-JIHI-R        REDEFINES CSV-HEAD-JIHI-G.
+                 09  CSV-HEAD-JIHI-OCC    OCCURS  10.
+                   11  CSV-HEAD-JIHI-NAME PIC X(50).
+               07  CSV-HEAD-SKY-JIHI      PIC X(50)
+                                          VALUE "¼«Èñ".
+               07  CSV-HEAD-SKY-ROSAI     PIC X(50)
+                                          VALUE "Ï«ºÒ".
+               07  CSV-HEAD-SKY-JIBAI     PIC X(50)
+                                          VALUE "¼«ÇåÀÕ".
+               07  CSV-HEAD-SKY-KOUGAI    PIC X(50)
+                                          VALUE "¸ø³²".
+               07  CSV-HEAD-SKYMONEY      PIC X(50)
+                                          VALUE "Áë¸ýÀÁµá¶â³Û".
+               07  CSV-HEAD-RSYMONEY      PIC X(50)
+                                          VALUE "Áë¸ýÎÎ¼ý¶â³Û".
+             05  CSV-HEAD-R               REDEFINES CSV-HEAD-VAL.
+               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 27.
+             05  CSV-HEAD-MAX             PIC 9(05) VALUE 27.
       *
       *****************************************************************
       *    ¥Õ¥¡¥¤¥ë¥ì¥¤¥¢¥¦¥È
@@ -305,6 +362,9 @@
       *
       *    ´µ¼ÔÈÖ¹æÊÑ´¹¥µ¥Ö
            COPY    "CPORCSPTID.INC".
+      *
+      *    Åý·×£Ã£Ó£ÖÀ©¸æ¥µ¥Ö
+           COPY    "CPORCSTOUKEICSV.INC".
       *
       *    £Ä£Â¸¡º÷
            COPY    "MCPAREA".
@@ -402,28 +462,28 @@
        110-PARA-HENSYU-SEC                   SECTION.
       *
       *    ¥·¥¹¥Æ¥àÆüÉÕ¥»¥Ã¥È
-           MOVE    LNK-PRTKANRI-SKYYMD   TO   WRK-SYMD
+           MOVE    LNK-PRTKANRI-SKYYMD   TO  WRK-SYMD
            PERFORM  31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG           TO   WRK-SYSYMDWH
+           MOVE    WRK-HENYMDG           TO  WRK-SYSYMDWH
       *
       *    ÂÐ¾ÝÇ¯·îÆüÊÔ½¸
-           MOVE    WRK-PARA-DENPPRTYMD   TO   WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
            PERFORM  31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG           TO   WRK-PARA-DENPPRTYMDWH
+           MOVE    WRK-HENYMDG           TO  WRK-PARA-DENPPRTYMDWH
       *
       *    °åÎÅµ¡´Ø£É£ÄÊÔ½¸
-           MOVE    SPACE                 TO   SYS-1001-REC
+           MOVE    SPACE                 TO  SYS-1001-REC
            INITIALIZE                    SYS-1001-REC
-           MOVE    "1001"                TO   SYS-1001-KANRICD
-           MOVE    "*"                   TO   SYS-1001-KBNCD
-           MOVE    SPA-HOSPNUM           TO   SYS-1001-HOSPNUM
-           MOVE  WRK-PARA-DENPPRTYMD     TO   SYS-1001-EDYUKYMD
-                                              SYS-1001-STYUKYMD
-           MOVE    SYS-1001-REC          TO   MCPDATA-REC
+           MOVE    "1001"                TO  SYS-1001-KANRICD
+           MOVE    "*"                   TO  SYS-1001-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1001-HOSPNUM
+           MOVE  WRK-PARA-DENPPRTYMD     TO  SYS-1001-EDYUKYMD
+                                             SYS-1001-STYUKYMD
+           MOVE    SYS-1001-REC          TO  MCPDATA-REC
            PERFORM   800-SYSKANRI-READ-SEC
            IF   FLG-SYSKANRI  =  ZERO
-             MOVE    MCPDATA-REC       TO   SYS-1001-REC
-             MOVE    SYS-1001-HOSPNUM  TO   WRK-PARA-HOSPNUM
+             MOVE    MCPDATA-REC         TO  SYS-1001-REC
+             MOVE    SYS-1001-HOSPNUM    TO  WRK-PARA-HOSPNUM
            ELSE
              MOVE    "°åÎÅµ¡´Ø£É£Ä¤¬¼èÆÀ¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿¡£"
                                          TO  WRK-RECEERR
@@ -432,389 +492,389 @@
       *
       *    ¼«Èñ¾ðÊó¼èÆÀ
       *    ¶èÊ¬11
-           MOVE    SPACE               TO   SYS-1013-REC
-           INITIALIZE                       SYS-1013-REC
-           MOVE    "1013"              TO   SYS-1013-KANRICD
-           MOVE    "11"                TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM         TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD   TO   SYS-1013-EDYUKYMD
-                                            SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC        TO   MCPDATA-REC
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "11"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
+                                             SYS-1013-STYUKYMD
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF      FLG-SYSKANRI2       =   ZERO
-             MOVE    MCPDATA-REC       TO   SYS-1013-REC
-             MOVE    SYS-1013-JIHINAME TO   WRK-TJIHIN(1)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE    MCPDATA-REC         TO  SYS-1013-REC
+             MOVE    SYS-1013-JIHINAME   TO  WRK-TJIHIN(1)
            ELSE
-             MOVE    SPACE             TO   WRK-TJIHIN(1)
+             MOVE    SPACE               TO  WRK-TJIHIN(1)
            END-IF
       *
       *    ¶èÊ¬12
-           MOVE    SPACE               TO   SYS-1013-REC
-           INITIALIZE                       SYS-1013-REC
-           MOVE    "1013"              TO   SYS-1013-KANRICD
-           MOVE    "12"                TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM         TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD   TO   SYS-1013-EDYUKYMD
-                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC        TO   MCPDATA-REC
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "12"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
+                                             SYS-1013-STYUKYMD
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHIN(2)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHIN(2)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHIN(2)
+             MOVE   SPACE                TO  WRK-TJIHIN(2)
            END-IF
       *
       *    ¶èÊ¬13
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE   "1013"                TO   SYS-1013-KANRICD
-           MOVE   "13"                  TO   SYS-1013-KBNCD
-           MOVE   SPA-HOSPNUM           TO   SYS-1013-HOSPNUM
-           MOVE   WRK-PARA-DENPPRTYMD   TO   WRK-SYMD
-           MOVE   WRK-PARA-DENPPRTYMD   TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE   "1013"                 TO  SYS-1013-KANRICD
+           MOVE   "13"                   TO  SYS-1013-KBNCD
+           MOVE   SPA-HOSPNUM            TO  SYS-1013-HOSPNUM
+           MOVE   WRK-PARA-DENPPRTYMD    TO  WRK-SYMD
+           MOVE   WRK-PARA-DENPPRTYMD    TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE   SYS-1013-REC          TO   MCPDATA-REC
+           MOVE   SYS-1013-REC           TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHIN(3)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHIN(3)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHIN(3)
+             MOVE   SPACE                TO  WRK-TJIHIN(3)
            END-IF
       *
       *    ¶èÊ¬14
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "14"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE  WRK-PARA-DENPPRTYMD    TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "14"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE  WRK-PARA-DENPPRTYMD     TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHIN(4)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHIN(4)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHIN(4)
+             MOVE   SPACE                TO  WRK-TJIHIN(4)
            END-IF
       *
       *    ¶èÊ¬15
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "15"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "15"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF      FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHIN(5)
+           IF      FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHIN(5)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHIN(5)
+             MOVE   SPACE                TO  WRK-TJIHIN(5)
            END-IF
       *
       *    ¶èÊ¬16
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "16"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "16"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHIN(6)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHIN(6)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHIN(6)
+             MOVE   SPACE                TO  WRK-TJIHIN(6)
            END-IF
       *
       *    ¶èÊ¬17
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "17"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "17"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2        =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHIN(7)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHIN(7)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHIN(7)
+             MOVE   SPACE                TO  WRK-TJIHIN(7)
            END-IF
       *
       *    ¶èÊ¬18
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "18"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "18"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHIN(8)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHIN(8)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHIN(8)
+             MOVE   SPACE                TO  WRK-TJIHIN(8)
            END-IF
       *
       *    ¶èÊ¬19
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "19"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "19"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHIN(9)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHIN(9)
            ELSE
-             MOVE   SPACE               TO  WRK-TJIHIN(9)
+             MOVE   SPACE                TO  WRK-TJIHIN(9)
            END-IF
       *
       *    ¶èÊ¬10
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "10"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
-                                            SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "10"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
+                                             SYS-1013-STYUKYMD
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHIN(10)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHIN(10)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHIN(10)
+             MOVE   SPACE                TO  WRK-TJIHIN(10)
            END-IF
       *
       *    ¼«Èñ¾ðÊó¼èÆÀ
       *    ¶èÊ¬21
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "21"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "21"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHI(1)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHI(1)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHI(1)
+             MOVE   SPACE                TO  WRK-TJIHI(1)
            END-IF
       *
       *    ¶èÊ¬22
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "22"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "22"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF    FLG-SYSKANRI2   =   ZERO
-             MOVE  MCPDATA-REC          TO   SYS-1013-REC
-             MOVE  SYS-1013-JIHINAME    TO   WRK-TJIHI(2)
+           IF    FLG-SYSKANRI2  =  ZERO
+             MOVE  MCPDATA-REC           TO  SYS-1013-REC
+             MOVE  SYS-1013-JIHINAME     TO  WRK-TJIHI(2)
            ELSE
-             MOVE  SPACE                TO   WRK-TJIHI(2)
+             MOVE  SPACE                 TO  WRK-TJIHI(2)
            END-IF
       *
       *    ¶èÊ¬23
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "23"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE  WRK-PARA-DENPPRTYMD    TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "23"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE  WRK-PARA-DENPPRTYMD     TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHI(3)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHI(3)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHI(3)
+             MOVE   SPACE                TO  WRK-TJIHI(3)
            END-IF
       *
       *    ¶èÊ¬24
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "24"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "24"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHI(4)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHI(4)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHI(4)
+             MOVE   SPACE                TO  WRK-TJIHI(4)
            END-IF
       *
       *    ¶èÊ¬25
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "25"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "25"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF    FLG-SYSKANRI2   =   ZERO
-               MOVE  MCPDATA-REC        TO   SYS-1013-REC
-               MOVE  SYS-1013-JIHINAME  TO   WRK-TJIHI(5)
+           IF    FLG-SYSKANRI2  =  ZERO
+               MOVE  MCPDATA-REC         TO  SYS-1013-REC
+               MOVE  SYS-1013-JIHINAME   TO  WRK-TJIHI(5)
            ELSE
-               MOVE  SPACE              TO   WRK-TJIHI(5)
+               MOVE  SPACE               TO  WRK-TJIHI(5)
            END-IF
       *
       *    ¶èÊ¬26
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "26"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "26"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHI(6)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHI(6)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHI(6)
+             MOVE   SPACE                TO  WRK-TJIHI(6)
            END-IF
       *
       *    ¶èÊ¬27
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "27"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "27"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHI(7)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHI(7)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHI(7)
+             MOVE   SPACE                TO  WRK-TJIHI(7)
            END-IF
       *
       *    ¶èÊ¬28
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "28"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "28"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHI(8)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHI(8)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHI(8)
+             MOVE   SPACE                TO  WRK-TJIHI(8)
            END-IF
       *
       *    ¶èÊ¬29
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "29"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "29"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM   820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHI(9)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHI(9)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHI(9)
+             MOVE   SPACE                TO  WRK-TJIHI(9)
            END-IF
       *
       *    ¶èÊ¬20
-           MOVE    SPACE                TO   SYS-1013-REC
-           INITIALIZE                        SYS-1013-REC
-           MOVE    "1013"               TO   SYS-1013-KANRICD
-           MOVE    "20"                 TO   SYS-1013-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-1013-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-1013-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-1013-REC
+           INITIALIZE                    SYS-1013-REC
+           MOVE    "1013"                TO  SYS-1013-KANRICD
+           MOVE    "20"                  TO  SYS-1013-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-1013-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-1013-EDYUKYMD
                                              SYS-1013-STYUKYMD
-           MOVE    SYS-1013-REC         TO   MCPDATA-REC
+           MOVE    SYS-1013-REC          TO  MCPDATA-REC
            PERFORM 820-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-1013-REC
-             MOVE   SYS-1013-JIHINAME   TO   WRK-TJIHI(10)
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE   MCPDATA-REC          TO  SYS-1013-REC
+             MOVE   SYS-1013-JIHINAME    TO  WRK-TJIHI(10)
            ELSE
-             MOVE   SPACE               TO   WRK-TJIHI(10)
+             MOVE   SPACE                TO  WRK-TJIHI(10)
            END-IF
       *
       *    Ï«ºÒ°åÎÅµ¡´Ø¾ðÊó
-           MOVE    SPACE                TO   SYS-4001-REC
-           INITIALIZE                        SYS-4001-REC
-           MOVE    "4001"               TO   SYS-4001-KANRICD
-           MOVE    "*"                  TO   SYS-4001-KBNCD
-           MOVE    SPA-HOSPNUM          TO   SYS-4001-HOSPNUM
-           MOVE    WRK-PARA-DENPPRTYMD  TO   WRK-SYMD
-           MOVE    WRK-PARA-DENPPRTYMD  TO   SYS-4001-EDYUKYMD
+           MOVE    SPACE                 TO  SYS-4001-REC
+           INITIALIZE                    SYS-4001-REC
+           MOVE    "4001"                TO  SYS-4001-KANRICD
+           MOVE    "*"                   TO  SYS-4001-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-4001-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD   TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD   TO  SYS-4001-EDYUKYMD
                                              SYS-4001-STYUKYMD
-           MOVE    SYS-4001-REC         TO   MCPDATA-REC
+           MOVE    SYS-4001-REC          TO  MCPDATA-REC
            PERFORM 810-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI2   =   ZERO
-             MOVE   MCPDATA-REC         TO   SYS-4001-REC
+           IF   FLG-SYSKANRI2  =  ZERO
+             MOVE    MCPDATA-REC         TO  SYS-4001-REC
              EVALUATE  SYS-4001-TENKBN
                WHEN  "1"
-                 MOVE    11.5           TO   WRK-4001-TENTANKA
+                 MOVE    11.5            TO  WRK-4001-TENTANKA
                WHEN  "2"
-                 MOVE    12             TO   WRK-4001-TENTANKA
+                 MOVE    12              TO  WRK-4001-TENTANKA
                WHEN  OTHER
-                 MOVE    10             TO   WRK-4001-TENTANKA
+                 MOVE    10              TO  WRK-4001-TENTANKA
              END-EVALUATE
            ELSE
-             MOVE    10                 TO   WRK-4001-TENTANKA
+             MOVE    10                  TO  WRK-4001-TENTANKA
            END-IF
       *
            .
@@ -832,29 +892,29 @@
       *    Ä¢É¼ÊÔ½¸<ÌÀºÙ>½èÍý
              PERFORM  320-BODY-HEN-SEC
       *    Ä¢É¼°õºþ½èÍý
-               IF   FLG-GET  =  1
-                 EVALUATE  WRK-PARA-GOKEIKBN
-                   WHEN  "1"
-                     PERFORM  390-PRINT-OUT-SEC
-                     IF   WRK-SMEI-NYUGAIKBN(IDX-S) NOT =
-                                        WRK-SMEI-NYUGAIKBN(IDX-S - 1)
-                       OR WRK-SMEI-SRYKA(IDX-S)     NOT =
-                                        WRK-SMEI-SRYKA(IDX-S - 1)
-                       PERFORM  400-PRINT-OUT-SEC
-                       INITIALIZE       SUM-GG-AREA
-                     END-IF
-                   WHEN  "2"
-                     IF   WRK-SMEI-NYUGAIKBN(IDX-S) NOT =
-                                        WRK-SMEI-NYUGAIKBN(IDX-S - 1)
-                       OR WRK-SMEI-SRYKA(IDX-S)     NOT =
-                                        WRK-SMEI-SRYKA(IDX-S - 1)
-                       PERFORM  400-PRINT-OUT-SEC
-                       INITIALIZE       SUM-GG-AREA
-                     END-IF
-                   WHEN  OTHER
-                     PERFORM  390-PRINT-OUT-SEC
-                 END-EVALUATE
-               END-IF
+             IF   FLG-GET  =  1
+               EVALUATE  WRK-PARA-GOKEIKBN
+                 WHEN  "1"
+                   PERFORM  390-PRINT-OUT-SEC
+                   IF   WRK-SMEI-NYUGAIKBN(IDX-S) NOT =
+                                      WRK-SMEI-NYUGAIKBN(IDX-S - 1)
+                     OR WRK-SMEI-SRYKA(IDX-S)     NOT =
+                                      WRK-SMEI-SRYKA(IDX-S - 1)
+                     PERFORM  400-PRINT-OUT-SEC
+                     INITIALIZE       SUM-GG-AREA
+                   END-IF
+                 WHEN  "2"
+                   IF   WRK-SMEI-NYUGAIKBN(IDX-S) NOT =
+                                      WRK-SMEI-NYUGAIKBN(IDX-S - 1)
+                     OR WRK-SMEI-SRYKA(IDX-S)     NOT =
+                                      WRK-SMEI-SRYKA(IDX-S - 1)
+                     PERFORM  400-PRINT-OUT-SEC
+                     INITIALIZE       SUM-GG-AREA
+                   END-IF
+                 WHEN  OTHER
+                   PERFORM  390-PRINT-OUT-SEC
+               END-EVALUATE
+             END-IF
            END-PERFORM
       *
       *    Ä¢É¼°õºþ½èÍý
@@ -1060,26 +1120,32 @@
       *****************************************************************
        320-BODY-HEN-SEC      SECTION.
       *
-           MOVE    ZERO                        TO   CNT-LINE
+           MOVE    ZERO        TO   CNT-LINE
       *
            INITIALIZE                          SUM-G-AREA
       *
            MOVE    WRK-SMEI-NYUGAIKBN(IDX-S)   TO   WRK-NYUGAIKBN
            MOVE    WRK-SMEI-SRYKA(IDX-S)       TO   WRK-SRYKA
-      *    Ä¢É¼ÊÔ½¸<¸«½Ð¤·>½èÍý
       *
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+           IF  FLG-FIRST  =  ZERO
+             PERFORM  800-CSV-HEAD-SEC
+             MOVE    1         TO  FLG-FIRST
+           END-IF
+      *
+      *    Ä¢É¼ÊÔ½¸<¸«½Ð¤·>½èÍý
            EVALUATE  WRK-PARA-GOKEIKBN
              WHEN  "1"
-             PERFORM  310-HEAD-HEN-SEC
-             PERFORM  320-HEAD-HEN-SEC
+               PERFORM  310-HEAD-HEN-SEC
+               PERFORM  320-HEAD-HEN-SEC
              WHEN  "2"
-             PERFORM  320-HEAD-HEN-SEC
+               PERFORM  320-HEAD-HEN-SEC
              WHEN  OTHER
-             PERFORM  310-HEAD-HEN-SEC
+               PERFORM  310-HEAD-HEN-SEC
            END-EVALUATE
       *
            PERFORM   UNTIL   FLG-END   =   1
-                       OR  CNT-LINE   =   21
+                     OR  CNT-LINE   =   21
       *    ¼ýÇ¼¥Æ¡¼¥Ö¥ëºÆÆÉ¤ß¹þ¤ß
              PERFORM 901-SYUNOU-READ-SEC
              IF   FLG-SYUNOU   =   ZERO
@@ -1100,18 +1166,26 @@
       *    ¹ç·×°õ»ú
                      PERFORM   3000-GOUKEI-SET-SEC
                      PERFORM   400-PRINT-OUT-SEC
+      *    CSV¹ç·×ÊÔ½¸½èÍý
+                     IF  WRK-PARA-GOKEIKBN  NOT =  SPACE
+                       PERFORM  400-CSV-GOUKEI-SEC
+                     END-IF
                      INITIALIZE       SUM-GG-AREA
                      PERFORM   320-HEAD-HEN-SEC
                    WHEN  "2"
       *    ¹ç·×°õ»ú
                      PERFORM   3000-GOUKEI-SET-SEC
                      PERFORM   400-PRINT-OUT-SEC
+      *    CSV¹ç·×ÊÔ½¸½èÍý
+                     IF  WRK-PARA-GOKEIKBN  NOT =  SPACE
+                       PERFORM  400-CSV-GOUKEI-SEC
+                     END-IF
                      INITIALIZE      SUM-GG-AREA
                      PERFORM   320-HEAD-HEN-SEC
                    WHEN  OTHER
       *    ¾®·×°õ»ú
-                     PERFORM   3001-SYOUKEI-SET-SEC
-                     PERFORM   390-PRINT-OUT-SEC
+                     PERFORM  3001-SYOUKEI-SET-SEC
+                     PERFORM  390-PRINT-OUT-SEC
                      INITIALIZE                    SUM-G-AREA
       *    Ä¢É¼ÊÔ½¸<¸«½Ð¤·>½èÍý
                      PERFORM  310-HEAD-HEN-SEC
@@ -1119,10 +1193,16 @@
                  MOVE   ZERO                       TO  CNT-LINE
                  MOVE   WRK-SMEI-NYUGAIKBN(IDX-S)  TO  WRK-NYUGAIKBN
                  MOVE   WRK-SMEI-SRYKA(IDX-S)      TO  WRK-SRYKA
+      *
+      *    £Ã£Ó£Ö½ÐÎÏ½èÍý
+                 PERFORM  230-TOUKEICSV-SEC
+      *
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+                 PERFORM  800-CSV-HEAD-SEC
                END-IF
       *
       *    ¿ÇÎÅ²Ê¥Ö¥ì¥¤¥¯¥Á¥§¥Ã¥¯½èÍý
-               IF WRK-SMEI-SRYKA(IDX-S)  NOT =  WRK-SRYKA
+               IF  WRK-SMEI-SRYKA(IDX-S)  NOT =  WRK-SRYKA
       *
                  MOVE   WRK-SMEI-NYUGAIKBN(IDX-S)  TO  WRK-NYUGAIKBN
                  MOVE   WRK-SMEI-SRYKA(IDX-S)      TO  WRK-SRYKA
@@ -1138,6 +1218,10 @@
       *    ¹ç·×°õ»ú
                      PERFORM   3000-GOUKEI-SET-SEC
                      PERFORM   400-PRINT-OUT-SEC
+      *    CSV¹ç·×ÊÔ½¸½èÍý
+                     IF  WRK-PARA-GOKEIKBN  NOT =  SPACE
+                       PERFORM  400-CSV-GOUKEI-SEC
+                     END-IF
                      INITIALIZE       SUM-GG-AREA
       *
                      PERFORM   320-HEAD-HEN-SEC
@@ -1146,7 +1230,11 @@
       *    ¹ç·×°õ»ú
                      PERFORM   3000-GOUKEI-SET-SEC
                      PERFORM   400-PRINT-OUT-SEC
-                     INITIALIZE      SUM-GG-AREA
+      *    CSV¹ç·×ÊÔ½¸½èÍý
+                     IF  WRK-PARA-GOKEIKBN  NOT =  SPACE
+                       PERFORM  400-CSV-GOUKEI-SEC
+                     END-IF
+                     INITIALIZE       SUM-GG-AREA
                      PERFORM   320-HEAD-HEN-SEC
                    WHEN  OTHER
       *    ¾®·×°õ»ú
@@ -1161,6 +1249,12 @@
                  MOVE    ZERO                      TO   CNT-LINE
                  MOVE    WRK-SMEI-NYUGAIKBN(IDX-S) TO   WRK-NYUGAIKBN
                  MOVE    WRK-SMEI-SRYKA(IDX-S)     TO   WRK-SRYKA
+      *
+      *    £Ã£Ó£Ö½ÐÎÏ½èÍý
+                 PERFORM  230-TOUKEICSV-SEC
+      *
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+                 PERFORM  800-CSV-HEAD-SEC
                END-IF
       *
       *    ´µ¼Ô¾ðÊóÆÉ¤ß¹þ¤ß
@@ -1193,52 +1287,67 @@
                MOVE    PTINF-NAME      TO   HC17-NAME(CNT-LINE)
       *
       *    ÅÁÉ¼ÈÖ¹æ»ÞÈÖ¤¬£±¤Î¾ì¹ç¤ÏÊÝ¸±ÅÀ¿ô¡¢ÊÝ¸±ÊÌÀÁµá³Û¤ÎÌÀºÙ¤ò°õ»ú(³«»Ï)
-               IF     WRK-SMEI-DENPEDANUM(IDX-S)   =   1
+               IF  WRK-SMEI-DENPEDANUM(IDX-S)  =  1
                  IF  FLG-SYUNOU  = ZERO
                    IF WRK-PARA-DENPPRTYMD < "20080401"
-                     PERFORM 320-BODY-HEN-SUB-SEC
+                     PERFORM  320-BODY-HEN-SUB-SEC
                    ELSE
-                     PERFORM 330-BODY-HEN-SUB-SEC
+                     PERFORM  330-BODY-HEN-SUB-SEC
                    END-IF
                  END-IF
                END-IF
       *
       *    ÀÁµá¶â³Û
                INITIALIZE  WRK-SZ
-               MOVE   WRK-SMEI-SKYMONEY(IDX-S)   TO   WRK-SZ
-               MOVE   WRK-SZ     TO   HC17-SEIKYU-G(CNT-LINE)
-               IF   WRK-SMEI-SKYMONEY(IDX-S)  NOT =  0
-                 ADD   WRK-SMEI-SKYMONEY(IDX-S)  TO   SUM-SEIKYU
-                 ADD   1          TO   SUM-SEIKYUKEN
+               MOVE    WRK-SMEI-SKYMONEY(IDX-S)   TO  WRK-SZ
+               MOVE    WRK-SZ      TO  HC17-SEIKYU-G(CNT-LINE)
+               IF  WRK-SMEI-SKYMONEY(IDX-S)  NOT =  0
+                 ADD  WRK-SMEI-SKYMONEY(IDX-S)   TO  SUM-SEIKYU
+                 ADD  1            TO  SUM-SEIKYUKEN
       *
-                 ADD   WRK-SMEI-SKYMONEY(IDX-S)  TO   SUM-G-SEIKYU
-                 ADD   WRK-SMEI-SKYMONEY(IDX-S)  TO   SUM-GG-SEIKYU
+                 ADD  WRK-SMEI-SKYMONEY(IDX-S)   TO  SUM-G-SEIKYU
+                 ADD  WRK-SMEI-SKYMONEY(IDX-S)   TO  SUM-GG-SEIKYU
       *
                END-IF
       *
       *    ÎÎ¼ý¶â³Û
                INITIALIZE  WRK-SZ
-               MOVE   WRK-SMEI-NYUHEN-MONEY(IDX-S) TO   WRK-SZ
-               MOVE   WRK-SZ         TO   HC17-RYOSYU-G(CNT-LINE)
+               MOVE    WRK-SMEI-NYUHEN-MONEY(IDX-S)  TO   WRK-SZ
+               MOVE    WRK-SZ         TO  HC17-RYOSYU-G(CNT-LINE)
                IF   WRK-SMEI-NYUHEN-MONEY(IDX-S)  NOT =  0
-                 ADD    WRK-SMEI-NYUHEN-MONEY(IDX-S)  TO   SUM-RYOSYU
-                 ADD    1          TO    SUM-RYOSYUKEN
+                 ADD  WRK-SMEI-NYUHEN-MONEY(IDX-S)   TO   SUM-RYOSYU
+                 ADD    1             TO  SUM-RYOSYUKEN
       *
-                 ADD WRK-SMEI-NYUHEN-MONEY(IDX-S)   TO   SUM-G-RYOSYU
-                 ADD WRK-SMEI-NYUHEN-MONEY(IDX-S)   TO   SUM-GG-RYOSYU
+                 ADD  WRK-SMEI-NYUHEN-MONEY(IDX-S)   TO   SUM-G-RYOSYU
+                 ADD  WRK-SMEI-NYUHEN-MONEY(IDX-S)   TO   SUM-GG-RYOSYU
       *
                END-IF
              END-IF
       *
-             ADD  1  TO  IDX-S
-      *
-             IF IDX-S   >   IDX-MAX
-               MOVE    1      TO   FLG-END
+      *    CSVÊÔ½¸½èÍý
+             IF  WRK-PARA-GOKEIKBN  NOT =  "2"
+               PERFORM  400-CSV-DATA-SEC
              END-IF
+      *
+             ADD   1        TO  IDX-S
+             IF IDX-S   >   IDX-MAX
+               MOVE    1           TO  FLG-END
+      *
+      *    CSV¹ç·×ÊÔ½¸½èÍý
+               IF  WRK-PARA-GOKEIKBN  NOT =  SPACE
+                 PERFORM  400-CSV-GOUKEI-SEC
+               END-IF
+      *    £Ã£Ó£Ö½ÐÎÏ½èÍý
+               PERFORM  230-TOUKEICSV-SEC
+             END-IF
+      *
            END-PERFORM
       *
-           PERFORM 3001-SYOUKEI-SET-SEC
-           PERFORM 3000-GOUKEI-SET-SEC
+      *    ¾®·×ÊÔ½¸½èÍý
+           PERFORM  3001-SYOUKEI-SET-SEC
+      *
+      *    ¹ç·×ÊÔ½¸½èÍý
+           PERFORM  3000-GOUKEI-SET-SEC
       *
            .
        320-BODY-HEN-EXT.
@@ -1543,25 +1652,25 @@
              ADD     WRK-MONEY     TO   SUM-G-MONEY(IDX)
              ADD     WRK-MONEY     TO   SUM-GG-MONEY(IDX)
       *
-               IF   WRK-JIHI    >   ZERO
-                 PERFORM  VARYING  IDX2  FROM  1  BY  1
-                          UNTIL    IDX2   >   10
-                   INITIALIZE WRK-JIHI2
-                   COMPUTE   WRK-JIHI2  =   SYU-JIHI-TAXNASI(IDX2)
-                                        +   SYU-JIHI-TAXARI(IDX2)
-                   IF   WRK-JIHI2  >  ZERO
-                     MOVE WRK-JIHI2  TO  WRK-ZZ
-                     COMPUTE  JIHIIDX  =  IDX2  +  6
-                     MOVE   WRK-ZZ     TO   HC17-MONEY(JIHIIDX CNT-LINE)
-                     ADD    WRK-JIHI2  TO   SUM-MONEY(JIHIIDX)
-                     ADD    1          TO   SUM-KEN(JIHIIDX)
+             IF   WRK-JIHI    >   ZERO
+               PERFORM  VARYING  IDX2  FROM  1  BY  1
+                        UNTIL    IDX2   >   10
+                 INITIALIZE WRK-JIHI2
+                 COMPUTE   WRK-JIHI2  =   SYU-JIHI-TAXNASI(IDX2)
+                                      +   SYU-JIHI-TAXARI(IDX2)
+                 IF   WRK-JIHI2  >  ZERO
+                   MOVE WRK-JIHI2  TO  WRK-ZZ
+                   COMPUTE  JIHIIDX  =  IDX2  +  6
+                   MOVE   WRK-ZZ     TO   HC17-MONEY(JIHIIDX CNT-LINE)
+                   ADD    WRK-JIHI2  TO   SUM-MONEY(JIHIIDX)
+                   ADD    1          TO   SUM-KEN(JIHIIDX)
       *
-                     ADD    WRK-JIHI2  TO   SUM-G-MONEY(JIHIIDX)
-                     ADD    WRK-JIHI2  TO   SUM-GG-MONEY(JIHIIDX)
+                   ADD    WRK-JIHI2  TO   SUM-G-MONEY(JIHIIDX)
+                   ADD    WRK-JIHI2  TO   SUM-GG-MONEY(JIHIIDX)
       *
-                   END-IF
-                 END-PERFORM
-               END-IF
+                 END-IF
+               END-PERFORM
+             END-IF
            END-IF
       *
            EVALUATE IDX
@@ -1851,6 +1960,324 @@
        400-PRINT-OUT-EXT.
            EXIT.
       *
+      *****************************************************************
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+      *****************************************************************
+       800-CSV-HEAD-SEC            SECTION.
+      *
+           MOVE    1                TO  IDXP
+      *    Æþ³°¶èÊ¬¥»¥Ã¥È
+           IF  WRK-NYUGAIKBN  =  1
+             MOVE    "Æþ³°¶èÊ¬¡§Æþ±¡"           TO  WRK-ITEM
+           ELSE
+             MOVE    "Æþ³°¶èÊ¬¡§³°Íè"           TO  WRK-ITEM
+           END-IF
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *    ¿ÇÎÅ²Ê¥»¥Ã¥È 
+      *    ¿ÇÎÅ²ÊÌ¾¾Î¼èÆÀ
+           INITIALIZE                   SYS-1005-REC
+           MOVE    "1005"               TO  SYS-1005-KANRICD
+           MOVE    WRK-SRYKA            TO  SYS-1005-KBNCD
+           MOVE    SPA-HOSPNUM          TO  SYS-1005-HOSPNUM
+           MOVE    WRK-PARA-DENPPRTYMD  TO  WRK-SYMD
+           MOVE    WRK-PARA-DENPPRTYMD  TO  SYS-1005-EDYUKYMD
+                                            SYS-1005-STYUKYMD
+           MOVE    SYS-1005-REC         TO  MCPDATA-REC
+           PERFORM  820-SYSKANRI-READ-SEC
+           IF   FLG-SYSKANRI2   =   ZERO
+             MOVE    MCPDATA-REC        TO  SYS-1005-REC
+             INITIALIZE                 WRK-ITEM
+             STRING    "¿ÇÎÅ²Ê¡§"           DELIMITED  BY  SIZE
+                       SYS-1005-SRYKANAME   DELIMITED  BY  SIZE
+                                            INTO  WRK-ITEM
+             END-STRING
+           ELSE
+             MOVE    SPACE              TO  WRK-ITEM
+           END-IF
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ¥·¥¹¥Æ¥àÆüÉÕ¥»¥Ã¥È 
+           MOVE    WRK-SYSYMDWH     TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+      *    ÊÝ¸±Ì¾¾Î¥»¥Ã¥È
+           IF   WRK-PARA-DENPPRTYMD  <  "20080401"
+             MOVE    "¼ÒÊÝËÜ¿Í"     TO  CSV-HEAD-HKN1
+             MOVE    "¼ÒÊÝ²ÈÂ²"     TO  CSV-HEAD-HKN2
+             MOVE    "¼ÒÊÝÏ·¿Í"     TO  CSV-HEAD-HKN3
+             MOVE    "¹ñÊÝ°ìÈÌ"     TO  CSV-HEAD-HKN4
+             MOVE    "¹ñÊÝÏ·¿Í"     TO  CSV-HEAD-HKN5
+             MOVE    "¸øÈñÃ±ÆÈ"     TO  CSV-HEAD-HKN6
+           ELSE
+             MOVE    "¼ÒÊÝËÜ¿Í"     TO  CSV-HEAD-HKN1
+             MOVE    "¼ÒÊÝ²ÈÂ²"     TO  CSV-HEAD-HKN2
+             MOVE    "¹ñÊÝ"         TO  CSV-HEAD-HKN3
+             MOVE    "¸å´ü¹âÎð"     TO  CSV-HEAD-HKN4
+             MOVE    SPACE          TO  CSV-HEAD-HKN5
+             MOVE    "¸øÈñÃ±ÆÈ"     TO  CSV-HEAD-HKN6
+           END-IF
+      *
+      *    ¼«Èñ¿ÇÎÅ¹Ô°ÙÌ¾¾Î¥»¥Ã¥È
+           PERFORM  VARYING  IDX-JIHI  FROM  1  BY  1
+                    UNTIL   IDX-JIHI  >  10
+             IF  WRK-NYUGAIKBN  =  1
+               MOVE    WRK-TJIHIN(IDX-JIHI)
+                                    TO  CSV-HEAD-JIHI-OCC(IDX-JIHI)
+             ELSE
+               MOVE    WRK-TJIHI(IDX-JIHI)
+                                    TO  CSV-HEAD-JIHI-OCC(IDX-JIHI)
+             END-IF
+           END-PERFORM
+      *
+      *    ¹àÌÜÌ¾¾Î¥»¥Ã¥È
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL  IDX4  >  CSV-HEAD-MAX
+             IF  IDX4  NOT =  10
+               MOVE    CSV-HEAD-ITEM(IDX4)     TO  WRK-ITEM
+               IF   IDX4  >=  CSV-HEAD-MAX
+                 PERFORM  810-CSVDATA-EDIT-SEC
+               ELSE
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
+             END-IF
+           END-PERFORM
+           .
+      *
+       800-CSV-HEAD-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVÊÔ½¸½èÍý
+      *****************************************************************
+       400-CSV-DATA-SEC            SECTION.
+      *
+      *    ÅÁÉ¼ÈÖ¹æ
+           MOVE    HC17-RENNUM(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ´µ¼ÔÈÖ¹æ
+           MOVE    SPTID-PTNUM              TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    »áÌ¾
+           MOVE    HC17-NAME(CNT-LINE)      TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ÊÝ¸±ÅÀ¿ô
+           MOVE    HC17-HKNTEN(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    °åÎÅ¼ý±×
+           MOVE    HC17-SYUEKI(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áë¸ýÀÁµá³Û¡Ê½¸·×¶èÊ¬ÊÌ¡Ë
+           PERFORM  VARYING  IDX5  FROM  1  BY  1
+                    UNTIL  IDX5  >  20
+             IF  IDX5  NOT =  3
+               MOVE    HC17-MONEY(IDX5 CNT-LINE)    TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+           END-PERFORM
+      *    Áë¸ýÀÁµá³Û
+           MOVE    HC17-SEIKYU(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *    Áë¸ýÎÎ¼ý³Û
+           MOVE    HC17-RYOSYU(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           .
+       400-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV¹ç·×ÊÔ½¸½èÍý
+      *****************************************************************
+       400-CSV-GOUKEI-SEC            SECTION.
+      *
+      *    ÅÁÉ¼ÈÖ¹æ
+           MOVE    SPACE            TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ´µ¼ÔÈÖ¹æ
+           MOVE    SPACE            TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    »áÌ¾¡ÊÁí¹ç·×¡Ë
+           MOVE    "Áí¹ç·×"         TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ÊÝ¸±ÅÀ¿ô
+           INITIALIZE               WRK-SZZ
+           MOVE    SUM-GG-HKNTEN    TO  WRK-SZZ
+           MOVE    WRK-SZZ          TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    °åÎÅ¼ý±×
+           MOVE    SUM-GG-SYUEKI    TO  WRK-SZ10
+           MOVE    WRK-SZ10         TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ÊÝ¸±ÊÌ¶â³Û¡Ê¼ÒÊÝËÜ¿Í¡Á¼«ÇåÀÕ¡Ë
+           PERFORM  VARYING  IDX-SUM  FROM  1  BY  1
+                    UNTIL  IDX-SUM  >  20
+             IF  IDX-SUM  NOT =  3
+               INITIALIZE           WRK-SZ
+               MOVE    SUM-GG-MONEY(IDX-SUM)   TO  WRK-SZ
+               MOVE    WRK-SZ       TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+           END-PERFORM
+      *
+      *    ÀÁµá¶â³Û
+           INITIALIZE               WRK-SZ10
+           MOVE    SUM-GG-SEIKYU    TO  WRK-SZ10
+           MOVE    WRK-SZ10         TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ÎÎ¼ý¶â³Û
+           INITIALIZE               WRK-SZ10
+           MOVE    SUM-GG-RYOSYU    TO  WRK-SZ10
+           MOVE    WRK-SZ10         TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           .
+       400-CSV-GOUKEI-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       800-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-DELIMITER-SEC
+           .
+      *
+       801-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       810-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-CR-SEC
+           .
+      *
+       810-CSVDATA-EDIT-EXE.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       820-CSVDATA-EDIT-SEC            SECTION.
+      *
+           IF   WRK-ITEM  NOT =  SPACE
+             PERFORM  800-GET-ITEM-SIZE-SEC
+             STRING  WRK-ITEM(IDX-ST:IDX-ED)  DELIMITED   BY  SIZE
+                                              INTO  WRK-CSVDATA
+                                              WITH  POINTER  IDXP
+             END-STRING
+           END-IF
+           .
+      *
+       820-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    ¶èÀÚ¤êÊ¸»úÊÔ½¸½èÍý
+      *****************************************************************
+       800-PUT-DELIMITER-SEC           SECTION.
+      *
+           STRING    ","       DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-DELIMITER-EXT.
+           EXIT.
+      *****************************************************************
+      *    ²þ¹ÔÊ¸»úÊÔ½¸½èÍý
+      *****************************************************************
+       800-PUT-CR-SEC                  SECTION.
+      *
+           STRING    X"0D"     DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-CR-EXT.
+           EXIT.
+      *****************************************************************
+      *    ¹àÌÜ¥µ¥¤¥º¼èÆÀ½èÍý
+      *****************************************************************
+       800-GET-ITEM-SIZE-SEC           SECTION.
+      *
+           MOVE    ZERO            TO  IDX-ST
+                                       IDX-ED
+      *
+           PERFORM  VARYING  IDX1  FROM  1  BY  1
+                    UNTIL  IDX1  >  WRK-ITEM-SIZE
+                    OR  WRK-ITEM(IDX1:)    =  SPACE
+      *
+             IF  IDX-ST  =  ZERO
+               IF  WRK-ITEM(IDX1:1)  NOT =  SPACE
+                 MOVE    IDX1      TO  IDX-ST
+                 MOVE    1         TO  IDX-ED
+               END-IF
+             ELSE
+               COMPUTE  IDX-ED  =  IDX-ED  +  1
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+       800-GET-ITEM-SIZE-EXT.
+           EXIT.
+      *****************************************************************
+      *    £Ã£Ó£Ö½ÐÎÏ½èÍý
+      *****************************************************************
+       230-TOUKEICSV-SEC               SECTION.
+      *
+           IF   WRK-PARA-DENPPRTYMD  >=  "20080401"
+             INITIALIZE                     ORCSTOUKEICSVAREA
+             MOVE    "INS"                  TO  STOUKEICSV-MODE
+             MOVE    LNK-PRTKANRI-TBL-KEY   TO  STOUKEICSV-TBL-KEY
+             MOVE    LNK-PRTKANRI-RENNUM    TO  STOUKEICSV-RENNUM
+             MOVE    LNK-PRTKANRI-TBL-GROUP TO  STOUKEICSV-TBL-GROUP
+             MOVE    LNK-PRTKANRI-SHORI-RENNUM
+                                            TO  STOUKEICSV-SHORI-RENNUM
+             MOVE    LNK-PRTKANRI-SHELLID   TO  STOUKEICSV-SHELLID
+             MOVE    LNK-PRTKANRI-SRYYM     TO  STOUKEICSV-SRYYM
+             MOVE    ZERO                   TO  STOUKEICSV-PTID
+             MOVE    "/var/tmp/"            TO  STOUKEICSV-TO-FOLDER
+      *
+             STRING  SPA-HOSPNUM            DELIMITED  BY  SIZE
+                     "nikkeimeisai_madoguchi_"  DELIMITED  BY  SIZE
+                     WRK-PARA-DENPPRTYMD    DELIMITED  BY  SIZE
+                     ".csv"                 DELIMITED  BY  SIZE
+                                            INTO  STOUKEICSV-TO-DATA
+             END-STRING
+             MOVE    "2"                    TO  STOUKEICSV-CODE-TYPE
+             MOVE    WRK-CSVDATA            TO  STOUKEICSV-CSVDATA
+             MOVE    "Æü·×É½ÌÀºÙ¡ÊÁë¸ýÎÎ¼ý¶â¡Ë"    TO  STOUKEICSV-TITLE
+      *
+             CALL    "ORCSTOUKEICSV"     USING
+                                         ORCSTOUKEICSVAREA
+                                         SPA-AREA
+             IF  ( STOUKEICSV-RETURN  =  ZERO )
+               CONTINUE
+             ELSE
+               MOVE    "Åý·×£Ã£Ó£Ö£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
+                                         TO  WRK-RECEERR
+               PERFORM  500-ERR-HENSYU-SEC
+             END-IF
+      *
+             INITIALIZE                  WRK-CSVDATA
+           END-IF
+      *
+           .
+      *
+       230-TOUKEICSV-EXT.
+           EXIT.
       *****************************************************************
       *    ¥¨¥é¡¼½ÐÎÏ½èÍý
       *****************************************************************

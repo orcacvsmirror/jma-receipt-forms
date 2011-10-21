@@ -31,6 +31,7 @@
       *                                     ½é¿Ç¡¢ºÆ¿Ç¡¢¤½¤ÎÂ¾¤ÎÈ½Äê¾ò·ï¤òÊÑ¹¹
       *                                     open-cobol1.0ÂÐ±þ
       *  01.00.02    @@@@-Ìç´Ö    11/04/18  ½èÍýÂ®ÅÙ¤Î²þÁ±¡¢¥³¥á¥ó¥ÈÍúÎòºï½ü
+      *  01.00.03    @@@@-ÅÄÃæ    11/10/12  CSV¥Õ¥¡¥¤¥ëºîÀ®µ¡Ç½ÄÉ²Ã 
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -116,13 +117,19 @@
               05  IDX7             PIC 9(02).
            03  IDX8                PIC 9(04).
       *
+           03  IDX1                PIC 9(03).
            03  IDX2                PIC 9(04).
            03  IDX3                PIC 9(05).
-           03  JIHIIDX             PIC 9(04).
+           03  IDX4                PIC 9(02).
+           03  JIHIIDX             PIC 9(02).
+           03  IDX9                PIC 9(02).
            03  IDX10               PIC 9(02).
            03  IDX11               PIC 9(02).
       *
            03  IDX-NG              PIC 9(01).
+           03  IDX-ST              PIC 9(03).
+           03  IDX-ED              PIC 9(03).
+           03  IDXP                PIC 9(05).
       *
       *    ¥Ñ¥é¥á¥¿ÎÎ°è
        01  WRK-PARA.
@@ -282,6 +289,57 @@
            03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE   "975".
            COPY    "CPSHELLTBL.INC".
       *
+       01  WRK-CSV-AREA.
+           03  WRK-ITEM-SIZE           PIC 9(03)  VALUE 100.
+           03  WRK-ITEM                PIC X(100)  VALUE SPACE.
+           03  WRK-CSVDATA             PIC X(20000) VALUE SPACE.
+           03  CSV-SAKENSU             OCCURS 20 TIMES PIC X(09).
+           03  CSV-SAHKNKEN            PIC X(09).
+           03  CSV-SASYUEKIKEN         PIC X(09).
+      *
+       01  CSV-HEAD-AREA.
+           03  CSV-HEAD-G.
+             05  CSV-HEAD-VAL.
+               07  CSV-HEAD-HKNTEN        PIC X(50)
+                     VALUE "ÊÝ¸±ÅÀ¿ô(ÅÀ)".
+               07  CSV-HEAD-SYUEKI        PIC X(50)
+                     VALUE "°åÎÅ¼ý±×(Áí·×³Û)".
+               07  CSV-HEAD-HKN1      PIC X(50).
+               07  CSV-HEAD-HKN2      PIC X(50).
+               07  CSV-HEAD-HKN3      PIC X(50).
+               07  CSV-HEAD-HKN4      PIC X(50).
+               07  CSV-HEAD-HKN5      PIC X(50).
+               07  CSV-HEAD-HKN6      PIC X(50).
+               07  CSV-HEAD-JIHI-G.
+                 09  CSV-HEAD-SKY-JIHI1   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI2   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI3   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI4   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI5   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI6   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI7   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI8   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI9   PIC X(50)  VALUE SPACE.
+                 09  CSV-HEAD-SKY-JIHI10  PIC X(50)  VALUE SPACE.
+               07  CSV-HEAD-JIHI-R        REDEFINES CSV-HEAD-JIHI-G.
+                 09  CSV-HEAD-JIHI-OCC    OCCURS  10.
+                   11  CSV-HEAD-JIHI-NAME PIC X(50).
+               07  CSV-HEAD-SKY-JIHI      PIC X(50)
+                     VALUE "¼«Èñ".
+               07  CSV-HEAD-SKY-ROSAI     PIC X(50)
+                     VALUE "Ï«ºÒ".
+               07  CSV-HEAD-SKY-JIBAI     PIC X(50)
+                     VALUE "¼«ÇåÀÕ".
+               07  CSV-HEAD-SKY-KOUGAI    PIC X(50)
+                     VALUE "¸ø³²".
+               07  CSV-HEAD-SKYMONEY      PIC X(50)
+                     VALUE "Áë¸ýÀÁµá¶â³Û".
+               07  CSV-HEAD-RSYMONEY      PIC X(50)
+                     VALUE "Áë¸ýÎÎ¼ý¶â³Û".
+             05  CSV-HEAD-R               REDEFINES CSV-HEAD-VAL.
+               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 24.
+             05  CSV-HEAD-MAX             PIC 9(05) VALUE 24.
+      *
       *****************************************************************
       *    ¥Õ¥¡¥¤¥ë¥ì¥¤¥¢¥¦¥È
       *****************************************************************
@@ -380,6 +438,9 @@
       *
       *    ´µ¼ÔÈÖ¹æÊÑ´¹¥µ¥Ö
            COPY    "CPORCSPTID.INC".
+      *
+      *    Åý·×£Ã£Ó£ÖÀ©¸æ¥µ¥Ö
+           COPY    "CPORCSTOUKEICSV.INC".
       *
       *    £Ä£Â¸¡º÷
            COPY    "MCPAREA".
@@ -1055,8 +1116,8 @@
                  ADD   SUM-RHKNKEN         TO   SUM-RHKNKEN-GK
                  ADD   SUM-OHKNKEN         TO   SUM-OHKNKEN-GK
                  ADD   SUM-SAHKNKEN        TO   SUM-SAHKNKEN-GK
-                 PERFORM  VARYING  IDX2   FROM  1  BY 1
-                          UNTIL        IDX2   >     20
+                 PERFORM  VARYING  IDX2  FROM  1  BY 1
+                          UNTIL  IDX2  >  20
                    ADD   SUM-MONEY(IDX2)   TO   SUM-MONEY-GK(IDX2)
                    ADD   SUM-RKEN(IDX2)    TO   SUM-RKEN-GK(IDX2)
                    ADD   SUM-SKEN(IDX2)    TO   SUM-SKEN-GK(IDX2)
@@ -1205,6 +1266,7 @@
              IF IDX-S   >   IDX-MAX
                MOVE    1     TO    FLG-END
              END-IF
+      *
       *
            END-PERFORM
       *
@@ -2108,7 +2170,6 @@
       *****************************************************************
       *    Ä¢É¼<¿ÇÎÅ²Ê¹ç·×>°õºþ½èÍý
       *****************************************************************
-      *
        330-TERM-KA-PRINT-SEC         SECTION.
       *
            INITIALIZE            HC17B
@@ -2181,11 +2242,12 @@
                MOVE    1                TO   WRK-COUNTS
                INSPECT  WRK-TMP-K   TALLYING
                         WRK-COUNTS  FOR  LEADING  SPACE
-               MOVE     WRK-TMP-K       TO   HC17B-SAHKNKEN(2:7)
-               MOVE    "("            TO   HC17B-SAHKNKEN(WRK-COUNTS:1)
-               MOVE    ")"            TO   HC17B-SAHKNKEN(9:1)
-               MOVE    SUM-OHKNKEN      TO   WRK-Z9
-               MOVE    WRK-Z9           TO   HC17B-OHKNKEN
+               MOVE    WRK-TMP-K        TO  HC17B-SAHKNKEN(2:7)
+               MOVE    WRK-TMP-K        TO  CSV-SAHKNKEN
+               MOVE    "("              TO  HC17B-SAHKNKEN(WRK-COUNTS:1)
+               MOVE    ")"              TO  HC17B-SAHKNKEN(9:1)
+               MOVE    SUM-OHKNKEN      TO  WRK-Z9
+               MOVE    WRK-Z9           TO  HC17B-OHKNKEN
              END-IF
              MOVE    SUM-RHKNKEN         TO   WRK-Z9
              MOVE    WRK-Z9              TO   HC17B-RHKNKEN
@@ -2227,6 +2289,7 @@
                    INSPECT WRK-TMP-K  TALLYING
                            WRK-COUNTS  FOR  LEADING  SPACE
                    MOVE    WRK-TMP-K  TO  HC17B-SAKENSU(IDX)(2:7)
+                   MOVE    WRK-TMP-K  TO  CSV-SAKENSU(IDX)
                    MOVE    "("    TO  HC17B-SAKENSU(IDX)(WRK-COUNTS:1)
                    MOVE    ")"    TO  HC17B-SAKENSU(IDX)(9:1)
                END-EVALUATE
@@ -2244,6 +2307,7 @@
                  INSPECT WRK-TMP-K  TALLYING
                         WRK-COUNTS FOR LEADING SPACE
                  MOVE   WRK-TMP-K  TO   HC17B-SAKENSU(IDX)(2:7)
+                 MOVE   WRK-TMP-K  TO   CSV-SAKENSU(IDX)
                  MOVE   "("        TO   HC17B-SAKENSU(IDX)(WRK-COUNTS:1)
                  MOVE   ")"        TO   HC17B-SAKENSU(IDX)(9:1)
                   MOVE    SUM-OKEN (IDX)       TO  WRK-Z9
@@ -2275,6 +2339,7 @@
                INSPECT WRK-TMP-K  TALLYING
                        WRK-COUNTS FOR LEADING SPACE
                MOVE    WRK-TMP-K  TO  HC17B-SASYUEKIKEN(2:7)
+               MOVE    WRK-TMP-K  TO  CSV-SASYUEKIKEN
                MOVE    "("        TO  HC17B-SASYUEKIKEN(WRK-COUNTS:1)
                MOVE    ")"        TO  HC17B-SASYUEKIKEN(9:1)
       *    ¤½¤ÎÂ¾
@@ -2315,6 +2380,12 @@
              PERFORM    500-ERR-HENSYU-SEC
            END-IF
       *
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+           PERFORM  800-CSV-HEAD-SEC
+      *
+      *    CSVÊÔ½¸
+           PERFORM  400-CSV-DATA-SEC
+      *
            .
        330-TERM-KA-PRINT-EXT.
            EXIT.
@@ -2322,7 +2393,6 @@
       *****************************************************************
       *    Ä¢É¼<Æþ³°¶èÊ¬ÊÌÁ´²Ê¹ç·×>°õºþ½èÍý
       *****************************************************************
-      *
        330-TERM-GK-PRINT-SEC         SECTION.
       *
            INITIALIZE            HC17B
@@ -2430,6 +2500,7 @@
                 INSPECT WRK-TMP-K  TALLYING
                         WRK-COUNTS FOR LEADING  SPACE
                 MOVE    WRK-TMP-K           TO   HC17B-SAHKNKEN(2:7)
+                MOVE    WRK-TMP-K           TO   CSV-SAHKNKEN
                 MOVE    "("          TO   HC17B-SAHKNKEN(WRK-COUNTS:1)
                 MOVE    ")"          TO   HC17B-SAHKNKEN(9:1)
                 MOVE    SUM-OHKNKEN-GK      TO   WRK-Z9
@@ -2475,6 +2546,7 @@
                    INSPECT WRK-TMP-K  TALLYING
                            WRK-COUNTS FOR LEADING SPACE
                    MOVE    WRK-TMP-K     TO   HC17B-SAKENSU(IDX)(2:7)
+                   MOVE    WRK-TMP-K         TO   CSV-SAKENSU(IDX)
                    MOVE    "("  TO   HC17B-SAKENSU(IDX)(WRK-COUNTS:1)
                    MOVE    ")"           TO   HC17B-SAKENSU(IDX)(9:1)
                END-EVALUATE
@@ -2492,6 +2564,7 @@
                  INSPECT  WRK-TMP-K  TALLYING
                           WRK-COUNTS FOR LEADING SPACE
                  MOVE     WRK-TMP-K   TO   HC17B-SAKENSU(IDX)(2:7)
+                 MOVE    WRK-TMP-K          TO   CSV-SAKENSU(IDX)
                  MOVE    "("     TO   HC17B-SAKENSU(IDX)(WRK-COUNTS:1)
                  MOVE    ")"     TO   HC17B-SAKENSU(IDX)(9:1)
                  MOVE    SUM-OKEN-GK(IDX)   TO   WRK-Z9
@@ -2514,7 +2587,7 @@
            MOVE  WRK-Z9               TO   HC17B-RSYUEKIKEN
       *
       *    ½é¿Ç
-           IF WRK-NYUGAIKBN   =  "2"
+           IF   WRK-NYUGAIKBN   =  "2"
              MOVE    SUM-SASYUEKIKEN-GK  TO   WRK-Z9
              MOVE    WRK-Z9              TO   HC17B-SSYUEKIKEN
              MOVE    SUM-SSYUEKIKEN-GK   TO   WRK-Z9
@@ -2523,6 +2596,7 @@
              INSPECT WRK-TMP-K  TALLYING
                      WRK-COUNTS FOR LEADING SPACE
              MOVE    WRK-TMP-K    TO   HC17B-SASYUEKIKEN(2:7)
+             MOVE    WRK-TMP-K    TO   CSV-SASYUEKIKEN
              MOVE    "("          TO   HC17B-SASYUEKIKEN(WRK-COUNTS:1)
              MOVE    ")"          TO   HC17B-SASYUEKIKEN(9:1)
       *
@@ -2559,7 +2633,7 @@
            MOVE    LNK-PRTKANRI-PRTNM     TO   SPRT-PRTNM
            CALL    "ORCSPRT"              USING
                                           ORCSPRTAREA
-                                       SPA-AREA
+                                          SPA-AREA
            IF   SPRT-RETURN   =   ZERO
              CONTINUE
            ELSE
@@ -2567,10 +2641,389 @@
              PERFORM   500-ERR-HENSYU-SEC
            END-IF
       *
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+           PERFORM  800-CSV-HEAD-SEC
+      *
+      *    CSVÊÔ½¸
+           PERFORM  400-CSV-DATA-SEC
+      *
            .
        330-TERM-GK-PRINT-EXT.
            EXIT.
       *
+      *****************************************************************
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+      *****************************************************************
+       800-CSV-HEAD-SEC            SECTION.
+      *
+           MOVE    1                TO  IDXP
+      *    Æþ³°¶èÊ¬¥»¥Ã¥È 
+           IF  WRK-NYUGAIKBN  =  1
+             MOVE    "Æþ³°¶èÊ¬¡§Æþ±¡"    TO  WRK-ITEM
+           ELSE
+             MOVE    "Æþ³°¶èÊ¬¡§³°Íè"    TO  WRK-ITEM
+           END-IF
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *    ¿ÇÎÅ²Ê¥»¥Ã¥È 
+           INITIALIZE                WRK-ITEM
+           STRING    "¿ÇÎÅ²Ê¡§"      DELIMITED  BY  SIZE
+                     HC17B-SRYKA     DELIMITED  BY  SIZE
+                                     INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *    ¥·¥¹¥Æ¥àÆüÉÕ¥»¥Ã¥È 
+           MOVE    WRK-SYSYMDWH     TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+      *    ÊÝ¸±Ì¾¾Î¥»¥Ã¥È
+           MOVE    "¼ÒÊÝËÜ¿Í"     TO  CSV-HEAD-HKN1
+           MOVE    "¼ÒÊÝ²ÈÂ²"     TO  CSV-HEAD-HKN2
+           MOVE    "¹ñÊÝ"         TO  CSV-HEAD-HKN3
+           MOVE    "¸å´ü¹âÎð"     TO  CSV-HEAD-HKN4
+           MOVE    SPACE          TO  CSV-HEAD-HKN5
+           MOVE    "¸øÈñÃ±ÆÈ"     TO  CSV-HEAD-HKN6
+      *
+      *    ¼«Èñ¿ÇÎÅ¹Ô°ÙÌ¾¾Î¥»¥Ã¥È
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL  IDX4  >  10
+             IF  WRK-NYUGAIKBN  =  1
+               MOVE    WRK-TJIHIN(IDX4)
+                                    TO  CSV-HEAD-JIHI-OCC(IDX4)
+             ELSE
+               MOVE    WRK-TJIHI(IDX4)
+                                    TO  CSV-HEAD-JIHI-OCC(IDX4)
+             END-IF
+           END-PERFORM
+      *
+           MOVE     SPACE           TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *    ¹àÌÜÌ¾¾Î¥»¥Ã¥È
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL  IDX4  >  CSV-HEAD-MAX
+             IF  IDX4  NOT =  7
+               MOVE    CSV-HEAD-ITEM(IDX4)     TO  WRK-ITEM
+               IF   IDX4  >=  CSV-HEAD-MAX
+                 PERFORM  810-CSVDATA-EDIT-SEC
+               ELSE
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
+             END-IF
+           END-PERFORM
+           .
+      *
+       800-CSV-HEAD-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVÊÔ½¸½èÍý
+      *****************************************************************
+       400-CSV-DATA-SEC            SECTION.
+      *
+      *    Áí¹ç·×
+           MOVE    "Áí¹ç·×"               TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí¹ç·×¡²ÊÝ¸±ÅÀ¿ô
+           MOVE    HC17B-GHKNKEN          TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí¹ç·×¡²°åÎÅ¼ý±×
+           MOVE    HC17B-GSYUEKI          TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí¹ç·×¡²Áë¸ýÀÁµá¶â³Û
+           PERFORM  VARYING  IDX9  FROM  1  BY  1
+                    UNTIL  IDX9  >  20
+             IF  IDX9  NOT =  5
+               MOVE    HC17B-GMONEY(IDX9)   TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+           END-PERFORM
+      *
+      *    Áí·ï¿ô¡²ÀÁµá·ï¿ô¡²Áë¸ýÀÁµá¶â³Û
+           MOVE    HC17B-GSEIKYU          TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²ÀÁµá·ï¿ô¡²Áë¸ýÎÎ¼ý¶â³Û
+           MOVE    HC17B-GRYOSYU          TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           IF  WRK-NYUGAIKBN  =  1
+      *    Áí·ï¿ô¡²ÀÁµá·ï¿ô
+             MOVE    "Áí·ï¿ô¡²ÀÁµá·ï¿ô"     TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²ÀÁµá·ï¿ô¡²ÊÝ¸±ÅÀ¿ô
+             MOVE    HC17B-RHKNKEN          TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²ÀÁµá·ï¿ô¡²°åÎÅ¼ý±×
+             MOVE    HC17B-RSYUEKIKEN       TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²ºÆ¿Ç¡²Áë¸ýÀÁµá¶â³Û¡ÊÊÝ¸±ÊÌÌÀºÙ¡Ë
+             PERFORM  VARYING  IDX9  FROM  1  BY  1
+                      UNTIL  IDX9  >  20
+               IF  IDX9  NOT =  5
+                 MOVE    HC17B-RKENSU(IDX9)   TO  WRK-ITEM
+                 IF  IDX9  =  20
+                   PERFORM  810-CSVDATA-EDIT-SEC
+                 ELSE
+                   PERFORM  800-CSVDATA-EDIT-SEC
+                 END-IF
+               END-IF
+             END-PERFORM
+      *
+           ELSE
+      *    Áí·ï¿ô¡²¤½¤ÎÂ¾·ï¿ô
+             MOVE    "Áí·ï¿ô¡²¤½¤ÎÂ¾·ï¿ô"   TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²¤½¤ÎÂ¾¡²ÊÝ¸±ÅÀ¿ô
+             MOVE    HC17B-OHKNKEN          TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²¤½¤ÎÂ¾¡²°åÎÅ¼ý±×
+             MOVE    HC17B-OSYUEKIKEN       TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²¤½¤ÎÂ¾¡²Áë¸ýÀÁµá¶â³Û¡ÊÊÝ¸±ÊÌÌÀºÙ¡Ë
+             PERFORM  VARYING  IDX9  FROM  1  BY  1
+                      UNTIL  IDX9  >  20
+               IF  IDX9  NOT =  5
+                 MOVE    HC17B-OKENSU(IDX9)     TO  WRK-ITEM
+                 IF  IDX9  =  20
+                   PERFORM  810-CSVDATA-EDIT-SEC
+                 ELSE
+                   PERFORM  800-CSVDATA-EDIT-SEC
+                 END-IF
+               END-IF
+             END-PERFORM
+      *
+      *    Áí·ï¿ô¡²ºÆ¿Ç·ï¿ô
+             MOVE    "Áí·ï¿ô¡²ºÆ¿Ç·ï¿ô"     TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²ºÆ¿Ç¡²ÊÝ¸±ÅÀ¿ô
+             MOVE    HC17B-RHKNKEN          TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²ºÆ¿Ç¡²°åÎÅ¼ý±×
+             MOVE    HC17B-RSYUEKIKEN       TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²ºÆ¿Ç¡²Áë¸ýÀÁµá¶â³Û¡ÊÊÝ¸±ÊÌÌÀºÙ¡Ë
+             PERFORM  VARYING  IDX9  FROM  1  BY  1
+                      UNTIL  IDX9  >  20
+               IF  IDX9  NOT =  5
+                 MOVE    HC17B-RKENSU(IDX9)   TO  WRK-ITEM
+                 IF  IDX9  =  20
+                   PERFORM  810-CSVDATA-EDIT-SEC
+                 ELSE
+                   PERFORM  800-CSVDATA-EDIT-SEC
+                 END-IF
+               END-IF
+             END-PERFORM
+      *
+      *    Áí·ï¿ô¡²½é¿Ç·ï¿ô
+             MOVE    "Áí·ï¿ô¡²½é¿Ç·ï¿ô"     TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²½é¿Ç¡²ÊÝ¸±ÅÀ¿ô
+             MOVE    HC17B-SHKNKEN          TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²½é¿Ç¡²°åÎÅ¼ý±×
+             MOVE    HC17B-SSYUEKIKEN       TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²½é¿Ç¡²Áë¸ýÀÁµá¶â³Û¡ÊÊÝ¸±ÊÌÌÀºÙ¡Ë
+             PERFORM  VARYING  IDX9  FROM  1  BY  1
+                      UNTIL  IDX9  >  20
+               IF  IDX9  NOT =  5
+                 MOVE    HC17B-SKENSU(IDX9) TO  WRK-ITEM
+                 IF  IDX9  =  20
+                   PERFORM  810-CSVDATA-EDIT-SEC
+                 ELSE
+                   PERFORM  800-CSVDATA-EDIT-SEC
+                 END-IF
+               END-IF
+             END-PERFORM
+      *
+      *    Áí·ï¿ô¡²¿·´µ¿ô
+             MOVE    "Áí·ï¿ô¡²¿·´µ¿ô"       TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²¿·´µ¿ô¡²ÊÝ¸±ÅÀ¿ô
+             MOVE    CSV-SAHKNKEN           TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²¿·´µ¿ô¡²°åÎÅ¼ý±×
+             MOVE    CSV-SASYUEKIKEN        TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áí·ï¿ô¡²¿·´µ¿ô¡²Áë¸ýÀÁµá¶â³Û¡ÊÊÝ¸±ÊÌÌÀºÙ¡Ë
+             PERFORM  VARYING  IDX9  FROM  1  BY  1
+                      UNTIL  IDX9  >  20
+               IF  IDX9  NOT =  5
+                 MOVE    CSV-SAKENSU(IDX9)  TO  WRK-ITEM
+                 IF  IDX9  =  20
+                   PERFORM  810-CSVDATA-EDIT-SEC
+                 ELSE
+                   PERFORM  800-CSVDATA-EDIT-SEC
+                 END-IF
+               END-IF
+             END-PERFORM
+      *
+      *    ¼õ¿Ç¼Ô¿ô
+             MOVE    "¼õ¿Ç¼Ô¿ô"         TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+             MOVE     HC17B-JYUSHINCNT  TO  WRK-ITEM
+             PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           END-IF
+      *
+      *    £Ã£Ó£Ö½ÐÎÏ½èÍý
+           PERFORM  230-TOUKEICSV-SEC
+      *
+           .
+       400-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       800-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM  820-CSVDATA-EDIT-SEC
+           PERFORM  800-PUT-DELIMITER-SEC
+           .
+      *
+       801-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       810-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM  820-CSVDATA-EDIT-SEC
+           PERFORM  800-PUT-CR-SEC
+           .
+      *
+       810-CSVDATA-EDIT-EXE.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       820-CSVDATA-EDIT-SEC            SECTION.
+      *
+           IF   WRK-ITEM  NOT =  SPACE
+             PERFORM  800-GET-ITEM-SIZE-SEC
+             STRING  WRK-ITEM(IDX-ST:IDX-ED)  DELIMITED   BY  SIZE
+                                              INTO  WRK-CSVDATA
+                                              WITH  POINTER  IDXP
+             END-STRING
+           END-IF
+           .
+      *
+       820-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    ¶èÀÚ¤êÊ¸»úÊÔ½¸½èÍý
+      *****************************************************************
+       800-PUT-DELIMITER-SEC           SECTION.
+      *
+           STRING    ","   DELIMITED   BY  SIZE
+           INTO      WRK-CSVDATA
+           WITH      POINTER   IDXP
+           END-STRING
+      *
+           .
+       800-PUT-DELIMITER-EXT.
+           EXIT.
+      *****************************************************************
+      *    ²þ¹ÔÊ¸»úÊÔ½¸½èÍý
+      *****************************************************************
+       800-PUT-CR-SEC                  SECTION.
+      *
+           STRING    X"0D"   DELIMITED BY  SIZE
+           INTO      WRK-CSVDATA
+           WITH      POINTER   IDXP
+           END-STRING
+      *
+           .
+       800-PUT-CR-EXT.
+           EXIT.
+      *****************************************************************
+      *    ¹àÌÜ¥µ¥¤¥º¼èÆÀ½èÍý
+      *****************************************************************
+       800-GET-ITEM-SIZE-SEC           SECTION.
+      *
+           MOVE    ZERO            TO  IDX-ST
+                                       IDX-ED
+      *
+           PERFORM  VARYING  IDX1  FROM  1  BY  1
+                    UNTIL  IDX1  >  WRK-ITEM-SIZE
+                    OR  WRK-ITEM(IDX1:)    =  SPACE
+      *
+             IF  IDX-ST  =  ZERO
+               IF  WRK-ITEM(IDX1:1)  NOT =  SPACE
+                 MOVE    IDX1      TO  IDX-ST
+                 MOVE    1         TO  IDX-ED
+               END-IF
+             ELSE
+               COMPUTE  IDX-ED  =  IDX-ED  +  1
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+       800-GET-ITEM-SIZE-EXT.
+           EXIT.
+      *****************************************************************
+      *    £Ã£Ó£Ö½ÐÎÏ½èÍý
+      *****************************************************************
+       230-TOUKEICSV-SEC               SECTION.
+      *
+           IF    WRK-PARA-DENPPRTYMD  >=  "20080401"
+             INITIALIZE                     ORCSTOUKEICSVAREA
+             MOVE    "INS"                  TO  STOUKEICSV-MODE
+             MOVE    LNK-PRTKANRI-TBL-KEY   TO  STOUKEICSV-TBL-KEY
+             MOVE    LNK-PRTKANRI-RENNUM    TO  STOUKEICSV-RENNUM
+             MOVE    LNK-PRTKANRI-TBL-GROUP TO  STOUKEICSV-TBL-GROUP
+             MOVE    LNK-PRTKANRI-SHORI-RENNUM
+                                            TO  STOUKEICSV-SHORI-RENNUM
+             MOVE    LNK-PRTKANRI-SHELLID   TO  STOUKEICSV-SHELLID
+             MOVE    LNK-PRTKANRI-SRYYM     TO  STOUKEICSV-SRYYM
+             MOVE    ZERO                   TO  STOUKEICSV-PTID
+             MOVE    "/var/tmp/"            TO  STOUKEICSV-TO-FOLDER
+      *
+             STRING  SPA-HOSPNUM            DELIMITED  BY  SIZE
+                     "nikkeigoukei_madoguchi_"  DELIMITED  BY  SIZE
+                     WRK-PARA-DENPPRTYMD    DELIMITED  BY  SIZE
+                     ".csv"                 DELIMITED  BY  SIZE
+                                            INTO  STOUKEICSV-TO-DATA
+             END-STRING
+             MOVE    "2"                    TO  STOUKEICSV-CODE-TYPE
+             MOVE    WRK-CSVDATA            TO  STOUKEICSV-CSVDATA
+             MOVE    "Æü·×É½¹ç·×¡ÊÁë¸ýÎÎ¼ý¶â¡Ë"    TO  STOUKEICSV-TITLE
+      *
+             CALL    "ORCSTOUKEICSV"     USING
+                                         ORCSTOUKEICSVAREA
+                                         SPA-AREA
+             IF  ( STOUKEICSV-RETURN  =  ZERO )
+               CONTINUE
+             ELSE
+               MOVE    "Åý·×£Ã£Ó£Ö£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
+                                         TO  WRK-RECEERR
+               PERFORM  500-ERR-HENSYU-SEC
+             END-IF
+      *
+             INITIALIZE                  WRK-CSVDATA
+           END-IF
+      *
+           .
+      *
+       230-TOUKEICSV-EXT.
+           EXIT.
       *****************************************************************
       *    ¥¨¥é¡¼½ÐÎÏ½èÍý
       *****************************************************************

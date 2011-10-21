@@ -31,6 +31,7 @@
       *                                     ½é¿Ç¡¢ºÆ¿Ç¡¢¤½¤ÎÂ¾¤ÎÈ½Äê¾ò·ï¤òÊÑ¹¹
       *                                     open-cobol1.0ÂÐ±þ
       *  01.00.02    @@@@-Ìç´Ö    11/04/18  ½èÍýÂ®ÅÙ¤Î²þÁ±¡¢¥³¥á¥ó¥ÈÍúÎòºï½ü
+      *  01.00.03    @@@@-ÅÄÃæ    11/10/14  CSV¥Õ¥¡¥¤¥ëºîÀ®µ¡Ç½ÄÉ²Ã 
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -80,9 +81,10 @@
            03  FLG-JYURRK          PIC 9(01).
            03  FLG-HKNNUM          PIC 9(01).
            03  DEBUG-SW            PIC 9(01).
-           03  FLG-SRYACT           PIC 9(01).
+           03  FLG-SRYACT          PIC 9(01).
            03  FLG-JYURRK2         PIC 9(01).
            03  FLG-ACCTEND         PIC 9(01).
+           03  FLG-TOTAL           PIC 9(01).
       *
       *  ·ï¿ôÍÑ¥Õ¥é¥°ÎÎ°è
            03  FLG-KENSUU.
@@ -121,9 +123,15 @@
               05  IDX1             PIC 9(02).
            03  IDX2                PIC 9(04).
            03  IDX3                PIC 9(05).
-           03  JIHIIDX             PIC 9(04).
+           03  IDX4                PIC 9(02).
+           03  IDX5                PIC 9(02).
+           03  IDX6                PIC 9(03).
            03  IDX10               PIC 9(02).
            03  IDX11               PIC 9(02).
+           03  JIHIIDX             PIC 9(04).
+           03  IDXP                PIC 9(05).
+           03  IDX-ST              PIC 9(03).
+           03  IDX-ED              PIC 9(03).
       *
       *    ¥Ñ¥é¥á¥¿ÎÎ°è
        01  WRK-PARA.
@@ -259,6 +267,46 @@
       *
            COPY    "CPSHELLTBL.INC".
       *
+      *    CSV
+       01  WRK-CSV-AREA.
+           03  WRK-ITEM-SIZE           PIC 9(03)  VALUE 100.
+           03  WRK-ITEM                PIC X(100)  VALUE SPACE.
+           03  WRK-CSVDATA             PIC X(20000) VALUE SPACE.
+      *
+       01  CSV-HEAD-AREA.
+           03  CSV-HEAD-G.
+             05  CSV-HEAD-VAL.
+               07  CSV-HEAD-KENSU1     PIC X(50)  VALUE SPACE.
+               07  CSV-HEAD-KENSU2     PIC X(50)  VALUE SPACE.
+               07  CSV-HEAD-KENSU3     PIC X(50)  VALUE SPACE.
+               07  CSV-HEAD-KENSU4     PIC X(50)  VALUE SPACE.
+               07  CSV-HEAD-HKNTEN     PIC X(50)  VALUE "ÊÝ¸±ÅÀ¿ô".
+               07  CSV-HEAD-SSU        PIC X(50)  VALUE "½é¡¦ºÆ¿ÇÎÁ".
+               07  CSV-HEAD-SDO        PIC X(50)  VALUE "°å³Ø´ÉÍýÅù".
+               07  CSV-HEAD-ZTK        PIC X(50)  VALUE "ºßÂð°åÎÅ".
+               07  CSV-HEAD-TYK        PIC X(50)  VALUE "ÅêÌô".
+               07  CSV-HEAD-CSY        PIC X(50)  VALUE "Ãí¼Í".
+               07  CSV-HEAD-SYC        PIC X(50)  VALUE "½èÃÖ".
+               07  CSV-HEAD-SJT        PIC X(50)  VALUE "¼ê½Ñ".
+               07  CSV-HEAD-MSI        PIC X(50)  VALUE "Ëã¿ì".
+               07  CSV-HEAD-KNS        PIC X(50)  VALUE "¸¡ºº".
+               07  CSV-HEAD-GZU        PIC X(50)  VALUE "²èÁü¿ÇÃÇ".
+               07  CSV-HEAD-ETC        PIC X(50)
+                                       VALUE "¥ê¥Ï¥Ó¥ê¥Æ¡¼¥·¥ç¥ó".
+               07  CSV-HEAD-SSN        PIC X(50)
+                                       VALUE "Àº¿À²ÊÀìÌçÎÅË¡".
+               07  CSV-HEAD-HOU        PIC X(50)  VALUE "Êü¼ÍÀþ¼£ÎÅ".
+               07  CSV-HEAD-BYR        PIC X(50)  VALUE "ÉÂÍý¿ÇÃÇ".
+               07  CSV-HEAD-NYN        PIC X(50)  VALUE "Æþ±¡ÎÁ".
+               07  CSV-HEAD-RYO        PIC X(50)  VALUE "ÎÅÍÜÃ´Åö¼êÅö".
+               07  CSV-HEAD-HKNFTN     PIC X(50)  VALUE "ÊÝ¸±ÉéÃ´³Û".
+               07  CSV-HEAD-JIHIFTN    PIC X(50)  VALUE "¼«ÈñÉéÃ´³Û".
+               07  CSV-HEAD-SKYMONEY   PIC X(50)  VALUE "Áë¸ýÀÁµá³Û".
+               07  CSV-HEAD-RSYMONEY   PIC X(50)  VALUE "Áë¸ýÎÎ¼ý³Û".
+             05  CSV-HEAD-R            REDEFINES CSV-HEAD-VAL.
+               07  CSV-HEAD-ITEM       PIC X(50) OCCURS 25.
+             05  CSV-HEAD-MAX          PIC 9(05) VALUE 25.
+      *
       *****************************************************************
       *    ¥Õ¥¡¥¤¥ë¥ì¥¤¥¢¥¦¥È
       *****************************************************************
@@ -342,18 +390,21 @@
       *    ¥µ¥Ö¥×¥íÍÑ¡¡ÎÎ°è
       *****************************************************************
       *
-      *   ¥¸¥ç¥Ö´ÉÍý£Ä£ÂÀ©¸æ¥µ¥Ö
+      *    ¥¸¥ç¥Ö´ÉÍý£Ä£ÂÀ©¸æ¥µ¥Ö
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    °õºþ£Ä£Â¹¹¿·¥µ¥Ö
            COPY    "CPORCSPRT.INC".
       *
-      *   ÆüÉÕÊÑ´¹¥µ¥Ö
+      *    ÆüÉÕÊÑ´¹¥µ¥Ö
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
-      *   ´µ¼ÔÈÖ¹æÊÑ´¹¥µ¥Ö
+      *    ´µ¼ÔÈÖ¹æÊÑ´¹¥µ¥Ö
            COPY    "CPORCSPTID.INC".
+      *
+      *    Åý·×£Ã£Ó£ÖÀ©¸æ¥µ¥Ö
+           COPY    "CPORCSTOUKEICSV.INC".
       *
       *    £Ä£Â¸¡º÷
            COPY    "MCPAREA".
@@ -1609,6 +1660,13 @@
                PERFORM 500-ERR-HENSYU-SEC
            END-IF
       *
+           MOVE    ZERO        TO  FLG-TOTAL
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+           PERFORM  800-CSV-HEAD-SEC
+      *
+      *    CSVÊÔ½¸
+           PERFORM  400-CSV-DATA-SEC
+      *
            .
        330-TERM-KA-PRINT-EXT.
            EXIT.
@@ -1854,10 +1912,290 @@
                PERFORM 500-ERR-HENSYU-SEC
            END-IF
       *
+           MOVE    1        TO  FLG-TOTAL
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+           PERFORM  800-CSV-HEAD-SEC
+      *
+      *    CSVÊÔ½¸
+           PERFORM  400-CSV-DATA-SEC
+      *
            .
        330-TERM-GK-PRINT-EXT.
            EXIT.
       *
+      *
+      *****************************************************************
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+      *****************************************************************
+       800-CSV-HEAD-SEC            SECTION.
+      *
+           MOVE    1                TO  IDXP
+      *    ÂÐ¾ÝÇ¯·î
+           INITIALIZE                WRK-ITEM
+           STRING    "ÂÐ¾ÝÇ¯·î¡§"    DELIMITED  BY  SIZE
+                     M700-PRTYM      DELIMITED  BY  SIZE
+                                     INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Æþ³°¶èÊ¬¥»¥Ã¥È 
+           INITIALIZE                WRK-ITEM
+           STRING    "Æþ³°¶èÊ¬¡§"    DELIMITED  BY  SIZE
+                     M700-NYUGAIKBN  DELIMITED  BY  SIZE
+                                     INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ¿ÇÎÅ²Ê¥»¥Ã¥È 
+           INITIALIZE                WRK-ITEM
+           STRING    "¿ÇÎÅ²Ê¡§"      DELIMITED  BY  SIZE
+                     M700-SRYKA      DELIMITED  BY  SIZE
+                                     INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ¥·¥¹¥Æ¥àÆüÉÕ
+           MOVE    M700-SYSYMD       TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+      *    Ì¾¾Î¥»¥Ã¥È
+      *    ¼õ¿Ç¼Ô¿ô
+           MOVE    M700-TJYUSHIN     TO  CSV-HEAD-KENSU1
+      *    ½é¿Ç·ï¿ô
+           MOVE    M700-KENSU1       TO  CSV-HEAD-KENSU2
+      *    ºÆ¿Ç·ï¿ô
+           MOVE    M700-KENSU2       TO  CSV-HEAD-KENSU3
+      *    ¤½¤ÎÂ¾·ï¿ô
+           MOVE    M700-KENSU3       TO  CSV-HEAD-KENSU4
+      *
+           MOVE    "Æü"              TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *    ³Æ¹àÌÜÌ¾¾Î¥»¥Ã¥È
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL  IDX4  >  CSV-HEAD-MAX
+             IF  ( CSV-HEAD-ITEM(IDX4)  NOT =  SPACE )
+               MOVE    CSV-HEAD-ITEM(IDX4)     TO  WRK-ITEM
+               IF   IDX4  >=  CSV-HEAD-MAX
+                 PERFORM  810-CSVDATA-EDIT-SEC
+               ELSE
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
+             END-IF
+           END-PERFORM
+           .
+      *
+       800-CSV-HEAD-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVÊÔ½¸½èÍý
+      *****************************************************************
+       400-CSV-DATA-SEC            SECTION.
+      *
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL  IDX4  >  32
+      *    Æü
+             IF  IDX4  =  32
+               MOVE    "·×"            TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             ELSE
+               MOVE    IDX4            TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+      *
+             IF  WRK-NYUGAIKBN  =  1
+      *    ºÆ¿Ç·ï¿ô
+               MOVE    M700-RHKNKEN(IDX4)     TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             ELSE
+      *    ¼õ¿Ç¼Ô¿ô
+               IF   FLG-TOTAL  =  1
+                 MOVE    M700-JYUSHINCNT(IDX4)  TO  WRK-ITEM
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
+      *
+      *    ½é¿Ç·ï¿ô
+               MOVE    M700-SHKNKEN(IDX4)     TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ºÆ¿Ç·ï¿ô
+               MOVE    M700-RHKNKEN(IDX4)     TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ¤½¤ÎÂ¾·ï¿ô
+               MOVE    M700-OHKNKEN(IDX4)     TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+      *
+      *    ÊÝ¸±ÅÀ¿ô
+             MOVE    M700-GHKNTEN(IDX4)       TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ¿ÇÎÅÆâÍÆÌÀºÙ
+             PERFORM  VARYING  IDX5  FROM  1  BY  1
+                      UNTIL  IDX5  >  16
+               MOVE    M700-TEN(IDX5 IDX4)  TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-PERFORM
+      *
+      *    ÊÝ¸±ÉéÃ´³Û
+             MOVE    M7001-HKNFTN(IDX4)       TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ¼«ÈñÉéÃ´³Û
+             MOVE    M7001-JIHIFTN(IDX4)      TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áë¸ýÀÁµá¶â³Û
+             MOVE    M7001-GSEIKYU(IDX4)      TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Áë¸ýÎÎ¼ý¶â³Û
+             MOVE    M7001-GRYOSYU(IDX4)      TO  WRK-ITEM
+             PERFORM  810-CSVDATA-EDIT-SEC
+           END-PERFORM
+      *
+      *    £Ã£Ó£Ö½ÐÎÏ½èÍý
+           PERFORM  230-TOUKEICSV-SEC
+      *
+           .
+       400-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       800-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM  820-CSVDATA-EDIT-SEC
+           PERFORM  800-PUT-DELIMITER-SEC
+           .
+      *
+       801-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       810-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM  820-CSVDATA-EDIT-SEC
+           PERFORM  800-PUT-CR-SEC
+           .
+      *
+       810-CSVDATA-EDIT-EXE.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       820-CSVDATA-EDIT-SEC            SECTION.
+      *
+           IF   WRK-ITEM  NOT =  SPACE
+             PERFORM  800-GET-ITEM-SIZE-SEC
+             STRING  WRK-ITEM(IDX-ST:IDX-ED)  DELIMITED   BY  SIZE
+                                              INTO  WRK-CSVDATA
+                                              WITH  POINTER  IDXP
+             END-STRING
+           END-IF
+           .
+      *
+       820-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    ¶èÀÚ¤êÊ¸»úÊÔ½¸½èÍý
+      *****************************************************************
+       800-PUT-DELIMITER-SEC           SECTION.
+      *
+           STRING    ","       DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-DELIMITER-EXT.
+           EXIT.
+      *****************************************************************
+      *    ²þ¹ÔÊ¸»úÊÔ½¸½èÍý
+      *****************************************************************
+       800-PUT-CR-SEC                  SECTION.
+      *
+           STRING    X"0D"     DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-CR-EXT.
+           EXIT.
+      *****************************************************************
+      *    ¹àÌÜ¥µ¥¤¥º¼èÆÀ½èÍý
+      *****************************************************************
+       800-GET-ITEM-SIZE-SEC           SECTION.
+      *
+           MOVE    ZERO            TO  IDX-ST
+                                       IDX-ED
+      *
+           PERFORM  VARYING  IDX6  FROM  1  BY  1
+                    UNTIL  IDX6  >  WRK-ITEM-SIZE
+                    OR  WRK-ITEM(IDX6:)  =  SPACE
+      *
+             IF  IDX-ST  =  ZERO
+               IF  WRK-ITEM(IDX6:1)  NOT =  SPACE
+                 MOVE    IDX6      TO  IDX-ST
+                 MOVE    1         TO  IDX-ED
+               END-IF
+             ELSE
+               COMPUTE  IDX-ED  =  IDX-ED  +  1
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+       800-GET-ITEM-SIZE-EXT.
+           EXIT.
+      *****************************************************************
+      *    £Ã£Ó£Ö½ÐÎÏ½èÍý
+      *****************************************************************
+       230-TOUKEICSV-SEC               SECTION.
+      *
+           IF  WRK-PARA-PRTYM  >=  "200804"
+             INITIALIZE                     ORCSTOUKEICSVAREA
+             MOVE    "INS"                  TO  STOUKEICSV-MODE
+             MOVE    LNK-PRTKANRI-TBL-KEY   TO  STOUKEICSV-TBL-KEY
+             MOVE    LNK-PRTKANRI-RENNUM    TO  STOUKEICSV-RENNUM
+             MOVE    LNK-PRTKANRI-TBL-GROUP TO  STOUKEICSV-TBL-GROUP
+             MOVE    LNK-PRTKANRI-SHORI-RENNUM
+                                            TO  STOUKEICSV-SHORI-RENNUM
+             MOVE    LNK-PRTKANRI-SHELLID   TO  STOUKEICSV-SHELLID
+             MOVE    LNK-PRTKANRI-SRYYM     TO  STOUKEICSV-SRYYM
+             MOVE    ZERO                   TO  STOUKEICSV-PTID
+             MOVE    "/var/tmp/"            TO  STOUKEICSV-TO-FOLDER
+      *
+             STRING  SPA-HOSPNUM            DELIMITED  BY  SIZE
+                     "gekkei_shinryouhi_"   DELIMITED  BY  SIZE
+                     WRK-PARA-PRTYM         DELIMITED  BY  SIZE
+                     ".csv"                 DELIMITED  BY  SIZE
+                                            INTO  STOUKEICSV-TO-DATA
+             END-STRING
+             MOVE    "2"                    TO  STOUKEICSV-CODE-TYPE
+             MOVE    WRK-CSVDATA            TO  STOUKEICSV-CSVDATA
+             MOVE    "·î·×É½¡Ê¿ÇÎÅÈñÀÁµáÌÀºÙ"  TO  STOUKEICSV-TITLE
+      *
+             CALL    "ORCSTOUKEICSV"     USING
+                                         ORCSTOUKEICSVAREA
+                                         SPA-AREA
+             IF  ( STOUKEICSV-RETURN  =  ZERO )
+               CONTINUE
+             ELSE
+               MOVE    "Åý·×£Ã£Ó£Ö£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
+                                         TO  WRK-RECEERR
+               PERFORM  500-ERR-HENSYU-SEC
+             END-IF
+      *
+             INITIALIZE                  WRK-CSVDATA
+           END-IF
+      *
+           .
+      *
+       230-TOUKEICSV-EXT.
+           EXIT.
       *****************************************************************
       *    ¥¨¥é¡¼½ÐÎÏ½èÍý
       *****************************************************************
