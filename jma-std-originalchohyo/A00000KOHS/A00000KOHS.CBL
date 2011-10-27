@@ -36,6 +36,8 @@
       *                                     同患者にて公費1と公費2を使用した場合、
       *                                     印字されるように修正
       *  01.00.05    @@@@-門間    11/08/22  実日数(外来)は公費請求テーブルを参照するように変更
+      *  01.00.06    @@@@-門間    11/10/18  同保険、同公費でレセプトが複数存在している場合、
+      *                                     正しく集計されるように修正
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -144,6 +146,8 @@
            03  IDZ                  PIC 9(04).
            03  IDXP                 PIC 9(02).
            03  IDX7                 PIC 9(04).
+           03  IDX8                 PIC 9(02).
+           03  IDX9                 PIC 9(01).
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -552,7 +556,7 @@
       *    公費請求テーブルより、実日数(外来)を集計
            IF  RECE02-NYUGAIKBN  =  "2"
       *      実日数(外来)
-             MOVE    RECE02-JNISSU(IDX7 + 1)   TO   MF100-JNISSU
+             MOVE    RECE02-JNISSU(IDX9 + 1)   TO   MF100-JNISSU
            END-IF
       *
       *    収納テーブルより、実日数、点数、本人負担額、回数(食事療養費)、
@@ -560,13 +564,14 @@
            PERFORM  910-SYUNOU-SELECT-SEC
            PERFORM  UNTIL  FLG-SYUNOU  =  1
              IF        SYU-DENPJTIKBN       NOT =  "3"
-               AND  (( RECE02-KOHNUM(IDX7)      =  SYU-KOH1HKNNUM
+               AND     RECE02-HKNCOMBI(IDX8)        =  SYU-HKNCOMBINUM
+               AND  (( RECE02-KOHNUMHC(IDX8 IDX7)   =  SYU-KOH1HKNNUM
                AND     SYU-KOH1HKNNUM       NOT =  SPACE )
-               OR    ( RECE02-KOHNUM(IDX7)      =  SYU-KOH2HKNNUM
+               OR    ( RECE02-KOHNUMHC(IDX8 IDX7)   =  SYU-KOH2HKNNUM
                AND     SYU-KOH2HKNNUM       NOT =  SPACE )
-               OR    ( RECE02-KOHNUM(IDX7)      =  SYU-KOH3HKNNUM
+               OR    ( RECE02-KOHNUMHC(IDX8 IDX7)   =  SYU-KOH3HKNNUM
                AND     SYU-KOH3HKNNUM       NOT =  SPACE )
-               OR    ( RECE02-KOHNUM(IDX7)      =  SYU-KOH4HKNNUM
+               OR    ( RECE02-KOHNUMHC(IDX8 IDX7)   =  SYU-KOH4HKNNUM
                AND     SYU-KOH4HKNNUM       NOT =  SPACE ))
                AND     RECE02-SRYYM             =  SYU-SRYYMD(1:6)
       *
@@ -707,39 +712,51 @@
       *    対象公費所持者判定
            INITIALIZE  MF100-REC
       *
-           PERFORM  VARYING  IDX7   FROM    1   BY  1
-                    UNTIL    IDX7   >   4
-                    OR       RECE02-KOHNUM(IDX7)  =  SPACE
-             IF  RECE02-KOHNUM(IDX7)  =  KOHI-KOHNUM(1)
-               OR  KOHI-KOHNUM(2)    OR  KOHI-KOHNUM(3)
-               OR  KOHI-KOHNUM(4)    OR  KOHI-KOHNUM(5)
-               OR  KOHI-KOHNUM(6)    OR  KOHI-KOHNUM(7)
-               OR  KOHI-KOHNUM(8)    OR  KOHI-KOHNUM(9)
-               OR  KOHI-KOHNUM(10)   OR  KOHI-KOHNUM(11)
-               OR  KOHI-KOHNUM(12)   OR  KOHI-KOHNUM(13)
-               OR  KOHI-KOHNUM(14)   OR  KOHI-KOHNUM(15)
-               OR  KOHI-KOHNUM(16)   OR  KOHI-KOHNUM(17)
-               OR  KOHI-KOHNUM(18)   OR  KOHI-KOHNUM(19)
-               OR  KOHI-KOHNUM(20)   OR  KOHI-KOHNUM(21)
-               OR  KOHI-KOHNUM(22)   OR  KOHI-KOHNUM(23)
-               OR  KOHI-KOHNUM(24)   OR  KOHI-KOHNUM(25)
-               OR  KOHI-KOHNUM(26)   OR  KOHI-KOHNUM(27)
-               OR  KOHI-KOHNUM(28)   OR  KOHI-KOHNUM(29)
-               OR  KOHI-KOHNUM(30)   OR  KOHI-KOHNUM(31)
-               OR  KOHI-KOHNUM(32)   OR  KOHI-KOHNUM(33)
-               OR  KOHI-KOHNUM(34)   OR  KOHI-KOHNUM(35)
-               OR  KOHI-KOHNUM(36)   OR  KOHI-KOHNUM(37)
-               OR  KOHI-KOHNUM(38)   OR  KOHI-KOHNUM(39)
-               OR  KOHI-KOHNUM(40)
+           PERFORM  VARYING  IDX8   FROM    1   BY  1
+                    UNTIL    IDX8   >   10
+                    OR       RECE02-HKNCOMBI(IDX8)  =  SPACE
       *
-               INITIALIZE  MF100-REC
-                           FLG-KOHCHK
-               PERFORM  9001-CHK-SEC
-               IF   FLG-KOHCHK  =  1
-                 PERFORM  2002-HENSYU-SEC
+             PERFORM  VARYING  IDX7   FROM    1   BY  1
+                      UNTIL    IDX7   >   4
+                      OR       RECE02-KOHNUMHC(IDX8 IDX7)  =  SPACE
+               IF  RECE02-KOHNUMHC(IDX8 IDX7)  =  KOHI-KOHNUM(1)
+                 OR  KOHI-KOHNUM(2)    OR  KOHI-KOHNUM(3)
+                 OR  KOHI-KOHNUM(4)    OR  KOHI-KOHNUM(5)
+                 OR  KOHI-KOHNUM(6)    OR  KOHI-KOHNUM(7)
+                 OR  KOHI-KOHNUM(8)    OR  KOHI-KOHNUM(9)
+                 OR  KOHI-KOHNUM(10)   OR  KOHI-KOHNUM(11)
+                 OR  KOHI-KOHNUM(12)   OR  KOHI-KOHNUM(13)
+                 OR  KOHI-KOHNUM(14)   OR  KOHI-KOHNUM(15)
+                 OR  KOHI-KOHNUM(16)   OR  KOHI-KOHNUM(17)
+                 OR  KOHI-KOHNUM(18)   OR  KOHI-KOHNUM(19)
+                 OR  KOHI-KOHNUM(20)   OR  KOHI-KOHNUM(21)
+                 OR  KOHI-KOHNUM(22)   OR  KOHI-KOHNUM(23)
+                 OR  KOHI-KOHNUM(24)   OR  KOHI-KOHNUM(25)
+                 OR  KOHI-KOHNUM(26)   OR  KOHI-KOHNUM(27)
+                 OR  KOHI-KOHNUM(28)   OR  KOHI-KOHNUM(29)
+                 OR  KOHI-KOHNUM(30)   OR  KOHI-KOHNUM(31)
+                 OR  KOHI-KOHNUM(32)   OR  KOHI-KOHNUM(33)
+                 OR  KOHI-KOHNUM(34)   OR  KOHI-KOHNUM(35)
+                 OR  KOHI-KOHNUM(36)   OR  KOHI-KOHNUM(37)
+                 OR  KOHI-KOHNUM(38)   OR  KOHI-KOHNUM(39)
+                 OR  KOHI-KOHNUM(40)
+      *
+                 PERFORM  VARYING  IDX9   FROM    1   BY  1
+                          UNTIL    IDX9   >   4
+                          OR       RECE02-KOHNUMHC(IDX8 IDX7)
+                                   =  RECE02-KOHNUM(IDX9)
+                   CONTINUE
+                 END-PERFORM
+      *
+                 INITIALIZE  MF100-REC
+                             FLG-KOHCHK
+                 PERFORM  9001-CHK-SEC
+                 IF   FLG-KOHCHK  =  1
+                   PERFORM  2002-HENSYU-SEC
+                 END-IF
+      *
                END-IF
-      *
-             END-IF
+             END-PERFORM
            END-PERFORM
       *
            .
@@ -1272,7 +1289,7 @@
       *
            MOVE    RECE02-HOSPNUM       TO   PTKOH-HOSPNUM
            MOVE    RECE02-PTID          TO   PTKOH-PTID
-           MOVE    RECE02-KOHID(IDX7)   TO   PTKOH-KOHID
+           MOVE    RECE02-KOHID(IDX9)   TO   PTKOH-KOHID
            MOVE    PTKOHINF-REC         TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
            MOVE    "tbl_ptkohinf"       TO   MCP-TABLE
