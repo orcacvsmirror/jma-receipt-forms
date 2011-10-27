@@ -29,6 +29,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
       *                                     open-cobol1.0対応
+      *  01.00.02    @@@@-門間    11/10/18  システム管理のDB検索処理を変更(key→key10)
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -417,7 +418,6 @@
        000-PROC-SEC                SECTION.
       *
            PERFORM 100-INIT-SEC
-           DISPLAY "QQQQQQQQQ " IDX9
       *
            IF  INP-STS  =   ZERO
       *    正常主処理
@@ -524,6 +524,8 @@
            INITIALIZE                  SYS-1001-REC
            MOVE    "1001"              TO  SYS-1001-KANRICD
            MOVE    "*"                 TO  SYS-1001-KBNCD
+           MOVE    C100LNK-YMD2        TO  SYS-1001-STYUKYMD
+           MOVE    C100LNK-YMD1        TO  SYS-1001-EDYUKYMD
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
            MOVE    SYS-1001-REC        TO  MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
@@ -867,7 +869,6 @@
       *    (日別)入院数、退院数、在院中集計処理
       *****************************************************************
        320-NYURRK-CNT-SEC      SECTION.
-           DISPLAY "QQQQQQQQQ " IDX9
       *
            MOVE SUM-SRYKAMAX       TO  IDX3
            MOVE SUM-SRYYMDIMAX     TO  IDX5
@@ -938,7 +939,6 @@
       *    (月別)入院数、退院数、在院中集計処理
       *****************************************************************
        320-NYURRK-M-CNT-SEC      SECTION.
-           DISPLAY "QQQQQQQQQ " IDX9
       *
            MOVE SUM-SRYKAMAX       TO  IDX3
            MOVE SUM-SRYYMDIMAX     TO  IDX5
@@ -1537,7 +1537,7 @@
            MOVE    WRK-SYSYMD          TO  ORC-DBYMD
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
-           MOVE    "key"               TO  MCP-PATHNAME
+           MOVE    "key10"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
@@ -1545,7 +1545,7 @@
            IF      MCP-RC              =   ZERO
              MOVE    "DBFETCH"           TO  MCP-FUNC
              MOVE    "tbl_syskanri"      TO  MCP-TABLE
-             MOVE    "key"               TO  MCP-PATHNAME
+             MOVE    "key10"             TO  MCP-PATHNAME
              CALL    "ORCDBMAIN"         USING
                                          MCPAREA
                                          MCPDATA-REC
@@ -1561,7 +1561,7 @@
       *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
-           MOVE    "key"               TO  MCP-PATHNAME
+           MOVE    "key10"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
