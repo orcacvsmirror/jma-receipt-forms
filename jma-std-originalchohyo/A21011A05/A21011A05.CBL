@@ -32,6 +32,7 @@
       *  01.00.02                 11/01/13  公費請求テーブルを参照
       *                                     月途中での本家区分変更へ対応
       *  01.00.03                 11/01/27  公費請求テーブルの参照方法を変更
+      *  01.00.04    @@@@-門間    11/10/18  月途中での負担者番号変更へ対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -111,6 +112,7 @@
            03  FLG-SYUNOU          PIC 9(01).
            03  FLG-NYUINRRK        PIC 9(01).
            03  FLG-KOHI            PIC 9(01).
+           03  FLG-PTKOHINF        PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -275,6 +277,10 @@
       *    収納情報
        01  NYUINRRK-REC.
            COPY  "CPPTNYUINRRK.INC".
+      *
+      *    患者公費情報
+       01  PTKOHINF-REC.
+           COPY  "CPPTKOHINF.INC".
       *
       *    公費請求書
            COPY    "CPKOHSKY.INC"
@@ -591,6 +597,19 @@
       *        公費番号設定
                MOVE    RECE10-KOHNUM(1)     TO    A05TMP-KOHNUM1
                MOVE    RECE10-KOHNUM(2)     TO    A05TMP-KOHNUM2
+      *
+      *        負担者番号設定
+               PERFORM  VARYING  IDS  FROM  1  BY  1
+                        UNTIL    IDS  >     2
+      *
+                 PERFORM  910-PTKOHINF-READ-SEC
+      *
+                 IF  IDS  =  1
+                   MOVE    PTKOH-FTNJANUM    TO    A05TMP-KOHFTNNUM1
+                 ELSE
+                   MOVE    PTKOH-FTNJANUM    TO    A05TMP-KOHFTNNUM2
+                 END-IF
+               END-PERFORM
       *
                INITIALIZE  IDS
                            SUM-SYUNISSU
@@ -1522,6 +1541,54 @@
           .
        9002-CHK-EXT.
            EXIT.
+      *****************************************************************
+      *    収納情報セット
+      *****************************************************************
+       910-PTKOHINF-READ-SEC  SECTION.
+      *
+           INITIALIZE                   PTKOHINF-REC
+           MOVE    RECE10-HOSPNUM       TO   PTKOH-HOSPNUM
+           MOVE    RECE10-PTID          TO   PTKOH-PTID
+           MOVE    RECE10-KOHID(IDS)    TO   PTKOH-KOHID
+           MOVE    PTKOHINF-REC         TO   MCPDATA-REC
+           MOVE    "DBSELECT"           TO   MCP-FUNC
+           MOVE    "tbl_ptkohinf"       TO   MCP-TABLE
+           MOVE    "key"                TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF  MCP-RC  =  ZERO
+             MOVE    "DBFETCH"            TO   MCP-FUNC
+             MOVE    "tbl_ptkohinf"       TO   MCP-TABLE
+             MOVE    "key"                TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"          USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+             IF   MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC          TO   PTKOHINF-REC
+               MOVE    ZERO                 TO   FLG-PTKOHINF
+             ELSE
+               INITIALIZE                   PTKOHINF-REC
+               MOVE    1                    TO   FLG-PTKOHINF
+             END-IF
+           ELSE
+             INITIALIZE                   PTKOHINF-REC
+             MOVE    1                    TO   FLG-PTKOHINF
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
+           MOVE    "tbl_ptkohinf"       TO   MCP-TABLE
+           MOVE    "key"                TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           .
+       910-PTKOHINF-READ-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    収納情報セット
       *****************************************************************
