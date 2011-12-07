@@ -31,6 +31,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/08/26  診療分類の判別処理を追加
       *  01.00.03    @@@@-門間    11/09/05  診療分類の判別処理を修正
+      *  01.00.04    @@@@-田中    11/11/21  室料差額情報取得時の不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -686,9 +687,8 @@
            MOVE    WRK-PARA-PRTSYMD  TO   SYS-5113-EDYUKYMD
            PERFORM 830-SYSKANRI-DBSELECT-SEC
            PERFORM   UNTIL  FLG-SYSKANRI  =   1
-                     OR  IDX3  >=  30
-             ADD    1                TO   IDX3
-             MOVE   SYS-5113-BRM-SAGAKU-NM    TO   WRK-SITURYOYEN(IDX3)
+             MOVE    SYS-5113-KBNCD           TO   IDX3
+             MOVE    SYS-5113-BRM-SAGAKU-NM   TO   WRK-SITURYOYEN(IDX3)
              PERFORM  830-SYSKANRI-DBFETCH-SEC
            END-PERFORM
            PERFORM  830-SYSKANRI-DBCLOSE-SEC
