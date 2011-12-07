@@ -34,6 +34,7 @@
       *  01.00.04    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
       *  01.00.05    @@@@-田中    11/09/29  集計対象日を範囲指定に変更
       *  01.00.06    @@@@-田中    11/10/17  CSVファイル作成機能追加 
+      *  01.00.07    @@@@-田中    11/11/21  CSVファイル作成領域を修正 
       ******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -570,10 +571,10 @@
                    OR  WRK-SMEI-SRYKA(IDX-S)  NOT =  WRK-SRYKA
       *    CSV合計編集処理
                  PERFORM  3001-CSV-GOUKEI-SET-SEC
-      *    CSV出力処理
-                 PERFORM  230-TOUKEICSV-SEC
                  MOVE    ZERO     TO  FLG-CSV-HEAD
                END-IF
+      *    CSV出力処理
+               PERFORM  230-TOUKEICSV-SEC
              END-IF
            END-PERFORM
       *
@@ -1765,6 +1766,8 @@
              INITIALIZE                     WRK-CSVDATA
              INITIALIZE                     CSV-G-AREA
            END-IF
+      *
+           MOVE    1                     TO  IDXP
       *
            .
       *

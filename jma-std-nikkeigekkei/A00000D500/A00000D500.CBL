@@ -33,6 +33,7 @@
       *  01.00.03    @@@@-田中    11/04/04  患者番号桁数を最大20桁に変更
       *  01.00.04    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
       *  01.00.05    @@@@-田中    11/10/04  CSVファイル作成機能追加 
+      *  01.00.06    @@@@-田中    11/11/21  CSVファイル作成領域を修正 
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -914,6 +915,8 @@
                  WHEN  OTHER
                    PERFORM  390-PRINT-OUT-SEC
                END-EVALUATE
+      *    ＣＳＶ出力処理
+               PERFORM  230-TOUKEICSV-SEC
              END-IF
            END-PERFORM
       *
@@ -1330,15 +1333,13 @@
              END-IF
       *
              ADD   1        TO  IDX-S
-             IF IDX-S   >   IDX-MAX
+             IF  IDX-S   >   IDX-MAX
                MOVE    1           TO  FLG-END
       *
       *    CSV合計編集処理
                IF  WRK-PARA-GOKEIKBN  NOT =  SPACE
                  PERFORM  400-CSV-GOUKEI-SEC
                END-IF
-      *    ＣＳＶ出力処理
-               PERFORM  230-TOUKEICSV-SEC
              END-IF
       *
            END-PERFORM
@@ -2273,6 +2274,8 @@
       *
              INITIALIZE                  WRK-CSVDATA
            END-IF
+      *
+           MOVE    1                     TO  IDXP
       *
            .
       *
