@@ -29,6 +29,7 @@
       *  Maj/Min/Rev  修正者      日付      内容
       *   01.00.01    @@@@-田中   11/01/05  open-cobol1.0対応
       *   01.00.01    @@@@-田中   11/01/05  コメント履歴削除
+      *   01.00.02    @@@@-門間   11/12/13  ヘッダ項目に数列が表示される不具合を修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -116,6 +117,7 @@
            03  FLG-HKNTG           PIC 9(01).
            03  GET-OFF             PIC 9(01).
            03  GET-TENSU           PIC 9(01).
+           03  FLG-NKENSU          PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -1129,11 +1131,14 @@
            PERFORM  UNTIL    FLG-NSRYACCT   =   1
              IF  WRK-NYUGAIKBN  =   "1"
                IF   NACCT-PTID  NOT =  WRK-ZENPTID2
+                 MOVE   ZERO         TO    FLG-NKENSU
                  PERFORM  20011-NYUIN-SEC
                  MOVE   NACCT-PTID   TO    WRK-ZENPTID2
                END-IF
-      *    入院件数カウント処理
-               PERFORM   20000-NYUINKENSU-SEC
+      *        入院件数カウント処理
+               IF  FLG-NKENSU  = 1
+                 PERFORM   20000-NYUINKENSU-SEC
+               END-IF
              END-IF
              PERFORM  900-NYUINACCT-FETCH-SEC
            END-PERFORM
@@ -1451,6 +1456,7 @@
                  PERFORM  220-BTU-GROUPING-SEC
                  IF   WRK-BTU-INDEX    NOT =   "0"
                    PERFORM  20013-NYUIN-SET-SEC
+                   MOVE   1             TO    FLG-NKENSU
                  END-IF
                END-IF
              END-IF
@@ -2772,40 +2778,44 @@
       *
            PERFORM  UNTIL  FLG-PRINT   =    1
       *
-             IF   K145TMP-NYUGAIKBN   NOT =   WRK-TMP-NYUGAIKBN
-      *    全医師合計明細の印字
-      *    印刷処理
-               IF   IDX2              >=   6
-      *    印刷処理
+             IF  K145TMP-BTUINDEX  NOT =  ZERO
+      *
+               IF   K145TMP-NYUGAIKBN   NOT =   WRK-TMP-NYUGAIKBN
+      *          全医師合計明細の印字
+      *          印刷処理
+                 IF   IDX2              >=   6
+      *            印刷処理
+                   PERFORM  330-PRINT-OUT-SEC
+                   MOVE  ZERO         TO  IDX2
+                 END-IF
+      *          全医師明細編集
+                 ADD      1              TO  IDX2
+                 PERFORM  320-BODY-HEN2-SEC
+      *          印刷処理
                  PERFORM  330-PRINT-OUT-SEC
-                 MOVE  ZERO         TO  IDX2
+                 INITIALIZE                  WRK-K145ALL-AREA
+                 MOVE  ZERO              TO  IDX2
+                 MOVE  K145TMP-NYUGAIKBN TO  WRK-TMP-NYUGAIKBN
+      *          見出し編集
+                 PERFORM  310-HEAD-HEN-SEC
                END-IF
-      *    全医師明細編集
-               ADD      1              TO  IDX2
-               PERFORM  320-BODY-HEN2-SEC
-      *    印刷処理
-               PERFORM  330-PRINT-OUT-SEC
-               INITIALIZE                  WRK-K145ALL-AREA
-               MOVE  ZERO              TO  IDX2
-               MOVE  K145TMP-NYUGAIKBN TO  WRK-TMP-NYUGAIKBN
-      *    見出し編集
-               PERFORM  310-HEAD-HEN-SEC
+      *
+      *        １頁内で医師のMAXに達している場合
+               IF   IDX2  >=     6
+      *          印刷処理
+                 PERFORM  330-PRINT-OUT-SEC
+                 MOVE  ZERO              TO  IDX2
+      *          見出し編集
+                 PERFORM  310-HEAD-HEN-SEC
+               END-IF
+      *
+      *        病棟別明細編集
+               ADD      1   TO   IDX2
+               PERFORM  320-BODY-HEN-SEC
+      *
              END-IF
       *
-      *    １頁内で医師のMAXに達している場合
-             IF   IDX2  >=     6
-      *    印刷処理
-               PERFORM  330-PRINT-OUT-SEC
-               MOVE  ZERO              TO  IDX2
-      *    見出し編集
-               PERFORM  310-HEAD-HEN-SEC
-             END-IF
-      *
-      *    病棟別明細編集
-             ADD      1   TO   IDX2
-             PERFORM  320-BODY-HEN-SEC
-      *
-      *    一時ファイル読込
+      *      一時ファイル読込
              PERFORM  900-TMP-READ-SEC
            END-PERFORM
       *

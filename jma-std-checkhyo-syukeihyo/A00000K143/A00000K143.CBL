@@ -29,6 +29,7 @@
       *  Maj/Min/Rev  修正者      日付      内容
       *   01.00.01    @@@@-田中   10/12/14  open-cobol1.0対応
       *   01.00.01    @@@@-田中   10/12/14  コメント履歴削除
+      *   01.00.02    @@@@-門間   11/12/13  ヘッダ項目に数列が表示される不具合を修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -136,6 +137,7 @@
            03  FLG-PRGOPTION       PIC 9(01).
            03  FLG-DATEKBN         PIC 9(01).
            03  FLG-DATEKBN2        PIC 9(01).
+           03  FLG-NKENSU          PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -1340,11 +1342,14 @@
            PERFORM  UNTIL    FLG-NSRYACCT   =   1
              IF  WRK-NYUGAIKBN  =   "1"
                IF   NACCT-PTID  NOT =  WRK-ZENPTID2
+                 MOVE   ZERO         TO    FLG-NKENSU
                  PERFORM  20011-NYUIN-SEC
                  MOVE   NACCT-PTID   TO    WRK-ZENPTID2
                END-IF
-      *    入院件数カウント処理
-               PERFORM   20000-NYUINKENSU-SEC
+      *        入院件数カウント処理
+               IF  FLG-NKENSU  = 1
+                 PERFORM   20000-NYUINKENSU-SEC
+               END-IF
              END-IF
              PERFORM  900-NYUINACCT-FETCH-SEC
            END-PERFORM
@@ -1399,6 +1404,7 @@
                  MOVE  PTINF-HOME-POST TO  WRK-POST
                  PERFORM  220-TIKU-GROUPING-SEC
                  PERFORM  20013-NYUIN-SET-SEC
+                 MOVE   1             TO    FLG-NKENSU
                END-IF
              END-IF
              PERFORM  940-SYUNOU-FETCH-SEC
@@ -2464,38 +2470,42 @@
       *
            PERFORM  UNTIL  FLG-PRINT   =    1
       *
-             IF  K143TMP-NYUGAIKBN   NOT =   WRK-TMP-NYUGAIKBN
-      *    全地区合計明細の印字
-      *    印刷処理
-               IF   IDX2              >=   6
-      *    印刷処理
+             IF  K143TMP-TIKUINDEX  NOT =  ZERO
+      *
+               IF  K143TMP-NYUGAIKBN   NOT =   WRK-TMP-NYUGAIKBN
+      *          全地区合計明細の印字
+      *          印刷処理
+                 IF   IDX2              >=   6
+      *            印刷処理
+                   PERFORM  330-PRINT-OUT-SEC
+                   MOVE  ZERO         TO  IDX2
+                 END-IF
+      *          全地区明細編集
+                 ADD      1              TO  IDX2
+                 PERFORM  320-BODY-HEN2-SEC
+      *          印刷処理
                  PERFORM  330-PRINT-OUT-SEC
-                 MOVE  ZERO         TO  IDX2
+                 INITIALIZE                  WRK-K143ALL-AREA
+                 MOVE  ZERO              TO  IDX2
+                 MOVE  K143TMP-NYUGAIKBN TO  WRK-TMP-NYUGAIKBN
+      *          見出し編集
+                 PERFORM  310-HEAD-HEN-SEC
                END-IF
-      *    全地区明細編集
-               ADD      1              TO  IDX2
-               PERFORM  320-BODY-HEN2-SEC
-      *    印刷処理
-               PERFORM  330-PRINT-OUT-SEC
-               INITIALIZE                  WRK-K143ALL-AREA
-               MOVE  ZERO              TO  IDX2
-               MOVE  K143TMP-NYUGAIKBN TO  WRK-TMP-NYUGAIKBN
-      *    見出し編集
-               PERFORM  310-HEAD-HEN-SEC
-             END-IF
       *
-      *    １頁内で地区のMAXに達している場合
-             IF IDX2        >=     6
-      *    印刷処理
-               PERFORM  330-PRINT-OUT-SEC
-               MOVE  ZERO              TO  IDX2
-      *    見出し編集
-               PERFORM  310-HEAD-HEN-SEC
-             END-IF
+      *        １頁内で地区のMAXに達している場合
+               IF IDX2        >=     6
+      *          印刷処理
+                 PERFORM  330-PRINT-OUT-SEC
+                 MOVE  ZERO              TO  IDX2
+      *          見出し編集
+                 PERFORM  310-HEAD-HEN-SEC
+               END-IF
       *
-      *    地区別明細編集
-             ADD      1   TO   IDX2
-             PERFORM  320-BODY-HEN-SEC
+      *        地区別明細編集
+               ADD      1   TO   IDX2
+               PERFORM  320-BODY-HEN-SEC
+      *
+             END-IF
       *
       *    一時ファイル読込
              PERFORM  900-TMP-READ-SEC
