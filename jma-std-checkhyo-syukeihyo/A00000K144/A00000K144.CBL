@@ -29,6 +29,8 @@
       *  Maj/Min/Rev  修正者      日付      内容
       *   01.00.01    @@@@-田中   11/01/05  open-cobol1.0対応
       *   01.00.01    @@@@-田中   11/01/05  コメント履歴削除
+      *   01.00.02    @@@@-門間   11/12/13  ヘッダ項目に数列が表示される不具合を修正
+      *   01.00.02    @@@@-門間   11/12/13  保険別振分けを修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -115,6 +117,7 @@
            03  FLG-HKNTG           PIC 9(01).
            03  GET-OFF             PIC 9(01).
            03  GET-TENSU           PIC 9(01).
+           03  FLG-NKENSU          PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -973,7 +976,7 @@
       *****************************************************************
        110-HKN-PARA-HENSYU-SEC              SECTION.
       *
-      * 保険別カラム作成
+      *    保険別カラム作成
            IF   K100LNK-SRYYM  <  "200804"
              MOVE   "社保本人"        TO  WRK-HKNNAME(1)
              MOVE   "社保家族"        TO  WRK-HKNNAME(2)
@@ -1005,7 +1008,6 @@
       *    主　　処理
       *****************************************************************
        200-MAIN-SEC                SECTION.
-      *
       *
            OPEN     OUTPUT  K144T-FILE
            CLOSE            K144T-FILE
@@ -1104,7 +1106,7 @@
       *****************************************************************
        220-HKN-GROUPING-SEC      SECTION.
       *
-      *   保険組合情報
+      *    保険組合情報
            INITIALIZE                           HKNCOMBI-REC
            MOVE    PTINF-HOSPNUM            TO  COMB-HOSPNUM
            MOVE    PTINF-PTID               TO  COMB-PTID
@@ -1130,6 +1132,11 @@
                WHEN  "032"
                WHEN  "033"
                WHEN  "034"
+               WHEN  "063"
+               WHEN  "072"
+               WHEN  "073"
+               WHEN  "074"
+               WHEN  "075"
                  IF   COMB-KOHHKNNUM(1)    =   "027"
                      OR  COMB-KOHHKNNUM(2)    =   "027"
                      OR  COMB-KOHHKNNUM(3)    =   "027"
@@ -1161,12 +1168,7 @@
                    END-IF
                  END-IF
       *
-               WHEN  "063"
                WHEN  "067"
-               WHEN  "072"
-               WHEN  "073"
-               WHEN  "074"
-               WHEN  "075"
                  IF    COMB-KOHHKNNUM(1)    =   "027"
                      OR  COMB-KOHHKNNUM(2)    =   "027"
                      OR  COMB-KOHHKNNUM(3)    =   "027"
@@ -1209,22 +1211,23 @@
       *****************************************************************
        230-HKN-GROUPING-SEC      SECTION.
       *
-      *    保険算定年齢チェック等
-           INITIALIZE                  ORCSAGECHKAREA
-           MOVE    PTINF-HOSPNUM        TO  AGECHK-HOSPNUM
-           MOVE    PTINF-PTID           TO  AGECHK-PTID
-           MOVE    K100LNK-SRYYM       TO  AGECHK-SRYYMD(1:6)
-           MOVE    "01"       TO  AGECHK-SRYYMD(7:2)
-           MOVE    COMB-HKNCOMBINUM     TO  AGECHK-HKNCOMBINUM
-           CALL    "ORCSAGECHK"        USING
-                                       ORCSAGECHKAREA
-                                       SPA-AREA
       *    保険組合情報
            INITIALIZE                           HKNCOMBI-REC
            MOVE    PTINF-HOSPNUM            TO  COMB-HOSPNUM
            MOVE    PTINF-PTID               TO  COMB-PTID
            MOVE    WRK-HKNCOMBI             TO  COMB-HKNCOMBINUM
            PERFORM 900-HKNCOMBI-READ-SEC
+      *    保険算定年齢チェック等
+           INITIALIZE                  ORCSAGECHKAREA
+           MOVE    PTINF-HOSPNUM       TO  AGECHK-HOSPNUM
+           MOVE    PTINF-PTID          TO  AGECHK-PTID
+           MOVE    K100LNK-SRYYM       TO  AGECHK-SRYYMD(1:6)
+           MOVE    "01"                TO  AGECHK-SRYYMD(7:2)
+           MOVE    COMB-HKNCOMBINUM    TO  AGECHK-HKNCOMBINUM
+           CALL    "ORCSAGECHK"        USING
+                                       ORCSAGECHKAREA
+                                       SPA-AREA
+      *
       *    年齢計算
            MOVE    PTINF-BIRTHDAY           TO  WRK-BIRTHDAY
            MOVE    WRK-PARA-PRTSYMD         TO  WRK-SYMD
@@ -1246,6 +1249,11 @@
              WHEN  "032"
              WHEN  "033"
              WHEN  "034"
+             WHEN  "063"
+             WHEN  "072"
+             WHEN  "073"
+             WHEN  "074"
+             WHEN  "075"
                  IF    COMB-KOHHKNNUM(1)    =   "027"  OR
                        COMB-KOHHKNNUM(2)    =   "027"  OR
                        COMB-KOHHKNNUM(3)    =   "027"  OR
@@ -1264,25 +1272,11 @@
                  END-IF
       *
              WHEN  "060"
-                 IF    COMB-KOHHKNNUM(1)    =   "027"  OR
-                       COMB-KOHHKNNUM(2)    =   "027"  OR
-                       COMB-KOHHKNNUM(3)    =   "027"  OR
-                       COMB-KOHHKNNUM(4)    =   "027"
-                     MOVE         4           TO  IDX3
-                 ELSE
-                     MOVE       3           TO  IDX3
-                 END-IF
-      *
-             WHEN  "063"
              WHEN  "067"
-             WHEN  "072"
-             WHEN  "073"
-             WHEN  "074"
-             WHEN  "075"
                IF    COMB-KOHHKNNUM(1)    =   "027"
-                   OR  COMB-KOHHKNNUM(2)    =   "027"
-                   OR  COMB-KOHHKNNUM(3)    =   "027"
-                   OR  COMB-KOHHKNNUM(4)    =   "027"
+                 OR  COMB-KOHHKNNUM(2)    =   "027"
+                 OR  COMB-KOHHKNNUM(3)    =   "027"
+                 OR  COMB-KOHHKNNUM(4)    =   "027"
                  MOVE     4              TO  IDX3
                ELSE
                  MOVE     3              TO  IDX3
@@ -1323,11 +1317,14 @@
            PERFORM  UNTIL    FLG-NSRYACCT   =   1
              IF  WRK-NYUGAIKBN  =   "1"
                IF   NACCT-PTID  NOT =  WRK-ZENPTID2
+                 MOVE   ZERO         TO    FLG-NKENSU
                  PERFORM  20011-NYUIN-SEC
                  MOVE   NACCT-PTID   TO    WRK-ZENPTID2
                END-IF
-      *    入院件数カウント処理
-               PERFORM   20000-NYUINKENSU-SEC
+      *        入院件数カウント処理
+               IF  FLG-NKENSU  = 1
+                 PERFORM   20000-NYUINKENSU-SEC
+               END-IF
              END-IF
              PERFORM  900-NYUINACCT-FETCH-SEC
            END-PERFORM
@@ -1398,6 +1395,7 @@
                    PERFORM  230-HKN-GROUPING-SEC
                  END-IF
                  PERFORM  20013-NYUIN-SET-SEC
+                 MOVE   1             TO    FLG-NKENSU
                END-IF
              END-IF
              PERFORM  940-SYUNOU-FETCH-SEC
@@ -2442,39 +2440,42 @@
       *
            PERFORM  UNTIL  FLG-PRINT   =    1
       *
-             IF   K144TMP-NYUGAIKBN   NOT =   WRK-TMP-NYUGAIKBN
-      *    全年齢合計明細の印字
-      *    印刷処理
-               IF   IDX2  >=   6
-      *    印刷処理
+             IF    K144TMP-HKNINDEX  NOT =  ZERO
+      *
+               IF   K144TMP-NYUGAIKBN   NOT =   WRK-TMP-NYUGAIKBN
+      *          全年齢合計明細の印字
+      *          印刷処理
+                 IF   IDX2  >=   6
+      *            印刷処理
+                   PERFORM  330-PRINT-OUT-SEC
+                   MOVE  ZERO         TO  IDX2
+                 END-IF
+      *          全年齢明細編集
+                 ADD      1              TO  IDX2
+                 PERFORM  320-BODY-HEN2-SEC
+      *          印刷処理
                  PERFORM  330-PRINT-OUT-SEC
-                 MOVE  ZERO         TO  IDX2
+                 INITIALIZE                  WRK-K144ALL-AREA
+                 MOVE  ZERO              TO  IDX2
+                 MOVE  K144TMP-NYUGAIKBN TO  WRK-TMP-NYUGAIKBN
+      *          見出し編集
+                 PERFORM  310-HEAD-HEN-SEC
                END-IF
-      *    全年齢明細編集
-               ADD      1              TO  IDX2
-               PERFORM  320-BODY-HEN2-SEC
-      *    印刷処理
-               PERFORM  330-PRINT-OUT-SEC
-               INITIALIZE                  WRK-K144ALL-AREA
-               MOVE  ZERO              TO  IDX2
-               MOVE  K144TMP-NYUGAIKBN TO  WRK-TMP-NYUGAIKBN
-      *    見出し編集
-               PERFORM  310-HEAD-HEN-SEC
+      *
+      *        １頁内で年齢のMAXに達している場合
+               IF   IDX2  >=     6
+      *          印刷処理
+                 PERFORM  330-PRINT-OUT-SEC
+                 MOVE  ZERO              TO  IDX2
+      *          見出し編集
+                 PERFORM  310-HEAD-HEN-SEC
+               END-IF
+      *
+      *        保険別明細編集
+               ADD    1     TO   IDX2
+               PERFORM  320-BODY-HEN-SEC
+      *
              END-IF
-      *
-      *    １頁内で年齢のMAXに達している場合
-             IF   IDX2  >=     6
-      *    印刷処理
-               PERFORM  330-PRINT-OUT-SEC
-               MOVE  ZERO              TO  IDX2
-      *    見出し編集
-               PERFORM  310-HEAD-HEN-SEC
-             END-IF
-      *
-      *    保険別明細編集
-             ADD    1     TO   IDX2
-             PERFORM  320-BODY-HEN-SEC
-      *
       *    一時ファイル読込
              PERFORM  900-TMP-READ-SEC
            END-PERFORM
@@ -2730,7 +2731,6 @@
       *    帳票編集<印刷>処理
       *****************************************************************
        330-PRINT-OUT-SEC         SECTION.
-      *
       *
            INITIALIZE                  ORCSPRTAREA
            MOVE    "INS"                   TO  SPRT-MODE
