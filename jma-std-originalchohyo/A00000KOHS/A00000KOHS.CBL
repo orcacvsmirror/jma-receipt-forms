@@ -38,6 +38,9 @@
       *  01.00.05    @@@@-門間    11/08/22  実日数(外来)は公費請求テーブルを参照するように変更
       *  01.00.06    @@@@-門間    11/10/18  同保険、同公費でレセプトが複数存在している場合、
       *                                     正しく集計されるように修正
+      *  01.00.07    @@@@-門間    11/12/16  公費の件数を集計するように修正
+      *                                     第2公費が印字対象でない場合、印字対象である
+      *                                     第3公費が集計されない不具合を修正
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -185,6 +188,7 @@
            03  WRK-PATH             PIC X(64).
       *
            03  WRK-Z2               PIC ZZ.
+           03  WRK-Z3               PIC ZZZ.
            03  WRK-Z9               PIC Z,ZZZ,ZZZ. 
            03  WRK-SRYYMD           PIC 9(08). 
            03  FLG-KOHSKY           PIC 9(01).
@@ -200,6 +204,8 @@
       *
            03  WRK-JIHI1            PIC S9(09).
            03  WRK-JIHI2            PIC S9(09).
+      *
+           03  WRK-KENSU            PIC 9(03).
       *
        01  PGOPTION-AREA.
            03  CITY-CITYNAME        PIC X(40).
@@ -718,43 +724,44 @@
       *
              PERFORM  VARYING  IDX7   FROM    1   BY  1
                       UNTIL    IDX7   >   4
-                      OR       RECE02-KOHNUMHC(IDX8 IDX7)  =  SPACE
-               IF  RECE02-KOHNUMHC(IDX8 IDX7)  =  KOHI-KOHNUM(1)
-                 OR  KOHI-KOHNUM(2)    OR  KOHI-KOHNUM(3)
-                 OR  KOHI-KOHNUM(4)    OR  KOHI-KOHNUM(5)
-                 OR  KOHI-KOHNUM(6)    OR  KOHI-KOHNUM(7)
-                 OR  KOHI-KOHNUM(8)    OR  KOHI-KOHNUM(9)
-                 OR  KOHI-KOHNUM(10)   OR  KOHI-KOHNUM(11)
-                 OR  KOHI-KOHNUM(12)   OR  KOHI-KOHNUM(13)
-                 OR  KOHI-KOHNUM(14)   OR  KOHI-KOHNUM(15)
-                 OR  KOHI-KOHNUM(16)   OR  KOHI-KOHNUM(17)
-                 OR  KOHI-KOHNUM(18)   OR  KOHI-KOHNUM(19)
-                 OR  KOHI-KOHNUM(20)   OR  KOHI-KOHNUM(21)
-                 OR  KOHI-KOHNUM(22)   OR  KOHI-KOHNUM(23)
-                 OR  KOHI-KOHNUM(24)   OR  KOHI-KOHNUM(25)
-                 OR  KOHI-KOHNUM(26)   OR  KOHI-KOHNUM(27)
-                 OR  KOHI-KOHNUM(28)   OR  KOHI-KOHNUM(29)
-                 OR  KOHI-KOHNUM(30)   OR  KOHI-KOHNUM(31)
-                 OR  KOHI-KOHNUM(32)   OR  KOHI-KOHNUM(33)
-                 OR  KOHI-KOHNUM(34)   OR  KOHI-KOHNUM(35)
-                 OR  KOHI-KOHNUM(36)   OR  KOHI-KOHNUM(37)
-                 OR  KOHI-KOHNUM(38)   OR  KOHI-KOHNUM(39)
-                 OR  KOHI-KOHNUM(40)
+               IF  RECE02-KOHNUMHC(IDX8 IDX7)  NOT =  SPACE
+                 IF  RECE02-KOHNUMHC(IDX8 IDX7)  =  KOHI-KOHNUM(1)
+                   OR  KOHI-KOHNUM(2)    OR  KOHI-KOHNUM(3)
+                   OR  KOHI-KOHNUM(4)    OR  KOHI-KOHNUM(5)
+                   OR  KOHI-KOHNUM(6)    OR  KOHI-KOHNUM(7)
+                   OR  KOHI-KOHNUM(8)    OR  KOHI-KOHNUM(9)
+                   OR  KOHI-KOHNUM(10)   OR  KOHI-KOHNUM(11)
+                   OR  KOHI-KOHNUM(12)   OR  KOHI-KOHNUM(13)
+                   OR  KOHI-KOHNUM(14)   OR  KOHI-KOHNUM(15)
+                   OR  KOHI-KOHNUM(16)   OR  KOHI-KOHNUM(17)
+                   OR  KOHI-KOHNUM(18)   OR  KOHI-KOHNUM(19)
+                   OR  KOHI-KOHNUM(20)   OR  KOHI-KOHNUM(21)
+                   OR  KOHI-KOHNUM(22)   OR  KOHI-KOHNUM(23)
+                   OR  KOHI-KOHNUM(24)   OR  KOHI-KOHNUM(25)
+                   OR  KOHI-KOHNUM(26)   OR  KOHI-KOHNUM(27)
+                   OR  KOHI-KOHNUM(28)   OR  KOHI-KOHNUM(29)
+                   OR  KOHI-KOHNUM(30)   OR  KOHI-KOHNUM(31)
+                   OR  KOHI-KOHNUM(32)   OR  KOHI-KOHNUM(33)
+                   OR  KOHI-KOHNUM(34)   OR  KOHI-KOHNUM(35)
+                   OR  KOHI-KOHNUM(36)   OR  KOHI-KOHNUM(37)
+                   OR  KOHI-KOHNUM(38)   OR  KOHI-KOHNUM(39)
+                   OR  KOHI-KOHNUM(40)
       *
-                 PERFORM  VARYING  IDX9   FROM    1   BY  1
-                          UNTIL    IDX9   >   4
-                          OR       RECE02-KOHNUMHC(IDX8 IDX7)
-                                   =  RECE02-KOHNUM(IDX9)
-                   CONTINUE
-                 END-PERFORM
+                   PERFORM  VARYING  IDX9   FROM    1   BY  1
+                            UNTIL    IDX9   >   4
+                            OR       RECE02-KOHNUMHC(IDX8 IDX7)
+                                     =  RECE02-KOHNUM(IDX9)
+                     CONTINUE
+                   END-PERFORM
       *
-                 INITIALIZE  MF100-REC
-                             FLG-KOHCHK
-                 PERFORM  9001-CHK-SEC
-                 IF   FLG-KOHCHK  =  1
-                   PERFORM  2002-HENSYU-SEC
+                   INITIALIZE  MF100-REC
+                               FLG-KOHCHK
+                   PERFORM  9001-CHK-SEC
+                   IF   FLG-KOHCHK  =  1
+                     PERFORM  2002-HENSYU-SEC
+                   END-IF
+      *
                  END-IF
-      *
                END-IF
              END-PERFORM
            END-PERFORM
@@ -787,6 +794,10 @@
            END-PERFORM
            CLOSE    MF100-FILE
            IF   WRK-PARA-STUKBN  =  "1"
+      *
+             INITIALIZE  WRK-KENSU
+                         WRK-KOHNUM
+      *
       *    CSV頭書き出力    
              PERFORM  210-CSV-HED-SEC
              OPEN     INPUT       MF100-FILE
@@ -797,8 +808,6 @@
              PERFORM   UNTIL  FLG-PRINT   =  1
       *    CSV書き出し
                PERFORM   210-CSV-WRITE-SEC
-      *    一時ファイル読込
-               PERFORM   900-TMP-READ-SEC
              END-PERFORM
       *    ファイルクローズ
              CLOSE  A00000KOHS-FILE
@@ -859,6 +868,9 @@
                     OR    KEY-NEW  NOT =  KEY-OLD
       *    公費名
              MOVE   MF100-KOHNAME          TO   KOHS-KOHNAME(IDX1)
+      *
+             MOVE   MF100-KOHNUM           TO   WRK-KOHNUM
+             ADD    1                      TO   WRK-KENSU
       *
       *    ID(患者番号)
              MOVE   MF100-PTNUM            TO   WRK-MAE-INPUT
@@ -993,9 +1005,29 @@
              MOVE     WRK-OUT-INPUT        TO   KOHS-TAHO(IDX1)
       *
              PERFORM  900-TMP-READ-SEC
+      *
       *      改ページフラグが０の時は公費番号で改ページしない
              IF  KOHS-KAIPAGE              =   ZERO
                MOVE     KEY-NEW            TO    KEY-OLD
+      *
+      *        公費件数の印字（行）
+               IF    WRK-KOHNUM  NOT =  MF100-KOHNUM
+                 OR  FLG-PRINT   =  1
+                 MOVE    "件数合計＝"      TO   KOHS-KOHKENSU1(IDX1)
+                 MOVE    WRK-KENSU         TO   WRK-Z3
+                 MOVE    WRK-Z3            TO   KOHS-KENSU1(IDX1)
+                 INITIALIZE  WRK-KENSU
+               END-IF
+             ELSE
+      *        公費件数の印字（改頁）
+               IF    WRK-KOHNUM  NOT =  MF100-KOHNUM
+                 OR  FLG-PRINT   =  1
+                 MOVE    "（件数合計＝"    TO   KOHS-KOHKENSU2-1
+                 MOVE    "）"              TO   KOHS-KOHKENSU2-2
+                 MOVE    WRK-KENSU         TO   WRK-Z3
+                 MOVE    WRK-Z3            TO   KOHS-KENSU2
+                 INITIALIZE  WRK-KENSU
+               END-IF
              END-IF
       *
            END-PERFORM
@@ -1741,6 +1773,8 @@
                     "給付割合"            DELIMITED  BY  SPACE
                     ","                   DELIMITED  BY  SIZE
                     "他方公費"            DELIMITED  BY  SPACE
+                    ","                   DELIMITED  BY  SIZE
+                    "件数合計"            DELIMITED  BY  SPACE
                                           INTO   A00000KOHS-REC
            END-STRING
            WRITE  A00000KOHS-REC
@@ -1924,10 +1958,29 @@
            MOVE    1                     TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
       *    他方公費
-           MOVE    MF100-TAHO(1)            TO   WRK-DATA
+           MOVE    MF100-TAHO(1)         TO   WRK-DATA
            MOVE    3                     TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-           
+      *
+           MOVE    MF100-KOHNUM          TO   WRK-KOHNUM
+           ADD     1                     TO   WRK-KENSU
+      *
+      *    一時ファイル読込
+           PERFORM   900-TMP-READ-SEC
+      *
+      *    公費件数
+           IF    WRK-KOHNUM  NOT =  MF100-KOHNUM
+             OR  FLG-PRINT   =  1
+             MOVE    ","                   TO   WRK-DATA
+             MOVE    1                     TO   WRK-NAGASA
+             PERFORM 5004-MOJI-HENSYU-SEC
+             MOVE    WRK-KENSU             TO   WRK-Z3
+             MOVE    WRK-Z3                TO   WRK-DATA
+             MOVE    3                     TO   WRK-NAGASA
+             PERFORM 5004-MOJI-HENSYU-SEC
+             INITIALIZE  WRK-KENSU
+           END-IF
+      *
            WRITE   A00000KOHS-REC
       *
            .
