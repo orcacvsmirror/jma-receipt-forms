@@ -32,6 +32,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
       *  01.00.03    @@@@-田中    11/10/13  CSVファイル作成機能追加 
+      *  01.00.04    @@@@-田中    11/12/15  外来時に療養担当手当を集計
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -168,9 +169,9 @@
       *
            03  WRK-JIHI2              PIC 9(08).
            03  WRK-JIHI4              PIC 9(08).
-           03  WRK-TJIHI-G       OCCURS  10.
+           03  WRK-TJIHI-G            OCCURS  10.
                05  WRK-TJIHI          PIC X(08).
-           03  WRK-TJIHIN-G       OCCURS  10.
+           03  WRK-TJIHIN-G           OCCURS  10.
                05  WRK-TJIHIN         PIC X(08).
       *
            03  WRK-4001-TENTANKA      PIC 9(02)V9(01).
@@ -191,16 +192,16 @@
            03  WRK-COMPFTN            PIC S9(10).
            03  WRK-DENPNUM            PIC 9(07).
       *
-       01  SUM-AREA                VALUE   ZERO.
-           03  SRYKAMAX               PIC   9(03).
-           03  NYUGAI-TBL          OCCURS  2.
-             05  NYUGAIKBN            PIC   X(01).
-             05  NYUGAINAME           PIC   X(04).
-             05  SRYKA-TBL            OCCURS  100.
-               07  SRYKA              PIC   X(02).
-               07  SRYKANAME          PIC   X(20).
-               07  HKNTYPE-TBL     OCCURS  11.
-                 09  ITEM-TBL      OCCURS  40.
+       01  SUM-AREA                   VALUE ZERO.
+           03  SRYKAMAX               PIC 9(03).
+           03  NYUGAI-TBL             OCCURS 2.
+             05  NYUGAIKBN            PIC X(01).
+             05  NYUGAINAME           PIC X(04).
+             05  SRYKA-TBL            OCCURS 100.
+               07  SRYKA              PIC X(02).
+               07  SRYKANAME          PIC X(20).
+               07  HKNTYPE-TBL        OCCURS 11.
+                 09  ITEM-TBL         OCCURS 40.
                    11  YOSO           PIC S9(11).
       *
        01  WRK-CONS-AREA.
@@ -2156,7 +2157,7 @@
                    MOVE    SRYKAMAX        TO   IDX1
                  END-IF
       *    パラメタ入外区分の追加。
-                 IF   WRK-SYS-NYUGAIKBN    =   NG
+                 IF   WRK-SYS-NYUGAIKBN  =  NG
                      OR   WRK-PARA-NYUGAIKBN   =   SPACE
                    INITIALIZE       HC90
       *
@@ -2171,7 +2172,7 @@
                    MOVE    WRK-SYSYMDWH           TO   HC901-SYSYMD
       *
                    MOVE    NYUGAINAME(NG)         TO   HC90-NYUGAIKBN
-                   MOVE   NYUGAINAME(NG)          TO   HC901-NYUGAIKBN
+                   MOVE    NYUGAINAME(NG)         TO   HC901-NYUGAIKBN
       *
                    IF   NYUGAIKBN(NG) = "1"
                      MOVE   SRYKANAME(1 IDX1)     TO   HC90-TSRYKA
@@ -2183,36 +2184,37 @@
       *
                    IF   NYUGAIKBN(NG)  =  "1"
       *    注意書メッセージの設定
-                     MOVE  SPACE            TO   HC90-CMSG1
+                     MOVE    SPACE            TO   HC90-CMSG1
       *    入院の件数タイトル設定
-                     MOVE  "入院件数"       TO   HC90-TKENSU1
-                     MOVE  "退院件数"       TO   HC90-TKENSU2
+                     MOVE    "入院件数"       TO   HC90-TKENSU1
+                     MOVE    "退院件数"       TO   HC90-TKENSU2
       *    入院の負担金タイトル設定
-                     MOVE  "食事療養費・生活療養費"   TO   HC90-TFUTAN1
-                     MOVE  "食事負担額・生活負担額"   TO   HC90-TFUTAN2
+                     MOVE    "食事療養費・生活療養費"  TO   HC90-TFUTAN1
+                     MOVE    "食事負担額・生活負担額"  TO   HC90-TFUTAN2
       *
-                     MOVE  "室料差額"       TO   HC90-TFUTAN3
+                     MOVE    "室料差額"       TO   HC90-TFUTAN3
       *    入院の自費タイトル設定
-                     PERFORM  VARYING  IDX2   FROM 1  BY  1
-                              UNTIL    IDX2   >    10
-                       MOVE   WRK-TJIHIN(IDX2)   TO   HC90-TJIHI(IDX2)
+                     PERFORM  VARYING  IDX2  FROM 1  BY  1
+                              UNTIL  IDX2  >  10
+                       MOVE   WRK-TJIHIN(IDX2)  TO   HC90-TJIHI(IDX2)
                      END-PERFORM
                    ELSE
       *    注意書メッセージの設定
                      MOVE  "※(注１) 同日再診も１件毎にカウントする。"
-                                                 TO   HC90-CMSG1
+                                                TO   HC90-CMSG1
       *    外来の件数タイトル設定
                      MOVE  "初診件数"           TO   HC90-TKENSU1
                      MOVE  "再診件数 (注１)"    TO   HC90-TKENSU2
                      MOVE  "その他件数 (注１)"  TO   HC90-TKENSU3
       *    外来の負担金タイトル設定
       *    外来の自費タイトル設定
-                     PERFORM  VARYING  IDX2   FROM 1  BY  1
-                              UNTIL    IDX2   >   10
-                       MOVE  WRK-TJIHI(IDX2)   TO   HC90-TJIHI(IDX2)
+                     PERFORM  VARYING  IDX2  FROM  1  BY  1
+                              UNTIL  IDX2  >  10
+                       MOVE    WRK-TJIHI(IDX2)  TO   HC90-TJIHI(IDX2)
                      END-PERFORM
                    END-IF
-                   MOVE    "入院料(点数)"   TO   HC90-THKN1
+                   MOVE    "入院料(点数)"       TO   HC90-THKN1
+                   MOVE    "療養担当手当"       TO   HC90-TRYO
       *
                    ADD     1            TO   CNT-PAGE
                    MOVE    CNT-PAGE     TO   WRK-PAGE
@@ -2221,14 +2223,10 @@
                    MOVE    CNT-PAGE     TO   WRK-PAGE
                    MOVE    WRK-PAGE     TO   HC901-PAGE
       *
-                   PERFORM  VARYING  IDX2   FROM  1 BY 1
-                            UNTIL    IDX2  >  11
-                     PERFORM   VARYING  IDX3   FROM  1 BY 1
-                               UNTIL    IDX3   >  40
-                       IF  YOSO(NG IDX1 IDX2 IDX3)  >  0
-                           AND  IDX3  =  19
-                         MOVE     "療養担当手当"    TO   HC90-TRYO
-                       END-IF
+                   PERFORM  VARYING  IDX2  FROM  1  BY  1
+                            UNTIL  IDX2  >  11
+                     PERFORM   VARYING  IDX3  FROM  1  BY  1
+                               UNTIL  IDX3   >  40
       *    予備(空き)行以外は数値を転送する。
                        EVALUATE  NYUGAIKBN(NG)
                          WHEN "1"
@@ -2262,7 +2260,6 @@
                          WHEN "2"
       *    外来集計情報のデータ転送
                            IF  IDX3   NOT = 4
-                               AND  IDX3   NOT =   20
                                AND  IDX3   NOT =   23
                                AND  IDX3   NOT =   24
                                AND  IDX3   NOT =   25
@@ -2464,7 +2461,6 @@
                     UNTIL  IDX12  >  CSV-HEAD02-MAX
              IF  ( IDX12  NOT =  4
       *    外来集計情報のデータ転送
-                 AND  IDX12  NOT =  20
                  AND  IDX12  NOT =  23
                  AND  IDX12  NOT =  24
                  AND  IDX12  NOT =  25
