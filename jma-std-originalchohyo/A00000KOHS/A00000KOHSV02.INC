@@ -18,6 +18,7 @@
       *  コピー句修正履歴
       * Maj/Min/Rev  修正者       日付      内容
       * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
+      * 01.00.02     @@@@-門間    11/12/16  公費の件数を集計するように修正
       ********************************************************************
        01  KOHS-DATA.
       *    市町村名
@@ -82,3 +83,11 @@
       *    他法公費(法別番号)
            03  KOHS-TAHO-TBL.
                05  KOHS-TAHO                 PIC X(22) OCCURS 15.
+      *    公費件数（行）
+           03  KOHS-TAHO-TBL OCCURS 15.
+             05  KOHS-KOHKENSU1              PIC X(10).
+             05  KOHS-KENSU1                 PIC X(03).
+      *    公費件数（改頁）
+           03  KOHS-KOHKENSU2-1              PIC X(12).
+           03  KOHS-KOHKENSU2-2              PIC X(02).
+           03  KOHS-KENSU2                   PIC X(03).
