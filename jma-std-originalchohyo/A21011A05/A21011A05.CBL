@@ -33,6 +33,8 @@
       *                                     月途中での本家区分変更へ対応
       *  01.00.03                 11/01/27  公費請求テーブルの参照方法を変更
       *  01.00.04    @@@@-門間    11/10/18  月途中での負担者番号変更へ対応
+      *  01.00.05    @@@@-門間    11/12/07  公費単独で公費が２つ以上存在する場合、
+      *                                     日数が集計されるように変更
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -638,6 +640,7 @@
                      MOVE  RECE10-SRYYM  TO  WRK-SYUYMD(1:6)
                      MOVE  IDS  TO  WRK-SYUYMD(7:2)
       *
+                     INITIALIZE               SYUNOU-REC
                      MOVE  RECE10-HOSPNUM     TO   SYU-HOSPNUM
                      MOVE  RECE10-NYUGAIKBN   TO   SYU-NYUGAIKBN
                      MOVE  RECE10-PTID        TO   SYU-PTID
@@ -836,6 +839,7 @@
                  MOVE  RECE02-SRYYM  TO  WRK-SYUYMD(1:6)
                  MOVE  IDS  TO  WRK-SYUYMD(7:2)
       *
+                 INITIALIZE                SYUNOU-REC
                  MOVE   RECE02-HOSPNUM     TO   SYU-HOSPNUM
                  MOVE   RECE02-NYUGAIKBN   TO   SYU-NYUGAIKBN
                  MOVE   RECE02-PTID        TO   SYU-PTID
@@ -1594,7 +1598,6 @@
       *****************************************************************
        920-SYUNOU-SET-SEC  SECTION.
       *
-           INITIALIZE                SYUNOU-REC
            MOVE   WRK-SYUYMD         TO   SYU-SRYYMD
            MOVE   SYUNOU-REC         TO   MCPDATA-REC
            MOVE   "DBSELECT"         TO   MCP-FUNC
