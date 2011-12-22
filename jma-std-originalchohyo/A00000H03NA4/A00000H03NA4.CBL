@@ -31,6 +31,8 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/04/04  DB検索時の不具合を修正
       *  01.00.03    @@@@-門間    11/05/26  主保険＋マル長の請求対応
+      *  01.00.04    @@@@-門間    11/12/07 「1 期別にまとめて発行する」を指定した場合、
+      *                                     複数科保険でまとめて計算する
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -279,14 +281,14 @@
       *
            COPY    "MCPDATA.INC".
            COPY    "CPORCMCP.INC".
-      *--- 20110107 DELETE START ---------------------------------------
-      *     COPY    "ORCA-DBPATH".
-      *--- 20110107 DELETE END   ---------------------------------------
       *
            COPY    "MCPAREA".
       *
       *    オンライン帳票名・出力先プリンタ名取得パラ
            COPY    "CPORCSPRTNM.INC".
+      *
+      *    請求書兼領収書まとめサブ
+           COPY    "CPORCHCN03S02.INC".
       *
       *****************************************************************
       *    連絡　領域
@@ -341,10 +343,7 @@
            MOVE    SPACE               TO  SYS-1001-REC
            MOVE    "1001"              TO  SYS-1001-KANRICD
            MOVE    "*"                 TO  SYS-1001-KBNCD
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     MOVE    ORCHCN03-HOSPNUM    TO  SYS-1001-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
-      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1001-STYUKYMD
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1001-EDYUKYMD
       *    システム管理検索
@@ -379,10 +378,7 @@
            MOVE    SPACE               TO  SYS-1002-REC
            MOVE    "1002"              TO  SYS-1002-KANRICD
            MOVE    "*"                 TO  SYS-1002-KBNCD
-      *--- 20110107 CHANGE START ---------------------------------------
-      *     MOVE    ORCHCN03-HOSPNUM    TO  SYS-1002-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  SYS-1002-HOSPNUM
-      *--- 20110107 CHANGE END   ---------------------------------------
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1002-STYUKYMD
            MOVE    ORCHCN03-SYSYMD     TO  SYS-1002-EDYUKYMD
       *    システム管理検索
@@ -536,8 +532,17 @@
       *    収納マスタ検索処理
            PERFORM 2001-SYUNOU-SEL-SEC
       *
-      *    入院請求書編集処理
-           PERFORM 2001-HCN03-HEN-SEC
+           INITIALIZE                  ORCHCN03S02AREA
+           MOVE    IDX-M       TO      ORCHCN03S02-IDX
+           CALL    "ORCHCN03S02"       USING
+                                       ORCHCN03AREA
+                                       ORCHCN03S02AREA
+                                       SYUNOU-REC
+                                       SPA-AREA
+           IF    ( ORCHCN03S02-PRTFLG  =   1 )
+      *      入院請求書編集処理
+             PERFORM 2001-HCN03-HEN-SEC
+           END-IF
       *
            .
        200-MAIN-EXT.
@@ -547,6 +552,8 @@
       *    収納マスタ検索処理
       *****************************************************************
        2001-SYUNOU-SEL-SEC             SECTION.
+      *
+           MOVE    ZERO                TO  FLG-SYUNOU
       *
       *    収納マスタ検索
            INITIALIZE                  SYUNOU-REC
@@ -735,7 +742,14 @@
                MOVE    "家族"   TO    HCN03-HONKZKKBN
              WHEN  OTHER
                MOVE    SPACE    TO    HCN03-HONKZKKBN
-           END-EVALUATE 
+           END-EVALUATE
+      *
+           IF    ( ORCHCN03S02-FUKUSU-COMBI   =    1 )
+               MOVE    "複数保険使用"  TO  HCN03-HOKEN
+               MOVE    SPACE           TO  HCN03-FUTAN
+               MOVE    SPACE           TO  HCN03-HONKZKKBN
+           END-IF
+      *
       *    労災・自賠の診察料等の記載
            IF   (SYU-RSI-TOTAL     NOT =   ZERO) AND
                 (SYS-4001-RSIPRTKBN    =   "2")
