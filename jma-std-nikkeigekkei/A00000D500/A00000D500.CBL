@@ -34,6 +34,7 @@
       *  01.00.04    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
       *  01.00.05    @@@@-田中    11/10/04  CSVファイル作成機能追加 
       *  01.00.06    @@@@-田中    11/11/21  CSVファイル作成領域を修正 
+      *  01.00.07    @@@@-田中    12/01/10  CSV合計計算処理を修正 
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -902,6 +903,10 @@
                      OR WRK-SMEI-SRYKA(IDX-S)     NOT =
                                       WRK-SMEI-SRYKA(IDX-S - 1)
                      PERFORM  400-PRINT-OUT-SEC
+      *
+      *    ＣＳＶ出力処理
+                     PERFORM  230-TOUKEICSV-SEC
+      *
                      INITIALIZE       SUM-GG-AREA
                    END-IF
                  WHEN  "2"
@@ -910,13 +915,16 @@
                      OR WRK-SMEI-SRYKA(IDX-S)     NOT =
                                       WRK-SMEI-SRYKA(IDX-S - 1)
                      PERFORM  400-PRINT-OUT-SEC
+      *    ＣＳＶ出力処理
+                     PERFORM  230-TOUKEICSV-SEC
+      *
                      INITIALIZE       SUM-GG-AREA
                    END-IF
                  WHEN  OTHER
                    PERFORM  390-PRINT-OUT-SEC
-               END-EVALUATE
       *    ＣＳＶ出力処理
-               PERFORM  230-TOUKEICSV-SEC
+                   PERFORM  230-TOUKEICSV-SEC
+               END-EVALUATE
              END-IF
            END-PERFORM
       *

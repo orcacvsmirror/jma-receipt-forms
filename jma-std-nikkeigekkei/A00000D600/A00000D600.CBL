@@ -35,6 +35,7 @@
       *  01.00.05    @@@@-田中    11/09/29  集計対象日を範囲指定に変更
       *  01.00.06    @@@@-田中    11/10/17  CSVファイル作成機能追加 
       *  01.00.07    @@@@-田中    11/11/21  CSVファイル作成領域を修正 
+      *  01.00.08    @@@@-田中    12/01/10  CSV合計計算処理を修正 
       ******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -251,7 +252,7 @@
            03  CSV-G-JIHIFTN           PIC S9(09).
            03  CSV-G-SEIKYU            PIC S9(09).
            03  CSV-G-RYOSYU            PIC S9(09).
-           03  CSV-MONEY               PIC 9(08).
+           03  CSV-MONEY               PIC S9(08).
       *
        01  CSV-HEAD-AREA.
            03  CSV-HEAD-G.
@@ -1629,6 +1630,8 @@
            MOVE    WRK-SZZ             TO  WRK-ITEM
            PERFORM  810-CSVDATA-EDIT-SEC
       *
+           INITIALIZE                     CSV-G-AREA
+      *
            .
        3001-CSV-GOUKEI-SET-EXT.
            EXIT.
@@ -1764,7 +1767,6 @@
              END-IF
       *
              INITIALIZE                     WRK-CSVDATA
-             INITIALIZE                     CSV-G-AREA
            END-IF
       *
            MOVE    1                     TO  IDXP
