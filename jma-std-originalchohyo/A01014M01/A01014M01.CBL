@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/01/20  点数単価取得条件を修正
+      *  01.00.03    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正 
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -217,7 +218,6 @@
            03  WRK-SYUEKI2           PIC 9(09).
            03  WRK-SYUEKI3           PIC 9(09).
            03  WRK-HKNNUM            PIC X(03).
-           03  WRK-JIBAITNK          PIC 99.9.
            03  WRK-TENTNK            PIC 9(03)V9(02).
            03  WRK-NENREI            PIC 9(03).
            03  WRK-KNSBUNRUI         PIC 9(02).
@@ -243,6 +243,9 @@
            03  WRK-ZAINUM            PIC 9(08).
            03  WRK-ZENPTID           PIC 9(10).
            03  WRK-TENSU3            PIC 9(09).
+           03  WRK-4001-TENTANKA     PIC 9(02)V9(01).
+           03  WRK-4001-KOMUFLG      PIC X(01).
+           03  WRK-4001-KOMUTENTANKA PIC 9(02).
       *
       *    診療科名退避エリア
        01  SUM-AREA.
@@ -343,7 +346,11 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
+           COPY    "CPPRTDATA.INC". 
+      *
+      *    労災保険番号マスタ
+       01  PTRSIINF-REC.
+           COPY    "CPPTRSIINF.INC".
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -522,24 +529,30 @@
            END-IF
       *
       *    自賠責点数単価取得
-           MOVE     SPACE         TO        SYS-4001-REC
-           INITIALIZE                       SYS-4001-REC
-           MOVE     "4001"        TO        SYS-4001-KANRICD
-           MOVE     "*"           TO        SYS-4001-KBNCD
-           MOVE  WRK-PARA-PRTSYMD  TO     SYS-4001-EDYUKYMD
-           MOVE  WRK-PARA-PRTLYMD  TO     SYS-4001-STYUKYMD
-           MOVE    SPA-HOSPNUM         TO  SYS-4001-HOSPNUM
-           MOVE     SYS-4001-REC  TO        MCPDATA-REC
+           MOVE    SPACE             TO  SYS-4001-REC
+           INITIALIZE                    SYS-4001-REC
+           MOVE    "4001"            TO  SYS-4001-KANRICD
+           MOVE    "*"               TO  SYS-4001-KBNCD
+           MOVE    WRK-PARA-PRTSYMD  TO  SYS-4001-EDYUKYMD
+           MOVE    WRK-PARA-PRTLYMD  TO  SYS-4001-STYUKYMD
+           MOVE    SPA-HOSPNUM       TO  SYS-4001-HOSPNUM
+           MOVE    SYS-4001-REC      TO  MCPDATA-REC
            PERFORM  900-SYSKANRI-INV-SEC
-           IF       FLG-SYSKANRI        =   ZERO
-               MOVE    MCPDATA-REC TO  SYS-4001-REC
+           IF   FLG-SYSKANRI  =  ZERO
+             MOVE    MCPDATA-REC     TO  SYS-4001-REC
            ELSE
-               INITIALIZE              SYS-4001-REC
+             INITIALIZE              SYS-4001-REC
            END-IF
-           IF    SYS-4001-TENKBN    =    "1"
-               MOVE    11.5                   TO  WRK-JIBAITNK
+           IF    SYS-4001-TENKBN  =  "1"
+             MOVE    11.5            TO  WRK-4001-TENTANKA
            ELSE
-               MOVE    12                     TO  WRK-JIBAITNK
+             MOVE    12              TO  WRK-4001-TENTANKA
+           END-IF
+           IF  SYS-4001-KOMUKBN  =  "2"
+      *    公務災害(健保基準)時の点数単価設定
+             MOVE    SYS-4001-KOMUTENTANKA-X TO  WRK-4001-KOMUTENTANKA
+      *    公務災害区分が健保基準の場合、１を格納
+             MOVE    "1"        TO  WRK-4001-KOMUFLG
            END-IF
       *
       *    診療科別印刷
@@ -789,11 +802,19 @@
            EVALUATE  WRK-HKNNUM
              WHEN "971"
              WHEN "973"
-               IF  SYS-4001-TENKBN  =  "1"
-                 COMPUTE  WRK-SYUEKI  ROUNDED  =  SYU-NYN-HKNTEN * 11.5
+      *    患者労災保険情報取得
+               PERFORM  900-PTRSIINF-READ-SEC
+      *    点数単価を設定
+               IF  PTRSI-HKNKBN  =  "5"
+                   AND  WRK-4001-KOMUFLG  =  "1"
+      *    公務災害（健保基準）の場合
+                 MOVE    WRK-4001-KOMUTENTANKA   TO  WRK-TENTNK
                ELSE
-                 COMPUTE  WRK-SYUEKI  =  SYU-NYN-HKNTEN * 12
+                 MOVE    WRK-4001-TENTANKA       TO  WRK-TENTNK
                END-IF
+      *
+               COMPUTE  WRK-SYUEKI  ROUNDED  =  SYU-NYN-HKNTEN
+                                             *  WRK-TENTNK
              WHEN  "980"  THRU  "989"
                IF   SYS-1001-JIHIPOSITION  =  "2"
                  IF   SYU-NYN-TGMONEY-TAX  NOT =  SPACE
@@ -990,27 +1011,42 @@
        20012-SRY-SET                SECTION.
       *
       *    患者の主保険の点数単価取得
+           INITIALIZE  HKNCOMBI-REC
+           MOVE    ACCT-HOSPNUM      TO  COMB-HOSPNUM
+           MOVE    ACCT-PTID         TO  COMB-PTID
+           MOVE    ACCT-HKNCOMBI     TO  COMB-HKNCOMBINUM
            PERFORM  930-HKNCOMBI-SET-SEC
-           MOVE     COMB-HKNNUM      TO    WRK-HKNNUM
+           MOVE    COMB-HKNNUM       TO  WRK-HKNNUM
            PERFORM  930-HKNNUM-SET-SEC
            IF    FLG-HKNNUM    =    1
-               MOVE    10                TO    WRK-TENTNK
+             MOVE    10              TO  WRK-TENTNK
            ELSE
-               MOVE    HKN-TENTNK        TO    WRK-TENTNK
+             MOVE    HKN-TENTNK      TO  WRK-TENTNK
            END-IF
+      *
            IF  WRK-HKNNUM  =  "971"  OR  "973"
-               IF    SYS-4001-TENKBN  =  "1"
-                   MOVE   11.5   TO   WRK-TENTNK
-               ELSE
-                   MOVE   12     TO   WRK-TENTNK
-               END-IF
+             IF    SYS-4001-TENKBN  =  "1"
+               MOVE    11.5          TO  WRK-TENTNK
+             ELSE
+               MOVE    12            TO  WRK-TENTNK
+             END-IF
+      *    患者労災保険情報取得
+             PERFORM  910-PTRSIINF-READ-SEC
+      *    点数単価を設定
+             IF  PTRSI-HKNKBN  =  "5"
+                 AND  WRK-4001-KOMUFLG  =  "1"
+      *    公務災害（健保基準）の場合
+               MOVE    WRK-4001-KOMUTENTANKA   TO  WRK-TENTNK
+             ELSE
+               MOVE    WRK-4001-TENTANKA       TO  WRK-TENTNK
+             END-IF
            END-IF
       *
       *    キー設定
-           INITIALIZE                      M01TMP-REC
+           INITIALIZE                M01TMP-REC
       *
-           MOVE    ACCT-NYUGAIKBN    TO    M01TMP-NYUGAIKBN
-           MOVE    ACCT-SRYKA        TO    M01TMP-SRYKA
+           MOVE    ACCT-NYUGAIKBN    TO  M01TMP-NYUGAIKBN
+           MOVE    ACCT-SRYKA        TO  M01TMP-SRYKA
       *    TMPファイル読み込み
            PERFORM  800-SKTTMP-READ-SEC
       *
@@ -1060,14 +1096,13 @@
       *    合計に加算
       *    １レコードに付き、１回だけ診療会計の剤点数を加算
            COMPUTE  WRK-TENSU   =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
-           COMPUTE  WRK-SYUEKI  ROUNDED 
-                               =   WRK-TENSU    *  WRK-TENTNK
+           COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-TENSU  *  WRK-TENTNK
            MOVE     ZERO        TO  WRK-NISSU
-                                     ACCT-ZAIKAISU
+                                    ACCT-ZAIKAISU
            IF  SRY-SRYKBN    =    "14"
-               MOVE    46           TO    IDX2
+             MOVE    46           TO    IDX2
            ELSE
-               MOVE    31           TO    IDX2
+             MOVE    31           TO    IDX2
            END-IF
             
            PERFORM   20014-GOKEI-SET-SEC
@@ -1093,37 +1128,36 @@
            MOVE    ZERO     TO   WRK-TENSU
                                  WRK-SYUEKI
            IF  ACCT-ZAINUM NOT =  WRK-ZAINUM
-               COMPUTE  WRK-TENSU  =  
-                        ACCT-ZAITEN  * ACCT-ZAIKAISU
-               COMPUTE  WRK-SYUEKI  ROUNDED 
-                               =   WRK-TENSU    *  WRK-TENTNK
+             COMPUTE  WRK-TENSU  =  
+                      ACCT-ZAITEN  * ACCT-ZAIKAISU
+             COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-TENSU  *  WRK-TENTNK
       *
       *    点数加算
-               ADD    WRK-TENSU      TO     M01TMP-TENSU(IDX1)
+             ADD  WRK-TENSU        TO  M01TMP-TENSU(IDX1)
       *
       *    収益加算
-               ADD    WRK-SYUEKI     TO     M01TMP-SYUEKI(IDX1)
+             ADD  WRK-SYUEKI       TO  M01TMP-SYUEKI(IDX1)
       *
       *    件数加算
-               ADD    ACCT-ZAIKAISU  TO     M01TMP-KENSU(IDX1)
+             ADD  ACCT-ZAIKAISU    TO  M01TMP-KENSU(IDX1)
       *
       *    日数
-               MOVE     ZERO     TO    WRK-NISSU
-               PERFORM  VARYING  IDX3  FROM   1  BY  1
-                    UNTIL    IDX3  >    31
-                   IF  M01TMP-DAY(IDX1 IDX3)  =  ZERO 
-                     AND    ACCT-DAY(1 IDX3)       >  ZERO
-                       MOVE    1    TO    M01TMP-DAY(IDX1 IDX3)
-                       ADD     1    TO    WRK-NISSU
-                   END-IF
-               END-PERFORM
-               ADD     WRK-NISSU       TO    M01TMP-NISSU(IDX1)
+             MOVE    ZERO       TO  WRK-NISSU
+             PERFORM  VARYING  IDX3  FROM  1  BY  1
+                      UNTIL  IDX3  >  31
+               IF  M01TMP-DAY(IDX1 IDX3)  =  ZERO 
+                 AND  ACCT-DAY(1 IDX3)  >  ZERO
+                 MOVE    1      TO  M01TMP-DAY(IDX1 IDX3)
+                 ADD  1         TO  WRK-NISSU
+               END-IF
+             END-PERFORM
+             ADD  WRK-NISSU     TO  M01TMP-NISSU(IDX1)
       *
       *    合計に加算
-               MOVE      ZERO          TO    WRK-TENSU
-                                             WRK-SYUEKI
-               MOVE      46            TO    IDX2
-               PERFORM   20014-GOKEI-SET-SEC
+             MOVE    ZERO       TO  WRK-TENSU
+                                    WRK-SYUEKI
+             MOVE    46         TO  IDX2
+             PERFORM   20014-GOKEI-SET-SEC
       *
            END-IF
            MOVE   ACCT-ZAINUM TO  WRK-ZAINUM
@@ -1162,37 +1196,35 @@
            MOVE    ZERO     TO   WRK-TENSU
                                  WRK-SYUEKI
            IF  ACCT-ZAINUM NOT =  WRK-ZAINUM
-               COMPUTE  WRK-TENSU  =  
-                        ACCT-ZAITEN  * ACCT-ZAIKAISU
-               COMPUTE  WRK-SYUEKI  ROUNDED 
-                               =   WRK-TENSU    *  WRK-TENTNK
+             COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-TENSU  *  WRK-TENTNK
       *
       *    点数加算
-               ADD    WRK-TENSU      TO     M01TMP-TENSU(IDX1)
+             ADD    WRK-TENSU      TO     M01TMP-TENSU(IDX1)
       *
       *    収益加算
-               ADD    WRK-SYUEKI     TO     M01TMP-SYUEKI(IDX1)
+             ADD    WRK-SYUEKI     TO     M01TMP-SYUEKI(IDX1)
       *
       *    件数加算
-               ADD    ACCT-ZAIKAISU  TO     M01TMP-KENSU(IDX1)
+             ADD    ACCT-ZAIKAISU  TO     M01TMP-KENSU(IDX1)
       *
       *    日数
-               MOVE     ZERO     TO    WRK-NISSU
-               PERFORM  VARYING  IDX3  FROM   1  BY  1
-                        UNTIL    IDX3  >    31
-                   IF  M01TMP-DAY(IDX1 IDX3)  =  ZERO   AND
-                       ACCT-DAY(1 IDX3)       >  ZERO
-                       MOVE    1    TO    M01TMP-DAY(IDX1 IDX3)
-                       ADD     1    TO    WRK-NISSU
-                   END-IF
-               END-PERFORM
-               ADD     WRK-NISSU       TO    M01TMP-NISSU(IDX1)
+             MOVE     ZERO     TO    WRK-NISSU
+             PERFORM  VARYING  IDX3  FROM   1  BY  1
+                      UNTIL    IDX3  >    31
+                 IF  M01TMP-DAY(IDX1 IDX3)  =  ZERO   AND
+                     ACCT-DAY(1 IDX3)       >  ZERO
+                     MOVE    1    TO    M01TMP-DAY(IDX1 IDX3)
+                     ADD     1    TO    WRK-NISSU
+                 END-IF
+             END-PERFORM
+             ADD     WRK-NISSU       TO    M01TMP-NISSU(IDX1)
       *
       *    合計に加算
-               MOVE      ZERO          TO    WRK-TENSU
-                                            WRK-SYUEKI
-               MOVE      31            TO    IDX2
-               PERFORM   20014-GOKEI-SET-SEC
+             MOVE      ZERO          TO    WRK-TENSU
+                                          WRK-SYUEKI
+             MOVE      31            TO    IDX2
+             PERFORM   20014-GOKEI-SET-SEC
       *
            END-IF
            MOVE   ACCT-ZAINUM TO  WRK-ZAINUM
@@ -1214,12 +1246,18 @@
       *    
            MOVE    ZERO     TO   WRK-TENSU
                                  WRK-SYUEKI
-           IF  SRY-SRYKBN   =    "95" OR "96" OR "97"
-               COMPUTE  WRK-SYUEKI  =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
+           IF  SRY-SRYKBN  =  "95" OR "96" OR "97"
+             COMPUTE  WRK-SYUEKI  =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
            ELSE
-               COMPUTE  WRK-TENSU   =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
-               COMPUTE  WRK-SYUEKI  ROUNDED 
-                                 =   WRK-TENSU    *  WRK-TENTNK
+             COMPUTE  WRK-TENSU   =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             IF  ( WRK-HKNNUM  =  "971"  OR  "973" )
+                 AND  ( IDX1  =  2 OR 3 OR 4 OR 5 OR 6 OR 7 OR 8 OR 9
+                                    OR 10 OR 13 )
+                 AND   PTRSI-HKNKBN  NOT =  "5"
+               COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-TENSU  *  10
+             ELSE
+               COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-TENSU  *  WRK-TENTNK
+             END-IF
            END-IF
       *
            IF  IDX1  =  41  OR  42
@@ -1279,7 +1317,7 @@
                            MOVE    WRK-PARA-SRYYM(1:4)  TO  WRK-YY2-G
                            COMPUTE  WRK-NENREI  =  WRK-YY2  -  WRK-YY1
                            IF PTINF-BIRTHDAY(5:2) > WRK-PARA-SRYYM(5:2)
-                               SUBTRACT  1        FROM WRK-NENREI  
+                             SUBTRACT  1        FROM WRK-NENREI  
                            END-IF
                            IF  COMB-KOH1HKNNUM    =  "027" 
                              OR   COMB-HKNNUM  =  "039"
@@ -1992,40 +2030,40 @@
       *****************************************************************
        900-TENSU-READ-SEC   SECTION.
       *
-           INITIALIZE                      TNS-TENSU-REC
-           MOVE    WRK-PARA-HOSPNUM    TO   TNS-HOSPNUM
-           MOVE    SRY-SRYCD(IDZ)      TO   TNS-SRYCD
+           INITIALIZE                    TNS-TENSU-REC
+           MOVE    WRK-PARA-HOSPNUM      TO  TNS-HOSPNUM
+           MOVE    SRY-SRYCD(IDZ)        TO  TNS-SRYCD
            MOVE    ALL "9"               TO  TNS-YUKOSTYMD
                                              TNS-YUKOEDYMD
-           MOVE    TNS-TENSU-REC           TO  MCPDATA-REC
-           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    TNS-TENSU-REC         TO  MCPDATA-REC
+           MOVE    "DBSELECT"            TO  MCP-FUNC
            MOVE    "tbl_tensu"           TO  MCP-TABLE
            MOVE    "key"                 TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
                                          MCPAREA
                                          MCPDATA-REC
                                          SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    "DBFETCH"           TO  MCP-FUNC
-               MOVE    "tbl_tensu"           TO  MCP-TABLE
-               MOVE    "key"                 TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"           USING
-                                             MCPAREA
-                                             MCPDATA-REC
-                                             SPA-AREA
-               IF      MCP-RC              =   ZERO
-                   MOVE    MCPDATA-REC         TO  TNS-TENSU-REC
-                   MOVE    ZERO                TO  FLG-TENSU
-               ELSE
-                   MOVE    1                   TO  FLG-TENSU
-                   INITIALIZE                  TNS-TENSU-REC
-               END-IF
+           IF  MCP-RC  =  ZERO
+             MOVE    "DBFETCH"           TO  MCP-FUNC
+             MOVE    "tbl_tensu"         TO  MCP-TABLE
+             MOVE    "key"               TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC       TO  TNS-TENSU-REC
+               MOVE    ZERO              TO  FLG-TENSU
+             ELSE
+               MOVE    1                 TO  FLG-TENSU
+               INITIALIZE                TNS-TENSU-REC
+             END-IF
            ELSE
-               MOVE    1                   TO  FLG-TENSU
-               INITIALIZE                  TNS-TENSU-REC
+             MOVE    1                   TO  FLG-TENSU
+             INITIALIZE                  TNS-TENSU-REC
            END-IF
       *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "DBCLOSECURSOR"       TO  MCP-FUNC
            MOVE    "tbl_tensu"           TO  MCP-TABLE
            MOVE    "key"                 TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"           USING
@@ -2042,44 +2080,44 @@
       *****************************************************************
        900-KENSA-READ-SEC   SECTION.
       *
-           INITIALIZE                      KENSASORT-REC
+           INITIALIZE                  KENSASORT-REC
            MOVE    SRY-SRYCD(IDZ)      TO  KENSASORT-SRYCD
            MOVE    WRK-KNSBUNRUI       TO  KENSASORT-KNSBUNRUI
            MOVE    KENSASORT-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
-           MOVE    "tbl_kensasort"       TO  MCP-TABLE
-           MOVE    "key"                 TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"           USING
-                                         MCPAREA
-                                         MCPDATA-REC
-                                         SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    "DBFETCH"           TO  MCP-FUNC
-               MOVE    "tbl_kensasort"       TO  MCP-TABLE
-               MOVE    "key"                 TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"           USING
-                                             MCPAREA
-                                             MCPDATA-REC
-                                             SPA-AREA
-               IF      MCP-RC              =   ZERO
-                   MOVE    MCPDATA-REC         TO  KENSASORT-REC
-                   MOVE    ZERO                TO  FLG-KENSASORT
-               ELSE
-                   MOVE    1                   TO  FLG-KENSASORT
-                   INITIALIZE                  KENSASORT-REC
-               END-IF
+           MOVE    "tbl_kensasort"     TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF   MCP-RC  =  ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_kensasort"   TO  MCP-TABLE
+             MOVE    "key"             TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC     TO  KENSASORT-REC
+               MOVE    ZERO            TO  FLG-KENSASORT
+             ELSE
+               MOVE    1               TO  FLG-KENSASORT
+               INITIALIZE              KENSASORT-REC
+             END-IF
            ELSE
-               MOVE    1                   TO  FLG-KENSASORT
-               INITIALIZE                  KENSASORT-REC
+             MOVE    1                 TO  FLG-KENSASORT
+             INITIALIZE                KENSASORT-REC
            END-IF
       *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-           MOVE    "tbl_kensasort"       TO  MCP-TABLE
-           MOVE    "key"                 TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"           USING
-                                         MCPAREA
-                                         MCPDATA-REC
-                                         SPA-AREA
+           MOVE    "tbl_kensasort"     TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
       *
            .
        900-KENSA-READ-EXT.
@@ -2090,8 +2128,8 @@
       *****************************************************************
        900-SRYACT-SELECT-SEC         SECTION.
       *
-           INITIALIZE                       SRYACT-REC
-           MOVE    ACCT-HOSPNUM          TO  SRY-HOSPNUM
+           INITIALIZE                   SRYACT-REC
+           MOVE    ACCT-HOSPNUM         TO  SRY-HOSPNUM
            MOVE    ACCT-NYUGAIKBN       TO  SRY-NYUGAIKBN
            MOVE    ACCT-PTID            TO  SRY-PTID
            MOVE    ACCT-SRYKA           TO  SRY-SRYKA
@@ -2105,11 +2143,11 @@
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-           IF    MCP-RC    =   ZERO
-               MOVE  ZERO               TO FLG-SRYACT
-               PERFORM   900-SRYACT-FETCH-SEC
+           IF  MCP-RC  =  ZERO
+             MOVE    ZERO               TO  FLG-SRYACT
+             PERFORM   900-SRYACT-FETCH-SEC
            ELSE
-               MOVE   1               TO  FLG-SRYACT
+             MOVE    1                  TO  FLG-SRYACT
            END-IF
            .
        900-SRYACT-SELECT-EXT.
@@ -2119,18 +2157,18 @@
       *****************************************************************
        900-SRYACT-FETCH-SEC         SECTION.
       *
-           MOVE    "DBFETCH"           TO  MCP-FUNC
+           MOVE    "DBFETCH"            TO  MCP-FUNC
            MOVE    "tbl_sryact"         TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
-           IF      MCP-RC              =   ZERO
-               MOVE    MCPDATA-REC     TO  SRYACT-REC
-               MOVE    ZERO            TO  FLG-SRYACT
+           IF   MCP-RC  =  ZERO
+             MOVE    MCPDATA-REC        TO  SRYACT-REC
+             MOVE    ZERO               TO  FLG-SRYACT
            ELSE
-               MOVE    1               TO  FLG-SRYACT
+             MOVE    1                  TO  FLG-SRYACT
            END-IF
            .
        900-SRYACCT-FETCH-EXT.
@@ -2140,7 +2178,7 @@
       *****************************************************************
        900-SRYACT-CLOSE-SEC         SECTION.
       *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE    "tbl_sryact"         TO  MCP-TABLE
            MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
@@ -2156,7 +2194,7 @@
        900-SRYACCT-SELECT-SEC         SECTION.
       *
            INITIALIZE                   SRYACCT-REC
-           MOVE    WRK-PARA-HOSPNUM      TO  ACCT-HOSPNUM
+           MOVE    WRK-PARA-HOSPNUM     TO  ACCT-HOSPNUM
            MOVE    WRK-PARA-SRYYM       TO  ACCT-SRYYM
            MOVE    WRK-NYUGAIKBN        TO  ACCT-NYUGAIKBN
            MOVE    SRYACCT-REC          TO  MCPDATA-REC
@@ -2436,12 +2474,8 @@
       *****************************************************************
        930-HKNCOMBI-SET-SEC  SECTION.
       *
-           INITIALIZE  HKNCOMBI-REC
-           MOVE  ACCT-HOSPNUM         TO  COMB-HOSPNUM
-           MOVE  ACCT-PTID            TO  COMB-PTID
-           MOVE  ACCT-HKNCOMBI        TO  COMB-HKNCOMBINUM
-           MOVE  HKNCOMBI-REC         TO  MCPDATA-REC
-           MOVE  "DBSELECT"           TO  MCP-FUNC
+           MOVE    HKNCOMBI-REC         TO  MCPDATA-REC
+           MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "tbl_hkncombi"       TO  MCP-TABLE
            MOVE    "key"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
@@ -2449,32 +2483,32 @@
                                         MCPDATA-REC
                                         SPA-AREA
            IF  MCP-RC  =  ZERO
-               MOVE     "DBFETCH"         TO  MCP-FUNC
-               MOVE    "tbl_hkncombi"     TO  MCP-TABLE
-               MOVE    "key"              TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"        USING
-                                          MCPAREA
-                                          MCPDATA-REC
-                                          SPA-AREA
-               IF  MCP-RC  =  ZERO
-                   MOVE  MCPDATA-REC  TO  HKNCOMBI-REC
-                   MOVE  ZERO         TO  FLG-HKNCOMBI
-               ELSE
-                   INITIALIZE  HKNCOMBI-REC
-                   MOVE  1            TO  FLG-HKNCOMBI
-               END-IF
+             MOVE     "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_hkncombi"     TO  MCP-TABLE
+             MOVE    "key"              TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"        USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC      TO  HKNCOMBI-REC
+               MOVE    ZERO             TO  FLG-HKNCOMBI
+             ELSE
+               INITIALIZE  HKNCOMBI-REC
+               MOVE    1                TO  FLG-HKNCOMBI
+             END-IF
            ELSE
-               MOVE    1            TO  FLG-HKNCOMBI
+             MOVE    1                  TO  FLG-HKNCOMBI
            END-IF
       *
            INITIALIZE  MCPAREA
-           MOVE  "DBCLOSECURSOR"  TO  MCP-FUNC
-           MOVE    "tbl_hkncombi"        TO  MCP-TABLE
-           MOVE    "key"                 TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"           USING
-                                         MCPAREA
-                                         MCPDATA-REC
-                                         SPA-AREA
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_hkncombi"       TO  MCP-TABLE
+           MOVE    "key"                TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
       *
            .
        930-HKNCOMBI-SET-EXT.
@@ -2486,13 +2520,13 @@
        930-HKNNUM-SET-SEC  SECTION.
       *
            INITIALIZE  HKNNUM-REC
-           MOVE  WRK-PARA-HOSPNUM     TO  HKN-HOSPNUM
-           MOVE  WRK-HKNNUM           TO  HKN-HKNNUM
-           MOVE  "00"                 TO  HKN-PAYKBN
-           MOVE  ALL "9"                TO  HKN-TEKSTYMD
-           MOVE  ZERO                 TO  HKN-TEKEDYMD
-           MOVE  HKNNUM-REC           TO  MCPDATA-REC
-           MOVE  "DBSELECT"           TO  MCP-FUNC
+           MOVE    WRK-PARA-HOSPNUM     TO  HKN-HOSPNUM
+           MOVE    WRK-HKNNUM           TO  HKN-HKNNUM
+           MOVE    "00"                 TO  HKN-PAYKBN
+           MOVE    ALL "9"              TO  HKN-TEKSTYMD
+           MOVE    ZERO                 TO  HKN-TEKEDYMD
+           MOVE    HKNNUM-REC           TO  MCPDATA-REC
+           MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "tbl_hknnum"         TO  MCP-TABLE
            MOVE    "key"                TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
@@ -2500,13 +2534,13 @@
                                         MCPDATA-REC
                                         SPA-AREA
            IF  MCP-RC  =  ZERO
-               MOVE  "DBFETCH"            TO  MCP-FUNC
-               MOVE    "tbl_hknnum"        TO  MCP-TABLE
-               MOVE    "key"               TO  MCP-PATHNAME
-               CALL    "ORCDBMAIN"         USING
-                                           MCPAREA
-                                           MCPDATA-REC
-                                           SPA-AREA
+               MOVE  "DBFETCH"          TO  MCP-FUNC
+               MOVE    "tbl_hknnum"     TO  MCP-TABLE
+               MOVE    "key"            TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"      USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
                IF  MCP-RC  =  ZERO
                    MOVE  MCPDATA-REC  TO  HKNNUM-REC
                    MOVE  ZERO         TO  FLG-HKNNUM
@@ -2743,7 +2777,7 @@
            MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
            MOVE    WRK-PARA-SHELLID
                                    TO  JOB-SHELLID
-           MOVE    CNT-PAGE        TO  JOB-UPDCNT                        
+           MOVE    CNT-PAGE        TO  JOB-UPDCNT 
            CALL    "ORCSJOB"       USING
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
@@ -2755,6 +2789,101 @@
        300-END-EXT.
            EXIT.
       *
+      *****************************************************************
+      *    保険組合せマスター読込処理
+      *****************************************************************
+       900-PTRSIINF-READ-SEC         SECTION.
+      *
+      *    保険組合せ読み出し
+           INITIALIZE                    HKNCOMBI-REC
+           MOVE    SYU-HOSPNUM           TO  COMB-HOSPNUM
+           MOVE    SYU-PTID              TO  COMB-PTID
+           MOVE    SYU-HKNCOMBINUM       TO  COMB-HKNCOMBINUM
+           PERFORM  930-HKNCOMBI-SET-SEC
+           IF   FLG-HKNCOMBI  =  ZERO
+      *    患者保険情報読み込み
+             INITIALIZE                  PTRSIINF-REC
+             MOVE    SYU-HOSPNUM         TO  PTRSI-HOSPNUM
+             MOVE    SYU-PTID            TO  PTRSI-PTID
+             MOVE    COMB-HKNID          TO  PTRSI-HKNID
+             MOVE    PTRSIINF-REC        TO  MCPDATA-REC
+             MOVE    "DBSELECT"          TO  MCP-FUNC
+             MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+             MOVE    "key"               TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                          SPA-AREA
+             IF   MCP-RC  =  ZERO
+               MOVE    "DBFETCH"         TO  MCP-FUNC
+               MOVE    "tbl_ptrsiinf"    TO  MCP-TABLE
+               MOVE    "key"             TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"       USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+               IF   MCP-RC  =  ZERO
+                 MOVE    MCPDATA-REC     TO  PTRSIINF-REC
+               ELSE
+                 INITIALIZE              PTRSIINF-REC
+               END-IF
+             END-IF
+      *
+             MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+             MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+             MOVE    "key"               TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+           END-IF
+           .
+       900-PTRSIINF-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    保険組合せマスター読込処理
+      *****************************************************************
+       910-PTRSIINF-READ-SEC         SECTION.
+      *
+      *    患者保険情報読み込み
+           INITIALIZE                  PTRSIINF-REC
+           MOVE    ACCT-HOSPNUM        TO  PTRSI-HOSPNUM
+           MOVE    ACCT-PTID           TO  PTRSI-PTID
+           MOVE    COMB-HKNID          TO  PTRSI-HKNID
+           MOVE    PTRSIINF-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                        SPA-AREA
+           IF   MCP-RC  =  ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_ptrsiinf"    TO  MCP-TABLE
+             MOVE    "key"             TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF   MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC     TO  PTRSIINF-REC
+             ELSE
+               INITIALIZE              PTRSIINF-REC
+             END-IF
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           .
+       910-PTRSIINF-READ-EXT.
+           EXIT.
       *****************************************************************
       *    ＤＢ　オープン処理
       *****************************************************************
