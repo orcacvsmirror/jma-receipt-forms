@@ -32,6 +32,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
       *  01.00.03    @@@@-田中    11/10/13  CSVファイル作成機能追加 
+      *  01.00.04    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正 
       *****************************************************************
       *
       *
@@ -171,11 +172,14 @@
       *
            03  WRK-CREYMD            PIC X(08).
            03  WRK-SYUEKI            PIC S9(08).
-           03  WRK-TJIHI-G       OCCURS  10.
+           03  WRK-TJIHI-G           OCCURS  10.
                05  WRK-TJIHI         PIC X(08).
            03  WRK-TJIHIN-G          OCCURS  10.
                05  WRK-TJIHIN        PIC X(08).
-           03  WRK-4001-TENTANKA PIC 9(02)V9(01).
+           03  WRK-4001-TENTANKA     PIC 9(02)V9(01).
+           03  WRK-4001-KOMUFLG      PIC X(01).
+           03  WRK-4001-KOMUTENTANKA PIC 9(02).
+           03  WRK-TENTNK            PIC 9(02)V9(01).
       *
       *    入院用印刷診療科件数
            03  WRK-PRNSRKA-CNT       PIC 9(03).
@@ -420,6 +424,10 @@
       *
        01  SRYKARRK-REC.
            COPY    "CPSRYKARRK.INC".
+      *
+      *    労災保険番号マスタ
+       01  PTRSIINF-REC.
+           COPY    "CPPTRSIINF.INC".
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -957,6 +965,13 @@
                WHEN  OTHER
                  MOVE    10      TO   WRK-4001-TENTANKA
              END-EVALUATE
+      *
+             IF  SYS-4001-KOMUKBN  =  "2"
+      *    公務災害(健保基準)時の点数単価設定
+               MOVE    SYS-4001-KOMUTENTANKA-X TO  WRK-4001-KOMUTENTANKA
+      *    公務災害区分が健保基準の場合、１を格納
+               MOVE    "1"        TO  WRK-4001-KOMUFLG
+             END-IF
            ELSE
              MOVE  10   TO  WRK-4001-TENTANKA
            END-IF
@@ -1407,8 +1422,19 @@
                MOVE  SYU-SKYMONEY  TO WRK-SYUEKI
              WHEN 18
       *    労災の場合
+      *    患者労災保険情報取得
+               PERFORM  900-PTRSIINF-READ-SEC
+      *    点数単価を設定
+               IF  PTRSI-HKNKBN  =  "5"
+                   AND  WRK-4001-KOMUFLG  =  "1"
+      *    公務災害（健保基準）の場合
+                 MOVE    WRK-4001-KOMUTENTANKA   TO  WRK-TENTNK
+               ELSE
+                 MOVE    WRK-4001-TENTANKA       TO  WRK-TENTNK
+               END-IF
+      *
                COMPUTE  WRK-SYUEKI ROUNDED =
-                          (SYU-TOTAL-HKNTEN * WRK-4001-TENTANKA)
+                          (SYU-TOTAL-HKNTEN  *  WRK-TENTNK)
                            +  WRK-JIHI
                            +  SYU-RSISHOSHIN-MONEY
                            +  SYU-RSISAISHIN-MONEY
@@ -1582,8 +1608,19 @@
                MOVE  SYU-SKYMONEY    TO   WRK-SYUEKI
              WHEN 18
       *    労災の場合
+      *    患者労災保険情報取得
+               PERFORM  900-PTRSIINF-READ-SEC
+      *    点数単価を設定
+               IF  PTRSI-HKNKBN  =  "5"
+                   AND  WRK-4001-KOMUFLG  =  "1"
+      *    公務災害（健保基準）の場合
+                 MOVE    WRK-4001-KOMUTENTANKA   TO  WRK-TENTNK
+               ELSE
+                 MOVE    WRK-4001-TENTANKA       TO  WRK-TENTNK
+               END-IF
+      *
                COMPUTE  WRK-SYUEKI ROUNDED =
-                        (SYU-TOTAL-HKNTEN * WRK-4001-TENTANKA)
+                        (SYU-TOTAL-HKNTEN * WRK-TENTNK)
                             +  WRK-JIHI
                             +  SYU-RSISHOSHIN-MONEY
                             +  SYU-RSISAISHIN-MONEY
@@ -3823,6 +3860,58 @@
       *
            .
        900-SRYKARRKA-CLOSE-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    保険組合せマスター読込処理
+      *****************************************************************
+       900-PTRSIINF-READ-SEC         SECTION.
+      *
+      *    保険組合せ読み出し
+           INITIALIZE                    HKNCOMBI-REC
+           MOVE    SYU-HOSPNUM           TO  COMB-HOSPNUM
+           MOVE    SYU-PTID              TO  COMB-PTID
+           MOVE    SYU-HKNCOMBINUM       TO  COMB-HKNCOMBINUM
+           PERFORM  900-HKNCOMBI-READ-SEC
+           IF   FLG-HKNCOMBI  =  ZERO
+      *    患者保険情報読み込み
+             INITIALIZE                  PTRSIINF-REC
+             MOVE    SYU-HOSPNUM         TO  PTRSI-HOSPNUM
+             MOVE    SYU-PTID            TO  PTRSI-PTID
+             MOVE    COMB-HKNID          TO  PTRSI-HKNID
+             MOVE    PTRSIINF-REC        TO  MCPDATA-REC
+             MOVE    "DBSELECT"          TO  MCP-FUNC
+             MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+             MOVE    "key"               TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                          SPA-AREA
+             IF   MCP-RC  =  ZERO
+               MOVE    "DBFETCH"         TO  MCP-FUNC
+               MOVE    "tbl_ptrsiinf"    TO  MCP-TABLE
+               MOVE    "key"             TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"       USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+               IF   MCP-RC  =  ZERO
+                 MOVE    MCPDATA-REC     TO  PTRSIINF-REC
+               ELSE
+                 INITIALIZE              PTRSIINF-REC
+               END-IF
+             END-IF
+      *
+             MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+             MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+             MOVE    "key"               TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+           END-IF
+           .
+       900-PTRSIINF-READ-EXT.
            EXIT.
       *
       *****************************************************************

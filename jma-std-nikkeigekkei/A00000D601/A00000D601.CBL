@@ -32,6 +32,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
       *  01.00.03    @@@@-田中    11/10/13  CSVファイル作成機能追加 
+      *  01.00.04    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正 
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -178,6 +179,9 @@
            03  WRK-JIHI4             PIC 9(08).
            03  WRK-4001-TENTANKA     PIC 9(02)V9(01).
            03  WRK-4001-KSNMONEY     PIC 9(08).
+           03  WRK-4001-KOMUFLG          PIC X(01).
+           03  WRK-4001-KOMUTENTANKA     PIC 9(02).
+           03  WRK-TENTNK                PIC 9(02)V9(01).
            03  WRK-RSI-MONEY1        PIC S9(09)V9(01).
            03  WRK-RSI-MONEY2        PIC S9(09)V9(01).
       *
@@ -529,18 +533,25 @@
                                            SYS-4001-STYUKYMD
            MOVE    SYS-4001-REC            TO  MCPDATA-REC
            PERFORM 810-SYSKANRI-READ-SEC
-           IF      FLG-SYSKANRI2        =   ZERO
-                   MOVE  MCPDATA-REC    TO  SYS-4001-REC
-                   EVALUATE  SYS-4001-TENKBN
-                       WHEN  "1"
-                             MOVE  11.5 TO  WRK-4001-TENTANKA
-                       WHEN  "2"
-                             MOVE  12   TO  WRK-4001-TENTANKA
-                       WHEN  OTHER
-                             MOVE  10   TO  WRK-4001-TENTANKA
-                  END-EVALUATE
+           IF   FLG-SYSKANRI2        =   ZERO
+             MOVE  MCPDATA-REC    TO  SYS-4001-REC
+             EVALUATE  SYS-4001-TENKBN
+               WHEN  "1"
+                 MOVE    11.5     TO  WRK-4001-TENTANKA
+               WHEN  "2"
+                 MOVE    12       TO  WRK-4001-TENTANKA
+               WHEN  OTHER
+                 MOVE    10       TO  WRK-4001-TENTANKA
+             END-EVALUATE
+      *
+             IF  SYS-4001-KOMUKBN  =  "2"
+      *    公務災害(健保基準)時の点数単価設定
+               MOVE    SYS-4001-KOMUTENTANKA-X TO  WRK-4001-KOMUTENTANKA
+      *    公務災害区分が健保基準の場合、１を格納
+               MOVE    "1"      TO  WRK-4001-KOMUFLG
+             END-IF
            ELSE
-                  MOVE  10   TO  WRK-4001-TENTANKA
+             MOVE    10         TO  WRK-4001-TENTANKA
            END-IF
       *
            .
@@ -852,271 +863,317 @@
            PERFORM 900-PTHKNINF-READ-SEC
       *
       *    保険番号情報読み込み
-            PERFORM 900-HKNNUM-READ-SEC
-            IF   FLG-HKNNUM  =   1
+           PERFORM 900-HKNNUM-READ-SEC
+           IF   FLG-HKNNUM  =   1
       *    該当レコードが存在しない場合は単価を10円に設定する。
-                 MOVE 10     TO  HKN-TENTNK
-            END-IF
+             MOVE 10     TO  HKN-TENTNK
+           END-IF
       *
       *    保険点数
-            MOVE    ZERO  TO  SYU-TOTAL-HKNTEN
-            PERFORM VARYING IDZ FROM    1   BY  1
-                    UNTIL   IDZ >       16
-                    ADD     SYU-HKNTEN (IDZ)
-                            TO  SYU-TOTAL-HKNTEN
-                    ADD     SYU-HKNTEN (IDZ)
-                            TO  SUM-TEN (IDZ)
-            END-PERFORM
-            ADD     SYU-TOTAL-HKNTEN  TO  SUM-HKNTEN
-            MOVE  1                   TO  FLG-HKN
+           MOVE    ZERO  TO  SYU-TOTAL-HKNTEN
+           PERFORM  VARYING  IDZ FROM  1  BY  1
+                    UNTIL  IDZ  >  16
+             ADD  SYU-HKNTEN(IDZ)    TO  SYU-TOTAL-HKNTEN
+             ADD  SYU-HKNTEN(IDZ)    TO  SUM-TEN (IDZ)
+           END-PERFORM
+           ADD   SYU-TOTAL-HKNTEN    TO  SUM-HKNTEN
+           MOVE    1                 TO  FLG-HKN
       *
       *    保険種別
-            EVALUATE    SYU-SYUHKNNUM
-                WHEN    SPACE
+           EVALUATE  SYU-SYUHKNNUM
+             WHEN  SPACE
       *    公費単独
-                        MOVE  3          TO  WRK-SYUHKN-KBN
-                WHEN    "980" THRU "989"
-                WHEN    "900"  THRU  "919"
+               MOVE    3             TO  WRK-SYUHKN-KBN
+             WHEN  "980" THRU "989"
+             WHEN  "900" THRU "919"
       *    自費
-                        MOVE  4          TO  WRK-SYUHKN-KBN
-                WHEN    WRK-CONS-ROUSAI-HKNNUM
+               MOVE    4             TO  WRK-SYUHKN-KBN
+             WHEN  WRK-CONS-ROUSAI-HKNNUM
       *    労災
-                        MOVE  5          TO  WRK-SYUHKN-KBN
+               MOVE    5             TO  WRK-SYUHKN-KBN
       *    患者労災情報検索
-                        INITIALIZE           PTRSIINF-REC
-                        MOVE SYU-HOSPNUM  TO  PTRSI-HOSPNUM
-                        MOVE SYU-PTID    TO  PTRSI-PTID
-                        MOVE COMB-HKNID  TO  PTRSI-HKNID
-                        PERFORM 900-PTRSIINF-READ-SEC
-                WHEN    WRK-CONS-JIBAI-HKNNUM
+               INITIALIZE            PTRSIINF-REC
+               MOVE    SYU-HOSPNUM   TO  PTRSI-HOSPNUM
+               MOVE    SYU-PTID      TO  PTRSI-PTID
+               MOVE    COMB-HKNID    TO  PTRSI-HKNID
+               PERFORM  900-PTRSIINF-READ-SEC
+             WHEN  WRK-CONS-JIBAI-HKNNUM
       *    自賠責
-                        MOVE  6          TO  WRK-SYUHKN-KBN
+               MOVE    6             TO  WRK-SYUHKN-KBN
       *    患者労災情報検索
-                        INITIALIZE           PTRSIINF-REC
-                        MOVE SYU-HOSPNUM  TO  PTRSI-HOSPNUM
-                        MOVE SYU-PTID    TO  PTRSI-PTID
-                        MOVE COMB-HKNID  TO  PTRSI-HKNID
-                        PERFORM 900-PTRSIINF-READ-SEC
-                WHEN    WRK-CONS-KOGAI-HKNNUM
-                        MOVE  7          TO  WRK-SYUHKN-KBN
-                WHEN    "039"
-                WHEN    "040"
-                        MOVE  8          TO  WRK-SYUHKN-KBN
-                WHEN    "060"
-                WHEN    "067"
-                WHEN    "068"
-                WHEN    "069"
-                        MOVE  1          TO  WRK-SYUHKN-KBN
-                WHEN    OTHER
-                        MOVE  2          TO  WRK-SYUHKN-KBN
-            END-EVALUATE
+               INITIALIZE            PTRSIINF-REC
+               MOVE    SYU-HOSPNUM   TO  PTRSI-HOSPNUM
+               MOVE    SYU-PTID      TO  PTRSI-PTID
+               MOVE    COMB-HKNID    TO  PTRSI-HKNID
+               PERFORM  900-PTRSIINF-READ-SEC
+             WHEN  WRK-CONS-KOGAI-HKNNUM
+               MOVE    7             TO  WRK-SYUHKN-KBN
+             WHEN  "039"
+             WHEN  "040"
+               MOVE    8             TO  WRK-SYUHKN-KBN
+             WHEN  "060"
+             WHEN  "067"
+             WHEN  "068"
+             WHEN  "069"
+               MOVE    1             TO  WRK-SYUHKN-KBN
+             WHEN    OTHER
+               MOVE    2             TO  WRK-SYUHKN-KBN
+           END-EVALUATE
       *
       *    主保険患者負担割合、主保険給付割合の算出
       *
-            IF   WRK-SYUHKN-KBN   =  1
-             OR  WRK-SYUHKN-KBN   =  2
+           IF   WRK-SYUHKN-KBN   =  1
+               OR  WRK-SYUHKN-KBN   =  2
       *    年齢の算出
-                 MOVE  SYU-SRYYMD         TO  WRK-SYSYMD
-                 MOVE  PTINF-BIRTHDAY     TO  WRK-BIRTHDAY
-                 COMPUTE WRK-NENREI       =   WRK-SYSYY  - WRK-BIRTHY
-                 IF    WRK-SYSMM          <   WRK-BIRTHM
-                       COMPUTE WRK-NENREI =   WRK-NENREI - 1
-                 ELSE
-                  IF   WRK-SYSMM          =   WRK-BIRTHM
-                   AND WRK-SYSDD          <   WRK-BIRTHD
-                       COMPUTE WRK-NENREI =   WRK-NENREI - 1
-                  END-IF
-                 END-IF
+             MOVE    SYU-SRYYMD         TO  WRK-SYSYMD
+             MOVE    PTINF-BIRTHDAY     TO  WRK-BIRTHDAY
+             COMPUTE  WRK-NENREI  =  WRK-SYSYY  - WRK-BIRTHY
+             IF    WRK-SYSMM  <  WRK-BIRTHM
+               COMPUTE  WRK-NENREI  =  WRK-NENREI  -  1
+             ELSE
+              IF   WRK-SYSMM  =  WRK-BIRTHM
+                  AND WRK-SYSDD  <  WRK-BIRTHD
+                COMPUTE  WRK-NENREI  =  WRK-NENREI  -  1
+              END-IF
+             END-IF
       *
-                 IF    SYU-SYUHKNNUM =  "060"
-                       EVALUATE   PTHKN-HOJOKBN
-                           WHEN   ZERO
-                                  MOVE   ZERO  TO  WRK-FTNRATE
-                           WHEN   1
-                                  MOVE   0.1   TO  WRK-FTNRATE
-                           WHEN   2
-                                  MOVE   0.2   TO  WRK-FTNRATE
-                           WHEN   3
-                                  MOVE   0.3   TO  WRK-FTNRATE
-                           WHEN   OTHER
-                                  MOVE   0.3   TO  WRK-FTNRATE
-                       END-EVALUATE
-                 ELSE
-                       EVALUATE   PTHKN-HOJOKBN
-                           WHEN   SPACE
-                                  MOVE   0.3   TO  WRK-FTNRATE
-                           WHEN   8
-                                  MOVE   0.2   TO  WRK-FTNRATE
-                           WHEN   9
-                                  MOVE   0.1   TO  WRK-FTNRATE
-                           WHEN   OTHER
-                                  MOVE   ZERO  TO  WRK-FTNRATE
-                       END-EVALUATE
-                 END-IF
+             IF   SYU-SYUHKNNUM  =  "060"
+               EVALUATE  PTHKN-HOJOKBN
+                 WHEN  ZERO
+                   MOVE    ZERO     TO  WRK-FTNRATE
+                 WHEN  1
+                   MOVE    0.1      TO  WRK-FTNRATE
+                 WHEN  2
+                   MOVE    0.2      TO  WRK-FTNRATE
+                 WHEN  3
+                   MOVE    0.3      TO  WRK-FTNRATE
+                 WHEN  OTHER
+                   MOVE    0.3      TO  WRK-FTNRATE
+               END-EVALUATE
+             ELSE
+               EVALUATE  PTHKN-HOJOKBN
+                 WHEN  SPACE
+                   MOVE    0.3      TO  WRK-FTNRATE
+                 WHEN  8
+                   MOVE    0.2      TO  WRK-FTNRATE
+                 WHEN  9
+                   MOVE    0.1      TO  WRK-FTNRATE
+                 WHEN  OTHER
+                   MOVE    ZERO     TO  WRK-FTNRATE
+               END-EVALUATE
+             END-IF
       *
       *    三歳未満、負担割合３割以上のチェック
-                 IF    WRK-NENREI         <=  2
-                  AND  WRK-FTNRATE        >   0.2
-                       MOVE    0.2        TO  WRK-FTNRATE
-                 END-IF
-                 IF  SYU-SYUHKNNUM  =  "068"  OR  "069"
-                     MOVE  1                   TO  WRK-FTNRATE
-                 END-IF
-                 COMPUTE WRK-KYFRATE   =  1 - WRK-FTNRATE
-            END-IF
+             IF    WRK-NENREI  <=  2
+                 AND  WRK-FTNRATE  >  0.2
+               MOVE     0.2         TO  WRK-FTNRATE
+             END-IF
+             IF  SYU-SYUHKNNUM  =  "068"  OR  "069"
+               MOVE    1            TO  WRK-FTNRATE
+             END-IF
+             COMPUTE  WRK-KYFRATE  =  1 - WRK-FTNRATE
+           END-IF
       *
-      *    保険負担学
-               IF   WRK-SYUHKN-KBN   =  1
-                OR  WRK-SYUHKN-KBN   =  2
-                OR  WRK-SYUHKN-KBN   =  5
-                OR  WRK-SYUHKN-KBN   =  6
-                OR  WRK-SYUHKN-KBN   =  7
-                OR  WRK-SYUHKN-KBN   =  8
-                    EVALUATE  WRK-SYUHKN-KBN
-                    WHEN  1 THRU 2
-                    WHEN  8
+      *    保険負担額
+           IF   WRK-SYUHKN-KBN   =  1
+               OR  WRK-SYUHKN-KBN   =  2
+               OR  WRK-SYUHKN-KBN   =  5
+               OR  WRK-SYUHKN-KBN   =  6
+               OR  WRK-SYUHKN-KBN   =  7
+               OR  WRK-SYUHKN-KBN   =  8
+             EVALUATE  WRK-SYUHKN-KBN
+               WHEN  1 THRU 2
+               WHEN  8
       *    国保、社保、後期高齢者の場合
-                        IF     SYU-KOH-HKNNUM(1) =  "027"
-                         COMPUTE  WRK-MONEY  =
-                          (SYU-TOTAL-HKNTEN * 10) - SYU-KOH-COMPFTN(1)
-                        ELSE
-                         COMPUTE  WRK-MONEY  =
-                          (SYU-TOTAL-HKNTEN * 10) - SYU-SYUCOMPFTN
-                        END-IF
-      *
-                        COMPUTE WRK-MONEY =
-                           WRK-MONEY
-                        +  SYU-RYOYOHI-SKJ
-                        +  SYU-RYOYOHI-LIFE
-      *    レセプト１円単位表示区分が"1"の場合は１０円未満を四捨五入する。
-                    IF  HKN-RECEFTNDSPKBN  =  "1"
-                        IF  WRK-MONEY(8:1) >   4
-                            MOVE   ZERO    TO  WRK-MONEY(8:1)
-                            ADD    10      TO  WRK-MONEY
-                        ELSE
-                            MOVE   ZERO    TO  WRK-MONEY(8:1)
-                        END-IF
-                    END-IF
-                    WHEN  5
-      *    労災の場合
-                        COMPUTE  WRK-MONEY  =
-                        (SYU-TOTAL-HKNTEN * WRK-4001-TENTANKA)
-                        COMPUTE WRK-MONEY           =
-                        WRK-MONEY
-                        +  SYU-RSISHOSHIN-MONEY
-                        +  SYU-RSISAISHIN-MONEY
-                        +  SYU-RSISDO-MONEY
-                        +  SYU-RSIETC-MONEY
-                        +  SYU-RYOYOHI-SKJ
-                        +  SYU-RYOYOHI-LIFE
-                    WHEN  6
-      *    自賠の場合
-                        IF  SYU-PTFTNRATE NOT =  ZERO
-                            MOVE ZERO  TO   WRK-MONEY
-                        ELSE
-                            COMPUTE  WRK-MONEY  =
-                               SYU-RSIJIBAI-SKYMONEY
-                            -  SYU-JIHI-TOTAL
-                            -  SYU-JIHI-TOTAL-TAX
-                            -  SYU-TOTAL-TGMONEY
-                            -  SYU-TOTAL-TGMONEY-TAX
-                            -  SYU-CHOSEI
-                            -  SYU-YKZ-FTN
-                            -  SYU-SKYMONEY-SKJ-JIHI-KEI
-                            -  SYU-SKYMONEY-LIFE-JIHI-KEI
-                            -  SYU-RMSAGAKU
-                        END-IF
-      *    公害の場合
-                    WHEN  7
-                        COMPUTE WRK-JIHI4  =
-                           SYU-TOTAL-TGMONEY
-                        +  SYU-TOTAL-TGMONEY-TAX
-                        +  SYU-JIHI-TOTAL
-                        +  SYU-JIHI-TOTAL-TAX
-                        +  SYU-RMSAGAKU
-                        +  SYU-SKYMONEY-SKJ-JIHI-KEI
-                        +  SYU-SKYMONEY-LIFE-JIHI-KEI
-                        IF      SYU-SRYYMD  <  "20070401"
-                            COMPUTE WRK-JIHI4    =   WRK-JIHI4
-                                                +   SYU-JIHI-TAX
-                        END-IF
-                        COMPUTE WRK-MONEY   =   SYU-RSIJIBAI-SKYMONEY
-                                                -  WRK-JIHI4
-
-                    END-EVALUATE
-                    COMPUTE WRK-MONEY  =  WRK-MONEY
-                                       -  SYU-SKYMONEY-SKJ-KEI
-                                       -  SYU-SKYMONEY-LIFE-KEI
-                    ADD    WRK-MONEY  TO  SUM-HKNFTN
-               END-IF
-      *
-      *    自費負担学
-               IF   WRK-SYUHKN-KBN   =  1
-                OR  WRK-SYUHKN-KBN   =  2
-                OR  WRK-SYUHKN-KBN   =  3
-                OR  WRK-SYUHKN-KBN   =  4
-                OR  WRK-SYUHKN-KBN   =  8
-                    EVALUATE WRK-SYUHKN-KBN
-                    WHEN 1 THRU 2
-                    WHEN 8
-      *    国保、社保の場合
-                        IF     SYU-KOH-HKNNUM(1)  =  "027"
-                          MOVE  SYU-KOH-COMPFTN(1)   TO  WRK-MONEY
-                        ELSE
-                          MOVE  SYU-SYUCOMPFTN   TO  WRK-MONEY
-                        END-IF
-      *
-      *    レセプト１円単位表示区分が"1"の場合は１０円未満を四捨五入する。
-                        IF  WRK-MONEY(8:1) >   4
-                            MOVE   ZERO    TO  WRK-MONEY(8:1)
-                            ADD    10      TO  WRK-MONEY
-                        ELSE
-                            MOVE   ZERO    TO  WRK-MONEY(8:1)
-                        END-IF
-                    WHEN 3
-      *    公費単独の場合
-                        COMPUTE WRK-MONEY ROUNDED     =
-                        (SYU-TOTAL-HKNTEN * HKN-TENTNK)
-      *    レセプト１円単位表示区分が"1"の場合は１０円未満を四捨五入する。
-                        IF  WRK-MONEY(8:1) >   4
-                            MOVE   ZERO    TO  WRK-MONEY(8:1)
-                            ADD    10      TO  WRK-MONEY
-                        ELSE
-                            MOVE   ZERO    TO  WRK-MONEY(8:1)
-                        END-IF
-                    END-EVALUATE
-      *
-                 IF WRK-SYUHKN-KBN  = 4
-      *    自費の場合
-                    MOVE  SYU-SKYMONEY  TO  WRK-MONEY
+                 IF     SYU-KOH-HKNNUM(1) =  "027"
+                  COMPUTE  WRK-MONEY  =
+                   (SYU-TOTAL-HKNTEN * 10) - SYU-KOH-COMPFTN(1)
                  ELSE
-      *    自費以外の場合
-      *    自費分の集計
-                     IF  SYU-SRYYMD  <=  "20070331"
-                         COMPUTE WRK-JIHI    =
-                            SYU-TOTAL-TGMONEY
-                         +  SYU-TOTAL-TGMONEY-TAX
-                         +  SYU-JIHI-TOTAL
-                         +  SYU-JIHI-TOTAL-TAX
-                         +  SYU-JIHI-TAX
-                     ELSE
-                         COMPUTE WRK-JIHI    =
-                            SYU-TOTAL-TGMONEY
-                         +  SYU-TOTAL-TGMONEY-TAX
-                         +  SYU-JIHI-TOTAL
-                         +  SYU-JIHI-TOTAL-TAX
-                     END-IF
-                    COMPUTE WRK-MONEY   =
-                       WRK-MONEY
-                    +  WRK-JIHI
-                    +  SYU-SKYMONEY-SKJ-KEI
-                    +  SYU-SKYMONEY-SKJ-JIHI-KEI
-                    +  SYU-SKYMONEY-LIFE-KEI
-                    +  SYU-SKYMONEY-LIFE-JIHI-KEI
-                    +  SYU-RMSAGAKU
+                  COMPUTE  WRK-MONEY  =
+                   (SYU-TOTAL-HKNTEN * 10) - SYU-SYUCOMPFTN
                  END-IF
-                 ADD   WRK-MONEY  TO  SUM-JIHIFTN
+      *
+                 COMPUTE  WRK-MONEY  =  WRK-MONEY
+                                     +  SYU-RYOYOHI-SKJ
+                                     +  SYU-RYOYOHI-LIFE
+                                     -  SYU-SKYMONEY-SKJ-KEI
+                                     -  SYU-SKYMONEY-LIFE-KEI
+      *    レセプト１円単位表示区分が"1"の場合は１０円未満を四捨五入する。
+                 IF  HKN-RECEFTNDSPKBN  =  "1"
+                     IF  WRK-MONEY(8:1) >   4
+                         MOVE   ZERO    TO  WRK-MONEY(8:1)
+                         ADD    10      TO  WRK-MONEY
+                     ELSE
+                         MOVE   ZERO    TO  WRK-MONEY(8:1)
+                     END-IF
+                 END-IF
+               WHEN  5
+      *    労災の場合
+      *    点数単価を設定
+                 IF  PTRSI-HKNKBN  =  "5"
+                     AND  WRK-4001-KOMUFLG  =  "1"
+      *    公務災害（健保基準）の場合
+                   MOVE    WRK-4001-KOMUTENTANKA   TO  WRK-TENTNK
+                 ELSE
+                   MOVE    WRK-4001-TENTANKA       TO  WRK-TENTNK
+                 END-IF
+      *
+                 IF  SYU-PTFTNRATE  NOT =  ZERO
+                   MOVE     ZERO       TO  WRK-MONEY
+                 ELSE
+                   COMPUTE  WRK-MONEY  =
+                            (SYU-TOTAL-HKNTEN  *  WRK-TENTNK)
+                   COMPUTE  WRK-MONEY  =  WRK-MONEY
+                                       +  SYU-RSISHOSHIN-MONEY
+                                       +  SYU-RSISAISHIN-MONEY
+                                       +  SYU-RSISDO-MONEY
+                                       +  SYU-RSIETC-MONEY
+                                       +  SYU-RYOYOHI-SKJ
+                                       +  SYU-RYOYOHI-LIFE
+                 END-IF
+               WHEN  6
+      *    自賠の場合
+                 IF  SYU-PTFTNRATE  NOT =  ZERO
+                   MOVE    ZERO     TO   WRK-MONEY
+                 ELSE
+                   COMPUTE  WRK-MONEY  =  SYU-RSIJIBAI-SKYMONEY
+                                       -  SYU-JIHI-TOTAL
+                                       -  SYU-JIHI-TOTAL-TAX
+                                       -  SYU-TOTAL-TGMONEY
+                                       -  SYU-TOTAL-TGMONEY-TAX
+                                       -  SYU-CHOSEI
+                                       -  SYU-YKZ-FTN
+                                       -  SYU-SKYMONEY-SKJ-JIHI-KEI
+                                       -  SYU-SKYMONEY-LIFE-JIHI-KEI
+                                       -  SYU-RMSAGAKU
+                 END-IF
+      *    公害の場合
+               WHEN  7
+                 COMPUTE  WRK-JIHI4  =  SYU-TOTAL-TGMONEY
+                                     +  SYU-TOTAL-TGMONEY-TAX
+                                     +  SYU-JIHI-TOTAL
+                                     +  SYU-JIHI-TOTAL-TAX
+                                     +  SYU-RMSAGAKU
+                                     +  SYU-SKYMONEY-SKJ-JIHI-KEI
+                                     +  SYU-SKYMONEY-LIFE-JIHI-KEI
+                 IF      SYU-SRYYMD  <  "20070401"
+                   COMPUTE  WRK-JIHI4  =  WRK-JIHI4
+                                       +  SYU-JIHI-TAX
+                 END-IF
+                 COMPUTE  WRK-MONEY  =  SYU-RSIJIBAI-SKYMONEY
+                                     -  WRK-JIHI4
+             END-EVALUATE
+             ADD     WRK-MONEY  TO  SUM-HKNFTN
+           END-IF
+      *
+      *    自費負担額
+           IF   WRK-SYUHKN-KBN  =  1
+               OR  WRK-SYUHKN-KBN  =  2
+               OR  WRK-SYUHKN-KBN  =  3
+               OR  WRK-SYUHKN-KBN  =  4
+               OR  WRK-SYUHKN-KBN  =  8
+               OR  WRK-SYUHKN-KBN  =  5
+               OR  WRK-SYUHKN-KBN  =  6
+             EVALUATE WRK-SYUHKN-KBN
+               WHEN 1 THRU 2
+               WHEN 8
+      *    国保、社保の場合
+                 IF     SYU-KOH-HKNNUM(1)  =  "027"
+                   MOVE  SYU-KOH-COMPFTN(1)   TO  WRK-MONEY
+                 ELSE
+                   MOVE  SYU-SYUCOMPFTN   TO  WRK-MONEY
+                 END-IF
+      *
+      *    レセプト１円単位表示区分が"1"の場合は１０円未満を四捨五入する。
+                 IF  WRK-MONEY(8:1) >   4
+                   MOVE   ZERO     TO  WRK-MONEY(8:1)
+                   ADD  10         TO  WRK-MONEY
+                 ELSE
+                   MOVE   ZERO     TO  WRK-MONEY(8:1)
+                 END-IF
+               WHEN 3
+      *    公費単独の場合
+                  COMPUTE  WRK-MONEY  ROUNDED  =
+                                       (SYU-TOTAL-HKNTEN * HKN-TENTNK)
+      *    レセプト１円単位表示区分が"1"の場合は１０円未満を四捨五入する。
+                  IF  WRK-MONEY(8:1)  >  4
+                    MOVE    ZERO     TO  WRK-MONEY(8:1)
+                    ADD  10          TO  WRK-MONEY
+                  ELSE
+                    MOVE    ZERO     TO  WRK-MONEY(8:1)
+                  END-IF
+               WHEN  4
+                 MOVE    SYU-SKYMONEY      TO  WRK-MONEY
+               WHEN  5
+                 PERFORM  900-PTRSIINF-READ-SEC
+      *    点数単価を設定
+                 IF  PTRSI-HKNKBN  =  "5"
+                     AND  WRK-4001-KOMUFLG  =  "1"
+      *    公務災害（健保基準）の場合
+                   MOVE    WRK-4001-KOMUTENTANKA   TO  WRK-TENTNK
+                 ELSE
+                   MOVE    WRK-4001-TENTANKA       TO  WRK-TENTNK
+                 END-IF
+      *
+                 IF  SYU-PTFTNRATE  =  ZERO
+                   COMPUTE  WRK-MONEY  =  SYU-TOTAL-TGMONEY
+                                       +  SYU-TOTAL-TGMONEY-TAX
+                                       +  SYU-JIHI-TOTAL
+                                       +  SYU-JIHI-TOTAL-TAX
+                                       +  SYU-RMSAGAKU
+      *
+                 ELSE
+                   COMPUTE  WRK-MONEY  =
+                           (SYU-TOTAL-HKNTEN  *  WRK-TENTNK)
+                   COMPUTE  WRK-MONEY  =  WRK-MONEY
+                                       +  SYU-RSISHOSHIN-MONEY
+                                       +  SYU-RSISAISHIN-MONEY
+                                       +  SYU-RSISDO-MONEY
+                                       +  SYU-RSIETC-MONEY
+                                       +  SYU-RYOYOHI-SKJ
+                                       +  SYU-RYOYOHI-LIFE
+                                       +  SYU-TOTAL-TGMONEY
+                                       +  SYU-TOTAL-TGMONEY-TAX
+                                       +  SYU-JIHI-TOTAL
+                                       +  SYU-JIHI-TOTAL-TAX
+                 END-IF
+               WHEN 6
+                 IF  SYU-PTFTNRATE  =  ZERO
+                   COMPUTE  WRK-MONEY  =  SYU-TOTAL-TGMONEY
+                                       +  SYU-TOTAL-TGMONEY-TAX
+                                       +  SYU-JIHI-TOTAL
+                                       +  SYU-JIHI-TOTAL-TAX
+                                       +  SYU-RMSAGAKU
+      *
+                 ELSE
+                   MOVE    SYU-RSIJIBAI-SKYMONEY    TO  WRK-MONEY
+                 END-IF
+             END-EVALUATE
+      *
+             IF  WRK-SYUHKN-KBN  NOT =  4  AND  5  AND  6 
+      *    自費,労災、自賠責以外の場合
+               IF  SYU-SRYYMD  <=  "20070331"
+                 COMPUTE  WRK-JIHI  =  SYU-TOTAL-TGMONEY
+                                    +  SYU-TOTAL-TGMONEY-TAX
+                                    +  SYU-JIHI-TOTAL
+                                    +  SYU-JIHI-TOTAL-TAX
+                                    +  SYU-JIHI-TAX
+               ELSE
+                 COMPUTE  WRK-JIHI  =  SYU-TOTAL-TGMONEY
+                                    +  SYU-TOTAL-TGMONEY-TAX
+                                    +  SYU-JIHI-TOTAL
+                                    +  SYU-JIHI-TOTAL-TAX
                END-IF
+               COMPUTE  WRK-MONEY  =  WRK-MONEY
+                                   +  WRK-JIHI
+                                   +  SYU-SKYMONEY-SKJ-KEI
+                                   +  SYU-SKYMONEY-SKJ-JIHI-KEI
+                                   +  SYU-SKYMONEY-LIFE-KEI
+                                   +  SYU-SKYMONEY-LIFE-JIHI-KEI
+                                   +  SYU-RMSAGAKU
+             END-IF
+             ADD  WRK-MONEY     TO  SUM-JIHIFTN
+           END-IF
       *
            .
        320-BODY-HEN-SUB-EXT.
@@ -1129,7 +1186,7 @@
       *
       *    保険点数件数カウント
            IF  FLG-HKN = 1
-               ADD   1  TO   SUM-RHKNKEN
+             ADD   1  TO   SUM-RHKNKEN
            END-IF
            .
        320-NYUIN-CNT-EXT.
@@ -1140,20 +1197,20 @@
       *****************************************************************
        320-GAIRAI-CNT-SEC      SECTION.
       *
-           MOVE  JYURRK-SRYYMD(7:2)  TO  IDX7G
-           MOVE  JYURRK-HOSPNUM      TO  ACCT-HOSPNUM
-           MOVE  JYURRK-NYUGAIKBN    TO  ACCT-NYUGAIKBN
-           MOVE  JYURRK-PTID         TO  ACCT-PTID
-           MOVE  JYURRK-SRYKA        TO  ACCT-SRYKA
-           MOVE  JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
-           MOVE  SRYACCT-REC         TO  MCPDATA-REC
-           MOVE  "DBSELECT"          TO  MCP-FUNC
-           MOVE  "tbl_sryacct"       TO  MCP-TABLE
-           MOVE  "key2"              TO   MCP-PATHNAME
-           CALL  "ORCDBMAIN"         USING
-                                     MCPAREA
-                                     MCPDATA-REC
-                                     SPA-AREA
+           MOVE    JYURRK-SRYYMD(7:2)  TO  IDX7G
+           MOVE    JYURRK-HOSPNUM      TO  ACCT-HOSPNUM
+           MOVE    JYURRK-NYUGAIKBN    TO  ACCT-NYUGAIKBN
+           MOVE    JYURRK-PTID         TO  ACCT-PTID
+           MOVE    JYURRK-SRYKA        TO  ACCT-SRYKA
+           MOVE    JYURRK-SRYYMD(1:6)  TO  ACCT-SRYYM
+           MOVE    SRYACCT-REC         TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_sryacct"       TO  MCP-TABLE
+           MOVE    "key2"              TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
            IF      MCP-RC         =   ZERO
                MOVE  "DBFETCH"    TO  MCP-FUNC
                MOVE    "tbl_sryacct"        TO  MCP-TABLE
