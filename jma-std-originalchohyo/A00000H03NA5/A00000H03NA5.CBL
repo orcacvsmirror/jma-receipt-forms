@@ -33,6 +33,7 @@
       *  01.00.03    @@@@-門間    11/05/26  主保険＋マル長の請求対応
       *  01.00.04    @@@@-門間    11/12/07 「1 期別にまとめて発行する」を指定した場合、
       *                                     複数科保険でまとめて計算する
+      *  01.00.05    @@@@-門間    12/01/30  主保険＋マル長の請求対応を削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -781,12 +782,6 @@
                MOVE    SPACE                  TO  HCN03-RSIMIDASI
                MOVE    SPACE                  TO  HCN03-RSIBUN
                MOVE    SPACE                  TO  HCN03-RSIEN
-           END-IF
-      *
-      *    マル長の公費負担を保険適用金額へ
-           IF      SYU-HKNTEKKBN   =   "1"
-             MOVE    SYU-KOH-FTN         TO  SYU-HKNTEKMONEY
-             MOVE    ZERO                TO  SYU-KOH-FTN
            END-IF
       *
       *    保険適用分
