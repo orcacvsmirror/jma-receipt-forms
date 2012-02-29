@@ -1984,28 +1984,12 @@
                           TO  SUM-YOSO(I3 18)
                    ADD    SYU-CHOSEI
                           TO  SUM-YOSO(SUM-DAYMAX 18)
+      *
       *    窓口請求金額              
                    ADD    SYU-SKYMONEY
                           TO  SUM-YOSO(I3 19)
                    ADD    SYU-SKYMONEY
                           TO  SUM-YOSO(SUM-DAYMAX 19)
-      *    入金額(当日の診療に対する入金額)   
-      *             MOVE   ZERO  TO  FLG-SYUMEI
-      *             PERFORM  320-SYUMEI-SELECT-SEC
-      *             PERFORM  UNTIL  FLG-SYUMEI  = 1
-      *                IF     SMEI-NYUHEN-YMD <= D100LNK-YMD2
-      *                 AND  SMEI-NYUHEN-YMD >= D100LNK-YMD1
-      *                    MOVE   SMEI-NYUHEN-YMD(7:2)     TO    I3
-      *                    MOVE   D100LNK-YMD1(7:2)        TO    I8
-      *                    COMPUTE  I3  =  I3  -  I8  +  1
-      *                    ADD    SMEI-NYUHEN-MONEY
-      *                           TO  SUM-YOSO(I3 21)
-      *                    ADD    SMEI-NYUHEN-MONEY
-      *                           TO  SUM-YOSO(SUM-DAYMAX 21)
-      *               END-IF
-      *             PERFORM  320-SYUMEI-FETCH-SEC
-      *             END-PERFORM 
-      *             PERFORM  320-SYUMEI-CLOSE-SEC
       *
       *    未収金残額              
                    COMPUTE     WRK-MONEY        =
@@ -2014,6 +1998,7 @@
                           TO  SUM-YOSO(I3 22)
                    ADD    WRK-MONEY
                           TO  SUM-YOSO(SUM-DAYMAX 22)
+      *
       *    入金額 
       *    入金額から当日預り金を引き去る              
                    EVALUATE WRK-NYUTENTTLKBN
@@ -2424,199 +2409,169 @@
       *****************************************************************
       *    帳票編集サブ処理                                           *
       *****************************************************************
-      * 
        330-TERM-HEN-SEC         SECTION.
       *
-            INITIALIZE                   D122
-            INITIALIZE                   D1221
+           INITIALIZE                   D122
+           INITIALIZE                   D1221
       *    帳票サブタイトル
-            MOVE   "(入院日報)"      TO  D122-SUBTITLE
-            MOVE   "(入院日報)"      TO  D1221-SUBTITLE
+           MOVE    "(入院日報)"         TO  D122-SUBTITLE
+           MOVE    "(入院日報)"         TO  D1221-SUBTITLE
       *    印字対象診療年月
-            MOVE   WRK-SRYYMD1(1:16) TO  D122-SRYYM
-            MOVE   WRK-SRYYMD1(1:16) TO  D1221-SRYYM
+           MOVE    WRK-SRYYMD1(1:16)    TO  D122-SRYYM
+           MOVE    WRK-SRYYMD1(1:16)    TO  D1221-SRYYM
       *    診療科名称
-            MOVE   SUM-SRYKANAME     TO  D122-SRYKA
-            MOVE   SUM-SRYKANAME     TO  D1221-SRYKA
+           MOVE    SUM-SRYKANAME        TO  D122-SRYKA
+           MOVE    SUM-SRYKANAME        TO  D1221-SRYKA
       *    医師名称
-            MOVE   SUM-DRNAME        TO  D122-DRNAME
-            MOVE   SUM-DRNAME        TO  D1221-DRNAME
+           MOVE    SUM-DRNAME           TO  D122-DRNAME
+           MOVE    SUM-DRNAME           TO  D1221-DRNAME
       *    帳票出力年月日
-            MOVE    WRK-SYSYMDWH     TO  D122-SYSYMD  
-            MOVE    WRK-SYSYMDWH     TO  D1221-SYSYMD  
-      *    転帰テキスト 
-            MOVE   SUM-TENKI-MSG(1)  TO  D122-TENKI(1)
-            MOVE   SUM-TENKI-MSG(2)  TO  D122-TENKI(2)
-            MOVE   SUM-TENKI-MSG(3)  TO  D122-TENKI(3)
-      * 
+           MOVE    WRK-SYSYMDWH         TO  D122-SYSYMD
+           MOVE    WRK-SYSYMDWH         TO  D1221-SYSYMD
+      *    転帰テキスト
+           MOVE    SUM-TENKI-MSG(1)     TO  D122-TENKI(1)
+           MOVE    SUM-TENKI-MSG(2)     TO  D122-TENKI(2)
+           MOVE    SUM-TENKI-MSG(3)     TO  D122-TENKI(3)
+      *
       *    入院の自費タイトル設定
-            PERFORM  VARYING  IDX2   FROM 1  BY  1
-                     UNTIL    IDX2   >    10 
-               MOVE  WRK-TJIHI(IDX2) TO  D1221-TJIHI(IDX2)
-            END-PERFORM
+           PERFORM  VARYING  IDX2  FROM 1  BY  1
+                    UNTIL    IDX2  >  10
+             MOVE    WRK-TJIHI(IDX2)      TO  D1221-TJIHI(IDX2)
+           END-PERFORM
       *
-            MOVE     1        TO           I3
-            IF       SUM-DAYMAX      >     17
-                     MOVE     15           TO   I5
-            ELSE
-                     MOVE     SUM-DAYMAX   TO   I5
-            END-IF         
+           MOVE    1                    TO  I3
+           IF  SUM-DAYMAX  >  17
+             MOVE    15                   TO  I5
+           ELSE
+             MOVE    SUM-DAYMAX           TO  I5
+           END-IF
       *
-            PERFORM    UNTIL    I3     >     SUM-DAYMAX
-              PERFORM  VARYING  I6     FROM  1  BY  1
-                       UNTIL    I6     >     I5
-                          OR    I3     >     SUM-DAYMAX
-               IF    I3       =        SUM-DAYMAX
-                     MOVE     "計"
-                              TO  D122-TDAY(17)
-                     MOVE     "計"
-                              TO  D1221-TDAY(17)
-               ELSE 
-                     MOVE     SUM-DAY(I3)(7:2)
-                              TO  D122-TDAY(I6)(1:2)
-                     MOVE     "日"
-                              TO  D122-TDAY(I6)(3:2)
-                     MOVE     SUM-DAY(I3)(7:2)
-                              TO  D1221-TDAY(I6)(1:2)
-                     MOVE     "日"
-                              TO  D1221-TDAY(I6)(3:2)
+           PERFORM  UNTIL  I3  >  SUM-DAYMAX
+      *
+             PERFORM  VARYING  I6  FROM  1  BY  1
+                      UNTIL    I6  >  I5
+                      OR       I3  >  SUM-DAYMAX
+      *
+               IF  I3  =  SUM-DAYMAX
+                 MOVE    "計"                 TO  D122-TDAY(17)
+                 MOVE    "計"                 TO  D1221-TDAY(17)
+               ELSE
+                 MOVE    SUM-DAY(I3)(7:2)     TO  D122-TDAY(I6)(1:2)
+                 MOVE    "日"                 TO  D122-TDAY(I6)(3:2)
+                 MOVE    SUM-DAY(I3)(7:2)     TO  D1221-TDAY(I6)(1:2)
+                 MOVE    "日"                 TO  D1221-TDAY(I6)(3:2)
                END-IF
       *
-             MOVE    D122-TDAY(I6)      TO      WRK-MAE-INPUT
-             PERFORM 2009-HENKAN-SEC
-             MOVE    WRK-OUT-INPUT      TO      D122-TDAY(I6)
-             MOVE    WRK-OUT-INPUT      TO      D1221-TDAY(I6)
+               MOVE    D122-TDAY(I6)        TO  WRK-MAE-INPUT
+               PERFORM  2009-HENKAN-SEC
+               MOVE    WRK-OUT-INPUT        TO  D122-TDAY(I6)
+               MOVE    WRK-OUT-INPUT        TO  D1221-TDAY(I6)
       *
-               PERFORM VARYING  I4     FROM  2  BY  1
-                       UNTIL    I4     >     50
-                       COMPUTE I7  =   I4   -  1
-                       IF     I3       =     SUM-DAYMAX
-                         IF   I4       =   1
-                          OR  I4       =  4
-                          OR  I4       =  5
-                          OR  I4       =  6
-                          OR ( I4               = 40 
-                           AND WRK-TJIHI-FLG(1) = ZERO )
-                          OR ( I4               = 41 
-                           AND WRK-TJIHI-FLG(2) = ZERO )
-                          OR ( I4               = 42 
-                           AND WRK-TJIHI-FLG(3) = ZERO )
-                          OR ( I4               = 43 
-                           AND WRK-TJIHI-FLG(4) = ZERO )
-                          OR ( I4               = 44 
-                           AND WRK-TJIHI-FLG(5) = ZERO )
-                          OR ( I4               = 45 
-                           AND WRK-TJIHI-FLG(6) = ZERO )
-                          OR ( I4               = 46 
-                           AND WRK-TJIHI-FLG(7) = ZERO )
-                          OR ( I4               = 47 
-                           AND WRK-TJIHI-FLG(8) = ZERO )
-                          OR ( I4               = 48 
-                           AND WRK-TJIHI-FLG(9) = ZERO )
-                          OR ( I4               = 49 
-                           AND WRK-TJIHI-FLG(10) = ZERO )
+               PERFORM  VARYING  I4  FROM  2  BY  1
+                        UNTIL    I4  >  50
       *
-                              IF  I7   >   37
-                                  IF I7  =  49
-                                      COMPUTE  IDX9  =   I7   -  11
-                                      MOVE     SPACE
-                                               TO  D122-YOSO(17 IDX9)
-                                  ELSE
-                                      COMPUTE  IDX9  =   I7   -  37 
-                                      MOVE     SPACE
-                                               TO  D1221-YOSO(17 IDX9)
-                                  END-IF
-                              ELSE
-                                  MOVE     SPACE
-                                           TO  D122-YOSO(17 I7)
-                              END-IF
+                 COMPUTE  I7  =  I4  -  1
       *
-                         ELSE
-                              MOVE     SUM-YOSO(I3 I4)
-                                       TO  WRK-S9
-                              IF  I7   >   37
-                                  IF I7  =  49
-                                     COMPUTE  IDX9  =   I7   -  11
-                                      MOVE     WRK-S9
-                                           TO  D122-YOSO(17 IDX9)
-                                  ELSE
-                                     COMPUTE  IDX9  =   I7   -  37 
-                                      MOVE     WRK-S9
-                                           TO  D1221-YOSO(17 IDX9)
-                                   END-IF
-                              ELSE
-                                  MOVE     WRK-S9
-                                           TO  D122-YOSO(17 I7)
-                              END-IF
-                         END-IF
+                 IF  I3  =  SUM-DAYMAX
       *
+                   IF     I4 =  1
+                     OR   I4 =  4
+                     OR   I4 =  5
+                     OR   I4 =  6
+                     OR ( I4 = 40 AND WRK-TJIHI-FLG(1)  = ZERO )
+                     OR ( I4 = 41 AND WRK-TJIHI-FLG(2)  = ZERO )
+                     OR ( I4 = 42 AND WRK-TJIHI-FLG(3)  = ZERO )
+                     OR ( I4 = 43 AND WRK-TJIHI-FLG(4)  = ZERO )
+                     OR ( I4 = 44 AND WRK-TJIHI-FLG(5)  = ZERO )
+                     OR ( I4 = 45 AND WRK-TJIHI-FLG(6)  = ZERO )
+                     OR ( I4 = 46 AND WRK-TJIHI-FLG(7)  = ZERO )
+                     OR ( I4 = 47 AND WRK-TJIHI-FLG(8)  = ZERO )
+                     OR ( I4 = 48 AND WRK-TJIHI-FLG(9)  = ZERO )
+                     OR ( I4 = 49 AND WRK-TJIHI-FLG(10) = ZERO )
+      *
+                     IF  I7  >  37
+                       IF  I7  =  49
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  SPACE  TO  D122-YOSO(17 IDX9)
                        ELSE
-                         IF   I4       =   1
-                          OR ( I4               = 40 
-                           AND WRK-TJIHI-FLG(1) = ZERO )
-                          OR ( I4               = 41 
-                           AND WRK-TJIHI-FLG(2) = ZERO )
-                          OR ( I4               = 42 
-                           AND WRK-TJIHI-FLG(3) = ZERO )
-                          OR ( I4               = 43 
-                           AND WRK-TJIHI-FLG(4) = ZERO )
-                          OR ( I4               = 44 
-                           AND WRK-TJIHI-FLG(5) = ZERO )
-                          OR ( I4               = 45 
-                           AND WRK-TJIHI-FLG(6) = ZERO )
-                          OR ( I4               = 46 
-                           AND WRK-TJIHI-FLG(7) = ZERO )
-                          OR ( I4               = 47 
-                           AND WRK-TJIHI-FLG(8) = ZERO )
-                          OR ( I4               = 48 
-                           AND WRK-TJIHI-FLG(9) = ZERO )
-                          OR ( I4               = 49 
-                           AND WRK-TJIHI-FLG(10) = ZERO )
-      *
-                              IF  I7   >   37
-                                  IF I7  =  49
-                                      COMPUTE  IDX9  =   I7   -  11
-                                      MOVE     SPACE
-                                              TO  D122-YOSO(I6 IDX9)
-                                  ELSE
-                                      COMPUTE  IDX9  =   I7   -  37
-                                      MOVE     SPACE
-                                              TO  D1221-YOSO(I6 IDX9)
-                                  END-IF
-                              ELSE
-                                  MOVE     SPACE
-                                           TO  D122-YOSO(I6 I7)
-                              END-IF
-      *
-                         ELSE
-                              MOVE     SUM-YOSO(I3 I4)
-                                       TO  WRK-S9
-                              IF  I7   >   37
-                                  IF I7  =  49
-                                      COMPUTE  IDX9  =   I7   -  11
-                                      MOVE     WRK-S9
-                                              TO  D122-YOSO(I6 IDX9)
-                                  ELSE
-                                      COMPUTE  IDX9  =   I7   -  37
-                                      MOVE     WRK-S9
-                                              TO  D1221-YOSO(I6 IDX9)
-                                  END-IF
-                              ELSE
-                                  MOVE     WRK-S9
-                                           TO  D122-YOSO(I6 I7)
-                              END-IF
-                         END-IF
+                         COMPUTE  IDX9  =  I7  -  37
+                         MOVE  SPACE  TO  D1221-YOSO(17 IDX9)
                        END-IF
-               END-PERFORM 
-               ADD   1        TO       I3
-              END-PERFORM 
+                     ELSE
+                       MOVE  SPACE  TO  D122-YOSO(17 I7)
+                     END-IF
       *
-              PERFORM 340-PRINT-OUT-SEC
-              MOVE    17        TO     I5
-              INITIALIZE               D122-DATA
-              INITIALIZE               D1221-DATA
+                   ELSE
       *
-            END-PERFORM 
+                     MOVE  SUM-YOSO(I3 I4)  TO  WRK-S9
+                     IF  I7  >  37
+                       IF  I7  =  49
+                         COMPUTE  IDX9  =   I7   -  11
+                         MOVE  WRK-S9  TO  D122-YOSO(17 IDX9)
+                       ELSE
+                         COMPUTE  IDX9  =   I7   -  37
+                         MOVE  WRK-S9  TO  D1221-YOSO(17 IDX9)
+                       END-IF
+                     ELSE
+                       MOVE  WRK-S9  TO  D122-YOSO(17 I7)
+                     END-IF
+      *
+                   END-IF
+      *
+                 ELSE
+      *
+                   IF     I4 =  1
+                     OR ( I4 = 40 AND WRK-TJIHI-FLG(1)  = ZERO )
+                     OR ( I4 = 41 AND WRK-TJIHI-FLG(2)  = ZERO )
+                     OR ( I4 = 42 AND WRK-TJIHI-FLG(3)  = ZERO )
+                     OR ( I4 = 43 AND WRK-TJIHI-FLG(4)  = ZERO )
+                     OR ( I4 = 44 AND WRK-TJIHI-FLG(5)  = ZERO )
+                     OR ( I4 = 45 AND WRK-TJIHI-FLG(6)  = ZERO )
+                     OR ( I4 = 46 AND WRK-TJIHI-FLG(7)  = ZERO )
+                     OR ( I4 = 47 AND WRK-TJIHI-FLG(8)  = ZERO )
+                     OR ( I4 = 48 AND WRK-TJIHI-FLG(9)  = ZERO )
+                     OR ( I4 = 49 AND WRK-TJIHI-FLG(10) = ZERO )
+      *
+                     IF  I7  >  37
+                       IF I7  =  49
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  SPACE  TO  D122-YOSO(I6 IDX9)
+                       ELSE
+                         COMPUTE  IDX9  =   I7   -  37
+                         MOVE  SPACE  TO  D1221-YOSO(I6 IDX9)
+                       END-IF
+                     ELSE
+                       MOVE  SPACE  TO  D122-YOSO(I6 I7)
+                     END-IF
+      *
+                   ELSE
+      *
+                     MOVE  SUM-YOSO(I3 I4)  TO  WRK-S9
+                     IF  I7  >  37
+                       IF I7  =  49
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  WRK-S9  TO  D122-YOSO(I6 IDX9)
+                       ELSE
+                         COMPUTE  IDX9  =  I7  -  37
+                         MOVE  WRK-S9  TO  D1221-YOSO(I6 IDX9)
+                       END-IF
+                     ELSE
+                       MOVE  WRK-S9  TO  D122-YOSO(I6 I7)
+                     END-IF
+                   END-IF
+      *
+                 END-IF
+      *
+               END-PERFORM
+               ADD     1                    TO  I3
+             END-PERFORM
+      *
+             PERFORM 340-PRINT-OUT-SEC
+             MOVE    17                   TO  I5
+             INITIALIZE                   D122-DATA
+             INITIALIZE                   D1221-DATA
+      *
+           END-PERFORM
       *
            .
        330-TERM-HEN-EXT.
@@ -2624,73 +2579,62 @@
       *****************************************************************
       *    帳票印刷処理                                               *
       *****************************************************************
-      * 
        340-PRINT-OUT-SEC          SECTION.
       *
       *    帳票ページ番号
-           ADD     1                   TO  CNT-PAGE
-           MOVE    CNT-PAGE            TO  WRK-PAGE
-           MOVE    WRK-PAGE            TO  D122-PAGE
-           ADD     1                   TO  CNT-PAGE
-           MOVE    CNT-PAGE            TO  WRK-PAGE
-           MOVE    WRK-PAGE            TO  D1221-PAGE
+           ADD     1                              TO  CNT-PAGE
+           MOVE    CNT-PAGE                       TO  WRK-PAGE
+           MOVE    WRK-PAGE                       TO  D122-PAGE
+           ADD     1                              TO  CNT-PAGE
+           MOVE    CNT-PAGE                       TO  WRK-PAGE
+           MOVE    WRK-PAGE                       TO  D1221-PAGE
       *
-           INITIALIZE                  ORCSPRTAREA
-           MOVE    "INS"               TO  SPRT-MODE
-           MOVE    D100LNK-PRTKANRI-RENNUM
-                                       TO  SPRT-RENNUM
-           MOVE    D100LNK-PRTKANRI-TBL-KEY
-                                       TO  SPRT-TBL-KEY
-           MOVE    D100LNK-PRTKANRI-TBL-GROUP
-                                       TO  SPRT-TBL-GROUP
-           MOVE    D100LNK-PRTKANRI-SRYYM
-                                       TO  SPRT-SRYYM
-           MOVE    D100LNK-PRTKANRI-SKYYMD
-                                       TO  SPRT-SKYYMD
-           MOVE    D100LNK-PRTKANRI-SHELLID 
-                                       TO  SPRT-SHELLID
-           MOVE    D100LNK-PRTKANRI-SHORI-RENNUM
-                                       TO  SPRT-SHORI-RENNUM
-           MOVE    D100LNK-PRTKANRI-PRIORITY
-                                       TO  SPRT-PRIORITY
+           INITIALIZE                             ORCSPRTAREA
+           MOVE    "INS"                          TO  SPRT-MODE
+           MOVE    D100LNK-PRTKANRI-RENNUM        TO  SPRT-RENNUM
+           MOVE    D100LNK-PRTKANRI-TBL-KEY       TO  SPRT-TBL-KEY
+           MOVE    D100LNK-PRTKANRI-TBL-GROUP     TO  SPRT-TBL-GROUP
+           MOVE    D100LNK-PRTKANRI-SRYYM         TO  SPRT-SRYYM
+           MOVE    D100LNK-PRTKANRI-SKYYMD        TO  SPRT-SKYYMD
+           MOVE    D100LNK-PRTKANRI-SHELLID       TO  SPRT-SHELLID
+           MOVE    D100LNK-PRTKANRI-SHORI-RENNUM  TO  SPRT-SHORI-RENNUM
+           MOVE    D100LNK-PRTKANRI-PRIORITY      TO  SPRT-PRIORITY
       *
            IF  D100LNK-YMD1  <  "20080401"
-               MOVE   "A00000D122O.red"             TO  SPRT-PRTID
+             MOVE    "A00000D122O.red"              TO  SPRT-PRTID
            ELSE
-               MOVE   "A00000D122N.red"             TO  SPRT-PRTID
+             MOVE    "A00000D122N.red"              TO  SPRT-PRTID
            END-IF
       *
-           MOVE    "基本台帳(入院日報)"    TO  SPRT-TITLE
-           MOVE    D122                    TO  SPRT-PRTDATA
-           MOVE    D100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-           MOVE    D100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-           MOVE    D100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-           CALL    "ORCSPRT"         USING
-                                     ORCSPRTAREA
-                                     SPA-AREA
-           IF  SPRT-RETURN         =   ZERO
-               MOVE   "A00000D1221.red"        TO  SPRT-PRTID
-               MOVE    "基本台帳(入院日報)"    TO  SPRT-TITLE
-               MOVE    D1221                   TO  SPRT-PRTDATA
-               MOVE    D100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-               MOVE    D100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-               MOVE    D100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-               CALL    "ORCSPRT"         USING
-                                         ORCSPRTAREA
-                                         SPA-AREA
+           MOVE    "基本台帳(入院日報)"           TO  SPRT-TITLE
+           MOVE    D122                           TO  SPRT-PRTDATA
+           MOVE    D100LNK-PRTKANRI-TERMID        TO  SPRT-TERMID
+           MOVE    D100LNK-PRTKANRI-OPID          TO  SPRT-OPID
+           MOVE    D100LNK-PRTKANRI-PRTNM         TO  SPRT-PRTNM
+           CALL    "ORCSPRT"                      USING
+                                                  ORCSPRTAREA
+                                                  SPA-AREA
+           IF  SPRT-RETURN  =  ZERO
+             MOVE   "A00000D1221.red"               TO  SPRT-PRTID
+             MOVE    "基本台帳(入院日報)"           TO  SPRT-TITLE
+             MOVE    D1221                          TO  SPRT-PRTDATA
+             MOVE    D100LNK-PRTKANRI-TERMID        TO  SPRT-TERMID
+             MOVE    D100LNK-PRTKANRI-OPID          TO  SPRT-OPID
+             MOVE    D100LNK-PRTKANRI-PRTNM         TO  SPRT-PRTNM
+             CALL    "ORCSPRT"                      USING
+                                                    ORCSPRTAREA
+                                                    SPA-AREA
       *
-               IF  SPRT-RETURN         =   ZERO
-                   CONTINUE
-               ELSE
-                   MOVE    "印刷ＤＢに更新できませんでした"
-                                       TO  WRK-RECEERR
-                   PERFORM 500-ERR-HENSYU-SEC                 
-               END-IF
+             IF  SPRT-RETURN  =  ZERO
                CONTINUE
+             ELSE
+               MOVE    "印刷ＤＢに更新できませんでした"  TO  WRK-RECEERR
+               PERFORM  500-ERR-HENSYU-SEC
+             END-IF
+             CONTINUE
            ELSE
-               MOVE    "印刷ＤＢに更新できませんでした"
-                                   TO  WRK-RECEERR
-               PERFORM 500-ERR-HENSYU-SEC                     
+             MOVE    "印刷ＤＢに更新できませんでした"  TO  WRK-RECEERR
+             PERFORM  500-ERR-HENSYU-SEC
            END-IF
       *
            .

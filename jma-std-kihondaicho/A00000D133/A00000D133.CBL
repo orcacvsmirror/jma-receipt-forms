@@ -2516,158 +2516,141 @@
            INITIALIZE                   D133
            INITIALIZE                   D1331
       *    帳票サブタイトル
-           MOVE   "(外来・保険別)"  TO  D133-SUBTITLE
-           MOVE   "(外来・保険別)"  TO  D1331-SUBTITLE
+           MOVE    "(外来・保険別)"     TO  D133-SUBTITLE
+           MOVE    "(外来・保険別)"     TO  D1331-SUBTITLE
       *    対象範囲期間
-           MOVE   WRK-SRYYMD1       TO  D133-FRYMD
-           MOVE   WRK-SRYYMD2       TO  D133-TOYMD
-           MOVE   WRK-SRYYMD1       TO  D1331-FRYMD
-           MOVE   WRK-SRYYMD2       TO  D1331-TOYMD
+           MOVE    WRK-SRYYMD1          TO  D133-FRYMD
+           MOVE    WRK-SRYYMD2          TO  D133-TOYMD
+           MOVE    WRK-SRYYMD1          TO  D1331-FRYMD
+           MOVE    WRK-SRYYMD2          TO  D1331-TOYMD
       *    診療科名称
-           MOVE   SUM-SRYKANAME     TO  D133-SRYKA
-           MOVE   SUM-SRYKANAME     TO  D1331-SRYKA
+           MOVE    SUM-SRYKANAME        TO  D133-SRYKA
+           MOVE    SUM-SRYKANAME        TO  D1331-SRYKA
       *    医師名称
-           MOVE   WRK-SEL-DRNAME    TO  D133-DRNAME
-           MOVE   WRK-SEL-DRNAME    TO  D1331-DRNAME
+           MOVE    WRK-SEL-DRNAME       TO  D133-DRNAME
+           MOVE    WRK-SEL-DRNAME       TO  D1331-DRNAME
       *    帳票出力年月日
-           MOVE   WRK-SYSYMDWH      TO  D133-SYSYMD
-           MOVE   WRK-SYSYMDWH      TO  D1331-SYSYMD
+           MOVE    WRK-SYSYMDWH         TO  D133-SYSYMD
+           MOVE    WRK-SYSYMDWH         TO  D1331-SYSYMD
       *
       *    外来の自費タイトル設定
-           PERFORM  VARYING  IDX2   FROM 1  BY  1
-                    UNTIL    IDX2   >    10
-             MOVE  WRK-TJIHI(IDX2) TO  D1331-TJIHI(IDX2)
+           PERFORM  VARYING  IDX2  FROM 1  BY  1
+                    UNTIL    IDX2  >  10
+             MOVE    WRK-TJIHI(IDX2)      TO  D1331-TJIHI(IDX2)
            END-PERFORM
       *
-           MOVE     1        TO   I3
-           MOVE     15       TO    I5
+           MOVE    1                    TO  I3
+           MOVE    15                   TO  I5
       *
-           PERFORM    UNTIL    I3  >     SUM-DRMAX
+           PERFORM  UNTIL  I3  >  SUM-DRMAX
+      *
              PERFORM  VARYING  I6  FROM  1  BY  1
-                      UNTIL    I6  >     I5
-                         OR    I3  >     SUM-DRMAX
-               PERFORM VARYING  I4     FROM  2  BY  1
-                       UNTIL    I4     >     48
-                 COMPUTE I7  =   I4   -  1
-                 IF   I3   =  SUM-DRMAX
-                   IF   I4   =   1
-                       OR  I4       =   21
-                       OR ( I4               = 38
-                        AND WRK-TJIHI-FLG(1) = ZERO )
-                       OR ( I4               = 39
-                        AND WRK-TJIHI-FLG(2) = ZERO )
-                       OR ( I4               = 40
-                        AND WRK-TJIHI-FLG(3) = ZERO )
-                       OR ( I4               = 41
-                        AND WRK-TJIHI-FLG(4) = ZERO )
-                       OR ( I4               = 42
-                        AND WRK-TJIHI-FLG(5) = ZERO )
-                       OR ( I4               = 43
-                        AND WRK-TJIHI-FLG(6) = ZERO )
-                       OR ( I4               = 44
-                        AND WRK-TJIHI-FLG(7) = ZERO )
-                       OR ( I4               = 45
-                        AND WRK-TJIHI-FLG(8) = ZERO )
-                       OR ( I4               = 46
-                        AND WRK-TJIHI-FLG(9) = ZERO )
-                       OR ( I4               = 47
-                        AND WRK-TJIHI-FLG(10) = ZERO )
-                     IF  I7   >   35
+                      UNTIL    I6  >  I5
+                      OR       I3  >  SUM-DRMAX
+      *
+               PERFORM  VARYING  I4  FROM  2  BY  1
+                        UNTIL    I4  >  48
+      *
+                 COMPUTE I7  =  I4  -  1
+      *
+                 IF  I3  =  SUM-DRMAX
+      *
+                   IF     I4 =  1
+                     OR   I4 = 21
+                     OR ( I4 = 38 AND WRK-TJIHI-FLG(1)  = ZERO )
+                     OR ( I4 = 39 AND WRK-TJIHI-FLG(2)  = ZERO )
+                     OR ( I4 = 40 AND WRK-TJIHI-FLG(3)  = ZERO )
+                     OR ( I4 = 41 AND WRK-TJIHI-FLG(4)  = ZERO )
+                     OR ( I4 = 42 AND WRK-TJIHI-FLG(5)  = ZERO )
+                     OR ( I4 = 43 AND WRK-TJIHI-FLG(6)  = ZERO )
+                     OR ( I4 = 44 AND WRK-TJIHI-FLG(7)  = ZERO )
+                     OR ( I4 = 45 AND WRK-TJIHI-FLG(8)  = ZERO )
+                     OR ( I4 = 46 AND WRK-TJIHI-FLG(9)  = ZERO )
+                     OR ( I4 = 47 AND WRK-TJIHI-FLG(10) = ZERO )
+      *
+                     IF  I7  >  35
                        IF I7  =  47
-                         COMPUTE  IDX9  =   I7   -  11
-                         MOVE     SPACE
-                                 TO  D133-YOSO(15 IDX9)
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  SPACE  TO  D133-YOSO(15 IDX9)
                        ELSE
-                         COMPUTE  IDX9  =   I7   -  35
-                         MOVE     SPACE
-                                 TO  D1331-YOSO(15 IDX9)
+                         COMPUTE  IDX9  =  I7  -  35
+                         MOVE  SPACE  TO  D1331-YOSO(15 IDX9)
                        END-IF
                      ELSE
-                       MOVE     SPACE
-                                  TO  D133-YOSO(15 I7)
+                       MOVE  SPACE  TO  D133-YOSO(15 I7)
                      END-IF
+      *
                    ELSE
-                     MOVE     SUM-YOSO(I3 I4)
-                              TO  WRK-S9
-                     IF  I7   >   35
-                         IF I7  =  47
-                             COMPUTE  IDX9  =   I7   -  11
-                             MOVE     WRK-S9
-                                     TO  D133-YOSO(15 IDX9)
-                         ELSE
-                             COMPUTE  IDX9  =   I7   -  35
-                             MOVE     WRK-S9
-                                     TO  D1331-YOSO(15 IDX9)
-                         END-IF
+      *
+                     MOVE  SUM-YOSO(I3 I4)  TO  WRK-S9
+                     IF  I7  >  35
+                       IF  I7  =  47
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  WRK-S9  TO  D133-YOSO(15 IDX9)
+                       ELSE
+                         COMPUTE  IDX9  =   I7   -  35
+                         MOVE  WRK-S9  TO  D1331-YOSO(15 IDX9)
+                       END-IF
                      ELSE
-                         MOVE     WRK-S9
-                                  TO  D133-YOSO(15 I7)
+                       MOVE  WRK-S9  TO  D133-YOSO(15 I7)
                      END-IF
+      *
                    END-IF
+      *
                  ELSE
-                   IF   I4       =   1
-                       OR  I4       =   21
-                       OR ( I4               = 38
-                        AND WRK-TJIHI-FLG(1) = ZERO )
-                       OR ( I4               = 39
-                        AND WRK-TJIHI-FLG(2) = ZERO )
-                       OR ( I4               = 40
-                        AND WRK-TJIHI-FLG(3) = ZERO )
-                       OR ( I4               = 41
-                        AND WRK-TJIHI-FLG(4) = ZERO )
-                       OR ( I4               = 42
-                        AND WRK-TJIHI-FLG(5) = ZERO )
-                       OR ( I4               = 43
-                        AND WRK-TJIHI-FLG(6) = ZERO )
-                       OR ( I4               = 44
-                        AND WRK-TJIHI-FLG(7) = ZERO )
-                       OR ( I4               = 45
-                        AND WRK-TJIHI-FLG(8) = ZERO )
-                       OR ( I4               = 46
-                        AND WRK-TJIHI-FLG(9) = ZERO )
-                       OR ( I4               = 47
-                        AND WRK-TJIHI-FLG(10) = ZERO )
-                     IF  I7   >   35
-                       IF I7  =  47
-                         COMPUTE  IDX9  =   I7   -  11
-                         MOVE     SPACE
-                                  TO  D133-YOSO(I6 IDX9)
+      *
+                   IF     I4 =  1
+                     OR   I4 = 21
+                     OR ( I4 = 38 AND WRK-TJIHI-FLG(1)  = ZERO )
+                     OR ( I4 = 39 AND WRK-TJIHI-FLG(2)  = ZERO )
+                     OR ( I4 = 40 AND WRK-TJIHI-FLG(3)  = ZERO )
+                     OR ( I4 = 41 AND WRK-TJIHI-FLG(4)  = ZERO )
+                     OR ( I4 = 42 AND WRK-TJIHI-FLG(5)  = ZERO )
+                     OR ( I4 = 43 AND WRK-TJIHI-FLG(6)  = ZERO )
+                     OR ( I4 = 44 AND WRK-TJIHI-FLG(7)  = ZERO )
+                     OR ( I4 = 45 AND WRK-TJIHI-FLG(8)  = ZERO )
+                     OR ( I4 = 46 AND WRK-TJIHI-FLG(9)  = ZERO )
+                     OR ( I4 = 47 AND WRK-TJIHI-FLG(10) = ZERO )
+      *
+                     IF  I7  >  35
+                       IF  I7  =  47
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  SPACE  TO  D133-YOSO(I6 IDX9)
                        ELSE
-                         COMPUTE  IDX9  =   I7   -  35
-                         MOVE     SPACE
-                                  TO  D1331-YOSO(I6 IDX9)
+                         COMPUTE  IDX9  =  I7  -  35
+                         MOVE  SPACE  TO  D1331-YOSO(I6 IDX9)
                        END-IF
                      ELSE
-                       MOVE     SPACE
-                                  TO  D133-YOSO(I6 I7)
+                       MOVE  SPACE  TO  D133-YOSO(I6 I7)
                      END-IF
+      *
                    ELSE
-                     MOVE     SUM-YOSO(I3 I4)
-                              TO  WRK-S9
-                     IF  I7   >   35
-                       IF I7  =  47
-                         COMPUTE  IDX9  =   I7   -  11
-                         MOVE     WRK-S9
-                                  TO  D133-YOSO(I6 IDX9)
+      *
+                     MOVE  SUM-YOSO(I3 I4)  TO  WRK-S9
+                     IF  I7  >  35
+                       IF  I7  =  47
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  WRK-S9  TO  D133-YOSO(I6 IDX9)
                        ELSE
-                         COMPUTE  IDX9  =   I7   -  35
-                         MOVE     WRK-S9
-                                    TO  D1331-YOSO(I6 IDX9)
+                         COMPUTE  IDX9  =  I7  -  35
+                         MOVE  WRK-S9  TO  D1331-YOSO(I6 IDX9)
                        END-IF
                      ELSE
-                         MOVE     WRK-S9
-                                  TO  D133-YOSO(I6 I7)
+                       MOVE  WRK-S9  TO  D133-YOSO(I6 I7)
                      END-IF
+      *
                    END-IF
+      *
                  END-IF
+      *
                END-PERFORM
-               ADD   1        TO   I3
+               ADD     1                    TO  I3
              END-PERFORM
       *
              PERFORM 340-PRINT-OUT-SEC
-             MOVE   15        TO   I5
-             INITIALIZE            D133-DATA
-             INITIALIZE            D1331-DATA
+             MOVE    15                   TO  I5
+             INITIALIZE                   D133-DATA
+             INITIALIZE                   D1331-DATA
       *
            END-PERFORM
       *
@@ -2677,75 +2660,66 @@
       *****************************************************************
       *    帳票印刷処理
       *****************************************************************
-      *
        340-PRINT-OUT-SEC          SECTION.
       *
       *    帳票ページ番号
-           ADD     1                   TO  CNT-PAGE
-           MOVE    CNT-PAGE            TO  WRK-PAGE
-           MOVE    WRK-PAGE            TO  D133-PAGE
-           ADD     1                   TO  CNT-PAGE
-           MOVE    CNT-PAGE            TO  WRK-PAGE
-           MOVE    WRK-PAGE            TO  D1331-PAGE
+           ADD     1                              TO  CNT-PAGE
+           MOVE    CNT-PAGE                       TO  WRK-PAGE
+           MOVE    WRK-PAGE                       TO  D133-PAGE
+           ADD     1                              TO  CNT-PAGE
+           MOVE    CNT-PAGE                       TO  WRK-PAGE
+           MOVE    WRK-PAGE                       TO  D1331-PAGE
       *
-           INITIALIZE                  ORCSPRTAREA
-           MOVE    "INS"               TO  SPRT-MODE
-           MOVE    D100LNK-PRTKANRI-RENNUM
-                                       TO  SPRT-RENNUM
-           MOVE    D100LNK-PRTKANRI-TBL-KEY
-                                       TO  SPRT-TBL-KEY
-           MOVE    D100LNK-PRTKANRI-TBL-GROUP
-                                       TO  SPRT-TBL-GROUP
-           MOVE    D100LNK-PRTKANRI-SRYYM
-                                       TO  SPRT-SRYYM
-           MOVE    D100LNK-PRTKANRI-SKYYMD
-                                       TO  SPRT-SKYYMD
-           MOVE    D100LNK-PRTKANRI-SHELLID
-                                       TO  SPRT-SHELLID
-           MOVE    D100LNK-PRTKANRI-SHORI-RENNUM
-                                       TO  SPRT-SHORI-RENNUM
-           MOVE    D100LNK-PRTKANRI-PRIORITY
-                                       TO  SPRT-PRIORITY
+           INITIALIZE                             ORCSPRTAREA
+           MOVE    "INS"                          TO  SPRT-MODE
+           MOVE    D100LNK-PRTKANRI-RENNUM        TO  SPRT-RENNUM
+           MOVE    D100LNK-PRTKANRI-TBL-KEY       TO  SPRT-TBL-KEY
+           MOVE    D100LNK-PRTKANRI-TBL-GROUP     TO  SPRT-TBL-GROUP
+           MOVE    D100LNK-PRTKANRI-SRYYM         TO  SPRT-SRYYM
+           MOVE    D100LNK-PRTKANRI-SKYYMD        TO  SPRT-SKYYMD
+           MOVE    D100LNK-PRTKANRI-SHELLID       TO  SPRT-SHELLID
+           MOVE    D100LNK-PRTKANRI-SHORI-RENNUM  TO  SPRT-SHORI-RENNUM
+           MOVE    D100LNK-PRTKANRI-PRIORITY      TO  SPRT-PRIORITY
+      *
            IF  D100LNK-YMD1  <  "20080401"
-               MOVE   "A00000D133O.red"       TO  SPRT-PRTID
+             MOVE    "A00000D133O.red"              TO  SPRT-PRTID
            ELSE
-               MOVE   "A00000D133N.red"       TO  SPRT-PRTID
+             MOVE    "A00000D133N.red"              TO  SPRT-PRTID
            END-IF
-           MOVE    "基本台帳(外来・保険別)"
-                                           TO  SPRT-TITLE
-           MOVE    D133                    TO  SPRT-PRTDATA
-           MOVE    D100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-           MOVE    D100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-           MOVE    D100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-           CALL    "ORCSPRT"         USING
-                                     ORCSPRTAREA
-                                   SPA-AREA
-           IF  SPRT-RETURN         =   ZERO
+      *
+           MOVE    "基本台帳(外来・保険別)"       TO  SPRT-TITLE
+           MOVE    D133                           TO  SPRT-PRTDATA
+           MOVE    D100LNK-PRTKANRI-TERMID        TO  SPRT-TERMID
+           MOVE    D100LNK-PRTKANRI-OPID          TO  SPRT-OPID
+           MOVE    D100LNK-PRTKANRI-PRTNM         TO  SPRT-PRTNM
+           CALL    "ORCSPRT"                      USING
+                                                  ORCSPRTAREA
+                                                  SPA-AREA
+      *
+           IF  SPRT-RETURN  =  ZERO
              IF  D100LNK-YMD1  <  "20080401"
-                 MOVE   "A00000D1331O.red"       TO  SPRT-PRTID
+               MOVE    "A00000D1331O.red"             TO  SPRT-PRTID
              ELSE
-                 MOVE   "A00000D1331N.red"       TO  SPRT-PRTID
+               MOVE    "A00000D1331N.red"             TO  SPRT-PRTID
              END-IF
-             MOVE    "基本台帳(外来・保険別)"
-                                             TO  SPRT-TITLE
-             MOVE    D1331                   TO  SPRT-PRTDATA
-             MOVE    D100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-             MOVE    D100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-             MOVE    D100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-             CALL    "ORCSPRT"         USING
-                                       ORCSPRTAREA
-                                 SPA-AREA
-             IF  SPRT-RETURN         =   ZERO
+             MOVE    "基本台帳(外来・保険別)"       TO  SPRT-TITLE
+             MOVE    D1331                          TO  SPRT-PRTDATA
+             MOVE    D100LNK-PRTKANRI-TERMID        TO  SPRT-TERMID
+             MOVE    D100LNK-PRTKANRI-OPID          TO  SPRT-OPID
+             MOVE    D100LNK-PRTKANRI-PRTNM         TO  SPRT-PRTNM
+             CALL    "ORCSPRT"                      USING
+                                                    ORCSPRTAREA
+                                                    SPA-AREA
+      *
+             IF  SPRT-RETURN  =  ZERO
                CONTINUE
              ELSE
-               MOVE    "印刷ＤＢに更新できませんでした"
-                                   TO  WRK-RECEERR
-               PERFORM 500-ERR-HENSYU-SEC
+               MOVE    "印刷ＤＢに更新できませんでした"  TO  WRK-RECEERR
+               PERFORM  500-ERR-HENSYU-SEC
              END-IF
              CONTINUE
            ELSE
-             MOVE    "印刷ＤＢに更新できませんでした"
-                                 TO  WRK-RECEERR
+             MOVE    "印刷ＤＢに更新できませんでした"  TO  WRK-RECEERR
              PERFORM 500-ERR-HENSYU-SEC
            END-IF
       *

@@ -2314,173 +2314,150 @@
            INITIALIZE                   D125
            INITIALIZE                   D1251
       *    Ä¢É¼¥µ¥Ö¥¿¥¤¥È¥ë
-           MOVE   "(³°Íè¡¦¿ÇÎÅ²Ê)"  TO  D125-SUBTITLE
-           MOVE   "(³°Íè¡¦¿ÇÎÅ²Ê)"  TO  D1251-SUBTITLE
+           MOVE    "(³°Íè¡¦¿ÇÎÅ²Ê)"     TO  D125-SUBTITLE
+           MOVE    "(³°Íè¡¦¿ÇÎÅ²Ê)"     TO  D1251-SUBTITLE
       *    ÂÐ¾ÝÈÏ°Ï´ü´Ö
-           MOVE   WRK-SRYYMD1       TO  D125-FRYMD
-           MOVE   WRK-SRYYMD2       TO  D125-TOYMD
-           MOVE   WRK-SRYYMD1       TO  D1251-FRYMD
-           MOVE   WRK-SRYYMD2       TO  D1251-TOYMD
+           MOVE    WRK-SRYYMD1          TO  D125-FRYMD
+           MOVE    WRK-SRYYMD2          TO  D125-TOYMD
+           MOVE    WRK-SRYYMD1          TO  D1251-FRYMD
+           MOVE    WRK-SRYYMD2          TO  D1251-TOYMD
       *    °å»ÕÌ¾¾Î
-           MOVE   SUM-DRNAME        TO  D125-DRNAME
-           MOVE   SUM-DRNAME        TO  D1251-DRNAME
+           MOVE    SUM-DRNAME           TO  D125-DRNAME
+           MOVE    SUM-DRNAME           TO  D1251-DRNAME
       *    Ä¢É¼½ÐÎÏÇ¯·îÆü
-           MOVE   WRK-SYSYMDWH      TO  D125-SYSYMD  
-           MOVE   WRK-SYSYMDWH      TO  D1251-SYSYMD  
+           MOVE    WRK-SYSYMDWH         TO  D125-SYSYMD
+           MOVE    WRK-SYSYMDWH         TO  D1251-SYSYMD
       * 
       *    ³°Íè¤Î¼«Èñ¥¿¥¤¥È¥ëÀßÄê
-           PERFORM  VARYING  IDX2   FROM 1  BY  1
-                    UNTIL    IDX2   >    10 
-              MOVE  WRK-TJIHI(IDX2) TO  D1251-TJIHI(IDX2)
+           PERFORM  VARYING  IDX2  FROM  1  BY  1
+                    UNTIL    IDX2  >  10
+             MOVE    WRK-TJIHI(IDX2)      TO  D1251-TJIHI(IDX2)
            END-PERFORM
       *
-           MOVE     1        TO           I3
-           IF       SUM-SRYKAMAX       >     8
-                    MOVE     8            TO   I5
+           MOVE    1                    TO  I3
+      *
+           IF  SUM-SRYKAMAX  >  8
+             MOVE    8                    TO  I5
            ELSE
-                    MOVE     SUM-SRYKAMAX    TO   I5
-           END-IF         
+             MOVE    SUM-SRYKAMAX         TO  I5
+           END-IF
       *
-           PERFORM    UNTIL    I3     >     SUM-SRYKAMAX
-             PERFORM  VARYING  I6     FROM  1  BY  1
-                      UNTIL    I6     >     I5
-                         OR    I3     >     SUM-SRYKAMAX
-              IF    I3       =        SUM-SRYKAMAX
-                    MOVE     "·×"
-                             TO  D125-TSRYKA(8)
-                    MOVE     "·×"
-                             TO  D1251-TSRYKA(8)
-              ELSE 
-                    MOVE     SUM-SRYKANAME(I3)(1:18)
-                             TO  D125-TSRYKA(I6)
-                    MOVE     SUM-SRYKANAME(I3)(1:18)
-                             TO  D1251-TSRYKA(I6)
-              END-IF
+           PERFORM  UNTIL  I3  >  SUM-SRYKAMAX
       *
-              PERFORM VARYING  I4     FROM  2  BY  1
-                      UNTIL    I4     >     48
-                      COMPUTE I7  =   I4   -  1
-                      IF     I3       =     SUM-SRYKAMAX
-                        IF   I4       =   1
-                         OR  I4       =   21
-                         OR ( I4               = 38 
-                          AND WRK-TJIHI-FLG(1) = ZERO )
-                         OR ( I4               = 39 
-                          AND WRK-TJIHI-FLG(2) = ZERO )
-                         OR ( I4               = 40 
-                          AND WRK-TJIHI-FLG(3) = ZERO )
-                         OR ( I4               = 41 
-                          AND WRK-TJIHI-FLG(4) = ZERO )
-                         OR ( I4               = 42 
-                          AND WRK-TJIHI-FLG(5) = ZERO )
-                         OR ( I4               = 43 
-                          AND WRK-TJIHI-FLG(6) = ZERO )
-                         OR ( I4               = 44 
-                          AND WRK-TJIHI-FLG(7) = ZERO )
-                         OR ( I4               = 45 
-                          AND WRK-TJIHI-FLG(8) = ZERO )
-                         OR ( I4               = 46 
-                          AND WRK-TJIHI-FLG(9) = ZERO )
-                         OR ( I4               = 47 
-                          AND WRK-TJIHI-FLG(10) = ZERO )
-                             IF  I7   >   35
-                                 IF I7  =  47
-                                     COMPUTE  IDX9  =   I7   -  11
-                                     MOVE     SPACE
-                                             TO  D125-YOSO(8 IDX9)
-                                 ELSE
-                                     COMPUTE  IDX9  =   I7   -  35 
-                                     MOVE     SPACE
-                                             TO  D1251-YOSO(8 IDX9)
-                                 END-IF
-                             ELSE
-                                 MOVE     SPACE
-                                          TO  D125-YOSO(8 I7)
-                             END-IF
+             PERFORM  VARYING  I6  FROM  1  BY  1
+                      UNTIL    I6  >  I5
+                      OR       I3  >  SUM-SRYKAMAX
       *
-                        ELSE
-                             MOVE     SUM-YOSO(I3 I4)
-                                      TO  WRK-S9
-                             IF  I7   >   35
-                                 IF I7  =  47
-                                     COMPUTE  IDX9  =   I7   -  11
-                                     MOVE     WRK-S9
-                                             TO  D125-YOSO(8 IDX9)
-                                 ELSE
-                                     COMPUTE  IDX9  =   I7   -  35 
-                                     MOVE     WRK-S9
-                                             TO  D1251-YOSO(8 IDX9)
-                                 END-IF
-                             ELSE
-                                 MOVE     WRK-S9
-                                          TO  D125-YOSO(8 I7)
-                             END-IF
-                        END-IF
-                      ELSE
-                        IF   I4       =   1
-                         OR  I4       =   21
-                         OR ( I4               = 38 
-                          AND WRK-TJIHI-FLG(1) = ZERO )
-                         OR ( I4               = 39 
-                          AND WRK-TJIHI-FLG(2) = ZERO )
-                         OR ( I4               = 40 
-                          AND WRK-TJIHI-FLG(3) = ZERO )
-                         OR ( I4               = 41 
-                          AND WRK-TJIHI-FLG(4) = ZERO )
-                         OR ( I4               = 42 
-                          AND WRK-TJIHI-FLG(5) = ZERO )
-                         OR ( I4               = 43 
-                          AND WRK-TJIHI-FLG(6) = ZERO )
-                         OR ( I4               = 44 
-                          AND WRK-TJIHI-FLG(7) = ZERO )
-                         OR ( I4               = 45 
-                          AND WRK-TJIHI-FLG(8) = ZERO )
-                         OR ( I4               = 46 
-                          AND WRK-TJIHI-FLG(9) = ZERO )
-                         OR ( I4               = 47 
-                          AND WRK-TJIHI-FLG(10) = ZERO )
-                             IF  I7   >   35
-                                 IF I7  =  47
-                                     COMPUTE  IDX9  =   I7   -  11
-                                     MOVE     SPACE
-                                              TO  D125-YOSO(I6 IDX9)
-                                 ELSE
-                                     COMPUTE  IDX9  =   I7   -  35 
-                                     MOVE     SPACE
-                                              TO  D1251-YOSO(I6 IDX9)
-                                 END-IF
-                             ELSE
-                                 MOVE     SPACE
-                                          TO  D125-YOSO(I6 I7)
-                             END-IF
+               IF  I3  =  SUM-SRYKAMAX
+                 MOVE    "·×"                     TO  D125-TSRYKA(8)
+                 MOVE    "·×"                     TO  D1251-TSRYKA(8)
+               ELSE
+                 MOVE    SUM-SRYKANAME(I3)(1:18)  TO  D125-TSRYKA(I6)
+                 MOVE    SUM-SRYKANAME(I3)(1:18)  TO  D1251-TSRYKA(I6)
+               END-IF
       *
-                        ELSE
-                             MOVE     SUM-YOSO(I3 I4)
-                                      TO  WRK-S9
-                             IF  I7   >   35
-                                 IF I7  =  47
-                                     COMPUTE  IDX9  =   I7   -  11
-                                     MOVE     WRK-S9
-                                              TO  D125-YOSO(I6 IDX9)
-                                 ELSE
-                                     COMPUTE  IDX9  =   I7   -  35 
-                                     MOVE     WRK-S9
-                                              TO  D1251-YOSO(I6 IDX9)
-                                 END-IF
-                             ELSE
-                                 MOVE     WRK-S9
-                                          TO  D125-YOSO(I6 I7)
-                             END-IF
-                        END-IF
-                      END-IF
-              END-PERFORM 
-              ADD   1        TO       I3
-             END-PERFORM 
+               PERFORM VARYING  I4  FROM  2  BY  1
+                       UNTIL    I4  >  48
       *
-             PERFORM 340-PRINT-OUT-SEC
-             MOVE   8        TO       I5
-             INITIALIZE               D125-DATA
-             INITIALIZE               D1251-DATA
+                 COMPUTE I7  =  I4  -  1
+      *
+                 IF  I3  =  SUM-SRYKAMAX
+      *
+                   IF     I4 =  1
+                     OR   I4 = 21
+                     OR ( I4 = 38 AND WRK-TJIHI-FLG(1)  = ZERO )
+                     OR ( I4 = 39 AND WRK-TJIHI-FLG(2)  = ZERO )
+                     OR ( I4 = 40 AND WRK-TJIHI-FLG(3)  = ZERO )
+                     OR ( I4 = 41 AND WRK-TJIHI-FLG(4)  = ZERO )
+                     OR ( I4 = 42 AND WRK-TJIHI-FLG(5)  = ZERO )
+                     OR ( I4 = 43 AND WRK-TJIHI-FLG(6)  = ZERO )
+                     OR ( I4 = 44 AND WRK-TJIHI-FLG(7)  = ZERO )
+                     OR ( I4 = 45 AND WRK-TJIHI-FLG(8)  = ZERO )
+                     OR ( I4 = 46 AND WRK-TJIHI-FLG(9)  = ZERO )
+                     OR ( I4 = 47 AND WRK-TJIHI-FLG(10) = ZERO )
+      *
+                     IF  I7  >  35
+                       IF  I7  =  47
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  SPACE  TO  D125-YOSO(8 IDX9)
+                       ELSE
+                         COMPUTE  IDX9  =  I7  -  35 
+                         MOVE  SPACE  TO  D1251-YOSO(8 IDX9)
+                       END-IF
+                     ELSE
+                       MOVE  SPACE  TO  D125-YOSO(8 I7)
+                     END-IF
+      *
+                   ELSE
+      *
+                     MOVE  SUM-YOSO(I3 I4)  TO  WRK-S9
+                     IF  I7  >  35
+                       IF  I7  =  47
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  WRK-S9  TO  D125-YOSO(8 IDX9)
+                       ELSE
+                         COMPUTE  IDX9  =  I7  -  35
+                         MOVE  WRK-S9  TO  D1251-YOSO(8 IDX9)
+                       END-IF
+                     ELSE
+                       MOVE  WRK-S9  TO  D125-YOSO(8 I7)
+                     END-IF
+      *
+                   END-IF
+      *
+                 ELSE
+      *
+                   IF     I4 =  1
+                     OR   I4 = 21
+                     OR ( I4 = 38 AND WRK-TJIHI-FLG(1)  = ZERO )
+                     OR ( I4 = 39 AND WRK-TJIHI-FLG(2)  = ZERO )
+                     OR ( I4 = 40 AND WRK-TJIHI-FLG(3)  = ZERO )
+                     OR ( I4 = 41 AND WRK-TJIHI-FLG(4)  = ZERO )
+                     OR ( I4 = 42 AND WRK-TJIHI-FLG(5)  = ZERO )
+                     OR ( I4 = 43 AND WRK-TJIHI-FLG(6)  = ZERO )
+                     OR ( I4 = 44 AND WRK-TJIHI-FLG(7)  = ZERO )
+                     OR ( I4 = 45 AND WRK-TJIHI-FLG(8)  = ZERO )
+                     OR ( I4 = 46 AND WRK-TJIHI-FLG(9)  = ZERO )
+                     OR ( I4 = 47 AND WRK-TJIHI-FLG(10) = ZERO )
+      *
+                     IF  I7  >  35
+                       IF I7  =  47
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  SPACE  TO  D125-YOSO(I6 IDX9)
+                       ELSE
+                         COMPUTE  IDX9  =  I7  -  35
+                         MOVE  SPACE  TO  D1251-YOSO(I6 IDX9)
+                       END-IF
+                     ELSE
+                       MOVE  SPACE  TO  D125-YOSO(I6 I7)
+                     END-IF
+      *
+                   ELSE
+      *
+                     MOVE  SUM-YOSO(I3 I4)  TO  WRK-S9
+                     IF  I7  >  35
+                       IF  I7  =  47
+                         COMPUTE  IDX9  =  I7  -  11
+                         MOVE  WRK-S9  TO  D125-YOSO(I6 IDX9)
+                       ELSE
+                         COMPUTE  IDX9  =  I7  -  35
+                         MOVE  WRK-S9  TO  D1251-YOSO(I6 IDX9)
+                       END-IF
+                     ELSE
+                       MOVE  WRK-S9  TO  D125-YOSO(I6 I7)
+                     END-IF
+                   END-IF
+      *
+                 END-IF
+      *
+               END-PERFORM
+               ADD     1                        TO  I3
+             END-PERFORM
+      *
+             PERFORM  340-PRINT-OUT-SEC
+             MOVE    8                          TO  I5
+             INITIALIZE                         D125-DATA
+             INITIALIZE                         D1251-DATA
       *
            END-PERFORM 
       *
@@ -2493,72 +2470,61 @@
        340-PRINT-OUT-SEC          SECTION.
       *
       *    Ä¢É¼¥Ú¡¼¥¸ÈÖ¹æ
-           ADD     1                   TO  CNT-PAGE
-           MOVE    CNT-PAGE            TO  WRK-PAGE
-           MOVE    WRK-PAGE            TO  D125-PAGE
+           ADD     1                              TO  CNT-PAGE
+           MOVE    CNT-PAGE                       TO  WRK-PAGE
+           MOVE    WRK-PAGE                       TO  D125-PAGE
       *
-           ADD     1                   TO  CNT-PAGE
-           MOVE    CNT-PAGE            TO  WRK-PAGE
-           MOVE    WRK-PAGE            TO  D1251-PAGE
+           ADD     1                              TO  CNT-PAGE
+           MOVE    CNT-PAGE                       TO  WRK-PAGE
+           MOVE    WRK-PAGE                       TO  D1251-PAGE
       *
-           INITIALIZE                  ORCSPRTAREA
-           MOVE    "INS"               TO  SPRT-MODE
-           MOVE    D100LNK-PRTKANRI-RENNUM
-                                       TO  SPRT-RENNUM
-           MOVE    D100LNK-PRTKANRI-TBL-KEY
-                                       TO  SPRT-TBL-KEY
-           MOVE    D100LNK-PRTKANRI-TBL-GROUP
-                                       TO  SPRT-TBL-GROUP
-           MOVE    D100LNK-PRTKANRI-SRYYM
-                                       TO  SPRT-SRYYM
-           MOVE    D100LNK-PRTKANRI-SKYYMD
-                                       TO  SPRT-SKYYMD
-           MOVE    D100LNK-PRTKANRI-SHELLID 
-                                       TO  SPRT-SHELLID
-           MOVE    D100LNK-PRTKANRI-SHORI-RENNUM
-                                       TO  SPRT-SHORI-RENNUM
-           MOVE    D100LNK-PRTKANRI-PRIORITY
-                                       TO  SPRT-PRIORITY
+           INITIALIZE                             ORCSPRTAREA
+           MOVE    "INS"                          TO  SPRT-MODE
+           MOVE    D100LNK-PRTKANRI-RENNUM        TO  SPRT-RENNUM
+           MOVE    D100LNK-PRTKANRI-TBL-KEY       TO  SPRT-TBL-KEY
+           MOVE    D100LNK-PRTKANRI-TBL-GROUP     TO  SPRT-TBL-GROUP
+           MOVE    D100LNK-PRTKANRI-SRYYM         TO  SPRT-SRYYM
+           MOVE    D100LNK-PRTKANRI-SKYYMD        TO  SPRT-SKYYMD
+           MOVE    D100LNK-PRTKANRI-SHELLID       TO  SPRT-SHELLID
+           MOVE    D100LNK-PRTKANRI-SHORI-RENNUM  TO  SPRT-SHORI-RENNUM
+           MOVE    D100LNK-PRTKANRI-PRIORITY      TO  SPRT-PRIORITY
       *
            IF  D100LNK-YMD1  <  "20080401"
-               MOVE   "A00000D125O.red"       TO  SPRT-PRTID
+             MOVE    "A00000D125O.red"              TO  SPRT-PRTID
            ELSE
-               MOVE   "A00000D125N.red"       TO  SPRT-PRTID
+             MOVE    "A00000D125N.red"              TO  SPRT-PRTID
            END-IF
       *
-           MOVE    "´ðËÜÂæÄ¢(³°Íè¡¦¿ÇÎÅ²ÊÊÌ)"
-                                           TO  SPRT-TITLE
-           MOVE    D125                    TO  SPRT-PRTDATA
-           MOVE    D100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-           MOVE    D100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-           MOVE    D100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-           CALL    "ORCSPRT"         USING
-                                     ORCSPRTAREA
-                                   SPA-AREA
+           MOVE    "´ðËÜÂæÄ¢(³°Íè¡¦¿ÇÎÅ²ÊÊÌ)"     TO  SPRT-TITLE
+           MOVE    D125                           TO  SPRT-PRTDATA
+           MOVE    D100LNK-PRTKANRI-TERMID        TO  SPRT-TERMID
+           MOVE    D100LNK-PRTKANRI-OPID          TO  SPRT-OPID
+           MOVE    D100LNK-PRTKANRI-PRTNM         TO  SPRT-PRTNM
+           CALL    "ORCSPRT"                      USING
+                                                  ORCSPRTAREA
+                                                  SPA-AREA
       *
-           IF  SPRT-RETURN         =   ZERO
-               MOVE    "A00000D1251.red"       TO  SPRT-PRTID
-               MOVE    "´ðËÜÂæÄ¢(³°Íè¡¦¿ÇÎÅ²ÊÊÌ)"
-                                               TO  SPRT-TITLE
-               MOVE    D1251                   TO  SPRT-PRTDATA
-               MOVE    D100LNK-PRTKANRI-TERMID TO  SPRT-TERMID
-               MOVE    D100LNK-PRTKANRI-OPID   TO  SPRT-OPID
-               MOVE    D100LNK-PRTKANRI-PRTNM  TO  SPRT-PRTNM
-               CALL    "ORCSPRT"         USING
-                                         ORCSPRTAREA
-                                         SPA-AREA
-               IF  SPRT-RETURN         =   ZERO
-                   CONTINUE
-               ELSE
-                   MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
-                                       TO  WRK-RECEERR
-                   PERFORM 500-ERR-HENSYU-SEC
-               END-IF
+           IF  SPRT-RETURN  =  ZERO
+             MOVE    "A00000D1251.red"              TO  SPRT-PRTID
+             MOVE    "´ðËÜÂæÄ¢(³°Íè¡¦¿ÇÎÅ²ÊÊÌ)"     TO  SPRT-TITLE
+             MOVE    D1251                          TO  SPRT-PRTDATA
+             MOVE    D100LNK-PRTKANRI-TERMID        TO  SPRT-TERMID
+             MOVE    D100LNK-PRTKANRI-OPID          TO  SPRT-OPID
+             MOVE    D100LNK-PRTKANRI-PRTNM         TO  SPRT-PRTNM
+             CALL    "ORCSPRT"                      USING
+                                                    ORCSPRTAREA
+                                                    SPA-AREA
+      *
+             IF  SPRT-RETURN  =  ZERO
                CONTINUE
+             ELSE
+               MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"  TO  WRK-RECEERR
+               PERFORM  500-ERR-HENSYU-SEC
+             END-IF
+             CONTINUE
            ELSE
-               MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
-                                   TO  WRK-RECEERR
-               PERFORM 500-ERR-HENSYU-SEC
+             MOVE    "°õºþ£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"  TO  WRK-RECEERR
+             PERFORM  500-ERR-HENSYU-SEC
            END-IF
       *
            .
