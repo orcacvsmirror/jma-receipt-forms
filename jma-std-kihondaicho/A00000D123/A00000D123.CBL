@@ -31,6 +31,8 @@
       *                                     ½é¿Ç¡¢ºÆ¿Ç¡¢¤½¤ÎÂ¾¤ÎÈ½Äê¾ò·ï¤òÊÑ¹¹
       *                                     open-cobol1.0ÂÐ±þ
       *  01.00.02    @@@@-Ìç´Ö    11/01/27  ½èÍýÂ®ÅÙ¤Î²þÁ±
+      *  01.00.03    @@@@-Ìç´Ö    12/02/29  ¥¤¥ó¥Ç¥ó¥ÈÀ°Íý
+      *                           12/03/09  CSV¥Õ¥¡¥¤¥ëºîÀ®µ¡Ç½ÄÉ²Ã
       ******************************************************************
       *
       *
@@ -162,6 +164,11 @@
            03  IDX9               PIC 9(04).
            03  IDX10             PIC 9(02).
            03  IDX11             PIC 9(02).
+      *
+           03  IDX-MONTH         PIC 9(03).
+           03  IDX-ST            PIC 9(03).
+           03  IDX-ED            PIC 9(03).
+           03  IDXP              PIC 9(05).
       *
       *    °ì»þÎÎ°è
        01  WRK-AREA.
@@ -304,6 +311,143 @@
       *
            COPY    "CPSHELLTBL.INC".
       *
+       01  WRK-CSV-AREA.
+           03  WRK-ITEM-SIZE         PIC 9(03)     VALUE  100.
+           03  WRK-ITEM              PIC X(100)    VALUE  SPACE.
+           03  WRK-CSVDATA           PIC X(20000)  VALUE  SPACE.
+      *
+       01  CSV-HEAD-AREA.
+           03  CSV-HEAD-G.
+             05  CSV-HEAD-VAL.
+               07  CSV-HEAD-D001  PIC X(50)
+                            VALUE  "¹àÌÜÌ¾".
+               07  CSV-HEAD-D002  PIC X(50)
+                            VALUE  "¡Ê¥¢¡Ë´µ¼Ô¿ô¡²½é¿Ç".
+               07  CSV-HEAD-D003  PIC X(50)
+                            VALUE  "¡Ê¥¤¡Ë´µ¼Ô¿ô¡²ºÆ¿Ç".
+               07  CSV-HEAD-D004  PIC X(50)
+                            VALUE  "¡Ê¥¦¡Ë´µ¼Ô¿ô¡²¤½¤ÎÂ¾".
+               07  CSV-HEAD-D005  PIC X(50)
+                            VALUE  "¡Ê¥¨¡Ë´µ¼Ô¿ô¡²¹ç·×".
+               07  CSV-HEAD-D006  PIC X(50)
+                            VALUE  "¡Ê¥ª¡Ë´µ¼Ô¿ô¡²¿·´µ".
+               07  CSV-HEAD-D007  PIC X(50)
+                            VALUE  "¡Ê¥«¡Ë´µ¼Ô¿ô¡²¿·´µÍè±¡Î¨".
+               07  CSV-HEAD-D008  PIC X(50)
+                            VALUE  "¡Ê¥­¡ËÊÝ¸±ÆâÅÀ¿ô".
+               07  CSV-HEAD-D009  PIC X(50)
+                            VALUE  "¡Ê¥¯¡ËÊ¿¶ÑÅÀ/¿Í".
+               07  CSV-HEAD-D010  PIC X(50)
+                            VALUE  "¡Ê¥±¡ËÊÝ¸±ÆâÉéÃ´¶â".
+               07  CSV-HEAD-D011  PIC X(50)
+                            VALUE  "¡Ê¥³¡ËÊÝ¸±³°¶â³Û".
+               07  CSV-HEAD-D012  PIC X(50)
+                            VALUE  "¡Ê¥µ¡Ë¸ºÌÈ¶â³Û".
+               07  CSV-HEAD-D013  PIC X(50)
+                            VALUE  "¡Ê¥·¡Ë½õÀ®¶â³Û".
+               07  CSV-HEAD-D014  PIC X(50)
+                            VALUE  "¡Ê¥¹¡Ë¾ÃÈñÀÇ".
+               07  CSV-HEAD-D015  PIC X(50)
+                            VALUE  "¡Ê¥»¡ËÄ´À°¶â".
+               07  CSV-HEAD-D016  PIC X(50)
+                            VALUE  "¡Ê¥½¡ËÁë¸ýÀÁµá¶â³Û".
+               07  CSV-HEAD-D017  PIC X(50)
+                            VALUE  "¡Ê¥¿¡Ë²áÆüÌ¤¼ý¶â»Ä³Û".
+               07  CSV-HEAD-D018  PIC X(50)
+                            VALUE  "¡Ê¥Á¡ËÆþ¶â³Û".
+               07  CSV-HEAD-D019  PIC X(50)
+                            VALUE  "¡Ê¥Ä¡ËÅöÆüÌ¤¼ý¶â".
+               07  CSV-HEAD-D020  PIC X(50)
+                            VALUE  "¡Ê¥Æ¡ËÅöÆüÍÂ¤ê¶â»Ä³Û".
+               07  CSV-HEAD-D021  PIC X(50)
+                            VALUE  "¡Ê¥È¡Ë".
+               07  CSV-HEAD-D022  PIC X(50)
+                            VALUE  "¡Ê¥Ê¡Ë¿ÇÎÅ¶èÊ¬¡²½é¡¦ºÆ¿ÇÎÁ".
+               07  CSV-HEAD-D023  PIC X(50)
+                            VALUE  "¡Ê¥Ë¡Ë¿ÇÎÅ¶èÊ¬¡²°å³Ø´ÉÍýÅù".
+               07  CSV-HEAD-D024  PIC X(50)
+                            VALUE  "¡Ê¥Ì¡Ë¿ÇÎÅ¶èÊ¬¡²ºßÂð°åÎÅ".
+               07  CSV-HEAD-D025  PIC X(50)
+                            VALUE  "¡Ê¥Í¡Ë¿ÇÎÅ¶èÊ¬¡²ÅêÌô".
+               07  CSV-HEAD-D026  PIC X(50)
+                            VALUE  "¡Ê¥Î¡Ë¿ÇÎÅ¶èÊ¬¡²Ãí¼Í".
+               07  CSV-HEAD-D027  PIC X(50)
+                            VALUE  "¡Ê¥Ï¡Ë¿ÇÎÅ¶èÊ¬¡²½èÃÖ".
+               07  CSV-HEAD-D028  PIC X(50)
+                            VALUE  "¡Ê¥Ò¡Ë¿ÇÎÅ¶èÊ¬¡²¼ê½Ñ".
+               07  CSV-HEAD-D029  PIC X(50)
+                            VALUE  "¡Ê¥Õ¡Ë¿ÇÎÅ¶èÊ¬¡²Ëã¿ì".
+               07  CSV-HEAD-D030  PIC X(50)
+                            VALUE  "¡Ê¥Ø¡Ë¿ÇÎÅ¶èÊ¬¡²¸¡ºº".
+               07  CSV-HEAD-D031  PIC X(50)
+                            VALUE  "¡Ê¥Û¡Ë¿ÇÎÅ¶èÊ¬¡²²èÁü¿ÇÃÇ".
+               07  CSV-HEAD-D032  PIC X(50)
+                            VALUE  "¡Ê¥Þ¡Ë¿ÇÎÅ¶èÊ¬¡²¥ê¥Ï¥Ó¥ê¥Æ¡¼¥·¥ç¥ó".
+               07  CSV-HEAD-D033  PIC X(50)
+                            VALUE  "¡Ê¥ß¡Ë¿ÇÎÅ¶èÊ¬¡²Àº¿À²ÊÀìÌçÎÅË¡".
+               07  CSV-HEAD-D034  PIC X(50)
+                            VALUE  "¡Ê¥à¡Ë¿ÇÎÅ¶èÊ¬¡²Êü¼ÍÀþ¼£ÎÅ".
+               07  CSV-HEAD-D035  PIC X(50)
+                            VALUE  "¡Ê¥á¡Ë¿ÇÎÅ¶èÊ¬¡²ÉÂÍý¿ÇÃÇ".
+               07  CSV-HEAD-D036  PIC X(50)
+                            VALUE  "¡Ê¥â¡Ë¿ÇÎÅ¶èÊ¬¡²Æþ±¡ÎÁÅù".
+               07  CSV-HEAD-D037  PIC X(50)
+                            VALUE  "¡Ê¥ä¡Ë¿ÇÎÅ¶èÊ¬¡²ÎÅÍÜÃ´Åö¼êÅö".
+               07  CSV-HEAD-D038  PIC X(50)
+                            VALUE  "¡Ê¤¢¡ËÊÝ¸±Å¬ÍÑ³°¶â³Û".
+               07  CSV-HEAD-D039-G.
+      *
+                 09  CSV-HEAD-JIHI01-ID   PIC X(18)
+                              VALUE  "¡Ê¤¤¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI01-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI02-ID   PIC X(18)
+                              VALUE  "¡Ê¤¦¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI02-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI03-ID   PIC X(18)
+                              VALUE  "¡Ê¤¨¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI03-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI04-ID   PIC X(18)
+                              VALUE  "¡Ê¤ª¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI04-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI05-ID   PIC X(18)
+                              VALUE  "¡Ê¤«¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI05-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI06-ID   PIC X(18)
+                              VALUE  "¡Ê¤­¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI06-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI07-ID   PIC X(18)
+                              VALUE  "¡Ê¤¯¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI07-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI08-ID   PIC X(18)
+                              VALUE  "¡Ê¤±¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI08-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI09-ID   PIC X(18)
+                              VALUE  "¡Ê¤³¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI09-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI10-ID   PIC X(18)
+                              VALUE  "¡Ê¤µ¡ËÊÝ¸±³°¼«Èñ¡²".
+                 09  CSV-HEAD-JIHI10-NAME PIC X(32).
+      *
+               07  CSV-HEAD-JIHI-R      REDEFINES  CSV-HEAD-D039-G.
+                 09  CSV-HEAD-JIHI-OCC    OCCURS  10.
+                   11  CSV-HEAD-JIHI-ID     PIC X(06).
+                   11  CSV-HEAD-JIHI-NAME   PIC X(44).
+      *
+             05  CSV-HEAD-R   REDEFINES   CSV-HEAD-VAL.
+               07  CSV-HEAD-ITEM        PIC X(50)  OCCURS  48.
+      *
+             05  CSV-HEAD-MAX         PIC 9(05)  VALUE  48.
+      *+
+      *
       *****************************************************************
       *    ¥Õ¥¡¥¤¥ë¥ì¥¤¥¢¥¦¥È
       *****************************************************************
@@ -420,6 +564,9 @@
            COPY    "CPORCSPTID.INC".
       *    Á´³Ñ¥Á¥§¥Ã¥¯¥Ñ¥é¥á¥¿
            COPY    "CPORCSKANACHK.INC".
+      *
+      *    Åý·×£Ã£Ó£ÖÀ©¸æ¥µ¥Ö
+           COPY    "CPORCSTOUKEICSV.INC".
       *
       *    £Ä£Â¸¡º÷
            COPY    "MCPAREA".
@@ -2409,18 +2556,19 @@
       *
                IF  I3  =  SUM-MONTHMAX
                  MOVE    "·×"                   TO  D123-TDAY(13)
-                 MOVE    "·×"                   TO  D1231-TDAY(13)
+                                                    D1231-TDAY(13)
+                                                    SUM-MONTH(I3)
                ELSE
                  MOVE    SUM-MONTH(I3)(5:2)     TO  D123-TDAY(I6)(1:2)
                  MOVE    "·î"                   TO  D123-TDAY(I6)(3:2)
                  MOVE    SUM-MONTH(I3)(5:2)     TO  D1231-TDAY(I6)(1:2)
                  MOVE    "·î"                   TO  D1231-TDAY(I6)(3:2)
+                 MOVE    D123-TDAY(I6)          TO  WRK-MAE-INPUT
+                 PERFORM  2009-HENKAN-SEC
+                 MOVE    WRK-OUT-INPUT          TO  D123-TDAY(I6)
+                                                    D1231-TDAY(I6)
+                                                    SUM-MONTH(I3)
                END-IF
-      *
-               MOVE    D123-TDAY(I6)           TO  WRK-MAE-INPUT
-               PERFORM  2009-HENKAN-SEC
-               MOVE    WRK-OUT-INPUT           TO  D123-TDAY(I6)
-               MOVE    WRK-OUT-INPUT           TO  D1231-TDAY(I6)
       *
                PERFORM  VARYING  I4  FROM  2  BY  1
                         UNTIL    I4  >  48
@@ -2526,6 +2674,11 @@
              INITIALIZE                     D1231-DATA
       *
            END-PERFORM 
+      *+
+      *    CSVÊÔ½¸½èÍý
+           PERFORM  800-CSV-HEAD-SEC
+           PERFORM  400-CSV-DATA-SEC
+      *+
       *
            .
        330-TERM-HEN-EXT.
@@ -2596,6 +2749,249 @@
        340-PRINT-OUT-EXT.
            EXIT.
       *
+      *+
+      *****************************************************************
+      *    CSV¥Ø¥Ã¥ÀÊÔ½¸½èÍý
+      *****************************************************************
+       800-CSV-HEAD-SEC            SECTION.
+      *
+           MOVE    1                    TO  IDXP
+      *
+      *    °õ»úÂÐ¾Ý¿ÇÎÅÇ¯·î
+           INITIALIZE  WRK-ITEM
+           MOVE    "ÂÐ¾ÝÇ¯¡§"           TO  WRK-ITEM(1:8)
+           MOVE    WRK-SRYYMD1(1:10)    TO  WRK-ITEM(9:10)
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ¿ÇÎÅ²ÊÌ¾¾Î
+           INITIALIZE  WRK-ITEM
+           MOVE    "¿ÇÎÅ²Ê¡§"           TO  WRK-ITEM(1:8)
+           MOVE    SUM-SRYKANAME        TO  WRK-ITEM(9:20)
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    °å»ÕÌ¾¾Î
+           INITIALIZE  WRK-ITEM
+           MOVE    "°å»Õ¡§"             TO  WRK-ITEM(1:6)
+           MOVE    SUM-DRNAME           TO  WRK-ITEM(7:30)
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    Ä¢É¼½ÐÎÏÇ¯·îÆü
+           INITIALIZE  WRK-ITEM
+           MOVE    WRK-SYSYMDWH         TO  WRK-ITEM(1:22)
+           MOVE    "  È¯¹Ô"             TO  WRK-ITEM(23:6)
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           .
+      *
+       800-CSV-HEAD-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    CSVÊÔ½¸½èÍý
+      *****************************************************************
+       400-CSV-DATA-SEC            SECTION.
+      *
+           MOVE    1    TO  IDX2
+      *
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL    IDX4  >  CSV-HEAD-MAX
+      *
+             INITIALIZE  WRK-ITEM
+      *
+      *      ¹Ô¹àÌÜ°õ»ú
+             IF  IDX4  <  39
+               MOVE    CSV-HEAD-ITEM(IDX4)        TO  WRK-ITEM
+             ELSE
+               MOVE    CSV-HEAD-ITEM(IDX4)(1:18)  TO  WRK-ITEM(1:18)
+               MOVE    WRK-TJIHI(IDX2)            TO  WRK-ITEM(19:)
+               ADD     1                          TO  IDX2
+             END-IF
+      *
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *      ¹ÔËè¤ËÄ¢É¼¾ðÊó¤ò°õ»ú
+             PERFORM  VARYING  IDX-MONTH  FROM  1  BY  1
+                      UNTIL    IDX-MONTH  >  SUM-MONTHMAX
+      *
+               INITIALIZE  WRK-ITEM
+      *
+               IF  SUM-MONTH(IDX-MONTH)  NOT =  SPACE
+                 EVALUATE  IDX4
+      *            Îó¹àÌÜ°õ»ú
+                   WHEN   1
+                     MOVE    SUM-MONTH(IDX-MONTH)          TO  WRK-ITEM
+      *            ¡Ê¥È¡Ë¤Ï°õ»ú¤·¤Ê¤¤
+                   WHEN  21
+                     CONTINUE
+      *            ¡Ê¥ä¡ËÉÂÍý¿ÇÃÇ
+                   WHEN  35
+                     MOVE    SUM-YOSO(IDX-MONTH IDX4 + 13) TO  WRK-S9
+                     MOVE    WRK-S9                        TO  WRK-ITEM
+      *            ÉÂÍý¿ÇÃÇ°Ê¹ß¡¢£±¤Ä¤º¤é¤¹
+                   WHEN  36 THRU 48
+                     MOVE    SUM-YOSO(IDX-MONTH IDX4 - 1)  TO  WRK-S9
+                     MOVE    WRK-S9                        TO  WRK-ITEM
+                   WHEN  OTHER
+                     MOVE    SUM-YOSO(IDX-MONTH IDX4)      TO  WRK-S9
+                     MOVE    WRK-S9                        TO  WRK-ITEM
+                 END-EVALUATE
+      *
+                 IF  IDX-MONTH  <  SUM-MONTHMAX
+                   PERFORM  800-CSVDATA-EDIT-SEC
+                 END-IF
+               END-IF
+      *
+             END-PERFORM
+      *
+             PERFORM  810-CSVDATA-EDIT-SEC
+      *
+             PERFORM  230-TOUKEICSV-SEC
+      *
+           END-PERFORM
+      *
+           .
+      *
+       400-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       800-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-DELIMITER-SEC
+           .
+      *
+       800-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       810-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-CR-SEC
+           .
+      *
+       810-CSVDATA-EDIT-EXE.
+           EXIT.
+      *****************************************************************
+      *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
+      *****************************************************************
+       820-CSVDATA-EDIT-SEC            SECTION.
+      *
+           IF   WRK-ITEM  NOT =  SPACE
+             PERFORM  800-GET-ITEM-SIZE-SEC
+             STRING  WRK-ITEM(IDX-ST:IDX-ED)  DELIMITED   BY  SIZE
+                                              INTO  WRK-CSVDATA
+                                              WITH  POINTER  IDXP
+             END-STRING
+           END-IF
+           .
+      *
+       820-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    ¶èÀÚ¤êÊ¸»úÊÔ½¸½èÍý
+      *****************************************************************
+       800-PUT-DELIMITER-SEC           SECTION.
+      *
+           STRING    ","       DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-DELIMITER-EXT.
+           EXIT.
+      *****************************************************************
+      *    ²þ¹ÔÊ¸»úÊÔ½¸½èÍý
+      *****************************************************************
+       800-PUT-CR-SEC                  SECTION.
+      *
+           STRING    X"0D"     DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-CR-EXT.
+           EXIT.
+      *****************************************************************
+      *    ¹àÌÜ¥µ¥¤¥º¼èÆÀ½èÍý
+      *****************************************************************
+       800-GET-ITEM-SIZE-SEC           SECTION.
+      *
+           MOVE    ZERO            TO  IDX-ST
+                                       IDX-ED
+      *
+           PERFORM  VARYING  IDX1  FROM  1  BY  1
+                    UNTIL  IDX1  >  WRK-ITEM-SIZE
+                    OR  WRK-ITEM(IDX1:)    =  SPACE
+      *
+             IF  IDX-ST  =  ZERO
+               IF  WRK-ITEM(IDX1:1)  NOT =  SPACE
+                 MOVE    IDX1      TO  IDX-ST
+                 MOVE    1         TO  IDX-ED
+               END-IF
+             ELSE
+               COMPUTE  IDX-ED  =  IDX-ED  +  1
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+       800-GET-ITEM-SIZE-EXT.
+           EXIT.
+      *****************************************************************
+      *    £Ã£Ó£Ö½ÐÎÏ½èÍý
+      *****************************************************************
+       230-TOUKEICSV-SEC               SECTION.
+      *
+           INITIALIZE                         ORCSTOUKEICSVAREA
+           MOVE    "INS"                      TO  STOUKEICSV-MODE
+           MOVE    D100LNK-PRTKANRI-TBL-KEY   TO  STOUKEICSV-TBL-KEY
+           MOVE    D100LNK-PRTKANRI-RENNUM    TO  STOUKEICSV-RENNUM
+           MOVE    D100LNK-PRTKANRI-TBL-GROUP TO  STOUKEICSV-TBL-GROUP
+           MOVE    D100LNK-PRTKANRI-SHORI-RENNUM
+                                            TO  STOUKEICSV-SHORI-RENNUM
+           MOVE    D100LNK-PRTKANRI-SHELLID   TO  STOUKEICSV-SHELLID
+           MOVE    D100LNK-PRTKANRI-SRYYM     TO  STOUKEICSV-SRYYM
+           MOVE    ZERO                       TO  STOUKEICSV-PTID
+           MOVE    "/var/tmp/"                TO  STOUKEICSV-TO-FOLDER
+      *
+           STRING  SPA-HOSPNUM                DELIMITED  BY  SIZE
+                   "kihondaichou_g_geppou_"   DELIMITED  BY  SIZE
+                   D100LNK-YMD1               DELIMITED  BY  SIZE
+                   "_"                        DELIMITED  BY  SIZE
+                   D100LNK-YMD2               DELIMITED  BY  SIZE
+                   ".csv"                     DELIMITED  BY  SIZE
+                                              INTO  STOUKEICSV-TO-DATA
+           END-STRING
+           MOVE    "2"                        TO  STOUKEICSV-CODE-TYPE
+           MOVE    WRK-CSVDATA                TO  STOUKEICSV-CSVDATA
+           MOVE    "´ðËÜÂæÄ¢(³°Íè·îÊó)"       TO  STOUKEICSV-TITLE
+      *
+           CALL    "ORCSTOUKEICSV"            USING
+                                              ORCSTOUKEICSVAREA
+                                              SPA-AREA
+           IF  ( STOUKEICSV-RETURN  =  ZERO )
+             CONTINUE
+           ELSE
+             MOVE    "Åý·×£Ã£Ó£Ö£Ä£Â¤Ë¹¹¿·¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿"
+                                                TO  WRK-RECEERR
+             PERFORM  500-ERR-HENSYU-SEC
+           END-IF
+      *
+           INITIALIZE                         WRK-CSVDATA
+           MOVE    1                          TO  IDXP
+      *
+           .
+      *
+       230-TOUKEICSV-EXT.
+           EXIT.
+      *
+      *+
       *****************************************************************
       *    ¥¨¥é¡¼½ÐÎÏ½èÍý
       *****************************************************************

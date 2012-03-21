@@ -31,6 +31,8 @@
       *              @@@@-門間    10/12/15  初診、再診、その他の判定条件を変更
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/01/27  処理速度の改善
+      *  01.00.03    @@@@-門間    12/02/29  インデント整理
+      *                           12/03/09  CSVファイル作成機能追加
       ****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -158,6 +160,12 @@
            03  IDX10             PIC 9(02).
            03  IDX11             PIC 9(02).
       *
+           03  IDX-HKN           PIC 9(03).
+           03  IDX-HKN2          PIC 9(03).
+           03  IDX-ST            PIC 9(03).
+           03  IDX-ED            PIC 9(03).
+           03  IDXP              PIC 9(05).
+      *
       *    一時領域
        01  WRK-AREA.
            03  WRK-PATH              PIC X(64).
@@ -246,17 +254,35 @@
            03  WRK-JOSEI             PIC 9(11).
       *
        01  SUM-AREA.
-           03  SUM-DRMAX             PIC 9(03).
+           03  SUM-HKNMAX            PIC 9(03).
            03  SUM-SRYKA-G.
                05  SUM-SRYKACD       PIC X(02).
                05  SUM-SRYKANAME     PIC X(20).
            03  SUM-PRFLG             PIC 9(01).
-           03  SUM-DR-TBL            OCCURS 300.
-               05  SUM-DRCD          PIC X(04).
-               05  SUM-DRNAME        PIC X(18).
+           03  SUM-HKN-TBL           OCCURS 15.
                05  SUM-BF-MISYU      PIC S9(11).
                05  SUM-YOSO-TBL      OCCURS 48.
                  07  SUM-YOSO        PIC S9(11).
+      *
+       01  SUM-HKN-AREA.
+           03  SUM-HKN-VAL.
+               05  SUM-HKNNAME01     PIC X(10) VALUE "社保本人".
+               05  SUM-HKNNAME02     PIC X(10) VALUE "社保家族".
+               05  SUM-HKNNAME03     PIC X(10) VALUE "".
+               05  SUM-HKNNAME04     PIC X(10) VALUE "社保６歳".
+               05  SUM-HKNNAME05     PIC X(10) VALUE "国保".
+               05  SUM-HKNNAME06     PIC X(10) VALUE "国保６歳".
+               05  SUM-HKNNAME07     PIC X(10) VALUE "退職本人".
+               05  SUM-HKNNAME08     PIC X(10) VALUE "退職家族".
+               05  SUM-HKNNAME09     PIC X(10) VALUE "退職６歳".
+               05  SUM-HKNNAME10     PIC X(10) VALUE "後期高齢".
+               05  SUM-HKNNAME11     PIC X(10) VALUE "公費単独".
+               05  SUM-HKNNAME12     PIC X(10) VALUE "自費".
+               05  SUM-HKNNAME13     PIC X(10) VALUE "労災・自賠".
+               05  SUM-HKNNAME14     PIC X(10) VALUE "公害".
+               05  SUM-HKNNAME15     PIC X(10) VALUE "計".
+           03  SUM-HKN-R             REDEFINES SUM-HKN-VAL.
+               05  SUM-HKNNAME       PIC X(10) OCCURS 15.
       *
        01  KEY-AREA.
            03  KEY-PTID                 PIC 9(10).
@@ -273,6 +299,142 @@
            03  WRK-CONS-KOGAI-HKNNUM   PIC X(03)   VALUE "975".
       *
            COPY    "CPSHELLTBL.INC".
+      *
+       01  WRK-CSV-AREA.
+           03  WRK-ITEM-SIZE         PIC 9(03)     VALUE  100.
+           03  WRK-ITEM              PIC X(100)    VALUE  SPACE.
+           03  WRK-CSVDATA           PIC X(20000)  VALUE  SPACE.
+      *
+       01  CSV-HEAD-AREA.
+           03  CSV-HEAD-G.
+             05  CSV-HEAD-VAL.
+               07  CSV-HEAD-D001  PIC X(50)
+                            VALUE  "項目名".
+               07  CSV-HEAD-D002  PIC X(50)
+                            VALUE  "（ア）患者数＿初診".
+               07  CSV-HEAD-D003  PIC X(50)
+                            VALUE  "（イ）患者数＿再診".
+               07  CSV-HEAD-D004  PIC X(50)
+                            VALUE  "（ウ）患者数＿その他".
+               07  CSV-HEAD-D005  PIC X(50)
+                            VALUE  "（エ）患者数＿合計".
+               07  CSV-HEAD-D006  PIC X(50)
+                            VALUE  "（オ）患者数＿新患".
+               07  CSV-HEAD-D007  PIC X(50)
+                            VALUE  "（カ）患者数＿新患来院率".
+               07  CSV-HEAD-D008  PIC X(50)
+                            VALUE  "（キ）保険内点数".
+               07  CSV-HEAD-D009  PIC X(50)
+                            VALUE  "（ク）平均点/人".
+               07  CSV-HEAD-D010  PIC X(50)
+                            VALUE  "（ケ）保険内負担金".
+               07  CSV-HEAD-D011  PIC X(50)
+                            VALUE  "（コ）保険外金額".
+               07  CSV-HEAD-D012  PIC X(50)
+                            VALUE  "（サ）減免金額".
+               07  CSV-HEAD-D013  PIC X(50)
+                            VALUE  "（シ）助成金額".
+               07  CSV-HEAD-D014  PIC X(50)
+                            VALUE  "（ス）消費税".
+               07  CSV-HEAD-D015  PIC X(50)
+                            VALUE  "（セ）調整金".
+               07  CSV-HEAD-D016  PIC X(50)
+                            VALUE  "（ソ）窓口請求金額".
+               07  CSV-HEAD-D017  PIC X(50)
+                            VALUE  "（タ）期間外未収金残額".
+               07  CSV-HEAD-D018  PIC X(50)
+                            VALUE  "（チ）入金額".
+               07  CSV-HEAD-D019  PIC X(50)
+                            VALUE  "（ツ）当日未収金".
+               07  CSV-HEAD-D020  PIC X(50)
+                            VALUE  "（テ）当日預り金残額".
+               07  CSV-HEAD-D021  PIC X(50)
+                            VALUE  "（ト）".
+               07  CSV-HEAD-D022  PIC X(50)
+                            VALUE  "（ナ）診療区分＿初・再診料".
+               07  CSV-HEAD-D023  PIC X(50)
+                            VALUE  "（ニ）診療区分＿医学管理等".
+               07  CSV-HEAD-D024  PIC X(50)
+                            VALUE  "（ヌ）診療区分＿在宅医療".
+               07  CSV-HEAD-D025  PIC X(50)
+                            VALUE  "（ネ）診療区分＿投薬".
+               07  CSV-HEAD-D026  PIC X(50)
+                            VALUE  "（ノ）診療区分＿注射".
+               07  CSV-HEAD-D027  PIC X(50)
+                            VALUE  "（ハ）診療区分＿処置".
+               07  CSV-HEAD-D028  PIC X(50)
+                            VALUE  "（ヒ）診療区分＿手術".
+               07  CSV-HEAD-D029  PIC X(50)
+                            VALUE  "（フ）診療区分＿麻酔".
+               07  CSV-HEAD-D030  PIC X(50)
+                            VALUE  "（ヘ）診療区分＿検査".
+               07  CSV-HEAD-D031  PIC X(50)
+                            VALUE  "（ホ）診療区分＿画像診断".
+               07  CSV-HEAD-D032  PIC X(50)
+                            VALUE  "（マ）診療区分＿リハビリテーション".
+               07  CSV-HEAD-D033  PIC X(50)
+                            VALUE  "（ミ）診療区分＿精神科専門療法".
+               07  CSV-HEAD-D034  PIC X(50)
+                            VALUE  "（ム）診療区分＿放射線治療".
+               07  CSV-HEAD-D035  PIC X(50)
+                            VALUE  "（メ）診療区分＿病理診断".
+               07  CSV-HEAD-D036  PIC X(50)
+                            VALUE  "（モ）診療区分＿入院料等".
+               07  CSV-HEAD-D037  PIC X(50)
+                            VALUE  "（ヤ）診療区分＿療養担当手当".
+               07  CSV-HEAD-D038  PIC X(50)
+                            VALUE  "（あ）保険適用外金額".
+               07  CSV-HEAD-D039-G.
+      *
+                 09  CSV-HEAD-JIHI01-ID   PIC X(18)
+                              VALUE  "（い）保険外自費＿".
+                 09  CSV-HEAD-JIHI01-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI02-ID   PIC X(18)
+                              VALUE  "（う）保険外自費＿".
+                 09  CSV-HEAD-JIHI02-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI03-ID   PIC X(18)
+                              VALUE  "（え）保険外自費＿".
+                 09  CSV-HEAD-JIHI03-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI04-ID   PIC X(18)
+                              VALUE  "（お）保険外自費＿".
+                 09  CSV-HEAD-JIHI04-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI05-ID   PIC X(18)
+                              VALUE  "（か）保険外自費＿".
+                 09  CSV-HEAD-JIHI05-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI06-ID   PIC X(18)
+                              VALUE  "（き）保険外自費＿".
+                 09  CSV-HEAD-JIHI06-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI07-ID   PIC X(18)
+                              VALUE  "（く）保険外自費＿".
+                 09  CSV-HEAD-JIHI07-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI08-ID   PIC X(18)
+                              VALUE  "（け）保険外自費＿".
+                 09  CSV-HEAD-JIHI08-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI09-ID   PIC X(18)
+                              VALUE  "（こ）保険外自費＿".
+                 09  CSV-HEAD-JIHI09-NAME PIC X(32).
+      *
+                 09  CSV-HEAD-JIHI10-ID   PIC X(18)
+                              VALUE  "（さ）保険外自費＿".
+                 09  CSV-HEAD-JIHI10-NAME PIC X(32).
+      *
+               07  CSV-HEAD-JIHI-R      REDEFINES  CSV-HEAD-D039-G.
+                 09  CSV-HEAD-JIHI-OCC    OCCURS  10.
+                   11  CSV-HEAD-JIHI-ID     PIC X(06).
+                   11  CSV-HEAD-JIHI-NAME   PIC X(44).
+      *
+             05  CSV-HEAD-R   REDEFINES   CSV-HEAD-VAL.
+               07  CSV-HEAD-ITEM        PIC X(50)  OCCURS  48.
+      *
+             05  CSV-HEAD-MAX         PIC 9(05)  VALUE  48.
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -388,6 +550,9 @@
       *
       *    患者番号変換サブ
            COPY    "CPORCSPTID.INC".
+      *
+      *    統計ＣＳＶ制御サブ
+           COPY    "CPORCSTOUKEICSV.INC".
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
@@ -844,7 +1009,7 @@
       *****************************************************************
        110-DR-PARA-HENSYU-SEC                   SECTION.
       *
-           MOVE     15                   TO   SUM-DRMAX
+           MOVE     15                   TO   SUM-HKNMAX
       *
            .
        110-DR-PARA-HENSYU-EXT.
@@ -970,7 +1135,7 @@
                    PERFORM  330-DR-GROUPING-SEC
                END-IF
       *
-               IF I3  <     SUM-DRMAX
+               IF I3  <     SUM-HKNMAX
                   IF  FLG-GET = ZERO
                        MOVE   1   TO   FLG-GET
                   END-IF
@@ -1010,7 +1175,7 @@
                      PERFORM  330-DR-GROUPING-SEC
                  END-IF
       *
-                 IF I3    <   SUM-DRMAX
+                 IF I3    <   SUM-HKNMAX
                    COMPUTE  WRK-MONEY    =
                             SYU-SKYMONEY -  SYU-NYUKIN-TOTAL
                    ADD   WRK-MONEY  TO  SUM-BF-MISYU(I3)  
@@ -1053,14 +1218,14 @@
                        PERFORM  330-DR-GROUPING-SEC
                    END-IF
       *
-                   IF I3    <   SUM-DRMAX
+                   IF I3    <   SUM-HKNMAX
       *
                      IF     SMEI-NYUHEN-YMD <= D100LNK-YMD2
                        AND  SMEI-NYUHEN-YMD >= D100LNK-YMD1
                        ADD  SMEI-NYUHEN-MONEY
                                         TO  SUM-YOSO(I3 18)
                        ADD  SMEI-NYUHEN-MONEY
-                                        TO  SUM-YOSO(SUM-DRMAX 18)
+                                        TO  SUM-YOSO(SUM-HKNMAX 18)
                      END-IF
       *
                    END-IF
@@ -1084,7 +1249,7 @@
        320-ETC-CNT-SEC      SECTION.
       *
            PERFORM  VARYING  I3     FROM 1  BY  1
-                    UNTIL    I3     >=   SUM-DRMAX
+                    UNTIL    I3     >=   SUM-HKNMAX
       *
       *    新患来院率
              INITIALIZE                WRK-RATE
@@ -1107,15 +1272,15 @@
              MOVE      SUM-BF-MISYU(I3)
                    TO  SUM-YOSO (I3 17)
              ADD       SUM-BF-MISYU(I3)
-                   TO  SUM-YOSO (SUM-DRMAX 17)
+                   TO  SUM-YOSO (SUM-HKNMAX 17)
       *
       *    入金額
       *    入金額から当日預り金を引き去る
              COMPUTE SUM-YOSO(I3 18) =
              SUM-YOSO(I3 18) -
              SUM-YOSO(I3 20)
-             COMPUTE SUM-YOSO(SUM-DRMAX 18) =
-             SUM-YOSO(SUM-DRMAX 18) -
+             COMPUTE SUM-YOSO(SUM-HKNMAX 18) =
+             SUM-YOSO(SUM-HKNMAX 18) -
              SUM-YOSO(I3 20)
       *
       *    自費金額から当日預り金を引き去る
@@ -1124,71 +1289,71 @@
                   COMPUTE SUM-YOSO(I3 38) =
                   SUM-YOSO(I3 38) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 38) =
-                  SUM-YOSO(SUM-DRMAX 38) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 38) =
+                  SUM-YOSO(SUM-HKNMAX 38) -
                   SUM-YOSO(I3 20)
                 WHEN  2
                   COMPUTE SUM-YOSO(I3 39) =
                   SUM-YOSO(I3 39) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 39) =
-                  SUM-YOSO(SUM-DRMAX 39) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 39) =
+                  SUM-YOSO(SUM-HKNMAX 39) -
                   SUM-YOSO(I3 20)
                 WHEN  3
                   COMPUTE SUM-YOSO(I3 40) =
                   SUM-YOSO(I3 40) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 40) =
-                  SUM-YOSO(SUM-DRMAX 40) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 40) =
+                  SUM-YOSO(SUM-HKNMAX 40) -
                   SUM-YOSO(I3 20)
                 WHEN  4
                   COMPUTE SUM-YOSO(I3 41) =
                   SUM-YOSO(I3 41) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 41) =
-                  SUM-YOSO(SUM-DRMAX 41) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 41) =
+                  SUM-YOSO(SUM-HKNMAX 41) -
                   SUM-YOSO(I3 20)
                 WHEN  5
                   COMPUTE SUM-YOSO(I3 42) =
                   SUM-YOSO(I3 42) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 42) =
-                  SUM-YOSO(SUM-DRMAX 42) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 42) =
+                  SUM-YOSO(SUM-HKNMAX 42) -
                   SUM-YOSO(I3 20)
                 WHEN  6
                   COMPUTE SUM-YOSO(I3 43) =
                   SUM-YOSO(I3 43) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 43) =
-                  SUM-YOSO(SUM-DRMAX 43) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 43) =
+                  SUM-YOSO(SUM-HKNMAX 43) -
                   SUM-YOSO(I3 20)
                 WHEN  7
                   COMPUTE SUM-YOSO(I3 44) =
                   SUM-YOSO(I3 44) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 44) =
-                  SUM-YOSO(SUM-DRMAX 44) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 44) =
+                  SUM-YOSO(SUM-HKNMAX 44) -
                   SUM-YOSO(I3 20)
                 WHEN  8
                   COMPUTE SUM-YOSO(I3 45) =
                   SUM-YOSO(I3 45) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 45) =
-                  SUM-YOSO(SUM-DRMAX 45) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 45) =
+                  SUM-YOSO(SUM-HKNMAX 45) -
                   SUM-YOSO(I3 20)
                 WHEN  9
                   COMPUTE SUM-YOSO(I3 46) =
                   SUM-YOSO(I3 46) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 46) =
-                  SUM-YOSO(SUM-DRMAX 46) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 46) =
+                  SUM-YOSO(SUM-HKNMAX 46) -
                   SUM-YOSO(I3 20)
                 WHEN  10
                   COMPUTE SUM-YOSO(I3 47) =
                   SUM-YOSO(I3 47) -
                   SUM-YOSO(I3 20)
-                  COMPUTE SUM-YOSO(SUM-DRMAX 47) =
-                  SUM-YOSO(SUM-DRMAX 47) -
+                  COMPUTE SUM-YOSO(SUM-HKNMAX 47) =
+                  SUM-YOSO(SUM-HKNMAX 47) -
                   SUM-YOSO(I3 20)
              END-EVALUATE
            END-PERFORM
@@ -1198,20 +1363,20 @@
            INITIALIZE                WRK-RATE
                                      WRK-RATE2
            COMPUTE  WRK-RATE =
-                    SUM-YOSO(SUM-DRMAX 6) /
-                    SUM-YOSO(SUM-DRMAX 5)
+                    SUM-YOSO(SUM-HKNMAX 6) /
+                    SUM-YOSO(SUM-HKNMAX 5)
            COMPUTE  WRK-RATE2 ROUNDED     =
                     WRK-RATE     *   100
            MOVE     WRK-RATE2    TO  WRK-RATE-Z9
-           MOVE     WRK-RATE-Z9  TO  SUM-YOSO(SUM-DRMAX 7)
+           MOVE     WRK-RATE-Z9  TO  SUM-YOSO(SUM-HKNMAX 7)
       *
       *    平均点／人(計)
            INITIALIZE        WRK-TEN
            COMPUTE  WRK-TEN  ROUNDED      =
-                    SUM-YOSO (SUM-DRMAX 8) /
-                    SUM-YOSO (SUM-DRMAX 5)
+                    SUM-YOSO (SUM-HKNMAX 8) /
+                    SUM-YOSO (SUM-HKNMAX 5)
            MOVE     WRK-TEN
-                    TO  SUM-YOSO (SUM-DRMAX 9)
+                    TO  SUM-YOSO (SUM-HKNMAX 9)
       *
            .
        320-ETC-CNT-EXT.
@@ -1256,7 +1421,7 @@
                PERFORM  900-SRYKARRKA-CLOSE-SEC
                IF   WRK-SYOSINYMD  =  SYU-SRYYMD
                  ADD     1       TO   SUM-YOSO(I3 6)
-                 ADD     1       TO   SUM-YOSO(SUM-DRMAX 6)
+                 ADD     1       TO   SUM-YOSO(SUM-HKNMAX 6)
                END-IF
              END-IF
              PERFORM  900-JYURRK-CLOSE-SEC
@@ -1311,7 +1476,7 @@
            ADD    SYU-SSU-HKNTEN
                   TO  SUM-YOSO(I3 22)
            ADD    SYU-SSU-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 22)
+                  TO  SUM-YOSO(SUM-HKNMAX 22)
       *    合計点数に加算
            ADD    SYU-SSU-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1320,7 +1485,7 @@
            ADD    SYU-SDO-HKNTEN
                   TO  SUM-YOSO (I3 23)
            ADD    SYU-SDO-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 23)
+                  TO  SUM-YOSO(SUM-HKNMAX 23)
       *    合計点数に加算
            ADD    SYU-SDO-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1329,7 +1494,7 @@
            ADD    SYU-ZTK-HKNTEN
                   TO  SUM-YOSO (I3 24)
            ADD    SYU-ZTK-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 24)
+                  TO  SUM-YOSO(SUM-HKNMAX 24)
       *    合計点数に加算
            ADD    SYU-ZTK-HKNTEN
                             TO  SYU-TOTAL-HKNTEN
@@ -1338,7 +1503,7 @@
            ADD    SYU-TYK-HKNTEN
                   TO  SUM-YOSO (I3 25)
            ADD    SYU-TYK-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 25)
+                  TO  SUM-YOSO(SUM-HKNMAX 25)
       *    合計点数に加算
            ADD    SYU-TYK-HKNTEN
                             TO  SYU-TOTAL-HKNTEN
@@ -1347,7 +1512,7 @@
            ADD    SYU-CSY-HKNTEN
                   TO  SUM-YOSO (I3 26)
            ADD    SYU-CSY-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 26)
+                  TO  SUM-YOSO(SUM-HKNMAX 26)
       *    合計点数に加算FLG-SRYACT
            ADD    SYU-CSY-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1356,7 +1521,7 @@
            ADD    SYU-SYC-HKNTEN
                   TO  SUM-YOSO (I3 27)
            ADD    SYU-SYC-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 27)
+                  TO  SUM-YOSO(SUM-HKNMAX 27)
       *    合計点数に加算
            ADD    SYU-SYC-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1365,7 +1530,7 @@
            ADD    SYU-SJT-HKNTEN
                   TO  SUM-YOSO (I3 28)
            ADD    SYU-SJT-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 28)
+                  TO  SUM-YOSO(SUM-HKNMAX 28)
       *    合計点数に加算
            ADD    SYU-SJT-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1374,7 +1539,7 @@
            ADD    SYU-MSI-HKNTEN
                   TO  SUM-YOSO (I3 29)
            ADD    SYU-MSI-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 29)
+                  TO  SUM-YOSO(SUM-HKNMAX 29)
       *    合計点数に加算
            ADD    SYU-MSI-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1383,7 +1548,7 @@
            ADD    SYU-KNS-HKNTEN
                   TO  SUM-YOSO (I3 30)
            ADD    SYU-KNS-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 30)
+                  TO  SUM-YOSO(SUM-HKNMAX 30)
       *    合計点数に加算
            ADD    SYU-KNS-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1392,7 +1557,7 @@
            ADD    SYU-GZU-HKNTEN
                   TO  SUM-YOSO (I3 31)
            ADD    SYU-GZU-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 31)
+                  TO  SUM-YOSO(SUM-HKNMAX 31)
       *    合計点数に加算
            ADD    SYU-GZU-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1401,7 +1566,7 @@
            ADD    SYU-ETC-HKNTEN
                   TO  SUM-YOSO (I3 32)
            ADD    SYU-ETC-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 32)
+                  TO  SUM-YOSO(SUM-HKNMAX 32)
       *    合計点数に加算
            ADD    SYU-ETC-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1410,7 +1575,7 @@
            ADD    SYU-SSN-HKNTEN
                   TO  SUM-YOSO (I3 33)
            ADD    SYU-SSN-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 33)
+                  TO  SUM-YOSO(SUM-HKNMAX 33)
       *    合計点数に加算
            ADD    SYU-SSN-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1419,7 +1584,7 @@
            ADD    SYU-HOU-HKNTEN
                   TO  SUM-YOSO (I3 34)
            ADD    SYU-HOU-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 34)
+                  TO  SUM-YOSO(SUM-HKNMAX 34)
       *    合計点数に加算
            ADD    SYU-HOU-HKNTEN
                             TO  SYU-TOTAL-HKNTEN
@@ -1428,7 +1593,7 @@
            ADD    SYU-BYR-HKNTEN
                   TO  SUM-YOSO (I3 48)
            ADD    SYU-BYR-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 48)
+                  TO  SUM-YOSO(SUM-HKNMAX 48)
       *    合計点数に加算
            ADD    SYU-BYR-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1437,7 +1602,7 @@
            ADD    SYU-NYN-HKNTEN
                   TO  SUM-YOSO (I3 35)
            ADD    SYU-NYN-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 35)
+                  TO  SUM-YOSO(SUM-HKNMAX 35)
       *    合計点数に加算
            ADD    SYU-NYN-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1446,7 +1611,7 @@
            ADD    SYU-RYO-HKNTEN
                   TO  SUM-YOSO (I3 36)
            ADD    SYU-RYO-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 36)
+                  TO  SUM-YOSO(SUM-HKNMAX 36)
       *    合計点数に加算
            ADD    SYU-RYO-HKNTEN
                   TO  SYU-TOTAL-HKNTEN
@@ -1455,117 +1620,117 @@
            ADD    SYU-TOTAL-TGMONEY
                   TO  SUM-YOSO (I3 37)
            ADD    SYU-TOTAL-TGMONEY
-                  TO  SUM-YOSO (SUM-DRMAX 37)
+                  TO  SUM-YOSO (SUM-HKNMAX 37)
            ADD    SYU-TOTAL-TGMONEY-TAX
                   TO  SUM-YOSO (I3 37)
            ADD    SYU-TOTAL-TGMONEY-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 37)
+                  TO  SUM-YOSO (SUM-HKNMAX 37)
       *
       *    自費１
            ADD    SYU-JIHI-1
                   TO  SUM-YOSO (I3 38)
            ADD    SYU-JIHI-1
-                  TO  SUM-YOSO (SUM-DRMAX 38)
+                  TO  SUM-YOSO (SUM-HKNMAX 38)
            ADD    SYU-JIHI-1-TAX
                   TO  SUM-YOSO (I3 38)
            ADD    SYU-JIHI-1-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 38)
+                  TO  SUM-YOSO (SUM-HKNMAX 38)
       *
       *    自費２
            ADD    SYU-JIHI-2
                   TO  SUM-YOSO (I3 39)
            ADD    SYU-JIHI-2
-                  TO  SUM-YOSO (SUM-DRMAX 39)
+                  TO  SUM-YOSO (SUM-HKNMAX 39)
            ADD    SYU-JIHI-2-TAX
                   TO  SUM-YOSO (I3 39)
            ADD    SYU-JIHI-2-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 39)
+                  TO  SUM-YOSO (SUM-HKNMAX 39)
       *
       *    自費３
            ADD    SYU-JIHI-3
                   TO  SUM-YOSO (I3 40)
            ADD    SYU-JIHI-3
-                  TO  SUM-YOSO (SUM-DRMAX 40)
+                  TO  SUM-YOSO (SUM-HKNMAX 40)
            ADD    SYU-JIHI-3-TAX
                   TO  SUM-YOSO (I3 40)
            ADD    SYU-JIHI-3-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 40)
+                  TO  SUM-YOSO (SUM-HKNMAX 40)
       *
       *    自費４
            ADD    SYU-JIHI-4
                   TO  SUM-YOSO (I3 41)
            ADD    SYU-JIHI-4
-                  TO  SUM-YOSO (SUM-DRMAX 41)
+                  TO  SUM-YOSO (SUM-HKNMAX 41)
            ADD    SYU-JIHI-4-TAX
                   TO  SUM-YOSO (I3 41)
            ADD    SYU-JIHI-4-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 41)
+                  TO  SUM-YOSO (SUM-HKNMAX 41)
       *
       *    自費５
            ADD    SYU-JIHI-5
                   TO  SUM-YOSO (I3 42)
            ADD    SYU-JIHI-5
-                  TO  SUM-YOSO (SUM-DRMAX 42)
+                  TO  SUM-YOSO (SUM-HKNMAX 42)
            ADD    SYU-JIHI-5-TAX
                   TO  SUM-YOSO (I3 42)
            ADD    SYU-JIHI-5-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 42)
+                  TO  SUM-YOSO (SUM-HKNMAX 42)
       *
       *    自費６
            ADD    SYU-JIHI-6
                   TO  SUM-YOSO (I3 43)
            ADD    SYU-JIHI-6
-                  TO  SUM-YOSO (SUM-DRMAX 43)
+                  TO  SUM-YOSO (SUM-HKNMAX 43)
            ADD    SYU-JIHI-6-TAX
                   TO  SUM-YOSO (I3 43)
            ADD    SYU-JIHI-6-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 43)
+                  TO  SUM-YOSO (SUM-HKNMAX 43)
       *
       *    自費７
            ADD    SYU-JIHI-7
                   TO  SUM-YOSO (I3 44)
            ADD    SYU-JIHI-7
-                  TO  SUM-YOSO (SUM-DRMAX 44)
+                  TO  SUM-YOSO (SUM-HKNMAX 44)
            ADD    SYU-JIHI-7-TAX
                   TO  SUM-YOSO (I3 44)
            ADD    SYU-JIHI-7-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 44)
+                  TO  SUM-YOSO (SUM-HKNMAX 44)
       *
       *    自費８
            ADD    SYU-JIHI-8
                   TO  SUM-YOSO (I3 45)
            ADD    SYU-JIHI-8
-                  TO  SUM-YOSO (SUM-DRMAX 45)
+                  TO  SUM-YOSO (SUM-HKNMAX 45)
            ADD    SYU-JIHI-8-TAX
                   TO  SUM-YOSO (I3 45)
            ADD    SYU-JIHI-8-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 45)
+                  TO  SUM-YOSO (SUM-HKNMAX 45)
       *
       *    自費９
            ADD    SYU-JIHI-9
                   TO  SUM-YOSO (I3 46)
            ADD    SYU-JIHI-9
-                  TO  SUM-YOSO (SUM-DRMAX 46)
+                  TO  SUM-YOSO (SUM-HKNMAX 46)
            ADD    SYU-JIHI-9-TAX
                   TO  SUM-YOSO (I3 46)
            ADD    SYU-JIHI-9-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 46)
+                  TO  SUM-YOSO (SUM-HKNMAX 46)
       *
       *    自費１０
            ADD    SYU-JIHI-10
                   TO  SUM-YOSO (I3 47)
            ADD    SYU-JIHI-10
-                  TO  SUM-YOSO (SUM-DRMAX 47)
+                  TO  SUM-YOSO (SUM-HKNMAX 47)
            ADD    SYU-JIHI-10-TAX
                   TO  SUM-YOSO (I3 47)
            ADD    SYU-JIHI-10-TAX
-                  TO  SUM-YOSO (SUM-DRMAX 47)
+                  TO  SUM-YOSO (SUM-HKNMAX 47)
       *
       *    保険内点数(合計保険点数)
            ADD    SYU-TOTAL-HKNTEN
                   TO  SUM-YOSO (I3 8)
            ADD    SYU-TOTAL-HKNTEN
-                  TO  SUM-YOSO(SUM-DRMAX 8)
+                  TO  SUM-YOSO(SUM-HKNMAX 8)
       *
            INITIALIZE     WRK-HKNNAI
       *
@@ -1580,34 +1745,34 @@
              ADD  SYU-RSISHOSHIN-MONEY
                     TO  SUM-YOSO(I3 10)
              ADD  SYU-RSISHOSHIN-MONEY
-                    TO  SUM-YOSO(SUM-DRMAX 10)
+                    TO  SUM-YOSO(SUM-HKNMAX 10)
              ADD    SYU-RSISHOSHIN-MONEY   TO   WRK-HKNNAI
       *
       *    労災再診金額金額
              ADD  SYU-RSISAISHIN-MONEY
                     TO  SUM-YOSO(I3 10)
              ADD  SYU-RSISAISHIN-MONEY
-                    TO  SUM-YOSO(SUM-DRMAX 10)
+                    TO  SUM-YOSO(SUM-HKNMAX 10)
              ADD   SYU-RSISAISHIN-MONEY    TO   WRK-HKNNAI
       *
       *    労災指導金額金額
              ADD  SYU-RSISDO-MONEY
                     TO  SUM-YOSO(I3 10)
              ADD  SYU-RSISDO-MONEY
-                    TO  SUM-YOSO(SUM-DRMAX 10)
+                    TO  SUM-YOSO(SUM-HKNMAX 10)
              ADD   SYU-RSISDO-MONEY    TO   WRK-HKNNAI
       *
       *    労災その他金額金額
              ADD  SYU-RSIETC-MONEY
                     TO  SUM-YOSO(I3 10)
              ADD  SYU-RSIETC-MONEY
-                    TO  SUM-YOSO(SUM-DRMAX 10)
+                    TO  SUM-YOSO(SUM-HKNMAX 10)
              ADD    SYU-RSIETC-MONEY   TO   WRK-HKNNAI
       *
              ADD  SYU-HKNTEKMONEY
                     TO  SUM-YOSO(I3 10)
              ADD  SYU-HKNTEKMONEY
-                    TO  SUM-YOSO(SUM-DRMAX 10)
+                    TO  SUM-YOSO(SUM-HKNMAX 10)
              ADD    SYU-HKNTEKMONEY   TO   WRK-HKNNAI
            ELSE
       *    主保険分負担金額
@@ -1616,35 +1781,35 @@
                ADD SYU-SYUCOMPTOTAL
                    TO  SUM-YOSO(I3 10)
                ADD SYU-SYUCOMPTOTAL
-                   TO  SUM-YOSO(SUM-DRMAX 10)
+                   TO  SUM-YOSO(SUM-HKNMAX 10)
                MOVE    SYU-SYUCOMPTOTAL    TO   WRK-HKNNAI
              ELSE
                IF SYU-KOH1COMPTOTAL NOT = ZERO
                  ADD SYU-KOH1COMPTOTAL
                      TO  SUM-YOSO(I3 10)
                  ADD SYU-KOH1COMPTOTAL
-                     TO  SUM-YOSO(SUM-DRMAX 10)
+                     TO  SUM-YOSO(SUM-HKNMAX 10)
                  MOVE    SYU-KOH1COMPTOTAL   TO   WRK-HKNNAI
                ELSE
                  IF SYU-KOH2COMPTOTAL NOT = ZERO
                    ADD SYU-KOH2COMPTOTAL
                        TO  SUM-YOSO(I3 10)
                    ADD     SYU-KOH2COMPTOTAL
-                       TO  SUM-YOSO(SUM-DRMAX 10)
+                       TO  SUM-YOSO(SUM-HKNMAX 10)
                      MOVE    SYU-KOH2COMPTOTAL   TO   WRK-HKNNAI
                  ELSE
                    IF SYU-KOH3COMPTOTAL NOT = ZERO
                      ADD     SYU-KOH3COMPTOTAL
                          TO  SUM-YOSO(I3 10)
                      ADD     SYU-KOH3COMPTOTAL
-                         TO  SUM-YOSO(SUM-DRMAX 10)
+                         TO  SUM-YOSO(SUM-HKNMAX 10)
                      MOVE    SYU-KOH3COMPTOTAL   TO   WRK-HKNNAI
                    ELSE
                      IF SYU-KOH3COMPTOTAL NOT = ZERO
                        ADD     SYU-KOH4COMPTOTAL
                            TO  SUM-YOSO(I3 10)
                        ADD     SYU-KOH4COMPTOTAL
-                           TO  SUM-YOSO(SUM-DRMAX 10)
+                           TO  SUM-YOSO(SUM-HKNMAX 10)
                        MOVE    SYU-KOH4COMPTOTAL   TO   WRK-HKNNAI
                      END-IF
                    END-IF
@@ -1663,13 +1828,13 @@
            ADD    WRK-JIHI
                   TO  SUM-YOSO(I3 11)
            ADD    WRK-JIHI
-                  TO  SUM-YOSO(SUM-DRMAX 11)
+                  TO  SUM-YOSO(SUM-HKNMAX 11)
       *
       *    減免金額
            ADD SYU-DISCOUNT-MONEY
                   TO  SUM-YOSO(I3 12)
            ADD SYU-DISCOUNT-MONEY
-                  TO  SUM-YOSO(SUM-DRMAX 12)
+                  TO  SUM-YOSO(SUM-HKNMAX 12)
       *
       *    助成金額の算出
            COMPUTE  WRK-MONEY  =  WRK-HKNNAI
@@ -1819,25 +1984,25 @@
       *    助成金額
            COMPUTE  WRK-JOSEI  =  WRK-JOSEI  -  SYU-SKYMONEY
            ADD    WRK-JOSEI    TO   SUM-YOSO(I3 13)
-           ADD    WRK-JOSEI    TO   SUM-YOSO(SUM-DRMAX 13)
+           ADD    WRK-JOSEI    TO   SUM-YOSO(SUM-HKNMAX 13)
       *
       *    消費税
            ADD    SYU-SKYMONEY-TAX-SAI
                   TO  SUM-YOSO(I3 14)
            ADD    SYU-SKYMONEY-TAX-SAI
-                  TO  SUM-YOSO(SUM-DRMAX 14)
+                  TO  SUM-YOSO(SUM-HKNMAX 14)
       *
       *    調整金
            ADD    SYU-CHOSEI
                   TO  SUM-YOSO(I3 15)
            ADD    SYU-CHOSEI
-                  TO  SUM-YOSO(SUM-DRMAX 15)
+                  TO  SUM-YOSO(SUM-HKNMAX 15)
       *
       *    窓口請求金額
            ADD    SYU-SKYMONEY
                   TO  SUM-YOSO(I3 16)
            ADD    SYU-SKYMONEY
-                  TO  SUM-YOSO(SUM-DRMAX 16)
+                  TO  SUM-YOSO(SUM-HKNMAX 16)
       *
       *    未収金残額
            COMPUTE     WRK-MONEY        =
@@ -1845,7 +2010,7 @@
            ADD    WRK-MONEY
                   TO  SUM-YOSO(I3 19)
            ADD    WRK-MONEY
-                  TO  SUM-YOSO(SUM-DRMAX 19)
+                  TO  SUM-YOSO(SUM-HKNMAX 19)
       *
            .
        320-SYUNOU-CNT-SUB-EXT.
@@ -1872,7 +2037,7 @@
            END-PERFORM.
            PERFORM  320-SYUMEI-CLOSE-SEC
            ADD   WRK-SMEI-NYUHEN-MONEY  TO  SUM-YOSO(I3 18)
-           ADD   WRK-SMEI-NYUHEN-MONEY  TO  SUM-YOSO(SUM-DRMAX 18)
+           ADD   WRK-SMEI-NYUHEN-MONEY  TO  SUM-YOSO(SUM-HKNMAX 18)
            .
        320-SYUMEI-CNT-SUB-EXT.
            EXIT.
@@ -2035,9 +2200,9 @@
                      JYURRK-DOUJI-RENNUM  =  1)
       *    初診の件数としてカウントする。
                ADD  1  TO  SUM-YOSO(I3 2)
-               ADD  1  TO  SUM-YOSO(SUM-DRMAX 2)
+               ADD  1  TO  SUM-YOSO(SUM-HKNMAX 2)
                ADD  1  TO  SUM-YOSO(I3 5)
-               ADD  1  TO  SUM-YOSO(SUM-DRMAX 5)
+               ADD  1  TO  SUM-YOSO(SUM-HKNMAX 5)
                MOVE  1 TO  FLG-JYURRK2
              ELSE
                COMPUTE   JYURRK-EDANUM   =  JYURRK-EDANUM  +  1
@@ -2137,17 +2302,17 @@
       *
       *    再診の件数としてカウントする。
                  ADD  1  TO  SUM-YOSO(I3 3)
-                 ADD  1  TO  SUM-YOSO(SUM-DRMAX 3)
+                 ADD  1  TO  SUM-YOSO(SUM-HKNMAX 3)
                  ADD  1  TO  SUM-YOSO(I3 5)
-                 ADD  1  TO  SUM-YOSO(SUM-DRMAX 5)
+                 ADD  1  TO  SUM-YOSO(SUM-HKNMAX 5)
                  MOVE   1   TO  FLG-JYURRK2
                ELSE
       *    その他件数としてカウントする。
                  IF  FLG-JYURRK2   =  1
                    ADD  1  TO  SUM-YOSO(I3 4)
-                   ADD  1  TO  SUM-YOSO(SUM-DRMAX 4)
+                   ADD  1  TO  SUM-YOSO(SUM-HKNMAX 4)
                    ADD  1  TO  SUM-YOSO(I3 5)
-                   ADD  1  TO  SUM-YOSO(SUM-DRMAX 5)
+                   ADD  1  TO  SUM-YOSO(SUM-HKNMAX 5)
                  END-IF
                END-IF
              END-IF
@@ -2229,7 +2394,7 @@
                  COMPUTE  WRK-AZUKARI  =  ACCT-DAY(IDX5 WRK-ACCT-SDAY)
                                        *  WRK-JIHIMONEY
                  ADD   WRK-AZUKARI   TO   SUM-YOSO(WRK-ACCT-IN 20)
-                 ADD   WRK-AZUKARI   TO   SUM-YOSO(SUM-DRMAX 20)
+                 ADD   WRK-AZUKARI   TO   SUM-YOSO(SUM-HKNMAX 20)
                END-IF
              END-PERFORM
            END-IF
@@ -2542,18 +2707,18 @@
            MOVE    1                    TO  I3
            MOVE    15                   TO  I5
       *
-           PERFORM  UNTIL  I3  >  SUM-DRMAX
+           PERFORM  UNTIL  I3  >  SUM-HKNMAX
       *
              PERFORM  VARYING  I6  FROM  1  BY  1
                       UNTIL    I6  >  I5
-                      OR       I3  >  SUM-DRMAX
+                      OR       I3  >  SUM-HKNMAX
       *
                PERFORM  VARYING  I4  FROM  2  BY  1
                         UNTIL    I4  >  48
       *
                  COMPUTE I7  =  I4  -  1
       *
-                 IF  I3  =  SUM-DRMAX
+                 IF  I3  =  SUM-HKNMAX
       *
                    IF     I4 =  1
                      OR   I4 = 21
@@ -2654,6 +2819,10 @@
       *
            END-PERFORM
       *
+      *    CSV編集処理
+           PERFORM  800-CSV-HEAD-SEC
+           PERFORM  400-CSV-DATA-SEC
+      *
            .
        330-TERM-HEN-EXT.
            EXIT.
@@ -2725,6 +2894,263 @@
       *
            .
        340-PRINT-OUT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    CSVヘッダ編集処理
+      *****************************************************************
+       800-CSV-HEAD-SEC            SECTION.
+      *
+           MOVE    1                    TO  IDXP
+      *
+      *    印字対象診療年月
+           INITIALIZE  WRK-ITEM
+           MOVE    "対象年月日："       TO  WRK-ITEM(1:12)
+           MOVE    WRK-SRYYMD1(1:22)    TO  WRK-ITEM(13:22)
+           MOVE    "〜"                 TO  WRK-ITEM(35:2)
+           MOVE    WRK-SRYYMD2(1:22)    TO  WRK-ITEM(37:22)
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    診療科名称
+           INITIALIZE  WRK-ITEM
+           MOVE    "診療科："           TO  WRK-ITEM(1:8)
+           MOVE    SUM-SRYKANAME        TO  WRK-ITEM(9:20)
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    医師名称
+           INITIALIZE  WRK-ITEM
+           MOVE    "医師："             TO  WRK-ITEM(1:6)
+           MOVE    WRK-SEL-DRNAME       TO  WRK-ITEM(7:30)
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    帳票出力年月日
+           INITIALIZE  WRK-ITEM
+           MOVE    WRK-SYSYMDWH         TO  WRK-ITEM(1:22)
+           MOVE    "  発行"             TO  WRK-ITEM(23:6)
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           .
+      *
+       800-CSV-HEAD-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    CSV編集処理
+      *****************************************************************
+       400-CSV-DATA-SEC            SECTION.
+      *
+           MOVE    1    TO  IDX2
+      *
+      *    項目名称セット
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL    IDX4  >  CSV-HEAD-MAX
+      *
+             INITIALIZE  WRK-ITEM
+             IF  IDX4  <  39
+               MOVE    CSV-HEAD-ITEM(IDX4)        TO  WRK-ITEM
+             ELSE
+               MOVE    CSV-HEAD-ITEM(IDX4)(1:18)  TO  WRK-ITEM(1:18)
+               MOVE    WRK-TJIHI(IDX2)            TO  WRK-ITEM(19:)
+               ADD     1                          TO  IDX2
+             END-IF
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+             PERFORM  VARYING  IDX-HKN  FROM  1  BY  1
+                      UNTIL    IDX-HKN  >  SUM-HKNMAX
+      *
+               INITIALIZE  WRK-ITEM
+               IF  IDX-HKN  NOT =  3
+      *
+      *          印字位置設定
+                 EVALUATE  IDX-HKN
+      *            社保本人、社保家族、社保６歳、国保、国保６歳、計
+                   WHEN   1 THRU  6
+                   WHEN  15
+                     COMPUTE  IDX-HKN2  =  IDX-HKN
+      *            退職本人、退職家族、公費単独、自費、労災・自賠
+                   WHEN   7 THRU  8
+                   WHEN  11 THRU 13
+                     COMPUTE  IDX-HKN2  =  IDX-HKN + 1
+      *            退職６歳
+                   WHEN   9
+                     COMPUTE  IDX-HKN2  =  IDX-HKN + 2
+      *            後期高齢
+                   WHEN  10
+                     COMPUTE  IDX-HKN2  =  IDX-HKN - 3
+      *            公害
+                   WHEN  14
+                     COMPUTE  IDX-HKN2  =  IDX-HKN - 4
+                 END-EVALUATE
+      *
+                 EVALUATE  IDX4
+                   WHEN   1
+                     MOVE    SUM-HKNNAME(IDX-HKN)         TO  WRK-ITEM
+                   WHEN  21
+                     CONTINUE
+                   WHEN  35
+                     MOVE    SUM-YOSO(IDX-HKN2 IDX4 + 13) TO  WRK-S9
+                     MOVE    WRK-S9                       TO  WRK-ITEM
+                   WHEN  36 THRU 48
+                     MOVE    SUM-YOSO(IDX-HKN2 IDX4 - 1)  TO  WRK-S9
+                     MOVE    WRK-S9                       TO  WRK-ITEM
+                   WHEN  OTHER
+                     MOVE    SUM-YOSO(IDX-HKN2 IDX4)      TO  WRK-S9
+                     MOVE    WRK-S9                       TO  WRK-ITEM
+                 END-EVALUATE
+      *
+                 IF  IDX-HKN  <  SUM-HKNMAX
+                   PERFORM  800-CSVDATA-EDIT-SEC
+                 END-IF
+      *
+               END-IF
+      *
+             END-PERFORM
+             PERFORM  810-CSVDATA-EDIT-SEC
+      *
+             PERFORM  230-TOUKEICSV-SEC
+      *
+           END-PERFORM
+      *
+           .
+      *
+       400-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       800-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-DELIMITER-SEC
+           .
+      *
+       800-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       810-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-CR-SEC
+           .
+      *
+       810-CSVDATA-EDIT-EXE.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       820-CSVDATA-EDIT-SEC            SECTION.
+      *
+           IF   WRK-ITEM  NOT =  SPACE
+             PERFORM  800-GET-ITEM-SIZE-SEC
+             STRING  WRK-ITEM(IDX-ST:IDX-ED)  DELIMITED   BY  SIZE
+                                              INTO  WRK-CSVDATA
+                                              WITH  POINTER  IDXP
+             END-STRING
+           END-IF
+           .
+      *
+       820-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    区切り文字編集処理
+      *****************************************************************
+       800-PUT-DELIMITER-SEC           SECTION.
+      *
+           STRING    ","       DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-DELIMITER-EXT.
+           EXIT.
+      *****************************************************************
+      *    改行文字編集処理
+      *****************************************************************
+       800-PUT-CR-SEC                  SECTION.
+      *
+           STRING    X"0D"     DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-CR-EXT.
+           EXIT.
+      *****************************************************************
+      *    項目サイズ取得処理
+      *****************************************************************
+       800-GET-ITEM-SIZE-SEC           SECTION.
+      *
+           MOVE    ZERO            TO  IDX-ST
+                                       IDX-ED
+      *
+           PERFORM  VARYING  IDX1  FROM  1  BY  1
+                    UNTIL  IDX1  >  WRK-ITEM-SIZE
+                    OR  WRK-ITEM(IDX1:)    =  SPACE
+      *
+             IF  IDX-ST  =  ZERO
+               IF  WRK-ITEM(IDX1:1)  NOT =  SPACE
+                 MOVE    IDX1      TO  IDX-ST
+                 MOVE    1         TO  IDX-ED
+               END-IF
+             ELSE
+               COMPUTE  IDX-ED  =  IDX-ED  +  1
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+       800-GET-ITEM-SIZE-EXT.
+           EXIT.
+      *****************************************************************
+      *    ＣＳＶ出力処理
+      *****************************************************************
+       230-TOUKEICSV-SEC               SECTION.
+      *
+           INITIALIZE                         ORCSTOUKEICSVAREA
+           MOVE    "INS"                      TO  STOUKEICSV-MODE
+           MOVE    D100LNK-PRTKANRI-TBL-KEY   TO  STOUKEICSV-TBL-KEY
+           MOVE    D100LNK-PRTKANRI-RENNUM    TO  STOUKEICSV-RENNUM
+           MOVE    D100LNK-PRTKANRI-TBL-GROUP TO  STOUKEICSV-TBL-GROUP
+           MOVE    D100LNK-PRTKANRI-SHORI-RENNUM
+                                            TO  STOUKEICSV-SHORI-RENNUM
+           MOVE    D100LNK-PRTKANRI-SHELLID   TO  STOUKEICSV-SHELLID
+           MOVE    D100LNK-PRTKANRI-SRYYM     TO  STOUKEICSV-SRYYM
+           MOVE    ZERO                       TO  STOUKEICSV-PTID
+           MOVE    "/var/tmp/"                TO  STOUKEICSV-TO-FOLDER
+      *
+           STRING  SPA-HOSPNUM                DELIMITED  BY  SIZE
+                   "kihondaichou_g_hoken_"    DELIMITED  BY  SIZE
+                   D100LNK-YMD1               DELIMITED  BY  SIZE
+                   "_"                        DELIMITED  BY  SIZE
+                   D100LNK-YMD2               DELIMITED  BY  SIZE
+                   ".csv"                     DELIMITED  BY  SIZE
+                                              INTO  STOUKEICSV-TO-DATA
+           END-STRING
+           MOVE    "2"                        TO  STOUKEICSV-CODE-TYPE
+           MOVE    WRK-CSVDATA                TO  STOUKEICSV-CSVDATA
+           MOVE    "基本台帳(外来・保険別)"   TO  STOUKEICSV-TITLE
+      *
+           CALL    "ORCSTOUKEICSV"            USING
+                                              ORCSTOUKEICSVAREA
+                                              SPA-AREA
+           IF  ( STOUKEICSV-RETURN  =  ZERO )
+             CONTINUE
+           ELSE
+             MOVE    "統計ＣＳＶＤＢに更新できませんでした"
+                                                TO  WRK-RECEERR
+             PERFORM  500-ERR-HENSYU-SEC
+           END-IF
+      *
+           INITIALIZE                         WRK-CSVDATA
+           MOVE    1                          TO  IDXP
+      *
+           .
+      *
+       230-TOUKEICSV-EXT.
            EXIT.
       *
       *****************************************************************
