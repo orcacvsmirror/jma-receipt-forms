@@ -35,6 +35,8 @@
       *  01.00.04    @@@@-門間    11/10/18  月途中での負担者番号変更へ対応
       *  01.00.05    @@@@-門間    11/12/07  公費単独で公費が２つ以上存在する場合、
       *                                     日数が集計されるように変更
+      *  01.00.06    @@@@-門間    12/03/21  「レセプト請求しない」公費を持っている保留データにおいて、
+      *                                     「保険者番号、本家区分、主保険、給付割合」が印字されない。
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1357,8 +1359,9 @@
                     INITIALIZE                    RECE10-REC
                     MOVE    MCPDATA-REC   TO      RECE10-REC
       *
-                    IF  (  RECE10-SKYYM     =  "000000"    AND
-                           RECE10-HENREIYM  =  "000000"  )
+                    IF  (  RECE10-SKYYM         =  "000000"    AND
+                           RECE10-HENREIYM      =  "000000"  ) AND
+                           RECE10-SKYKBN    NOT =  "0"
                       PERFORM  900-KOHSKY-READ-SEC
                       IF  (  RECE10-KOHNUM(1)      =  SPACE    AND
                              RECE02-KOHNUM(1)  NOT =  SPACE  )
