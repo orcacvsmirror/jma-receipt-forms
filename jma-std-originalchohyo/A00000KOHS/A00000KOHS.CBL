@@ -41,6 +41,8 @@
       *  01.00.07    @@@@-門間    11/12/16  公費の件数を集計するように修正
       *                                     第2公費が印字対象でない場合、印字対象である
       *                                     第3公費が集計されない不具合を修正
+      *  01.00.08    @@@@-門間    12/03/21  返戻患者の公費適用期間が「請求年月」以前に終了している場合、
+      *                                     公費番号、負担者番号、受給者番号が印字されない。
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -1335,8 +1337,8 @@
              MOVE    "key"              TO   MCP-PATHNAME
              PERFORM  935-PTKOHINF-READ-SEC
       *
-                 IF  (PTKOH-TEKSTYMD(1:6)  <=  WRK-PARA-SRYYM
-                     AND   PTKOH-TEKEDYMD(1:6)  >=  WRK-PARA-SRYYM)
+                 IF  (PTKOH-TEKSTYMD(1:6)  <=  RECE02-SRYYM
+                     AND   PTKOH-TEKEDYMD(1:6)  >=  RECE02-SRYYM)
                      AND   PTKOH-SAKJOKBN   NOT =  "1"
                    MOVE  PTKOH-KOHNUM        TO   MF100-KOHNUM
                    MOVE  PTKOH-FTNJANUM      TO   MF100-FTNJANUM
