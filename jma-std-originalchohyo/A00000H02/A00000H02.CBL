@@ -30,7 +30,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
-      *  01.00.02    @@@@-田中    11/03/10  用法コードコメント対応
+      *  01.00.02    @@@@-門間    12/03/23  Ｈ２４年４月改正対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -261,44 +261,42 @@
            03  WRK-PREFNUM             PIC X(04).
            03  WRK-TENHYOKBN           PIC X(02).
            03  WRK-HOSPCD              PIC X(14).
-      *    用法コメント名称
-           03  WRK-YOH-NAME            PIC X(200).
       *
       *    剤毎の内容
        01  WRK-NAIYOU-AREA.
            03  WRK-NAIYOU-TBL          OCCURS   100.
-               05  WRK-NAIYOU-Z        PIC X(86).
-               05  WRK-NAIYOU-R1       REDEFINES   WRK-NAIYOU-Z.
-                   07  WRK-NO          PIC X(04).
-                   07  WRK-K2          PIC X(02).
-                   07  WRK-MEISYOU1    PIC X(38).
-                   07  WRK-SURYOU      PIC X(18).
-                   07  WRK-TANI        PIC X(12).
+               05  WRK-NAIYOU-Z            PIC X(86).
+               05  WRK-NAIYOU-R1           REDEFINES   WRK-NAIYOU-Z.
+                   07  WRK-NO              PIC X(04).
+                   07  WRK-K2              PIC X(02).
+                   07  WRK-MEISYOU1        PIC X(38).
+                   07  WRK-SURYOU          PIC X(18).
+                   07  WRK-TANI            PIC X(12).
       *
-      *             07  WRK-FIL11       PIC X(06).
+      *             07  WRK-FIL11           PIC X(06).
       *
-                   07  WRK-FIL11       PIC X(12).
-               05  WRK-NAIYOU-R2       REDEFINES   WRK-NAIYOU-Z.
-                   07  WRK-FIL21       PIC X(06).
-                   07  WRK-MEISYOU2    PIC X(66).
-                   07  WRK-K3          PIC X(02).
-                   07  WRK-KAISUU      PIC X(06).
-                   07  WRK-HINICHI     PIC X(06).
-               05  WRK-NAIYOU-R3       REDEFINES   WRK-NAIYOU-Z.
-                   07  WRK-FIL23       PIC X(06).
-                   07  WRK-MEISYOU3    PIC X(80).
-               05  WRK-NAIYOU-R4       REDEFINES   WRK-NAIYOU-Z.
-                   07  WRK-FIL41       PIC X(46).
-                   07  WRK-SURYOU4     PIC X(22).
-                   07  WRK-TANI4       PIC X(12).
-                   07  WRK-FIL42       PIC X(06).
+                   07  WRK-FIL11           PIC X(12).
+               05  WRK-NAIYOU-R2           REDEFINES   WRK-NAIYOU-Z.
+                   07  WRK-FIL21           PIC X(06).
+                   07  WRK-MEISYOU2        PIC X(66).
+                   07  WRK-K3              PIC X(02).
+                   07  WRK-KAISUU          PIC X(06).
+                   07  WRK-HINICHI         PIC X(06).
+               05  WRK-NAIYOU-R3           REDEFINES   WRK-NAIYOU-Z.
+                   07  WRK-FIL23           PIC X(06).
+                   07  WRK-MEISYOU3        PIC X(80).
+               05  WRK-NAIYOU-R4           REDEFINES   WRK-NAIYOU-Z.
+                   07  WRK-FIL41           PIC X(46).
+                   07  WRK-SURYOU4         PIC X(22).
+                   07  WRK-TANI4           PIC X(12).
+                   07  WRK-FIL42           PIC X(06).
       *    薬剤編集
        01  WRK-MEISAI-AREA.
-           03  WRK-M-SRYCD             PIC X(09).
-           03  WRK-M-NAME              PIC X(100).
-           03  WRK-M-KETA              PIC 9(03).
-           03  WRK-M-SURYOU            PIC X(18).
-           03  WRK-M-TANI              PIC X(12).
+           03  WRK-M-SRYCD               PIC X(09).
+           03  WRK-M-NAME                PIC X(100).
+           03  WRK-M-KETA                PIC 9(03).
+           03  WRK-M-SURYOU              PIC X(18).
+           03  WRK-M-TANI                PIC X(12).
       *
            03  WRK-KOU-NAME            PIC X(100).
            03  WRK-KOU-KETA            PIC 9(03).
@@ -480,6 +478,12 @@
       *****************************************************************
        000-PROC-SEC                SECTION.
       *
+      *    平成２４年４月から別ＰＧとする
+           IF      SPA-SRYYMD          >=  "20120401"
+               CALL    "A00000H02V02"      USING   SPA-AREA
+                                                   ORCHC19AREA
+               GO      TO      000-PROC-EXT
+           END-IF
       *
            INITIALIZE                  FLG-AREA
            INITIALIZE                  IDX-AREA
@@ -2087,8 +2091,13 @@
                    MOVE    SRY-SRYCD (IDXA)    TO  TNS-SRYCD
                    PERFORM 910-TENSU-READ-SEC
       *            用法
-                   IF   SRY-SRYCD (IDXA)(1:3)   =   "001"
-                     PERFORM  310300-YOUHO-NAME-SEC
+                   IF      SRY-SRYCD (IDXA)(1:3)   =   "001"
+                       MOVE    SPACE           TO  WRK-TNS-NAME
+                       STRING  "【"             DELIMITED   BY  SIZE
+                               TNS-NAME         DELIMITED   BY  "    "
+                               "】"             DELIMITED   BY  SIZE
+                          INTO                 WRK-TNS-NAME
+                       END-STRING
                    ELSE
       *                その他
                        IF      SRY-INPUTNUM (IDXA)     =   ZERO
@@ -2491,11 +2500,16 @@
                END-IF
            ELSE
       *        用法
-               IF   SRY-SRYCD (IDXA)(1:3)   =   "001"
-                 PERFORM  310300-YOUHO-NAME-SEC
+               IF      SRY-SRYCD (IDXA)(1:3)   =   "001"
+                   MOVE    SPACE           TO  WRK-TNS-NAME
+                   STRING     "【"             DELIMITED   BY  SIZE
+                              TNS-NAME         DELIMITED   BY  "    "
+                              "】"             DELIMITED   BY  SIZE
+                          INTO                 WRK-TNS-NAME
+                   END-STRING
                ELSE
       *            その他
-                   IF      FLG-NAME  =  ZERO
+                   IF      FLG-NAME            =   ZERO
                        IF      SRY-INPUTNUM (IDXA) =   ZERO
                            MOVE    TNS-NAME        TO  WRK-TNS-NAME
                        ELSE
@@ -2525,11 +2539,11 @@
            END-IF
       *
       *    免除の判定（在宅薬剤で注射以外のもの）
-           IF   FLG-ZAITAKU  =  1
-             IF  ( TNS-SRYCD(1:1)  =  "6" )
-                 AND  (TNS-YKZKBN  NOT =  4 )
-               MOVE    1         TO  WRK-MENJYO-FLG
-             END-IF
+           IF      FLG-ZAITAKU         =   1
+               IF     (TNS-SRYCD(1:1)      =   "6"  )  AND
+                      (TNS-YKZKBN      NOT =   4    )
+                   MOVE    1               TO  WRK-MENJYO-FLG
+               END-IF
            END-IF
       *
            .
@@ -2537,73 +2551,41 @@
            EXIT.
       *
       *****************************************************************
-      *    用法名称編集処理
-      *****************************************************************
-       310300-YOUHO-NAME-SEC         SECTION.
-      *
-           IF  ( SRY-INPUTNUM(IDXA)  =  ZERO )
-               OR  ( WRK-COM-NAME  NOT =  SPACE )
-             IF  WRK-COM-NAME  NOT =  SPACE
-               MOVE    WRK-COM-NAME      TO  WRK-YOH-NAME
-             ELSE
-               MOVE    TNS-NAME          TO  WRK-YOH-NAME
-             END-IF
-             MOVE    SPACE               TO  WRK-TNS-NAME
-             STRING     "【"             DELIMITED   BY  SIZE
-                        WRK-YOH-NAME     DELIMITED   BY  "    "
-                        "】"             DELIMITED   BY  SIZE
-                                         INTO        WRK-TNS-NAME
-             END-STRING
-           ELSE
-      *    患者コメントより
-             MOVE    SPACE               TO  WRK-TNS-NAME
-             PERFORM  31032-PTCOM-SET-SEC
-             IF   WRK-TNS-NAME  =  SPACE
-               MOVE    TNS-NAME          TO  WRK-TNS-NAME
-             END-IF
-             MOVE    WRK-TNS-NAME        TO  WRK-YOH-NAME
-             MOVE    SPACE               TO  WRK-TNS-NAME
-             STRING     "【"             DELIMITED   BY  SIZE
-                        WRK-YOH-NAME     DELIMITED   BY  "    "
-                        "】"             DELIMITED   BY  SIZE
-                                         INTO        WRK-TNS-NAME
-             END-STRING
-           END-IF
-           .
-       310300-YOUHO-NAME-EXT.
-           EXIT.
-      *****************************************************************
       *     一般名・処方名称記載処理
       *****************************************************************
        310321-GENERIC-HEN-SEC           SECTION.
       *
-           MOVE    ZERO         TO  WRK-KANZANCHI
+           MOVE    ZERO                TO  WRK-KANZANCHI
            EVALUATE    TNSP-IPN-KISAIKBN
-      *    一般名記載
-             WHEN  1
-               MOVE    GENERIC-GENERICNAME      TO  TNS-NAME
-               MOVE    GENERIC-YUKOKETA         TO  TNS-YUKOKETA
-      *    単位と換算値は附加情報を優先とする
-               IF   TNSP-IPN-KANZANTANINAME =   SPACE
-                 IF   GENERIC-TANINAME    NOT =   SPACE
-                   MOVE    GENERIC-TANICD       TO  TNS-TANICD
-                   MOVE    GENERIC-TANINAME     TO  TNS-TANINAME
-                   MOVE    GENERIC-KANZANCHI    TO  WRK-KANZANCHI
-                 END-IF
-               ELSE
-                 MOVE    TNSP-IPN-KANZANTANICD  TO  TNS-TANICD
-                 MOVE    TNSP-IPN-KANZANTANINAME   TO  TNS-TANINAME
-                 MOVE    TNSP-IPN-KANZANCHI     TO  WRK-KANZANCHI
-               END-IF
-      *    処方名称記載
-             WHEN  2
-               MOVE    TNSP-SHONAME             TO  TNS-NAME
-               MOVE    TNSP-SHOYUKOKETA         TO  TNS-YUKOKETA
-               IF   TNSP-IPN-KANZANTANINAME  NOT =  SPACE
-                 MOVE    TNSP-IPN-KANZANTANICD     TO  TNS-TANICD
-                 MOVE    TNSP-IPN-KANZANTANINAME   TO  TNS-TANINAME
-                 MOVE    TNSP-IPN-KANZANCHI     TO  WRK-KANZANCHI
-               END-IF
+      *        一般名記載
+               WHEN    1
+                   MOVE    GENERIC-GENERICNAME TO  TNS-NAME
+                   MOVE    GENERIC-YUKOKETA    TO  TNS-YUKOKETA
+      *            単位と換算値は附加情報を優先とする
+                   IF      TNSP-IPN-KANZANTANINAME =   SPACE
+                       IF      GENERIC-TANINAME    NOT =   SPACE
+                           MOVE    GENERIC-TANICD      TO  TNS-TANICD
+                           MOVE    GENERIC-TANINAME    TO  TNS-TANINAME
+                           MOVE    GENERIC-KANZANCHI   TO  WRK-KANZANCHI
+                       END-IF
+                   ELSE
+                       MOVE    TNSP-IPN-KANZANTANICD
+                                                   TO  TNS-TANICD
+                       MOVE    TNSP-IPN-KANZANTANINAME
+                                                   TO  TNS-TANINAME
+                       MOVE    TNSP-IPN-KANZANCHI  TO  WRK-KANZANCHI
+                   END-IF
+      *        処方名称記載
+               WHEN    2
+                   MOVE    TNSP-SHONAME        TO  TNS-NAME
+                   MOVE    TNSP-SHOYUKOKETA    TO  TNS-YUKOKETA
+                   IF      TNSP-IPN-KANZANTANINAME NOT =   SPACE
+                       MOVE    TNSP-IPN-KANZANTANICD
+                                                   TO  TNS-TANICD
+                       MOVE    TNSP-IPN-KANZANTANINAME
+                                                   TO  TNS-TANINAME
+                       MOVE    TNSP-IPN-KANZANCHI  TO  WRK-KANZANCHI
+                   END-IF
            END-EVALUATE
            .
        310321-GENERIC-HEN-EXT.
@@ -3151,49 +3133,44 @@
        20033-WKSRYKBN-98-HEN-SEC         SECTION.
       *
            PERFORM VARYING     IDXA    FROM    1   BY  1
-                 UNTIL      (IDXA    >   5   )  OR
-                            (WKSRY-SRYCD (IDXA) =   SPACE)
-      *    後発医薬品への変更
-             IF      WKSRY-SRYCD (IDXA)      =   "099209902"
-                                                 OR  "099209904"
-               IF  ORCHC19-SRYCD (IDX-L IDX-L2)    =   "099209902"
-                 MOVE    1                   TO  FLG-KOUHATU-HEN
+                   UNTIL      (IDXA    >   5   )  OR
+                              (WKSRY-SRYCD (IDXA) =   SPACE)
+      *        後発医薬品への変更
+               IF      WKSRY-SRYCD (IDXA)      =   "099209902"
+                                                   OR  "099209904"
+                 IF  ORCHC19-SRYCD (IDX-L IDX-L2)    =   "099209902"
+                   MOVE    1                   TO  FLG-KOUHATU-HEN
+                 ELSE
+                   MOVE    1                   TO  FLG-KOUHATUFUKA-IN
+                 END-IF
                ELSE
-                 MOVE    1                   TO  FLG-KOUHATUFUKA-IN
-               END-IF
-             ELSE
       *
-               MOVE    WKSRY-SRYCD(IDXA)  TO  TNS-SRYCD
+               MOVE    WKSRY-SRYCD (IDXA)  TO  TNS-SRYCD
                PERFORM 910-TENSU-READ-SEC
-               IF   ((WKSRY-SRYCD(IDXA)(1:1)  =  "8" )
-                   OR  (WKSRY-SRYCD(IDXA)(1:3)  =  "008" ))
-                   AND  (WKSRY-INPUTCOMENT(IDXA)  NOT =  SPACE)
-                 MOVE    WKSRY-INPUTCOMENT(IDXA)   TO  WRK-TNS-NAME
+               IF    ((WKSRY-SRYCD (IDXA)(1:1) =    "8"  ) OR
+                      (WKSRY-SRYCD (IDXA)(1:3) =    "008")) AND
+                      (WKSRY-INPUTCOMENT (IDXA)
+                                           NOT =   SPACE)
+                   MOVE    WKSRY-INPUTCOMENT (IDXA)
+                                           TO  WRK-TNS-NAME
                ELSE
-                 MOVE    TNS-NAME        TO  WRK-TNS-NAME
+                   MOVE    TNS-NAME        TO  WRK-TNS-NAME
                END-IF
-      *+         IF   WKSRY-SRYCD(IDXA)(1:3)  =  "001"
-      *+           MOVE    SPACE           TO  WRK-TNS-NAME
-      *+           STRING  "【"            DELIMITED   BY  SIZE
-      *+                   TNS-NAME        DELIMITED   BY  "    "
-      *+                   "】"            DELIMITED   BY  SIZE
-      *+              INTO                 WRK-TNS-NAME
-      *+           END-STRING
-      *+
-      *    用法コメント名称
-               IF  (WKSRY-SRYCD(IDXA)(1:3)  =  "001")
-                   AND  (WKSRY-INPUTCOMENT(IDXA)  NOT =  SPACE)
-                 MOVE    WKSRY-INPUTCOMENT (IDXA)  TO  WRK-TNS-NAME
+               IF      WKSRY-SRYCD (IDXA)(1:3) =   "001"
+                   MOVE    SPACE           TO  WRK-TNS-NAME
+                   STRING  "【"            DELIMITED   BY  SIZE
+                           TNS-NAME        DELIMITED   BY  "    "
+                           "】"            DELIMITED   BY  SIZE
+                      INTO                 WRK-TNS-NAME
+                   END-STRING
                END-IF
-      **
-      *+         END-IF
-               ADD    1                   TO  IDX-BIKOU
-               IF   IDX-BIKOU  <=  9
-                 MOVE    WRK-TNS-NAME     TO  WRK-BIKOU-NAME
+               ADD     1                   TO  IDX-BIKOU
+               IF      IDX-BIKOU           <=  9
+                   MOVE    WRK-TNS-NAME        TO  WRK-BIKOU-NAME
                                                            (IDX-BIKOU)
                END-IF
       *
-             END-IF
+               END-IF
            END-PERFORM
       *
            .
@@ -3409,25 +3386,28 @@
                INITIALIZE                  SRYACT-REC
                MOVE    1                   TO  IDXA
            END-IF
-           MOVE    ORCHC19-SRYCD(IDX-L IDX-L2)
-                                       TO  SRY-SRYCD(IDXA)
+           MOVE    ORCHC19-SRYCD (IDX-L IDX-L2)
+                                       TO  SRY-SRYCD (IDXA)
       *    数量
-           MOVE    ORCHC19-SRYSURYO(IDX-L IDX-L2)
-                                      TO  SRY-SRYSURYO(IDXA)
+           MOVE    ORCHC19-SRYSURYO (IDX-L IDX-L2)
+                                       TO  SRY-SRYSURYO (IDXA)
       *    回数
-           MOVE    ORCHC19-SRYKAISU(IDX-L IDX-L2)
-                                      TO  SRY-SRYKAISU(IDXA)
-           MOVE    ORCHC19-SRYCD(IDX-L IDX-L2)
+           MOVE    ORCHC19-SRYKAISU (IDX-L IDX-L2)
+                                       TO  SRY-SRYKAISU (IDXA)
+           MOVE    ORCHC19-SRYCD (IDX-L IDX-L2)
                                        TO  WRK-SRYCD
       *
            MOVE    SPACE               TO  WRK-COM-NAME
            MOVE    ZERO                TO  FLG-NAME
-           IF   ((ORCHC19-SRYCD(IDX-L IDX-L2)(1:1)  =  "8")
-               OR  (ORCHC19-SRYCD(IDX-L IDX-L2)(1:3)  =  "008")
-               OR  (ORCHC19-SRYCD(IDX-L IDX-L2)(1:3)  =  "001"))
-               AND  (ORCHC19-INPUTCOMENT(IDX-L IDX-L2)  NOT =  SPACE)
-             MOVE    ORCHC19-INPUTCOMENT(IDX-L IDX-L2)  TO  WRK-COM-NAME
-             MOVE    1                 TO  FLG-NAME
+           IF    ((ORCHC19-SRYCD (IDX-L IDX-L2)(1:1)
+                                       =    "8")   OR
+                  (ORCHC19-SRYCD (IDX-L IDX-L2)(1:3)
+                                       =    "008")) AND
+                  (ORCHC19-INPUTCOMENT (IDX-L IDX-L2)
+                                   NOT =   SPACE)
+               MOVE    ORCHC19-INPUTCOMENT (IDX-L IDX-L2)
+                                           TO  WRK-COM-NAME
+               MOVE    1                   TO  FLG-NAME
            END-IF
       *    内容編集
            PERFORM 3103-SRYACT-HEN-SEC
