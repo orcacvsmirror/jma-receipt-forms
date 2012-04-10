@@ -31,7 +31,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
-      *  01.00.02    @@@@-田中    11/03/10  用法コードコメント対応
+      *  01.00.02    @@@@-門間    12/04/09  Ｈ２４年４月改正対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -223,8 +223,6 @@
            03  WRK-ZAITENKEI        PIC 9(07).
            03  WRK-YKZTEN          PIC 9(07).
            03  WRK-KIZAITEN        PIC 9(07).
-      *    用法コメント名称
-           03  WRK-YOH-NAME            PIC X(200).
       *
       *    文字変換
            03  WRK-ZENKAKU-G           PIC X(100).
@@ -482,6 +480,13 @@
       *    主　　処理
       *****************************************************************
        000-PROC-SEC                SECTION.
+      *
+      *    平成２４年４月から別ＰＧとする
+           IF      SPA-SRYYMD          >=  "20120401"
+               CALL    "A21000H02V02"      USING   SPA-AREA
+                                                   ORCHC19AREA
+               GO      TO      000-PROC-EXT
+           END-IF
       *
            INITIALIZE                  FLG-AREA
            INITIALIZE                  STS-AREA
@@ -2051,8 +2056,13 @@
                    MOVE    SRY-SRYCD (IDXA)    TO  TNS-SRYCD
                    PERFORM 910-TENSU-READ-SEC
       *            用法
-                   IF   SRY-SRYCD (IDXA)(1:3)   =   "001"
-                     PERFORM  310300-YOUHO-NAME-SEC
+                   IF      SRY-SRYCD (IDXA)(1:3)   =   "001"
+                       MOVE    SPACE           TO  WRK-TNS-NAME
+                       STRING  "【"             DELIMITED   BY  SIZE
+                               TNS-NAME         DELIMITED   BY  "    "
+                               "】"             DELIMITED   BY  SIZE
+                          INTO                 WRK-TNS-NAME
+                       END-STRING
                    ELSE
       *                その他
                        IF      SRY-INPUTNUM (IDXA)     =   ZERO
@@ -2448,8 +2458,13 @@
                END-IF
            ELSE
       *        用法
-               IF   SRY-SRYCD (IDXA)(1:3)   =   "001"
-                 PERFORM  310300-YOUHO-NAME-SEC
+               IF      SRY-SRYCD (IDXA)(1:3)   =   "001"
+                   MOVE    SPACE           TO  WRK-TNS-NAME
+                   STRING     "【"             DELIMITED   BY  SIZE
+                              TNS-NAME         DELIMITED   BY  "    "
+                              "】"             DELIMITED   BY  SIZE
+                          INTO                 WRK-TNS-NAME
+                   END-STRING
                ELSE
       *            その他
                    IF      FLG-NAME            =   ZERO
@@ -2482,53 +2497,17 @@
            END-IF
       *
       *    免除の判定（在宅薬剤で注射以外のもの）
-           IF   FLG-ZAITAKU  =  1
-             IF  ( TNS-SRYCD(1:1)  =  "6" )
-                 AND  (TNS-YKZKBN  NOT =  4 )
-               MOVE    1         TO  WRK-MENJYO-FLG
-             END-IF
+           IF      FLG-ZAITAKU         =   1
+               IF     (TNS-SRYCD(1:1)      =   "6"  )  AND
+                      (TNS-YKZKBN      NOT =   4    )
+                   MOVE    1               TO  WRK-MENJYO-FLG
+               END-IF
            END-IF
       *
            .
        31032-TENSU-HENSYU-EXT.
            EXIT.
       *
-      *****************************************************************
-      *    用法名称編集処理
-      *****************************************************************
-       310300-YOUHO-NAME-SEC         SECTION.
-      *
-           IF  ( SRY-INPUTNUM(IDXA)  =  ZERO )
-               OR   ( WRK-COM-NAME  NOT =  SPACE )
-             IF  WRK-COM-NAME NOT =  SPACE
-               MOVE    WRK-COM-NAME      TO  WRK-YOH-NAME
-             ELSE
-               MOVE    TNS-NAME          TO  WRK-YOH-NAME
-             END-IF
-             MOVE    SPACE               TO  WRK-TNS-NAME
-             STRING     "【"             DELIMITED   BY  SIZE
-                        WRK-YOH-NAME     DELIMITED   BY  "    "
-                        "】"             DELIMITED   BY  SIZE
-                                         INTO        WRK-TNS-NAME
-             END-STRING
-           ELSE
-      *    患者コメントより
-             MOVE    SPACE               TO  WRK-TNS-NAME
-             PERFORM  31032-PTCOM-SET-SEC
-             IF   WRK-TNS-NAME  =  SPACE
-               MOVE    TNS-NAME          TO  WRK-TNS-NAME
-             END-IF
-             MOVE    WRK-TNS-NAME        TO  WRK-YOH-NAME
-             MOVE    SPACE               TO  WRK-TNS-NAME
-             STRING     "【"             DELIMITED   BY  SIZE
-                        WRK-YOH-NAME     DELIMITED   BY  "    "
-                        "】"             DELIMITED   BY  SIZE
-                                         INTO        WRK-TNS-NAME
-             END-STRING
-           END-IF
-           .
-       310300-YOUHO-NAME-EXT.
-           EXIT.
       *****************************************************************
       *     一般名・処方名称記載処理
       *****************************************************************
@@ -3130,20 +3109,14 @@
                ELSE
                    MOVE    TNS-NAME        TO  WRK-TNS-NAME
                END-IF
-      *+         IF   WKSRY-SRYCD(IDXA)(1:3)  =  "001"
-      *+           MOVE    SPACE           TO  WRK-TNS-NAME
-      *+           STRING  "【"            DELIMITED   BY  SIZE
-      *+                   TNS-NAME        DELIMITED   BY  "    "
-      *+                   "】"            DELIMITED   BY  SIZE
-      *+              INTO                 WRK-TNS-NAME
-      *+           END-STRING
-      *+
-      *    用法コメント名称
-               IF  (WKSRY-SRYCD(IDXA)(1:3)  =  "001")
-                   AND  (WKSRY-INPUTCOMENT(IDXA)  NOT =  SPACE)
-                 MOVE    WKSRY-INPUTCOMENT (IDXA)  TO  WRK-TNS-NAME
+               IF      WKSRY-SRYCD (IDXA)(1:3) =   "001"
+                   MOVE    SPACE           TO  WRK-TNS-NAME
+                   STRING  "【"            DELIMITED   BY  SIZE
+                           TNS-NAME        DELIMITED   BY  "    "
+                           "】"            DELIMITED   BY  SIZE
+                      INTO                 WRK-TNS-NAME
+                   END-STRING
                END-IF
-      *+
                ADD     1                   TO  IDX-BIKOU
                IF      IDX-BIKOU           <=  9
                    MOVE    WRK-TNS-NAME        TO  WRK-BIKOU-NAME
@@ -3360,27 +3333,33 @@
       *****************************************************************
        20041-ORCHC19-HEN-SEC         SECTION.
       *
-           ADD    1                    TO  IDXA
-           IF   IDXA  >  5
-             INITIALIZE                SRYACT-REC
-             MOVE    1                 TO  IDXA
+           ADD     1                   TO  IDXA
+           IF      IDXA                >   5
+               INITIALIZE                  SRYACT-REC
+               MOVE    1                   TO  IDXA
            END-IF
-           MOVE    ORCHC19-SRYCD(IDX-L IDX-L2)  TO  SRY-SRYCD (IDXA)
+           MOVE    ORCHC19-SRYCD (IDX-L IDX-L2)
+                                       TO  SRY-SRYCD (IDXA)
       *    数量
-           MOVE    ORCHC19-SRYSURYO(IDX-L IDX-L2)
-                                       TO  SRY-SRYSURYO(IDXA)
+           MOVE    ORCHC19-SRYSURYO (IDX-L IDX-L2)
+                                       TO  SRY-SRYSURYO (IDXA)
       *    回数
-           MOVE    ORCHC19-SRYKAISU(IDX-L IDX-L2) TO  SRY-SRYKAISU(IDXA)
-           MOVE    ORCHC19-SRYCD(IDX-L IDX-L2)  TO  WRK-SRYCD
+           MOVE    ORCHC19-SRYKAISU (IDX-L IDX-L2)
+                                       TO  SRY-SRYKAISU (IDXA)
+           MOVE    ORCHC19-SRYCD (IDX-L IDX-L2)
+                                       TO  WRK-SRYCD
       *
            MOVE    SPACE               TO  WRK-COM-NAME
            MOVE    ZERO                TO  FLG-NAME
-           IF   ((ORCHC19-SRYCD(IDX-L IDX-L2)(1:1)  =  "8")
-               OR  (ORCHC19-SRYCD(IDX-L IDX-L2)(1:3)  =  "008")
-               OR  (ORCHC19-SRYCD(IDX-L IDX-L2)(1:3)  =  "001"))
-               AND  (ORCHC19-INPUTCOMENT(IDX-L IDX-L2)  NOT =  SPACE)
-             MOVE    ORCHC19-INPUTCOMENT(IDX-L IDX-L2)  TO  WRK-COM-NAME
-             MOVE    1                 TO   FLG-NAME
+           IF    ((ORCHC19-SRYCD (IDX-L IDX-L2)(1:1)
+                                       =    "8")   OR
+                  (ORCHC19-SRYCD (IDX-L IDX-L2)(1:3)
+                                       =    "008")) AND
+                  (ORCHC19-INPUTCOMENT (IDX-L IDX-L2)
+                                   NOT =   SPACE)
+               MOVE    ORCHC19-INPUTCOMENT (IDX-L IDX-L2)
+                                           TO  WRK-COM-NAME
+               MOVE    1                   TO  FLG-NAME
            END-IF
       *    内容編集
            PERFORM 3103-SRYACT-HEN-SEC
