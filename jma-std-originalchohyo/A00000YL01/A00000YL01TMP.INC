@@ -17,13 +17,22 @@
       ******************************************************************
        01  YL01TMP.
            02  YL01TMP-KEY.
+      *      優先順位（１～５）
              03  YL01TMP-KEY-TBL      OCCURS 5.
                04  YL01TMP-KEY-D        PIC X(64).
+      *      医薬品名
              03  YL01TMP-NAME         PIC X(64).
+      *      診療行為コード
              03  YL01TMP-SRYCD        PIC X(9).
+      *    入力コード
            02  YL01TMP-INPUTCD      PIC X(9).
+      *    薬剤区分
            02  YL01TMP-YKZKBN       PIC X(2).
+      *    一般名記載区分
            02  YL01TMP-KISAIKBN     PIC X(2).
+      *    一般名
            02  YL01TMP-GNAME        PIC X(64).
+      *    薬価
            02  YL01TMP-YAKKA        PIC X(9).
+      *    最低薬価
            02  YL01TMP-SAIYAKKA     PIC X(9).

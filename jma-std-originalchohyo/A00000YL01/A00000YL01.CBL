@@ -367,7 +367,7 @@
       *      パラメータ２、３，４、５と重複している場合はエラーを表示
              EVALUATE  WRK-PARA-KEY1
                WHEN  WRK-PARA-KEY2
-                 STRING  "項目１（入力コード）と項目２（医薬品区分）"
+                 STRING  "項目１（入力コード）と項目２（薬剤区分）"
                                                 DELIMITED  BY  SIZE
                          "の値が重複しています"
                                                 DELIMITED  BY  SIZE
@@ -401,10 +401,10 @@
              END-EVALUATE
            END-IF
       *
-      *    パラメータ２：項目２（医薬品区分）
+      *    パラメータ２：項目２（薬剤区分）
            IF  ( WRK-PARA-KEY2  NOT =  1  AND  2  AND  3  AND
                                        4  AND  5  AND  ZERO )
-             MOVE    "項目２（医薬品区分）の値が間違っています"
+             MOVE    "項目２（薬剤区分）の値が間違っています"
                                                 TO  WRK-RECEERR
              PERFORM  800-ERR-HENSYU-SEC
            END-IF
@@ -414,7 +414,7 @@
       *      パラメータ１、３，４、５と重複している場合はエラーを表示
              EVALUATE  WRK-PARA-KEY2
                WHEN  WRK-PARA-KEY1
-                 STRING  "項目２（医薬品区分）と項目１（入力コード）"
+                 STRING  "項目２（薬剤区分）と項目１（入力コード）"
                                                 DELIMITED  BY  SIZE
                          "の値が重複しています"
                                                 DELIMITED  BY  SIZE
@@ -422,7 +422,7 @@
                  END-STRING
                  PERFORM  800-ERR-HENSYU-SEC
                WHEN  WRK-PARA-KEY3
-                 STRING  "項目２（医薬品区分）と項目３（一般名区分）"
+                 STRING  "項目２（薬剤区分）と項目３（一般名区分）"
                                                 DELIMITED  BY  SIZE
                          "の値が重複しています"
                                                 DELIMITED  BY  SIZE
@@ -430,7 +430,7 @@
                  END-STRING
                  PERFORM  800-ERR-HENSYU-SEC
                WHEN  WRK-PARA-KEY4
-                 STRING  "項目２（医薬品区分）と項目４（医薬品名）"
+                 STRING  "項目２（薬剤区分）と項目４（医薬品名）"
                                                 DELIMITED  BY  SIZE
                          "の値が重複しています"
                                                 DELIMITED  BY  SIZE
@@ -438,7 +438,7 @@
                  END-STRING
                  PERFORM  800-ERR-HENSYU-SEC
                WHEN  WRK-PARA-KEY5
-                 STRING  "項目２（医薬品区分）と項目５（一般名）"
+                 STRING  "項目２（薬剤区分）と項目５（一般名）"
                                                 DELIMITED  BY  SIZE
                          "の値が重複しています"
                                                 DELIMITED  BY  SIZE
@@ -469,7 +469,7 @@
                  END-STRING
                  PERFORM  800-ERR-HENSYU-SEC
                WHEN  WRK-PARA-KEY2
-                 STRING  "項目３（一般名区分）と項目２（医薬品区分）"
+                 STRING  "項目３（一般名区分）と項目２（薬剤区分）"
                                                 DELIMITED  BY  SIZE
                          "の値が重複しています"
                                                 DELIMITED  BY  SIZE
@@ -516,7 +516,7 @@
                  END-STRING
                  PERFORM  800-ERR-HENSYU-SEC
                WHEN  WRK-PARA-KEY2
-                 STRING  "項目４（医薬品名）と項目２（医薬品区分）"
+                 STRING  "項目４（医薬品名）と項目２（薬剤区分）"
                                                 DELIMITED  BY  SIZE
                          "の値が重複しています"
                                                 DELIMITED  BY  SIZE
@@ -563,7 +563,7 @@
                  END-STRING
                  PERFORM  800-ERR-HENSYU-SEC
                WHEN  WRK-PARA-KEY2
-                 STRING  "項目５（一般名）と項目２（医薬品区分）"
+                 STRING  "項目５（一般名）と項目２（薬剤区分）"
                                                 DELIMITED  BY  SIZE
                          "の値が重複しています"
                                                 DELIMITED  BY  SIZE
@@ -589,9 +589,9 @@
              END-EVALUATE
            END-IF
       *
-      *    パラメータ６：医薬品区分
+      *    パラメータ６：薬剤区分
            IF  ( WRK-PARA-YKZKBN  NOT =  "0" AND "1" AND "2" AND "3" )
-             MOVE    "医薬品区分の値が間違っています"
+             MOVE    "薬剤区分の値が間違っています"
                                                 TO  WRK-RECEERR
              PERFORM  800-ERR-HENSYU-SEC
            END-IF
@@ -620,7 +620,7 @@
              END-IF
            END-IF
       *
-      *    医薬品区分集計用
+      *    薬剤区分集計用
            EVALUATE  WRK-PARA-YKZKBN
              WHEN  "0"
                MOVE    3           TO  IDX-YKZ1
@@ -677,7 +677,7 @@
       *****************************************************************
        400-BODY-SEC            SECTION.
       *
-      *    医薬品区分にて設定した薬剤区分を集計
+      *    薬剤区分にて設定した薬剤を集計
            PERFORM  VARYING  IDX-YKZ2  FROM  1  BY  1
                     UNTIL    IDX-YKZ2  >  IDX-YKZ1
       *
@@ -711,7 +711,7 @@
       *    入力コード
            MOVE    ICD-INPUTCD          TO  YL01TMP-INPUTCD
       *
-      *    医薬品区分
+      *    薬剤区分
            EVALUATE  TNS-YKZKBN
              WHEN  1
                MOVE    "内"                 TO  YL01TMP-YKZKBN
@@ -768,7 +768,7 @@
              MOVE    ICD-INPUTCD     TO   YL01TMP-KEY-D(WRK-PARA-KEY1)
            END-IF
       *
-      *    医薬品区分
+      *    薬剤区分
            IF  WRK-PARA-KEY2  NOT =  ZERO
              EVALUATE  TNS-YKZKBN
                WHEN  1
@@ -912,10 +912,10 @@
                                                 WRK-ITEM
              PERFORM  800-CSVDATA-EDIT-SEC
       *
-      *      医薬品区分
+      *      薬剤区分
              MOVE    YL01TMP-YKZKBN         TO  YL01-YKZKBN(IDX)
       *
-      *      CSV(医薬品区分)
+      *      CSV(薬剤区分)
                                                 WRK-ITEM
              PERFORM  800-CSVDATA-EDIT-SEC
       *
@@ -959,14 +959,14 @@
       *      CSV印字
              PERFORM  230-TOUKEICSV-SEC
       *
-      *      医薬品区分を退避
+      *      薬剤区分を退避
              MOVE    YL01TMP-YKZKBN         TO  WRK-YKZKBN
       *
       *      一時ファイル読込
              PERFORM  700-TMP-READ-SEC
       *
       *      最終行、印字情報無し又は
-      *      改頁フラグONかつ医薬品区分が前回と異なる場合、
+      *      改頁フラグONかつ薬剤区分が前回と異なる場合、
       *      印刷を行う。
              IF (   IDX                 =  34  OR
                     FLG-PRINT           =   1  OR
@@ -978,7 +978,7 @@
       *        印刷処理
                PERFORM  500-PRINT-OUT-SEC
       *
-      *        改頁有、印字情報有の場合、医薬品区分を印字（CSV）
+      *        改頁有、印字情報有の場合、薬剤区分を印字（CSV）
                IF  ( FLG-PRINT       NOT =  1  AND
                      FLG-KPAGE           =  1  AND
                      YL01TMP-YKZKBN  NOT =  WRK-YKZKBN)
@@ -1063,7 +1063,7 @@
              MOVE    "入力コード"         TO  WRK-KEY(WRK-PARA-KEY1)
            END-IF
            IF  WRK-PARA-KEY2  NOT =  ZERO
-             MOVE    "医薬品区分"         TO  WRK-KEY(WRK-PARA-KEY2)
+             MOVE    "薬剤区分"           TO  WRK-KEY(WRK-PARA-KEY2)
            END-IF
            IF  WRK-PARA-KEY3  NOT =  ZERO
              MOVE    "一般名区分"         TO  WRK-KEY(WRK-PARA-KEY3)
@@ -1094,7 +1094,7 @@
            END-STRING
       *
       *    タイトル２
-      *    医薬品区分編集
+      *    薬剤区分編集
            EVALUATE  WRK-PARA-YKZKBN
              WHEN  "0"
                MOVE    "すべて"           TO  WRK-IYHKBN(1)
@@ -1106,7 +1106,7 @@
                MOVE    "注射薬"           TO  WRK-IYHKBN(1)
            END-EVALUATE
       *
-           STRING  "医薬品区分："         DELIMITED  BY  SIZE
+           STRING  "薬剤区分："           DELIMITED  BY  SIZE
                    WRK-IYHKBN(1)          DELIMITED  BY  SPACE
                                           INTO  WRK-IYHKBN(2)
            END-STRING
@@ -1282,15 +1282,15 @@
            MOVE    WRK-HENYMDG            TO  WRK-ITEM
            PERFORM  810-CSVDATA-EDIT-SEC
       *
-      *    改頁有の場合、医薬品区分を印字
+      *    改頁有の場合、薬剤区分を印字
            IF  FLG-KPAGE  =  1
              EVALUATE  YL01TMP-YKZKBN
                WHEN  "内"
-                 MOVE    "医薬品区分：内服薬"   TO  WRK-ITEM
+                 MOVE    "薬剤区分：内服薬"     TO  WRK-ITEM
                WHEN  "外"
-                 MOVE    "医薬品区分：外用薬"   TO  WRK-ITEM
+                 MOVE    "薬剤区分：外用薬"     TO  WRK-ITEM
                WHEN  "注"
-                 MOVE    "医薬品区分：注射薬"   TO  WRK-ITEM
+                 MOVE    "薬剤区分：注射薬"     TO  WRK-ITEM
              END-EVALUATE
              PERFORM  810-CSVDATA-EDIT-SEC
            END-IF
@@ -1323,14 +1323,14 @@
       *    一行空ける
            PERFORM  810-CSVDATA-EDIT-SEC
       *
-      *    医薬品区分を印字
+      *    薬剤区分を印字
            EVALUATE  YL01TMP-YKZKBN
              WHEN  "内"
-               MOVE    "医薬品区分：内服薬"   TO  WRK-ITEM
+               MOVE    "薬剤区分：内服薬"     TO  WRK-ITEM
              WHEN  "外"
-               MOVE    "医薬品区分：外用薬"   TO  WRK-ITEM
+               MOVE    "薬剤区分：外用薬"     TO  WRK-ITEM
              WHEN  "注"
-               MOVE    "医薬品区分：注射薬"   TO  WRK-ITEM
+               MOVE    "薬剤区分：注射薬"     TO  WRK-ITEM
            END-EVALUATE
            PERFORM  810-CSVDATA-EDIT-SEC
       *
@@ -1459,7 +1459,7 @@
            MOVE    "/var/tmp/"                TO  STOUKEICSV-TO-FOLDER
       *
            STRING  SPA-HOSPNUM                DELIMITED  BY  SIZE
-                   "iyakuhinmei_ippanmei_list"
+                   "iyakuhinmei_ippanmei_"
                                               DELIMITED  BY  SIZE
                    LNK-PRTKANRI-SKYYMD        DELIMITED  BY  SIZE
                    ".csv"                     DELIMITED  BY  SIZE

@@ -18,18 +18,32 @@
       *  Maj/Min/Rev  修正者  日付       内容
       *   01.00.01    門間    12/05/01   新規作成
       ******************************************************************
-        01  YL01.
-            02  YL01-TITLE1     PIC X(90).
-            02  YL01-TITLE2     PIC X(100).
-            02  YL01-PRTYMD     PIC X(22).
-            02  YL01-PAGE       PIC X(4).
-            02  YL01-GPAGE      PIC X(4).
-            02  YL01-TBL        OCCURS  34 TIMES.
-              03  YL01-SRYCD      PIC X(9).
-              03  YL01-INPUTCD    PIC X(9).
-              03  YL01-YKZKBN     PIC X(2).
-              03  YL01-KISAIKBN   PIC X(2).
-              03  YL01-NAME       PIC X(64).
-              03  YL01-GNAME      PIC X(64).
-              03  YL01-YAKKA      PIC X(9).
-              03  YL01-SAIYAKKA   PIC X(9).
+       01  YL01.
+      *    優先順位（１～５）
+           02  YL01-TITLE1     PIC X(90).
+      *    パラメタ設定（６～９）
+           02  YL01-TITLE2     PIC X(100).
+      *    作成年月日
+           02  YL01-PRTYMD     PIC X(22).
+      *    頁数
+           02  YL01-PAGE       PIC X(4).
+      *    合計頁数
+           02  YL01-GPAGE      PIC X(4).
+      *
+           02  YL01-TBL        OCCURS  34 TIMES.
+      *      診療行為コード
+             03  YL01-SRYCD      PIC X(9).
+      *      入力コード
+             03  YL01-INPUTCD    PIC X(9).
+      *      区分
+             03  YL01-YKZKBN     PIC X(2).
+      *      【般】
+             03  YL01-KISAIKBN   PIC X(2).
+      *      医薬品名
+             03  YL01-NAME       PIC X(64).
+      *      一般名
+             03  YL01-GNAME      PIC X(64).
+      *      薬価
+             03  YL01-YAKKA      PIC X(9).
+      *      最低薬価
+             03  YL01-SAIYAKKA   PIC X(9).
