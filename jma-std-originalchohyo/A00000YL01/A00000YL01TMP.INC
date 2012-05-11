@@ -20,7 +20,7 @@
              03  YL01TMP-KEY-TBL      OCCURS 5.
                04  YL01TMP-KEY-D        PIC X(64).
              03  YL01TMP-NAME         PIC X(64).
-           02  YL01TMP-SRYCD        PIC X(9).
+             03  YL01TMP-SRYCD        PIC X(9).
            02  YL01TMP-INPUTCD      PIC X(9).
            02  YL01TMP-YKZKBN       PIC X(2).
            02  YL01TMP-KISAIKBN     PIC X(2).
