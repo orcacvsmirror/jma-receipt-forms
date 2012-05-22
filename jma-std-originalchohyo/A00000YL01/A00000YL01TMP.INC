@@ -25,7 +25,7 @@
       *      診療行為コード
              03  YL01TMP-SRYCD        PIC X(9).
       *    入力コード
-           02  YL01TMP-INPUTCD      PIC X(9).
+           02  YL01TMP-INPUTCD      PIC X(10).
       *    薬剤区分
            02  YL01TMP-YKZKBN       PIC X(2).
       *    一般名記載区分
