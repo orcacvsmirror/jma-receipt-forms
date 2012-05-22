@@ -34,7 +34,7 @@
       *      診療行為コード
              03  YL01-SRYCD      PIC X(9).
       *      入力コード
-             03  YL01-INPUTCD    PIC X(9).
+             03  YL01-INPUTCD    PIC X(10).
       *      区分
              03  YL01-YKZKBN     PIC X(2).
       *      【般】

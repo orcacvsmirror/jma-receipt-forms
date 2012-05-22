@@ -21,9 +21,10 @@
       *  システム名          : ＯＲＣＡ
       *  サブシステム名      : 日次帳票
       *  コンポーネント名    : 医薬品名・一般名対応リスト
-      *  管理者              : 門間
+      *  管理者              : 
       *  Maj/Min/Rev  修正者   日付       内容
       *   01.00.01    門間     12/05/01   新規作成
+      *   01.00.02    門間     12/05/18   薬価基準コード１２桁対応
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -1774,7 +1775,7 @@
        910-GENERICNAME-READ-SEC             SECTION.
       *
            INITIALIZE                   GENERICNAME-REC
-           MOVE    TNS-YAKKAKJNCD(1:9)  TO  GENERIC-YAKKAKJNCD
+           MOVE    TNS-YAKKAKJNCD       TO  GENERIC-YAKKAKJNCD
       *
            MOVE    GENERICNAME-REC      TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
