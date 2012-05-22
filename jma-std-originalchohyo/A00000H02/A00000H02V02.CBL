@@ -82,6 +82,8 @@
       * 01.00.02     @@@@-門間    12/04/06  一般名対応（最大５５文字）
       * 01.00.03     @@@@-門間    12/04/25  一般名１００文字対応
       *                                     含量規格変更不可等の対応
+      * 01.00.04     @@@@-門間    12/05/18  処方せんの器材換算値エラー対応
+      *                                     薬価基準コード１２桁対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -3131,6 +3133,9 @@
                    MOVE    2                   TO  FLG-SOURYOHEN
                END-IF
            ELSE
+      *        H24.4
+      *        換算値クリア
+               MOVE    ZERO                TO  WRK-KANZANCHI
       *        用法
                IF      WRK-SRYCD  (1:3)    =   "001"
                    PERFORM 310300-YOUHO-NAME-SEC
@@ -4753,7 +4758,7 @@
       *
            MOVE    SPACE               TO  GENERICNAME-REC
            INITIALIZE                      GENERICNAME-REC
-           MOVE    TNS-YAKKAKJNCD(1:9) TO  GENERIC-YAKKAKJNCD
+           MOVE    TNS-YAKKAKJNCD      TO  GENERIC-YAKKAKJNCD
       **** MOVE    SPA-HOSPNUM         TO  GENERIC-HOSPNUM
       *
            MOVE    GENERICNAME-REC     TO  MCPDATA-REC
