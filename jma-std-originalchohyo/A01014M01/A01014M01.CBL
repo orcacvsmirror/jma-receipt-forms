@@ -21,7 +21,7 @@
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 月次帳票
       *  コンポーネント名  : 診療行為別月計表
-      *  管理者            : 
+      *  管理者            :
       *  作成日付    作業者        記述
       *  03/09/12    @@@@-有村     新規作成
       *****************************************************************
@@ -30,7 +30,7 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/01/20  点数単価取得条件を修正
-      *  01.00.03    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正 
+      *  01.00.03    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -57,13 +57,13 @@
       *
 006900*    エラーファイル
        FD  RECEERR-FILE.
-       01  RECEERR-REC             PIC X(200). 
+       01  RECEERR-REC             PIC X(200).
       *
        WORKING-STORAGE             SECTION.
-      *    印刷用データ 名称領域 
+      *    印刷用データ 名称領域
            COPY    "CPCOMMONPRT.INC".
       *
-      *    エラーファイル 名称領域 
+      *    エラーファイル 名称領域
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
@@ -145,7 +145,7 @@
            03  IDZ                PIC 9(04).
            03  IDM                PIC 9(04).
            03  IDX-MAX            PIC 9(04).
-           
+
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -165,7 +165,7 @@
       *
       *    一時領域
        01  WRK-AREA.
-      *  
+      *
            03  WRK-SYSYMD.
                05  WRK-SYSYY         PIC 9(04).
                05  WRK-SYSMM         PIC 9(02).
@@ -239,7 +239,7 @@
            03  WRK-Z11               PIC ZZZ,ZZZ,ZZZ.
            03  WRK-Z13               PIC Z,ZZZ,ZZZ,ZZZ.
            03  WRK-Z14               PIC ZZ,ZZZ,ZZZ,ZZZ.
-           03  WRK-DENPJTIKBN        PIC 9(01). 
+           03  WRK-DENPJTIKBN        PIC 9(01).
            03  WRK-ZAINUM            PIC 9(08).
            03  WRK-ZENPTID           PIC 9(10).
            03  WRK-TENSU3            PIC 9(09).
@@ -346,7 +346,7 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC". 
+           COPY    "CPPRTDATA.INC".
       *
       *    労災保険番号マスタ
        01  PTRSIINF-REC.
@@ -360,7 +360,7 @@
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
       *   日付変換サブ
            COPY    "CPORCSDAY.INC".
@@ -440,8 +440,8 @@
                                                LNK-PRTKANRI-SHELLID
                                                LNK-PRTKANRI-PRIORITY
                                                LNK-PRTKANRI-TERMID
-                                               LNK-PRTKANRI-OPID    
-                                               LNK-PRTKANRI-PRTNM    
+                                               LNK-PRTKANRI-OPID
+                                               LNK-PRTKANRI-PRTNM
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
                                                WRK-PARA-HOSPNUM
@@ -463,7 +463,7 @@
            MOVE    "診療行為別月計表"
                                    TO  JOB-SHELLMSG
            CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
+                                   ORCSJOBKANRIAREA
                                    JOBKANRI-REC
                                    SPA-AREA
       *
@@ -476,7 +476,7 @@
            MOVE    WRK-PARA-SRYYM  TO  WRK-SYMD (1:6)
            MOVE    "01"                TO  WRK-SYMD (7:2)
            PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG(1:16)   TO  WRK-SRYYM 
+           MOVE    WRK-HENYMDG(1:16)   TO  WRK-SRYYM
       *
       *    対象年月最終日取得
            INITIALIZE  WRK-SYMD
@@ -505,7 +505,7 @@
                END-IF
                IF      SYS-1001-KAISETUNAME  =   LOW-VALUE
                    MOVE    SPACE   TO    SYS-1001-KAISETUNAME
-               END-IF    
+               END-IF
            ELSE
                MOVE    "医療機関情報が取得できませんでした"
                                        TO    WRK-RECEERR
@@ -562,16 +562,16 @@
            MOVE  WRK-PARA-PRTLYMD  TO     SYS-1005-STYUKYMD
            MOVE    SPA-HOSPNUM         TO  SYS-1005-HOSPNUM
            PERFORM 820-SYSKANRI-DBSELECT-SEC
-           MOVE   1        TO     IDX1 
+           MOVE   1        TO     IDX1
            PERFORM  UNTIL  FLG-SYSKANRI3 = 1
                IF   FLG-SYSKANRI3 = ZERO
                    MOVE SYS-1005-KBNCD      TO SUM-SRYKA(IDX1)
                    MOVE SYS-1005-SRYKANAME1 TO SUM-SRYKANAME(IDX1)
-                   ADD  1        TO     IDX1 
-               END-IF  
+                   ADD  1        TO     IDX1
+               END-IF
                PERFORM 820-SYSKANRI-DBFETCH-SEC
            END-PERFORM
-           SUBTRACT  1        FROM IDX1  
+           SUBTRACT  1        FROM IDX1
            MOVE  IDX1         TO   SUM-SRYKAMAX
            PERFORM 820-SYSKANRI-DBCLOSE-SEC
       *
@@ -645,19 +645,19 @@
        2001-SYUKEI-SEC                SECTION.
       *
            PERFORM  900-SRYACCT-SELECT-SEC
-      * 
+      *
            PERFORM  UNTIL    FLG-SRYACCT   =   1
       *
       *    入院料取得処理
                PERFORM  20012-SRY-SET
-      
+
                PERFORM  900-SRYACCT-FETCH-SEC
       *
            END-PERFORM
            PERFORM  900-SRYACCT-CLOSE-SEC
              .
        2001-SYUKEI-EXT.
-            EXIT.    
+            EXIT.
       ***************************************************************
       *     入院料データ抽出処理
       ****************************************************************
@@ -744,7 +744,7 @@
            END-IF
       *
       *    期間設定
-           IF  PTNYUINRRK-TENSTUYMD      =   PTNYUINRRK-TAIINYMD 
+           IF  PTNYUINRRK-TENSTUYMD      =   PTNYUINRRK-TAIINYMD
              OR  PTNYUINRRK-TENSTUYMD      >   WRK-PARA-PRTLYMD
                COMPUTE   IDC             =    IDB  -  IDA  +  1
            ELSE
@@ -1058,7 +1058,7 @@
            ELSE
                PERFORM  200122-ETC-SEC
            END-IF
-      *    
+      *
            IF  FLG-M01TMP   =  1
                WRITE    M01TMP-REC
            ELSE
@@ -1090,7 +1090,7 @@
       *
                PERFORM  900-SRYACT-FETCH-SEC
            END-PERFORM
-      *    
+      *
            PERFORM  900-SRYACT-CLOSE-SEC
       *
       *    合計に加算
@@ -1104,7 +1104,7 @@
            ELSE
              MOVE    31           TO    IDX2
            END-IF
-            
+
            PERFORM   20014-GOKEI-SET-SEC
       *
            .
@@ -1128,7 +1128,7 @@
            MOVE    ZERO     TO   WRK-TENSU
                                  WRK-SYUEKI
            IF  ACCT-ZAINUM NOT =  WRK-ZAINUM
-             COMPUTE  WRK-TENSU  =  
+             COMPUTE  WRK-TENSU  =
                       ACCT-ZAITEN  * ACCT-ZAIKAISU
              COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-TENSU  *  WRK-TENTNK
       *
@@ -1145,7 +1145,7 @@
              MOVE    ZERO       TO  WRK-NISSU
              PERFORM  VARYING  IDX3  FROM  1  BY  1
                       UNTIL  IDX3  >  31
-               IF  M01TMP-DAY(IDX1 IDX3)  =  ZERO 
+               IF  M01TMP-DAY(IDX1 IDX3)  =  ZERO
                  AND  ACCT-DAY(1 IDX3)  >  ZERO
                  MOVE    1      TO  M01TMP-DAY(IDX1 IDX3)
                  ADD  1         TO  WRK-NISSU
@@ -1243,7 +1243,7 @@
       *
       *    集計インデックス設定
            PERFORM  20013-IDXSET-SEC
-      *    
+      *
            MOVE    ZERO     TO   WRK-TENSU
                                  WRK-SYUEKI
            IF  SRY-SRYKBN  =  "95" OR "96" OR "97"
@@ -1317,9 +1317,9 @@
                            MOVE    WRK-PARA-SRYYM(1:4)  TO  WRK-YY2-G
                            COMPUTE  WRK-NENREI  =  WRK-YY2  -  WRK-YY1
                            IF PTINF-BIRTHDAY(5:2) > WRK-PARA-SRYYM(5:2)
-                             SUBTRACT  1        FROM WRK-NENREI  
+                             SUBTRACT  1        FROM WRK-NENREI
                            END-IF
-                           IF  COMB-KOH1HKNNUM    =  "027" 
+                           IF  COMB-KOH1HKNNUM    =  "027"
                              OR   COMB-HKNNUM  =  "039"
                                MOVE      5      TO    IDX1
                            ELSE
@@ -1338,7 +1338,7 @@
                            MOVE    WRK-PARA-SRYYM(1:4)  TO  WRK-YY2-G
                            COMPUTE  WRK-NENREI  =  WRK-YY2  -  WRK-YY1
                            IF PTINF-BIRTHDAY(5:2) > WRK-PARA-SRYYM(5:2)
-                               SUBTRACT  1        FROM WRK-NENREI  
+                               SUBTRACT  1        FROM WRK-NENREI
                            END-IF
                            IF  COMB-KOH1HKNNUM    =  "027"
                              OR   COMB-HKNNUM  =  "039"
@@ -1442,7 +1442,7 @@
                        MOVE    WRK-PARA-SRYYM(1:4)    TO    WRK-YY2-G
                        COMPUTE  WRK-NENREI   =  WRK-YY2   -    WRK-YY1
                        IF  PTINF-BIRTHDAY(5:2)  >  WRK-PARA-SRYYM(5:2)
-                           SUBTRACT  1        FROM WRK-NENREI  
+                           SUBTRACT  1        FROM WRK-NENREI
                        END-IF
                        IF  COMB-KOH1HKNNUM    =  "027"
                          OR   COMB-HKNNUM  =  "039"
@@ -1463,7 +1463,7 @@
                        MOVE    WRK-PARA-SRYYM(1:4)    TO    WRK-YY2-G
                        COMPUTE  WRK-NENREI   =  WRK-YY2   -    WRK-YY1
                        IF  PTINF-BIRTHDAY(5:2)  >  WRK-PARA-SRYYM(5:2)
-                           SUBTRACT  1        FROM WRK-NENREI  
+                           SUBTRACT  1        FROM WRK-NENREI
                        END-IF
                        IF  COMB-KOH1HKNNUM    =  "027"
                          OR   COMB-HKNNUM  =  "039"
@@ -1480,7 +1480,7 @@
                            END-IF
                        END-IF
                    WHEN "13"
-                       MOVE     10        TO    IDX1 
+                       MOVE     10        TO    IDX1
                    WHEN "14"
                        MOVE     11        TO    IDX1
                    WHEN "21"
@@ -1644,7 +1644,7 @@
            ELSE
                MOVE     "外来"        TO   M01-NYUGAI
            END-IF
-           
+
            IF WRK-PARA-SRYYM  <  "200804"
                MOVE     "(３歳未満)"  TO   M01-NENREIKBN(1)
                MOVE     "(老人)"      TO   M01-NENREIKBN2(1)
@@ -1676,14 +1676,14 @@
       *
                MOVE    M01TMP-NISSU(IDX1)   TO    WRK-Z4
                MOVE    WRK-Z4               TO    M01-NISSU(IDX1)
-      *    
+      *
                MOVE    M01TMP-TENSU(IDX1)   TO    WRK-Z92
                MOVE    WRK-Z92              TO    M01-TENSU(IDX1)
-      *    
+      *
                MOVE    M01TMP-SYUEKI(IDX1)  TO    WRK-Z92
                MOVE    WRK-Z92              TO    M01-SYUEKI(IDX1)
            END-PERFORM
-      *     
+      *
            .
        320-BODY-HEN-EXT.
            EXIT.
@@ -1714,7 +1714,7 @@
                                        ORCSPRTAREA
                                        SPA-AREA
            IF      SPRT-RETURN         =   ZERO
-               CONTINUE                    
+               CONTINUE
            END-IF
       *
            .
@@ -1778,7 +1778,7 @@
                PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
-           END-IF        
+           END-IF
            .
        820-SYSKANRI-DBSELECT-EXT.
            EXIT.
@@ -1800,7 +1800,7 @@
                MOVE    MCPDATA-REC  TO  SYS-1005-REC
            ELSE
                MOVE    1                           TO  FLG-SYSKANRI3
-           END-IF  
+           END-IF
            .
        820-SYSKANRI-DBFETCH-EXT.
            EXIT.
@@ -1838,7 +1838,7 @@
                PERFORM 821-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
-           END-IF        
+           END-IF
            .
        821-SYSKANRI-DBSELECT-EXT.
            EXIT.
@@ -1860,7 +1860,7 @@
                MOVE    MCPDATA-REC  TO  SYS-1010-REC
            ELSE
                MOVE    1                           TO  FLG-SYSKANRI3
-           END-IF  
+           END-IF
            .
        821-SYSKANRI-DBFETCH-EXT.
            EXIT.
@@ -1937,7 +1937,7 @@
                MOVE    WRK-RECEERR     TO  JOB-YOBI
                MOVE    "9999"          TO  JOB-ERRCD
                CALL    "ORCSJOB"       USING
-                                       ORCSJOBKANRIAREA  
+                                       ORCSJOBKANRIAREA
                                        JOBKANRI-REC
                                        SPA-AREA
            END-IF
@@ -1977,7 +1977,7 @@
            .
        900-TMP-READ-EXT.
            EXIT.
-      *      
+      *
       *****************************************************************
       *    患者マスター読込処理
       *****************************************************************
@@ -2230,7 +2230,7 @@
                MOVE    MCPDATA-REC     TO  SRYACCT-REC
                MOVE    ZERO            TO  FLG-SRYACCT
       *    テスト患者は対象外
-               MOVE    ACCT-PTID    TO  WRK-PTID  
+               MOVE    ACCT-PTID    TO  WRK-PTID
                PERFORM  900-PTINF-READ-SEC
                IF      FLG-PTINF             =   ZERO
                  AND     PTINF-TSTPTNUMKBN   =   "1"
@@ -2289,7 +2289,7 @@
                MOVE    MCPDATA-REC     TO  NYUINACCT-REC
                MOVE    ZERO            TO  FLG-NYUINACCT
       *    テスト患者は対象外
-               MOVE    NACCT-PTID    TO  WRK-PTID  
+               MOVE    NACCT-PTID    TO  WRK-PTID
                PERFORM  900-PTINF-READ-SEC
                IF      FLG-PTINF             =   ZERO
                  AND     PTINF-TSTPTNUMKBN   =   "1"
@@ -2733,7 +2733,7 @@
                MOVE    MCPDATA-REC     TO  SRYACCT-REC
                MOVE    ZERO            TO  FLG-SRYACCT
       *    テスト患者は対象外
-               MOVE    ACCT-PTID    TO  WRK-PTID  
+               MOVE    ACCT-PTID    TO  WRK-PTID
                PERFORM  900-PTINF-READ-SEC
                IF      FLG-PTINF             =   ZERO
                  AND     PTINF-TSTPTNUMKBN   =   "1"
@@ -2769,7 +2769,7 @@
       *    終了　　処理
       *****************************************************************
        300-END-SEC                 SECTION.
-      *     
+      *
       *    ステップ管理終了処理
            MOVE    "STE"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
@@ -2777,9 +2777,9 @@
            MOVE    WRK-PARA-JOBID  TO  JOB-JOBID
            MOVE    WRK-PARA-SHELLID
                                    TO  JOB-SHELLID
-           MOVE    CNT-PAGE        TO  JOB-UPDCNT 
+           MOVE    CNT-PAGE        TO  JOB-UPDCNT
            CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
+                                   ORCSJOBKANRIAREA
                                    JOBKANRI-REC
                                    SPA-AREA
       *

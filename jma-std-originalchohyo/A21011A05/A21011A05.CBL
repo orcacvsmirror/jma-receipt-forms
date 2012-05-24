@@ -21,7 +21,7 @@
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 月次帳票
       *  コンポーネント名  : 保留・再請求・月遅れリスト
-      *  管理者            : 
+      *  管理者            :
       *  作成日付    作業者        記述
       *  03/10/03    @@@@-有村     新規作成
       *****************************************************************
@@ -43,7 +43,7 @@
        CONFIGURATION               SECTION.
        INPUT-OUTPUT                SECTION.
        FILE-CONTROL.
-      *    レセプト集計表一時ファイル  
+      *    レセプト集計表一時ファイル
            SELECT  A05TMP-FILE   ASSIGN    A05TMP
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
@@ -63,7 +63,7 @@
        DATA                        DIVISION.
        FILE                        SECTION.
       *
-      *    レセプト集計表一時ファイル  
+      *    レセプト集計表一時ファイル
        FD  A05TMP-FILE.
        01  A05TMP-REC.
            COPY    "A21011A05TMP.INC".
@@ -73,18 +73,18 @@
       *
       *    エラーファイル
        FD  RECEERR-FILE.
-       01  RECEERR-REC             PIC X(200). 
+       01  RECEERR-REC             PIC X(200).
       *
        WORKING-STORAGE             SECTION.
-      *    印刷用データ 名称領域 
+      *    印刷用データ 名称領域
            COPY    "CPCOMMONPRT.INC".
       *
-      *    総括表一時ファイル 名称領域 
+      *    総括表一時ファイル 名称領域
            COPY    "CPCOMMONDAT2.INC"
                                    REPLACING  //RECE01PARA//
                                    BY         //A05TMP//.
       *
-      *    エラーファイル 名称領域 
+      *    エラーファイル 名称領域
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
@@ -165,7 +165,7 @@
       *
       *    一時領域
        01  WRK-AREA.
-      *  
+      *
            03  WRK-SYMD.
                05  WRK-SYY           PIC 9(04).
                05  WRK-SMM           PIC 9(02).
@@ -235,10 +235,10 @@
                05  KEY-O-SYUTURYOKU     PIC  X(01).
       *
            COPY    "CPSHELLTBL.INC".
-      *     
+      *
       *    ＣＳＶファイル出力用
        01  A21011A05CSV.
-           03  FILLER       PIC X(11)   VALUE 
+           03  FILLER       PIC X(11)   VALUE
                                   "/home/orca/".
            03  CSV-DENPPRTNAME      PIC X(09)   VALUE   "A21011A05".
            03  FILLER               PIC X(01)   VALUE   "-".
@@ -418,7 +418,7 @@
            MOVE    WRK-PARA-SKYYM  TO  WRK-SYMD (1:6)
            MOVE    "01"                TO  WRK-SYMD (7:2)
            PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG(1:16)   TO  WRK-SRYYM 
+           MOVE    WRK-HENYMDG(1:16)   TO  WRK-SRYYM
       *
            INITIALIZE                      STS-AREA-DAY
            INITIALIZE                      LNK-DAY2-AREA
@@ -427,7 +427,7 @@
            CALL    "ORCSDAY"           USING   STS-AREA-DAY
                                                LNK-DAY2-AREA
                                                SPA-AREA
-           IF      STS-DAY-RC1         =   ZERO 
+           IF      STS-DAY-RC1         =   ZERO
                    MOVE    LNK-DAY2-EDTYMD3    TO  WRK-SEIYMD
            END-IF
       *
@@ -450,7 +450,7 @@
                   END-IF
                   IF      SYS-1001-KAISETUNAME  =   LOW-VALUE
                           MOVE    SPACE   TO    SYS-1001-KAISETUNAME
-                  END-IF    
+                  END-IF
            ELSE
                   MOVE    "医療機関情報が取得できませんでした"
                                           TO    WRK-RECEERR
@@ -557,7 +557,7 @@
       *    一時ファイル編集処理
       *****************************************************************
        2001-HENSYU-SEC                SECTION.
-      *    
+      *
            PERFORM  UNTIL  FLG-END  =  1
       *
              IF  ( FLG-KOHI  =  ZERO  AND
@@ -653,7 +653,7 @@
                        IF  SYU-NYUGAIKBN = 2
                          MOVE  1  TO  WRK-SYUNISSU(IDS)
                        END-IF
-                     END-IF 
+                     END-IF
                      PERFORM  940-SYUNOU-CLOSE-SEC
                    END-PERFORM
                    IF  RECE10-NYUGAIKBN = 2
@@ -738,13 +738,13 @@
                    AND ( RECE10-KOHNUM(4) =  SPACE )
                    MOVE    RECE10-FTNMONEY(1)   TO    A05TMP-ITBFTN
                ELSE
-                   IF  RECE10-KOHNUM(2) =  SPACE 
+                   IF  RECE10-KOHNUM(2) =  SPACE
                      MOVE    RECE10-FTNMONEY(2)   TO    A05TMP-ITBFTN
                    ELSE
-                     IF  RECE10-KOHNUM(3) =  SPACE 
+                     IF  RECE10-KOHNUM(3) =  SPACE
                        MOVE    RECE10-FTNMONEY(3)   TO    A05TMP-ITBFTN
                      ELSE
-                       IF  RECE10-KOHNUM(4) =  SPACE 
+                       IF  RECE10-KOHNUM(4) =  SPACE
                          MOVE  RECE10-FTNMONEY(4)   TO    A05TMP-ITBFTN
                        ELSE
                          MOVE  RECE10-FTNMONEY(5)   TO    A05TMP-ITBFTN
@@ -852,7 +852,7 @@
                    IF  SYU-NYUGAIKBN = 2
                      MOVE  1  TO  WRK-SYUNISSU(IDS)
                    END-IF
-                 END-IF 
+                 END-IF
                  PERFORM  940-SYUNOU-CLOSE-SEC
                END-PERFORM
                IF  RECE02-NYUGAIKBN = 2
@@ -936,13 +936,13 @@
                AND ( RECE02-KOHNUM(4) =  SPACE )
                MOVE    RECE02-FTNMONEY(1)   TO    A05TMP-ITBFTN
            ELSE
-               IF  RECE02-KOHNUM(2) =  SPACE 
+               IF  RECE02-KOHNUM(2) =  SPACE
                  MOVE    RECE02-FTNMONEY(2)   TO    A05TMP-ITBFTN
                ELSE
-                 IF  RECE02-KOHNUM(3) =  SPACE 
+                 IF  RECE02-KOHNUM(3) =  SPACE
                    MOVE    RECE02-FTNMONEY(3)   TO    A05TMP-ITBFTN
                  ELSE
-                   IF  RECE02-KOHNUM(4) =  SPACE 
+                   IF  RECE02-KOHNUM(4) =  SPACE
                      MOVE  RECE02-FTNMONEY(4)   TO    A05TMP-ITBFTN
                    ELSE
                      MOVE  RECE02-FTNMONEY(5)   TO    A05TMP-ITBFTN
@@ -1002,7 +1002,7 @@
              PERFORM  900-TMP-READ-SEC
              MOVE   A05TMP-SYUTURYOKU  TO  WRK-STUKBN
              MOVE   ZERO  TO  WRK-STARTKBN
-                        
+
              PERFORM  UNTIL    FLG-PRINT   =  1
                IF   WRK-STARTKBN  =  "0"
       *    CSV頭書き出力
@@ -1012,7 +1012,7 @@
                IF A05TMP-SYUTURYOKU  NOT =  WRK-STUKBN
                  PERFORM   220-G-CSV-WRITE-SEC
                  CLOSE  A21011A05-FILE
-      *    CSV頭書き出力 
+      *    CSV頭書き出力
                  PERFORM  210-CSV-HED-SEC
                END-IF
       *    CSV書き出し
@@ -1020,7 +1020,7 @@
       *    一時ファイル読込
                MOVE   A05TMP-SYUTURYOKU  TO  WRK-STUKBN
                PERFORM  900-TMP-READ-SEC
-               
+
              END-PERFORM
       *    ファイルクローズ
              CLOSE  A21011A05-FILE
@@ -1188,7 +1188,7 @@
              ADD     A05TMP-YKZFTN      TO      SUM-YKZFTN
              ADD     A05TMP-ITBFTN      TO      SUM-ITBFTN
              ADD     A05TMP-SNISSU      TO      SUM-SNISSU
-             ADD     A05TMP-SKINGK      TO      SUM-SKINGK 
+             ADD     A05TMP-SKINGK      TO      SUM-SKINGK
              ADD     A05TMP-SFTNGK      TO      SUM-SFTNGK
       *    一時ファイル読込
              PERFORM  900-TMP-READ-SEC
@@ -1261,7 +1261,7 @@
            .
        3201-GOKEI-EXT.
            EXIT.
-      *      
+      *
       *****************************************************************
       *    帳票編集処理2
       *****************************************************************
@@ -1290,7 +1290,7 @@
                                        ORCSPRTAREA
                                        SPA-AREA
            IF      SPRT-RETURN         =   ZERO
-               CONTINUE                    
+               CONTINUE
            END-IF
       *
            .
@@ -1422,7 +1422,7 @@
            MOVE    RECE10-SRYYM          TO  RECE02-SRYYM
            MOVE    RECE10-NYUGAIKBN      TO  RECE02-NYUGAIKBN
            MOVE    RECE10-PTID           TO  RECE02-PTID
-           MOVE    RECE10-RECEKA         TO  RECE02-RECEKA 
+           MOVE    RECE10-RECEKA         TO  RECE02-RECEKA
            MOVE    RECE10-TEISYUTUSAKI   TO  RECE02-TEISYUTUSAKI
            MOVE    RECE10-RECESYUBETU    TO  RECE02-RECESYUBETU
            MOVE    RECE10-HKNJANUM       TO  RECE02-HKNJANUM-KEY
@@ -1839,7 +1839,7 @@
                 PERFORM 820-SYSKANRI-DBFETCH-SEC
            ELSE
                MOVE    1           TO    FLG-SYSKANRI3
-           END-IF        
+           END-IF
            .
        820-SYSKANRI-DBSELECT-EXT.
            EXIT.
@@ -1861,7 +1861,7 @@
                MOVE    MCPDATA-REC  TO  SYS-2003-REC
            ELSE
                MOVE    1                           TO  FLG-SYSKANRI3
-           END-IF  
+           END-IF
            .
        820-SYSKANRI-DBFETCH-EXT.
            EXIT.
@@ -1946,7 +1946,7 @@
                MOVE    WRK-RECEERR     TO  JOB-YOBI
                MOVE    "9999"          TO  JOB-ERRCD
                CALL    "ORCSJOB"       USING
-                                       ORCSJOBKANRIAREA  
+                                       ORCSJOBKANRIAREA
                                        JOBKANRI-REC
                                        SPA-AREA
            END-IF
@@ -2056,7 +2056,7 @@
        210-CSV-WRITE-SEC                SECTION.
       *
       *    ＣＳＶ書き出し
-      *    
+      *
            INITIALIZE  A21011A05-REC
                        WRK-REC-LENGTH
       *    患者番号
@@ -2066,7 +2066,7 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    氏名  
+      *    氏名
            MOVE    A05TMP-PTNAME      TO  WRK-DATA
            MOVE    30                 TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
@@ -2080,10 +2080,10 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    入外区分 
+      *    入外区分
            IF    A05TMP-NYUGAIKBN  =  1
              MOVE    "入院"             TO  WRK-DATA
-           ELSE 
+           ELSE
              MOVE    "外来"             TO  WRK-DATA
            END-IF
            MOVE    4                  TO  WRK-NAGASA
@@ -2105,7 +2105,7 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    主保険番号 
+      *    主保険番号
            MOVE    A05TMP-HKNNUM      TO  WRK-DATA
            MOVE    3                 TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
@@ -2129,42 +2129,42 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    公費番号１ 
+      *    公費番号１
            MOVE    A05TMP-KOHNUM1     TO  WRK-DATA
            MOVE    3                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    公費番号２ 
+      *    公費番号２
            MOVE    A05TMP-KOHNUM2     TO  WRK-DATA
            MOVE    3                 TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（日数） 
+      *    療養の給付（日数）
            MOVE    A05TMP-NISSU         TO  WRK-DATA
            MOVE    2                 TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（点数） 
+      *    療養の給付（点数）
            MOVE    A05TMP-TENSU         TO  WRK-DATA
            MOVE    8                 TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（薬剤一部負担金） 
+      *    療養の給付（薬剤一部負担金）
            MOVE    A05TMP-YKZFTN       TO  WRK-DATA
            MOVE    5                  TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（一部負担金） 
+      *    療養の給付（一部負担金）
            MOVE    A05TMP-ITBFTN     TO  WRK-DATA
            MOVE    9                  TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
@@ -2178,7 +2178,7 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事療養費 
+      *    食事療養費
            MOVE    A05TMP-SKINGK       TO  WRK-DATA
            MOVE    9                  TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
@@ -2208,7 +2208,7 @@
            ADD     A05TMP-YKZFTN      TO      SUM-YKZFTN
            ADD     A05TMP-ITBFTN      TO      SUM-ITBFTN
            ADD     A05TMP-SNISSU      TO      SUM-SNISSU
-           ADD     A05TMP-SKINGK      TO      SUM-SKINGK 
+           ADD     A05TMP-SKINGK      TO      SUM-SKINGK
            ADD     A05TMP-SFTNGK      TO      SUM-SFTNGK
       *
            .
@@ -2227,8 +2227,8 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-           
-      *    氏名  
+
+      *    氏名
            MOVE    "合　　　計"      TO  WRK-DATA
            MOVE    10                 TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
@@ -2239,7 +2239,7 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    入外区分 
+      *    入外区分
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
@@ -2247,12 +2247,12 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-          
-      *    主保険番号 
+
+      *    主保険番号
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      
+
       *    老人保険番号
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
@@ -2261,11 +2261,11 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    公費番号１ 
+      *    公費番号１
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    公費番号２ 
+      *    公費番号２
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
@@ -2276,21 +2276,21 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（点数） 
+      *    療養の給付（点数）
            MOVE    SUM-TENSU         TO  WRK-DATA
            MOVE    7                 TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（薬剤一部負担金） 
+      *    療養の給付（薬剤一部負担金）
            MOVE    SUM-YKZFTN       TO  WRK-DATA
            MOVE    7                  TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（一部負担金） 
+      *    療養の給付（一部負担金）
            MOVE    SUM-ITBFTN     TO  WRK-DATA
            MOVE    7                  TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
@@ -2304,7 +2304,7 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事療養費 
+      *    食事療養費
            MOVE    SUM-SKINGK       TO  WRK-DATA
            MOVE    7                  TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
@@ -2320,7 +2320,7 @@
            PERFORM 5004-MOJI-HENSYU-SEC
       *
            WRITE   A21011A05-REC
-           
+
            INITIALIZE    SUM-AREA
       *
            .
@@ -2338,7 +2338,7 @@
              PERFORM VARYING IDW    FROM    WRK-NAGASA  BY  -1
                    UNTIL   IDW    <       1
                IF      WRK-DATA (IDW:1)   NOT =   SPACE
-                 STRING  A21011A05-REC(1:WRK-REC-LENGTH) 
+                 STRING  A21011A05-REC(1:WRK-REC-LENGTH)
                                             DELIMITED  BY  SIZE
                          WRK-DATA(1:IDW)    DELIMITED  BY  SIZE
                          INTO     A21011A05-REC
@@ -2363,7 +2363,7 @@
              PERFORM VARYING IDW    FROM    1   BY  1
                    UNTIL   IDW    >     WRK-NAGASA
                IF      WRK-DATA (IDW:1)   NOT =   0
-                 STRING  A21011A05-REC(1:WRK-REC-LENGTH) 
+                 STRING  A21011A05-REC(1:WRK-REC-LENGTH)
                                                    DELIMITED  BY  SIZE
                          WRK-DATA(IDW:)  DELIMITED  BY  SIZE
                          INTO     A21011A05-REC
@@ -2382,7 +2382,7 @@
       *    終了　　処理
       *****************************************************************
        300-END-SEC                 SECTION.
-      *     
+      *
       *    ステップ管理終了処理
            MOVE    "STE"           TO  SJOBKANRI-MODE
            INITIALIZE                  JOBKANRI-REC
@@ -2392,7 +2392,7 @@
                                    TO  JOB-SHELLID
            MOVE    CNT-PAGE        TO  JOB-UPDCNT
            CALL    "ORCSJOB"       USING
-                                   ORCSJOBKANRIAREA  
+                                   ORCSJOBKANRIAREA
                                    JOBKANRI-REC
                                    SPA-AREA
       *
