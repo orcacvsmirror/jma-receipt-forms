@@ -71,7 +71,7 @@
       *
       *    集計ファイル
        FD  MF100-FILE.
-       01  MF100-REC. 
+       01  MF100-REC.
            COPY  "A00000KOHSTMP.INC".
       *
       *    ＣＳＶファイル出力用
@@ -191,8 +191,8 @@
       *
            03  WRK-Z2               PIC ZZ.
            03  WRK-Z3               PIC ZZZ.
-           03  WRK-Z9               PIC Z,ZZZ,ZZZ. 
-           03  WRK-SRYYMD           PIC 9(08). 
+           03  WRK-Z9               PIC Z,ZZZ,ZZZ.
+           03  WRK-SRYYMD           PIC 9(08).
            03  FLG-KOHSKY           PIC 9(01).
            03  WRK-SRYKANAME        PIC X(10).
            03  WRK-REC-LENGTH       PIC 9(04).
@@ -213,7 +213,7 @@
            03  CITY-CITYNAME        PIC X(40).
            03  KOHS-KAIPAGE         PIC 9(01).
            03  KOHI-DATA-TBL        OCCURS 40.
-               05  KOHI-KOHNUM      PIC X(03). 
+               05  KOHI-KOHNUM      PIC X(03).
       *    カウント領域
        01  CNT-AREA.
            03  CNT-RECE10           PIC 9(06).
@@ -301,7 +301,7 @@
        LINKAGE  SECTION.
       *
        01  COMMAND-PARAM.
-           02  FILLER  PIC X(256). 
+           02  FILLER  PIC X(256).
       *
       ****************************************************************
        PROCEDURE  DIVISION
@@ -406,9 +406,9 @@
            IF   FLG-SYSKANRI  =  ZERO
              MOVE  MCPDATA-REC        TO   SYS-1001-REC
            ELSE
-             DISPLAY "*** A00000KOHS SYS 1001 ERR ***" 
+             DISPLAY "*** A00000KOHS SYS 1001 ERR ***"
              MOVE  1  TO  FLG-END
-           END-IF 
+           END-IF
       *
            OPEN  OUTPUT MF100-FILE
            .
@@ -644,7 +644,7 @@
                  COMPUTE  WRK-JIHI1 = SYU-JIHI-TOTAL / 10
                  COMPUTE  WRK-JIHI1 = WRK-JIHI1 * 10
                  COMPUTE  WRK-JIHI2 = SYU-JIHI-TOTAL-TAX / 10
-                 COMPUTE  WRK-JIHI2 = WRK-JIHI2 * 10 
+                 COMPUTE  WRK-JIHI2 = WRK-JIHI2 * 10
                WHEN  3
                  MOVE     SYU-JIHI-TOTAL      TO  WRK-JIHI1
                  MOVE     SYU-JIHI-TOTAL-TAX  TO  WRK-JIHI2
@@ -800,13 +800,13 @@
              INITIALIZE  WRK-KENSU
                          WRK-KOHNUM
       *
-      *    CSV頭書き出力    
+      *    CSV頭書き出力
              PERFORM  210-CSV-HED-SEC
              OPEN     INPUT       MF100-FILE
              MOVE     ZERO        TO   FLG-PRINT
       *    一時ファイル読込
              PERFORM   900-TMP-READ-SEC
-                        
+
              PERFORM   UNTIL  FLG-PRINT   =  1
       *    CSV書き出し
                PERFORM   210-CSV-WRITE-SEC
@@ -864,7 +864,7 @@
       *
            MOVE     KEY-NEW        TO    KEY-OLD
       *
-           PERFORM  VARYING  IDX1  FROM  1   BY   1 
+           PERFORM  VARYING  IDX1  FROM  1   BY   1
                     UNTIL    IDX1  >  15
                     OR    FLG-PRINT   =   1
                     OR    KEY-NEW  NOT =  KEY-OLD
@@ -1085,7 +1085,7 @@
            .
        900-TMP-READ-EXT.
            EXIT.
-      *      
+      *
       *****************************************************************
       *    エラー出力処理
       *****************************************************************
@@ -1454,7 +1454,7 @@
                PERFORM 910-SYUNOU-FETCH-SEC
            ELSE
                MOVE    1             TO  FLG-SYUNOU
-           END-IF        
+           END-IF
            .
        910-SYUNOU-SELECT-EXT.
            EXIT.
@@ -1476,7 +1476,7 @@
                MOVE    MCPDATA-REC   TO  SYUNOU-REC
            ELSE
                MOVE    1             TO  FLG-SYUNOU
-           END-IF  
+           END-IF
            .
        910-SYUNOU-FETCH-EXT.
            EXIT.
@@ -1790,7 +1790,7 @@
        210-CSV-WRITE-SEC                SECTION.
       *
       *    ＣＳＶ書き出し
-      *    
+      *
            INITIALIZE  A00000KOHS-REC
                        WRK-REC-LENGTH
       *    公費名
@@ -1800,21 +1800,21 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    患者番号 
+      *    患者番号
            MOVE    MF100-PTNUM        TO   WRK-DATA
            MOVE    20                 TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    患者氏名 
+      *    患者氏名
            MOVE    MF100-NAME         TO   WRK-DATA
            MOVE    100                TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    患者フリガナ 
+      *    患者フリガナ
            MOVE    MF100-FURIGANA     TO   WRK-DATA
            MOVE    100                TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
@@ -1828,7 +1828,7 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    受給者番号 
+      *    受給者番号
            MOVE    MF100-JKYSNUM      TO   WRK-DATA
            MOVE    20                 TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
@@ -1858,10 +1858,10 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    入外区分 
+      *    入外区分
            IF    MF100-NYUGAIKBN   =   1
              MOVE    "入"             TO   WRK-DATA
-           ELSE 
+           ELSE
              MOVE    "外"             TO   WRK-DATA
            END-IF
            MOVE    2                  TO   WRK-NAGASA
@@ -1889,21 +1889,21 @@
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    実日数 
+      *    実日数
            MOVE    MF100-JNISSU       TO   WRK-DATA
            MOVE    2                  TO   WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    合計点数 
+      *    合計点数
            MOVE    MF100-TOTALTEN     TO   WRK-DATA
            MOVE    8                  TO   WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
            MOVE    ","                TO   WRK-DATA
            MOVE    1                  TO   WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    負担金額 
+      *    負担金額
            MOVE    MF100-FTNMONEY     TO   WRK-DATA
            MOVE    9                  TO   WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
@@ -2000,7 +2000,7 @@
              PERFORM VARYING IDW  FROM  WRK-NAGASA  BY  -1
                      UNTIL   IDW   <   1
                IF   WRK-DATA(IDW:1)   NOT =   SPACE
-                 STRING  A00000KOHS-REC(1:WRK-REC-LENGTH) 
+                 STRING  A00000KOHS-REC(1:WRK-REC-LENGTH)
                                             DELIMITED  BY  SIZE
                          WRK-DATA(1:IDW)    DELIMITED  BY  SIZE
                          INTO     A00000KOHS-REC
@@ -2025,7 +2025,7 @@
              PERFORM VARYING IDW    FROM    1   BY  1
                    UNTIL   IDW    >     WRK-NAGASA
                IF      WRK-DATA (IDW:1)   NOT =   0
-                 STRING  A00000KOHS-REC(1:WRK-REC-LENGTH) 
+                 STRING  A00000KOHS-REC(1:WRK-REC-LENGTH)
                                               DELIMITED  BY  SIZE
                          WRK-DATA(IDW:)       DELIMITED  BY  SIZE
                          INTO     A00000KOHS-REC
