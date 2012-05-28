@@ -348,7 +348,7 @@
                07  CSV-HEAD-OZ-OUSHIN     PIC X(50) VALUE "±ý¿Ç".
                07  CSV-HEAD-OZ-ZAITAKU    PIC X(50) VALUE "ºßÂð".
       *
-               07  CSV-HEAD-OZ-R          PIC X(50) 
+               07  CSV-HEAD-OZ-R          PIC X(50)
                                           VALUE "±ý¿Ç¡¦ºßÂðÎÁ(·×)".
       *
                07  CSV-HEAD-TY-NAIFUKU    PIC X(50) VALUE "ÆâÉþ".

@@ -339,7 +339,7 @@
                07  CSV-HEAD-OZ-OUSHIN     PIC X(50) VALUE "±ý¿Ç".
                07  CSV-HEAD-OZ-ZAITAKU    PIC X(50) VALUE "ºßÂð".
       *
-               07  CSV-HEAD-OZ-R          PIC X(50) 
+               07  CSV-HEAD-OZ-R          PIC X(50)
                                           VALUE "±ý¿Ç¡¦ºßÂðÎÁ(·×)".
       *
                07  CSV-HEAD-TY-NAIFUKU    PIC X(50) VALUE "ÆâÉþ".
@@ -2650,7 +2650,7 @@
            ELSE
              MOVE     "³°Íè"        TO   K100-NYUGAIKBN
              PERFORM  VARYING  IDX3  FROM 1  BY  1
-                      UNTIL    IDX3  >    10 
+                      UNTIL    IDX3  >    10
                MOVE  WRK-TJIHI(IDX3)  TO  K100-TJIHI(IDX3)
              END-PERFORM
            END-IF
