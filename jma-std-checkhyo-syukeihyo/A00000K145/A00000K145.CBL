@@ -28,8 +28,9 @@
       *  プログラム修正履歴
       *  Maj/Min/Rev  修正者      日付      内容
       *   01.00.01    @@@@-田中   11/01/05  open-cobol1.0対応
-      *   01.00.01    @@@@-田中   11/01/05  コメント履歴削除
+      *                                     コメント履歴削除
       *   01.00.02    @@@@-門間   11/12/13  ヘッダ項目に数列が表示される不具合を修正
+      *   01.00.03    @@@@-門間   12/05/22  CSVファイル作成機能追加
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -159,6 +160,15 @@
            03  IDM                PIC 9(04).
            03  IDX-MAX            PIC 9(04).
            03  IDX-TEN            PIC 9(02).
+      *
+           03  IDX8                PIC 9(04).
+           03  IDX9                PIC 9(04).
+           03  IDX9X               PIC 9(04).
+           03  IDX10               PIC 9(04).
+           03  IDX-S               PIC 9(04).
+           03  IDX-ST              PIC 9(03).
+           03  IDX-ED              PIC 9(03).
+           03  IDXP                PIC 9(05).
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -307,6 +317,104 @@
       *
            COPY    "CPSHELLTBL.INC".
       *
+       01  CSV-BODY-AREA.
+           03  CSV-BODY-G              OCCURS 30.
+             05  WRK-BODY-NAME           PIC X(20).
+             05  WRK-BODY-TBL            OCCURS 56.
+               07  WRK-BODY-KAISU          PIC X(11).
+               07  WRK-BODY-TENSU          PIC X(11).
+      *
+       01  WRK-CSV-AREA.
+           03  WRK-ITEM-SIZE           PIC 9(03)    VALUE 100.
+           03  WRK-ITEM                PIC X(100)   VALUE SPACE.
+           03  WRK-CSVDATA             PIC X(20000) VALUE SPACE.
+      *
+       01  CSV-HEAD-AREA.
+           03  CSV-HEAD-G.
+             05  CSV-HEAD-VAL.
+               07  CSV-HEAD-SS-SHOSHIN1   PIC X(50) VALUE "初診(６歳)".
+               07  CSV-HEAD-SS-SHOSHIN2   PIC X(50) VALUE "初診(一般)".
+               07  CSV-HEAD-SS-SHOSHIN3   PIC X(50) VALUE "初診(前期)".
+               07  CSV-HEAD-SS-SHOSHIN4   PIC X(50) VALUE "初診(後期)".
+               07  CSV-HEAD-SS-SAISHIN1   PIC X(50) VALUE "再診(６歳)".
+               07  CSV-HEAD-SS-SAISHIN2   PIC X(50) VALUE "再診(一般)".
+               07  CSV-HEAD-SS-SAISHIN3   PIC X(50) VALUE "再診(前期)".
+               07  CSV-HEAD-SS-SAISHIN4   PIC X(50) VALUE "再診(後期)".
+               07  CSV-HEAD-SS-SHIDO      PIC X(50) VALUE "指導".
+               07  CSV-HEAD-SS-ETC        PIC X(50) VALUE "その他".
+      *
+               07  CSV-HEAD-SS-R          PIC X(50) VALUE "診察料(計)".
+      *
+               07  CSV-HEAD-OZ-OUSHIN     PIC X(50) VALUE "往診".
+               07  CSV-HEAD-OZ-ZAITAKU    PIC X(50) VALUE "在宅".
+      *
+               07  CSV-HEAD-OZ-R          PIC X(50) 
+                                          VALUE "往診・在宅料(計)".
+      *
+               07  CSV-HEAD-TY-NAIFUKU    PIC X(50) VALUE "内服".
+               07  CSV-HEAD-TY-TONPUKU    PIC X(50) VALUE "頓服".
+               07  CSV-HEAD-TY-GAIYOU     PIC X(50) VALUE "外用".
+               07  CSV-HEAD-TY-TYOZAI     PIC X(50) VALUE "調剤".
+               07  CSV-HEAD-TY-SHOHO      PIC X(50) VALUE "処方".
+               07  CSV-HEAD-TY-MADOKU     PIC X(50) VALUE "麻毒".
+               07  CSV-HEAD-TY-TYOKI      PIC X(50) VALUE "調基".
+      *
+               07  CSV-HEAD-TY-R          PIC X(50) VALUE "投薬料(計)".
+      *
+               07  CSV-HEAD-TS-HIKA       PIC X(50) VALUE "皮下筋肉".
+               07  CSV-HEAD-TS-JYOMYAKU   PIC X(50) VALUE "静脈".
+               07  CSV-HEAD-TS-TENTEKI-ETC    PIC X(50)
+                                          VALUE "点滴・その他".
+      *
+               07  CSV-HEAD-TS-R          PIC X(50) VALUE "注射料(計)".
+      *
+               07  CSV-HEAD-ST-R          PIC X(50) VALUE "処置料(計)".
+      *
+               07  CSV-HEAD-SM-SYUJYUTU   PIC X(50) VALUE "手術".
+               07  CSV-HEAD-SM-YUKETU     PIC X(50) VALUE "輸血".
+               07  CSV-HEAD-SM-MASUI      PIC X(50) VALUE "麻酔".
+      *
+               07  CSV-HEAD-SM-R          PIC X(50)
+                                          VALUE "手術・麻酔料(計)".
+      *
+               07  CSV-HEAD-K-KENSA       PIC X(50) VALUE "検査".
+               07  CSV-HEAD-K-SAIKETU     PIC X(50) VALUE "採血".
+               07  CSV-HEAD-K-HANDAN      PIC X(50) VALUE "判断料".
+               07  CSV-HEAD-K-BYORI       PIC X(50) VALUE "病理診断".
+      *
+               07  CSV-HEAD-K-R           PIC X(50)
+                                          VALUE "検査料(計)".
+      *
+               07  CSV-HEAD-GS-R          PIC X(50)
+                                          VALUE "画像診断料(計)".
+      *
+               07  CSV-HEAD-E-INGAISHOHO  PIC X(50)
+                                          VALUE "院外処方せん".
+               07  CSV-HEAD-E-RIHABIRI    PIC X(50) VALUE "リハビリ".
+               07  CSV-HEAD-E-ETC         PIC X(50) VALUE "その他(注)".
+      *
+               07  CSV-HEAD-E-R           PIC X(50)
+                                          VALUE "その他料(計)".
+      *
+               07  CSV-HEAD-RSSS          PIC X(50) VALUE
+                                       "室料差額・食事／生活療養費(円)".
+      *
+               07  CSV-HEAD-NYUIN-R       PIC X(50)
+                                          VALUE "入院料(計)".
+      *
+               07  CSV-HEAD-ETC-R         PIC X(50)
+                                          VALUE "その他料(計)".
+      *
+               07  CSV-HEAD-JIHI          PIC X(50) OCCURS 10.
+               07  CSV-HEAD-JIHI-K        PIC X(50)
+                                          VALUE "その他自費計(円)".
+      *
+               07  CSV-HEAD-KEI           PIC X(50) VALUE "計".
+      *
+             05  CSV-HEAD-R               REDEFINES CSV-HEAD-VAL.
+               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 56.
+             05  CSV-HEAD-MAX             PIC 9(05) VALUE 56.
+      *
       *****************************************************************
       *    ファイルレイアウト
       *****************************************************************
@@ -421,6 +529,9 @@
       *    ファイルディレクトリ位置指定サブ
            COPY    "CPMKPASS.INC".
       *
+      *    統計ＣＳＶ制御サブ
+           COPY    "CPORCSTOUKEICSV.INC".
+      *
       *    ＤＢ検索
            COPY    "MCPAREA".
       *
@@ -476,6 +587,7 @@
            INITIALIZE                  WRK-ROOM-SAGAKU-AREA
            INITIALIZE                  WRK-NYUIN-AREA
            INITIALIZE                  SPA-AREA
+                                       CSV-BODY-AREA
       *
            MOVE    K100LNK-HOSPNUM    TO  SPA-HOSPNUM
       *
@@ -1063,6 +1175,14 @@
       *    帳票印刷処理
            PERFORM  2002-PRINT-SEC
       *
+      *    CSV印字処理
+      *    CSV ヘッダー処理
+           PERFORM  800-CSV-HEAD-SEC
+      *    CSV 明細処理
+           PERFORM  400-CSV-DATA-SEC
+      *    CSV 出力処理
+           PERFORM  230-TOUKEICSV-SEC
+      *
            .
        200-MAIN-EXT.
            EXIT.
@@ -1501,7 +1621,7 @@
            .
        20013-NYUIN-SET-EXT.
            EXIT.
-      *--- 2009/02/10 ADD START ----------------------------------------
+      *
       *****************************************************************
       *    入院件数集計処理
       *****************************************************************
@@ -2768,6 +2888,8 @@
            MOVE    ZERO    TO  FLG-PRINT
            INITIALIZE          K145TMP-REC
       *
+           INITIALIZE  IDX-S
+      *
       *    一時ファイル読込
            PERFORM 900-TMP-READ-SEC
            INITIALIZE                       WRK-K145ALL-AREA
@@ -2887,7 +3009,6 @@
              MOVE   "(６歳)"   TO  K100-NENREIKBN(2)
              MOVE   "(後期高齢者)"       TO  K100-NENREIKBN2(2)
            END-IF
-      * 20080417 H20年4月改正対応END
       *
            .
        310-HEAD-HEN-EXT.
@@ -2902,8 +3023,10 @@
            MOVE     WRK-BTUMAX      TO    IDX-MAX
            PERFORM  UNTIL    IDX4   >     IDX-MAX
              IF  K145TMP-BTUINDEX   =     WRK-BTUNUM(IDX4)
-               MOVE    ZERO                   TO    IDX-MAX
-               MOVE    WRK-BTUNAME(IDX4)      TO    K100-TNAME(IDX2)
+               MOVE    ZERO                   TO  IDX-MAX
+               MOVE    WRK-BTUNAME(IDX4)      TO  K100-TNAME(IDX2)
+               ADD     1                      TO  IDX-S
+               MOVE    WRK-BTUNAME(IDX4)      TO  WRK-BODY-NAME(IDX-S)
              ELSE
                ADD     1                      TO    IDX4
              END-IF
@@ -3031,9 +3154,11 @@
              END-EVALUATE
              MOVE     K145TMP-TENSU(IDX1) TO  WRK-TENSU-HEN
              MOVE     WRK-TENSU-HEN       TO  K100-TENSU(IDX2 IDX1)
+                                              WRK-BODY-TENSU(IDX-S IDX1)
       *
              MOVE     K145TMP-KAISU(IDX1) TO  WRK-KAISU-HEN
              MOVE     WRK-KAISU-HEN       TO  K100-KAISU(IDX2 IDX1)
+                                              WRK-BODY-KAISU(IDX-S IDX1)
       *
       *    全診療科加算エリアに加算する。
       *
@@ -3055,7 +3180,9 @@
       *****************************************************************
        320-BODY-HEN2-SEC               SECTION.
       *
-           MOVE       "全病棟"            TO  K100-TNAME(IDX2)
+           MOVE    "全病棟"             TO  K100-TNAME(IDX2)
+           ADD     1                    TO  IDX-S
+           MOVE    "全病棟"             TO  WRK-BODY-NAME(IDX-S)
       *
            PERFORM    VARYING  IDX1   FROM  1  BY  1
                       UNTIL    IDX1   >     56
@@ -3063,10 +3190,12 @@
              MOVE     WRK-K145ALL-TENSU(IDX1)
                                           TO  WRK-TENSU-HEN
              MOVE     WRK-TENSU-HEN       TO  K100-TENSU(IDX2 IDX1)
+                                              WRK-BODY-TENSU(IDX-S IDX1)
       *
              MOVE     WRK-K145ALL-KAISU(IDX1)
                                           TO  WRK-KAISU-HEN
              MOVE     WRK-KAISU-HEN       TO  K100-KAISU(IDX2 IDX1)
+                                              WRK-BODY-KAISU(IDX-S IDX1)
       *
            END-PERFORM
       *
@@ -3112,6 +3241,291 @@
            .
        330-PRINT-OUT-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    CSVヘッダ編集処理
+      *****************************************************************
+       800-CSV-HEAD-SEC            SECTION.
+      *
+           MOVE    1               TO  IDXP
+      *
+           INITIALIZE  WRK-ITEM
+           STRING  "対象年月："          DELIMITED  BY  SIZE
+                   WRK-SRYYM             DELIMITED  BY  SPACE
+                                         INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+           IF    K145TMP-NYUGAIKBN   =   "1"
+             MOVE    "入外区分：入院"    TO  WRK-ITEM
+           ELSE
+             MOVE    "入外区分：外来"    TO  WRK-ITEM
+           END-IF
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+           INITIALIZE  WRK-ITEM
+           STRING  WRK-SEIYMD            DELIMITED  BY  SPACE
+                   "  発行"              DELIMITED  BY  SIZE
+                                         INTO  WRK-ITEM
+           END-STRING
+           MOVE    WRK-SEIYMD          TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+      *    病棟
+           INITIALIZE  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+           PERFORM  VARYING  IDX8  FROM  1  BY  1
+                    UNTIL    IDX8  >  IDX-S
+      *
+             MOVE    WRK-BODY-NAME(IDX8)      TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+             INITIALIZE  WRK-ITEM
+             IF  IDX8  =  IDX-S
+               PERFORM  810-CSVDATA-EDIT-SEC
+             ELSE
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+      *
+           END-PERFORM
+      *
+      *    回数／点数
+           INITIALIZE  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+           PERFORM  VARYING  IDX8  FROM  1  BY  1
+                    UNTIL    IDX8  >  IDX-S
+      *
+             MOVE    "点数"                   TO  WRK-ITEM
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+             MOVE    "回数"                   TO  WRK-ITEM
+             IF  IDX8  =  IDX-S
+               PERFORM  810-CSVDATA-EDIT-SEC
+             ELSE
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+      *
+       800-CSV-HEAD-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV明細編集処理
+      *****************************************************************
+       400-CSV-DATA-SEC            SECTION.
+      *
+      *    項目名称・明細情報セット
+           INITIALIZE  IDX10
+           PERFORM  VARYING  IDX9  FROM  1  BY  1
+                    UNTIL    IDX9  >  CSV-HEAD-MAX
+      *
+      *      項目名称セット
+             EVALUATE  IDX9
+      *
+               WHEN  44 THRU 53
+      *          自費名称
+                 ADD   1                         TO  IDX10
+                 INITIALIZE  WRK-ITEM
+                 IF  K145TMP-NYUGAIKBN   =   "1"
+                   STRING  WRK-TJIHIN(IDX10)     DELIMITED  BY  SPACE
+                           "(円)"                DELIMITED  BY  SIZE
+                                                 INTO  WRK-ITEM
+                   END-STRING
+                 ELSE
+                   STRING  WRK-TJIHI(IDX10)      DELIMITED  BY  SPACE
+                           "(円)"                DELIMITED  BY  SIZE
+                                                 INTO  WRK-ITEM
+                   END-STRING
+                 END-IF
+      *
+               WHEN  54
+      *          自費名称
+                 INITIALIZE  WRK-ITEM
+                 MOVE    "(円)"                  TO  WRK-ITEM
+      *
+               WHEN  OTHER
+      *          その他の項目名称
+                 INITIALIZE  WRK-ITEM
+                 MOVE    CSV-HEAD-ITEM(IDX9)     TO  WRK-ITEM
+             END-EVALUATE
+             PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *      明細情報  インデックスセット
+             EVALUATE  IDX9
+               WHEN  35
+                 COMPUTE  IDX9X  =  IDX9 + 19
+               WHEN  36 THRU 53
+                 COMPUTE  IDX9X  =  IDX9 - 1
+               WHEN  OTHER
+                 COMPUTE  IDX9X  =  IDX9
+             END-EVALUATE
+      *
+      *      明細情報セット
+             PERFORM  VARYING  IDX8  FROM  1  BY  1
+                      UNTIL    IDX8  >  IDX-S
+      *
+               IF  IDX9  NOT =  54
+                 MOVE    WRK-BODY-TENSU(IDX8 IDX9X)  TO  WRK-ITEM
+                 PERFORM  800-CSVDATA-EDIT-SEC
+                 MOVE    WRK-BODY-KAISU(IDX8 IDX9X)  TO  WRK-ITEM
+               ELSE
+                 INITIALIZE  WRK-ITEM
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
+      *
+               IF  IDX8  =  IDX-S
+                 PERFORM  810-CSVDATA-EDIT-SEC
+               ELSE
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
+      *
+             END-PERFORM
+      *
+           END-PERFORM
+      *
+           .
+      *
+       400-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       800-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-DELIMITER-SEC
+           .
+      *
+       801-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       810-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-CR-SEC
+           .
+      *
+       810-CSVDATA-EDIT-EXE.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       820-CSVDATA-EDIT-SEC            SECTION.
+      *
+           IF   WRK-ITEM  NOT =  SPACE
+             PERFORM  800-GET-ITEM-SIZE-SEC
+             STRING  WRK-ITEM(IDX-ST:IDX-ED)  DELIMITED   BY  SIZE
+                                              INTO  WRK-CSVDATA
+                                              WITH  POINTER  IDXP
+             END-STRING
+           END-IF
+           .
+      *
+       820-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    区切り文字編集処理
+      *****************************************************************
+       800-PUT-DELIMITER-SEC           SECTION.
+      *
+           STRING    ","       DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-DELIMITER-EXT.
+           EXIT.
+      *****************************************************************
+      *    改行文字編集処理
+      *****************************************************************
+       800-PUT-CR-SEC                  SECTION.
+      *
+           STRING    X"0D"     DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-CR-EXT.
+           EXIT.
+      *****************************************************************
+      *    項目サイズ取得処理
+      *****************************************************************
+       800-GET-ITEM-SIZE-SEC           SECTION.
+      *
+           MOVE    ZERO            TO  IDX-ST
+                                       IDX-ED
+      *
+           PERFORM  VARYING  IDX1  FROM  1  BY  1
+                    UNTIL  IDX1  >  WRK-ITEM-SIZE
+                    OR  WRK-ITEM(IDX1:)    =  SPACE
+      *
+             IF  IDX-ST  =  ZERO
+               IF  WRK-ITEM(IDX1:1)  NOT =  SPACE
+                 MOVE    IDX1      TO  IDX-ST
+                 MOVE    1         TO  IDX-ED
+               END-IF
+             ELSE
+               COMPUTE  IDX-ED  =  IDX-ED  +  1
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+       800-GET-ITEM-SIZE-EXT.
+           EXIT.
+      *****************************************************************
+      *    ＣＳＶ出力処理
+      *****************************************************************
+       230-TOUKEICSV-SEC               SECTION.
+      *
+           INITIALIZE                         ORCSTOUKEICSVAREA
+           MOVE    "INS"                      TO  STOUKEICSV-MODE
+           MOVE    K100LNK-PRTKANRI-TBL-KEY   TO  STOUKEICSV-TBL-KEY
+           MOVE    K100LNK-PRTKANRI-RENNUM    TO  STOUKEICSV-RENNUM
+           MOVE    K100LNK-PRTKANRI-TBL-GROUP TO  STOUKEICSV-TBL-GROUP
+           MOVE    K100LNK-PRTKANRI-SHORI-RENNUM
+                                            TO  STOUKEICSV-SHORI-RENNUM
+           MOVE    K100LNK-PRTKANRI-SHELLID   TO  STOUKEICSV-SHELLID
+           MOVE    K100LNK-PRTKANRI-SRYYM     TO  STOUKEICSV-SRYYM
+           MOVE    ZERO                       TO  STOUKEICSV-PTID
+           MOVE    "/var/tmp/"                TO  STOUKEICSV-TO-FOLDER
+      *
+           STRING  SPA-HOSPNUM                DELIMITED  BY  SIZE
+                   "shinryoukubun_byoutou_"   DELIMITED  BY  SIZE
+                   K100LNK-SRYYM              DELIMITED  BY  SPACE
+                   ".csv"                     DELIMITED  BY  SIZE
+                                              INTO  STOUKEICSV-TO-DATA
+           END-STRING
+           MOVE    "2"                        TO  STOUKEICSV-CODE-TYPE
+           MOVE    WRK-CSVDATA                TO  STOUKEICSV-CSVDATA
+           MOVE    "(病棟別)診療行為区分別集計表"
+                                              TO  STOUKEICSV-TITLE
+      *
+           CALL    "ORCSTOUKEICSV"            USING
+                                              ORCSTOUKEICSVAREA
+                                              SPA-AREA
+           IF  ( STOUKEICSV-RETURN  =  ZERO )
+             CONTINUE
+           ELSE
+             MOVE    "統計ＣＳＶＤＢに更新できませんでした"
+                                                TO  WRK-RECEERR
+             PERFORM  500-ERR-HENSYU-SEC
+           END-IF
+      *
+           INITIALIZE                         WRK-CSVDATA
+           MOVE    1                          TO  IDXP
+      *
+           .
+      *
+       230-TOUKEICSV-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    システム管理マスタ読込
       *****************************************************************
