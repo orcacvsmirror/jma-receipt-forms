@@ -37,6 +37,8 @@
       *                                     日数が集計されるように変更
       *  01.00.06    @@@@-門間    12/03/21  「レセプト請求しない」公費を持っている保留データにおいて、
       *                                     「保険者番号、本家区分、主保険、給付割合」が印字されない。
+      *  01.00.07    @@@@-門間    12/05/25  公費単独の「回数、金額、標準負担額」が印字されない。
+      *                                     CSVファイル作成機能追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -151,6 +153,12 @@
            03  IDS3               PIC 9(02).
            03  IDS4               PIC 9(02).
       *
+           03  IDX8              PIC 9(04).
+           03  IDX10             PIC 9(04).
+           03  IDX-ST            PIC 9(03).
+           03  IDX-ED            PIC 9(03).
+           03  IDXP              PIC 9(05).
+      *
       *    パラメタ領域
        01  WRK-PARA.
            COPY    "CPORCSPRTLNK.INC".
@@ -247,6 +255,37 @@
            03  CSV-DENPPRTYMDHM     PIC 9(12).
            03  FILLER               PIC X(04)   VALUE   ".csv".
       *
+       01  WRK-CSV-AREA.
+           03  WRK-ITEM-SIZE           PIC 9(03)    VALUE 100.
+           03  WRK-ITEM                PIC X(100)   VALUE SPACE.
+           03  WRK-CSVDATA             PIC X(20000) VALUE SPACE.
+      *
+       01  CSV-HEAD-AREA.
+           03  CSV-HEAD-G.
+             05  CSV-HEAD-VAL.
+               07  CSV-HEAD-PTNUM      PIC X(50) VALUE "患者番号".
+               07  CSV-HEAD-PTNAME     PIC X(50) VALUE "患者氏名".
+               07  CSV-HEAD-HKNJANUM   PIC X(50) VALUE "保険者番号".
+               07  CSV-HEAD-NYUGAIKBN  PIC X(50) VALUE "入外".
+               07  CSV-HEAD-HONKZKKBN  PIC X(50) VALUE "本家".
+               07  CSV-HEAD-SYUHKN     PIC X(50) VALUE "主保険".
+               07  CSV-HEAD-ZOKUGARA   PIC X(50) VALUE "老人保険".
+               07  CSV-HEAD-KYURATE    PIC X(50) VALUE "給付割合".
+               07  CSV-HEAD-KOH1       PIC X(50) VALUE "公費１".
+               07  CSV-HEAD-KOH2       PIC X(50) VALUE "公費２".
+               07  CSV-HEAD-NISSU      PIC X(50) VALUE "日数".
+               07  CSV-HEAD-TENSU      PIC X(50) VALUE "点数".
+               07  CSV-HEAD-YKZITBFTN  PIC X(50) VALUE "薬剤一部負担金".
+               07  CSV-HEAD-ITBFTN     PIC X(50) VALUE "一部負担金".
+               07  CSV-HEAD-KAISU      PIC X(50) VALUE "回数".
+               07  CSV-HEAD-KINGAKU    PIC X(50) VALUE "金額".
+               07  CSV-HEAD-FTNMONEY   PIC X(50) VALUE "標準負担額".
+               07  CSV-HEAD-SRYYM      PIC X(50) VALUE "診療年月".
+      *
+             05  CSV-HEAD-R            REDEFINES CSV-HEAD-VAL.
+               07  CSV-HEAD-ITEM       PIC X(50) OCCURS 18.
+             05  CSV-HEAD-MAX          PIC 9(05) VALUE  18.
+      *
       *****************************************************************
       *    ファイルレイアウト
       *****************************************************************
@@ -319,6 +358,9 @@
            COPY    "CPORCSPTID.INC".
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
+      *
+      *    統計ＣＳＶ制御サブ
+           COPY    "CPORCSTOUKEICSV.INC".
       *
       *    ＤＢ検索
            COPY    "MCPAREA".
@@ -625,15 +667,31 @@
                  IF  ( RECE10-KOHNUM(2)  NOT =  SPACE )
                    OR ( RECE10-KOHNUM(3) NOT =  SPACE )
                    OR ( RECE10-KOHNUM(4) NOT =  SPACE )
+      *
                    PERFORM  VARYING  IDX4  FROM  1  BY  1
                             UNTIL    IDX4  >  4
                      IF  RECE10-KOHNUM(IDX4)  NOT = SPACE
       *
       *                点数設定
-                       ADD  RECE10-TOTALTEN(IDX4 + 1) TO  A05TMP-TENSU
+                       ADD     RECE10-TOTALTEN(IDX4 + 1)
+                                                     TO  A05TMP-TENSU
       *
-      *                薬剤一部負担金
-                       ADD  RECE10-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
+      *                一部負担金
+                       MOVE    RECE10-FTNMONEY(IDX4 + 1)
+                                                     TO  A05TMP-ITBFTN
+      *
+      *                食事回数
+                       MOVE    RECE10-SHOKUJINISSU(IDX4 + 1)
+                                                     TO  A05TMP-SNISSU
+      *
+      *                食事療養費
+                       MOVE    RECE10-SHOKUJIRYOYOHI(IDX4 + 1)
+                                                     TO  A05TMP-SKINGK
+      *
+      *                標準負担額
+                       MOVE    RECE10-SHOKUJIFTN(IDX4 + 1)
+                                                     TO  A05TMP-SFTNGK
+      *
                      END-IF
                    END-PERFORM
       *
@@ -711,56 +769,53 @@
                      MOVE  SUM-SYUNISSU  TO  A05TMP-NISSU
       *
                    END-IF
+      *
                  ELSE
       *            日数設定
-                   MOVE    RECE10-JNISSU(2)     TO    A05TMP-NISSU
+                   MOVE    RECE10-JNISSU(2)     TO  A05TMP-NISSU
       *
       *            点数設定
-                   MOVE    RECE10-TOTALTEN(2)   TO    A05TMP-TENSU
+                   MOVE    RECE10-TOTALTEN(2)   TO  A05TMP-TENSU
       *
-      *            薬剤一部負担金
-                   MOVE    RECE10-YKZFTN(2)     TO    A05TMP-YKZFTN
+      *            一部負担金
+                   MOVE    RECE10-FTNMONEY(2)   TO  A05TMP-ITBFTN
+      *
+      *            食事回数
+                   MOVE    RECE10-SHOKUJINISSU(2)
+                                                TO  A05TMP-SNISSU
+      *
+      *            食事療養費
+                   MOVE    RECE10-SHOKUJIRYOYOHI(2)
+                                                TO  A05TMP-SKINGK
+      *
+      *            標準負担額
+                   MOVE    RECE10-SHOKUJIFTN(2)
+                                                TO  A05TMP-SFTNGK
                  END-IF
+      *
                ELSE
       *          日数設定
-                 MOVE    RECE10-JNISSU(1)     TO    A05TMP-NISSU
+                 MOVE    RECE10-JNISSU(1)     TO  A05TMP-NISSU
       *
       *          点数設定
-                 MOVE    RECE10-TOTALTEN(1)   TO    A05TMP-TENSU
+                 MOVE    RECE10-TOTALTEN(1)   TO  A05TMP-TENSU
       *
-      *          薬剤一部負担金
-                 MOVE    RECE10-YKZFTN(1)     TO    A05TMP-YKZFTN
+      *          一部負担金
+                 MOVE    RECE10-FTNMONEY(1)   TO  A05TMP-ITBFTN
+      *
+      *          食事回数
+                 MOVE    RECE10-SHOKUJINISSU(1)
+                                              TO  A05TMP-SNISSU
+      *
+      *          食事療養費
+                 MOVE    RECE10-SHOKUJIRYOYOHI(1)
+                                              TO  A05TMP-SKINGK
+      *
+      *          標準負担額
+                 MOVE    RECE10-SHOKUJIFTN(1)
+                                              TO  A05TMP-SFTNGK
+      *
                END-IF
-      *
-               IF  ( RECE10-KOHNUM(1) =  SPACE )
-                   AND ( RECE10-KOHNUM(2) =  SPACE )
-                   AND ( RECE10-KOHNUM(3) =  SPACE )
-                   AND ( RECE10-KOHNUM(4) =  SPACE )
-                   MOVE    RECE10-FTNMONEY(1)   TO    A05TMP-ITBFTN
-               ELSE
-                   IF  RECE10-KOHNUM(2) =  SPACE
-                     MOVE    RECE10-FTNMONEY(2)   TO    A05TMP-ITBFTN
-                   ELSE
-                     IF  RECE10-KOHNUM(3) =  SPACE
-                       MOVE    RECE10-FTNMONEY(3)   TO    A05TMP-ITBFTN
-                     ELSE
-                       IF  RECE10-KOHNUM(4) =  SPACE
-                         MOVE  RECE10-FTNMONEY(4)   TO    A05TMP-ITBFTN
-                       ELSE
-                         MOVE  RECE10-FTNMONEY(5)   TO    A05TMP-ITBFTN
-                       END-IF
-                     END-IF
-                   END-IF
-               END-IF
-      *
-      *        食事日数
-               MOVE    RECE10-SHOKUJINISSU(1)  TO    A05TMP-SNISSU
-      *
-      *        食事療養費
-               MOVE    RECE10-SHOKUJIRYOYOHI(1)  TO  A05TMP-SKINGK
-      *
-      *        標準負担額
-               MOVE    RECE10-SHOKUJIFTN(1)    TO    A05TMP-SFTNGK
       *
              END-IF
       *
@@ -828,11 +883,24 @@
                         UNTIL    IDX4  >  4
                  IF  RECE02-KOHNUM(IDX4)  NOT = SPACE
       *
-      *           点数設定
-                   ADD    RECE02-TOTALTEN(IDX4 + 1) TO  A05TMP-TENSU
+      *            点数設定
+                   ADD     RECE02-TOTALTEN(IDX4 + 1)  TO  A05TMP-TENSU
       *
-      *           薬剤一部負担金
-                   ADD    RECE02-YKZFTN(IDX4 + 1)   TO  A05TMP-YKZFTN
+      *            一部負担金
+                   MOVE    RECE02-FTNMONEY(IDX4 + 1)  TO  A05TMP-ITBFTN
+      *
+      *            食事回数
+                   MOVE    RECE02-SHOKUJINISSU(IDX4 + 1)
+                                                      TO  A05TMP-SNISSU
+      *
+      *            食事療養費
+                   MOVE    RECE02-SHOKUJIRYOYOHI(IDX4 + 1)
+                                                      TO  A05TMP-SKINGK
+      *
+      *            標準負担額
+                   MOVE    RECE02-SHOKUJIFTN(IDX4 + 1)
+                                                      TO  A05TMP-SFTNGK
+      *
                  END-IF
                END-PERFORM
       *
@@ -911,54 +979,44 @@
                END-IF
              ELSE
       *        日数設定
-               MOVE    RECE02-JNISSU(2)     TO    A05TMP-NISSU
+               MOVE    RECE02-JNISSU(2)          TO  A05TMP-NISSU
       *
       *        点数設定
-               MOVE    RECE02-TOTALTEN(2)   TO    A05TMP-TENSU
+               MOVE    RECE02-TOTALTEN(2)        TO  A05TMP-TENSU
       *
-      *        薬剤一部負担金
-               MOVE    RECE02-YKZFTN(2)     TO    A05TMP-YKZFTN
+      *        一部負担金
+               MOVE    RECE02-FTNMONEY(2)        TO  A05TMP-ITBFTN
+      *
+      *        食事回数
+               MOVE    RECE02-SHOKUJINISSU(2)    TO  A05TMP-SNISSU
+      *
+      *        食事療養費
+               MOVE    RECE02-SHOKUJIRYOYOHI(2)  TO  A05TMP-SKINGK
+      *
+      *        標準負担額
+               MOVE    RECE02-SHOKUJIFTN(2)      TO  A05TMP-SFTNGK
+      *
              END-IF
            ELSE
       *      日数設定
-             MOVE    RECE02-JNISSU(1)     TO    A05TMP-NISSU
+             MOVE    RECE02-JNISSU(1)          TO  A05TMP-NISSU
       *
       *      点数設定
-             MOVE    RECE02-TOTALTEN(1)   TO    A05TMP-TENSU
+             MOVE    RECE02-TOTALTEN(1)        TO  A05TMP-TENSU
       *
-      *      薬剤一部負担金
-             MOVE    RECE02-YKZFTN(1)     TO    A05TMP-YKZFTN
+      *      一部負担金
+             MOVE    RECE02-FTNMONEY(1)        TO  A05TMP-ITBFTN
+      *
+      *      食事回数
+             MOVE    RECE02-SHOKUJINISSU(1)    TO  A05TMP-SNISSU
+      *
+      *      食事療養費
+             MOVE    RECE02-SHOKUJIRYOYOHI(1)  TO  A05TMP-SKINGK
+      *
+      *      標準負担額
+             MOVE    RECE02-SHOKUJIFTN(1)      TO  A05TMP-SFTNGK
+      *
            END-IF
-      *
-           IF  ( RECE02-KOHNUM(1) =  SPACE )
-               AND ( RECE02-KOHNUM(2) =  SPACE )
-               AND ( RECE02-KOHNUM(3) =  SPACE )
-               AND ( RECE02-KOHNUM(4) =  SPACE )
-               MOVE    RECE02-FTNMONEY(1)   TO    A05TMP-ITBFTN
-           ELSE
-               IF  RECE02-KOHNUM(2) =  SPACE
-                 MOVE    RECE02-FTNMONEY(2)   TO    A05TMP-ITBFTN
-               ELSE
-                 IF  RECE02-KOHNUM(3) =  SPACE
-                   MOVE    RECE02-FTNMONEY(3)   TO    A05TMP-ITBFTN
-                 ELSE
-                   IF  RECE02-KOHNUM(4) =  SPACE
-                     MOVE  RECE02-FTNMONEY(4)   TO    A05TMP-ITBFTN
-                   ELSE
-                     MOVE  RECE02-FTNMONEY(5)   TO    A05TMP-ITBFTN
-                   END-IF
-                 END-IF
-               END-IF
-           END-IF
-      *
-      *    食事日数
-           MOVE    RECE02-SHOKUJINISSU(1)  TO    A05TMP-SNISSU
-      *
-      *    食事療養費
-           MOVE    RECE02-SHOKUJIRYOYOHI(1)  TO  A05TMP-SKINGK
-      *
-      *    標準負担額
-           MOVE    RECE02-SHOKUJIFTN(1)    TO    A05TMP-SFTNGK
       *
            .
        2002-HENSYU-EXT.
@@ -1061,6 +1119,10 @@
              MOVE    "再請求"        TO    A05-KBN
            END-EVALUATE
       *
+      *    CSV ヘッダー処理
+           MOVE    1                   TO  IDXP
+           PERFORM  800-CSV-HEAD-SEC
+      *
            .
       *
        310-HEAD-HEN-EXT.
@@ -1158,7 +1220,7 @@
              PERFORM 2009-HENKAN-SEC
              MOVE    WRK-OUT-INPUT      TO      A05-ITBFTN(IDX1)
       *
-      *    食事日数
+      *    食事回数
              MOVE    A05TMP-SNISSU      TO      WRK-Z4
              MOVE    WRK-Z4             TO      WRK-MAE-INPUT
              PERFORM 2009-HENKAN-SEC
@@ -1182,6 +1244,8 @@
              PERFORM 31012-SEIWA-HEN-SEC
              MOVE    WRK-HENYMDG(1:16)     TO      A05-SRYYM(IDX1)
       *
+             PERFORM  400-CSV-DATA-SEC
+      *
       *    小計加算
              ADD     A05TMP-NISSU       TO      SUM-NISSU
              ADD     A05TMP-TENSU       TO      SUM-TENSU
@@ -1190,6 +1254,7 @@
              ADD     A05TMP-SNISSU      TO      SUM-SNISSU
              ADD     A05TMP-SKINGK      TO      SUM-SKINGK
              ADD     A05TMP-SFTNGK      TO      SUM-SFTNGK
+      *
       *    一時ファイル読込
              PERFORM  900-TMP-READ-SEC
            END-PERFORM
@@ -1238,7 +1303,7 @@
            PERFORM 2009-HENKAN-SEC
            MOVE    WRK-OUT-INPUT      TO      A05-ITBFTN(IDX1)
       *
-      *    食事日数
+      *    食事回数
            MOVE    SUM-SNISSU         TO      WRK-Z4
            MOVE    WRK-Z4             TO      WRK-MAE-INPUT
            PERFORM 2009-HENKAN-SEC
@@ -1255,6 +1320,8 @@
            MOVE    WRK-Z7             TO      WRK-MAE-INPUT
            PERFORM 2009-HENKAN-SEC
            MOVE    WRK-OUT-INPUT      TO      A05-SFTNGK(IDX1)
+      *
+           PERFORM  410-CSV-DATA-SEC
       *
            INITIALIZE    SUM-AREA
       *
@@ -1296,6 +1363,399 @@
            .
        330-PRINT-OUT-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    CSVヘッダ編集処理
+      *****************************************************************
+       800-CSV-HEAD-SEC            SECTION.
+      *
+      *    対象年月
+           INITIALIZE  WRK-ITEM
+           STRING  "対象年月："              DELIMITED  BY  SIZE
+                   A05-SKYYM                 DELIMITED  BY  SPACE
+                                             INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    出力区分
+           INITIALIZE  WRK-ITEM
+           STRING  "出力区分："              DELIMITED  BY  SIZE
+                   A05-KBN                   DELIMITED  BY  SPACE
+                                             INTO  WRK-ITEM
+           END-STRING
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    作成年月日
+           INITIALIZE  WRK-ITEM
+           STRING  A05-SYSYMD                DELIMITED  BY  SPACE
+                   "  発行"                  DELIMITED  BY  SIZE
+                                             INTO  WRK-ITEM
+           END-STRING
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+      *    項目名称
+           PERFORM  VARYING  IDX8  FROM  1  BY  1
+                    UNTIL    IDX8  >  CSV-HEAD-MAX
+      *
+             INITIALIZE  WRK-ITEM
+             MOVE    CSV-HEAD-ITEM(IDX8)     TO  WRK-ITEM
+      *
+             IF  IDX8  =  CSV-HEAD-MAX
+               PERFORM  810-CSVDATA-EDIT-SEC
+             ELSE
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+      *
+       800-CSV-HEAD-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV明細編集処理
+      *****************************************************************
+       400-CSV-DATA-SEC            SECTION.
+      *
+      *    患者番号
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-PTNUM              TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    患者氏名
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-PTNAME             TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    保険者番号
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-HKNJANUM           TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    入外区分
+           INITIALIZE  WRK-ITEM
+           EVALUATE  A05TMP-NYUGAIKBN
+           WHEN "1"
+             MOVE    "入院"                    TO  WRK-ITEM
+           WHEN "2"
+             MOVE    "外来"                    TO  WRK-ITEM
+           END-EVALUATE
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    本人・家族
+           INITIALIZE  WRK-ITEM
+           EVALUATE  A05TMP-HONKZKKBN
+           WHEN "1"
+             MOVE    "本"                      TO  WRK-ITEM
+           WHEN "2"
+             MOVE    "家"                      TO  WRK-ITEM
+           WHEN OTHER
+             MOVE    SPACE                     TO  WRK-ITEM
+           END-EVALUATE
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    保険番号
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-HKNNUM             TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    老人保険番号
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-RJNHKNNUM          TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    給付割合
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-KYURATE            TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    公費１
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-KOHNUM1            TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    公費２
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-KOHNUM2            TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    日数
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-NISSU              TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    点数
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-TENSU              TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    薬剤一部負担金
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-YKZFTN             TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    一部負担金
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-ITBFTN             TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    食事回数
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-SNISSU             TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    食事療養費
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-SKINGK             TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    標準負担額
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-SFTNGK             TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    診療年月
+           INITIALIZE  WRK-ITEM
+           MOVE    A05TMP-SRYYM              TO  WRK-SYMD(1:6)
+           MOVE    "01"                      TO  WRK-SYMD(7:2)
+           PERFORM 31012-SEIWA-HEN-SEC
+           MOVE    WRK-HENYMDG(1:16)         TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           PERFORM  230-TOUKEICSV-SEC
+      *
+           .
+      *
+       400-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV明細編集処理
+      *****************************************************************
+       410-CSV-DATA-SEC            SECTION.
+      *
+      *    患者番号
+           INITIALIZE  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    患者氏名
+           INITIALIZE  WRK-ITEM
+           MOVE    "合計"                    TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    保険者番号
+           INITIALIZE  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    入外区分
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    給付割合
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    本人・家族
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    保険番号
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    老人保険番号
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    公費１
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    公費２
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    日数
+           INITIALIZE  WRK-ITEM
+           MOVE    SUM-NISSU                 TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    点数
+           INITIALIZE  WRK-ITEM
+           MOVE    SUM-TENSU                 TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    薬剤一部負担金
+           INITIALIZE  WRK-ITEM
+           MOVE    SUM-YKZFTN                TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    一部負担金
+           INITIALIZE  WRK-ITEM
+           MOVE    SUM-ITBFTN                TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    食事回数
+           INITIALIZE  WRK-ITEM
+           MOVE    SUM-SNISSU                TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    食事療養費
+           INITIALIZE  WRK-ITEM
+           MOVE    SUM-SKINGK                TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    標準負担額
+           INITIALIZE  WRK-ITEM
+           MOVE    SUM-SFTNGK                TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    診療年月
+           INITIALIZE  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           PERFORM  230-TOUKEICSV-SEC
+      *
+           IF  FLG-PRINT  NOT =  1
+             INITIALIZE  WRK-ITEM
+             PERFORM  810-CSVDATA-EDIT-SEC
+             PERFORM  230-TOUKEICSV-SEC
+             PERFORM  800-CSV-HEAD-SEC
+           END-IF
+      *
+           .
+      *
+       410-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       800-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-DELIMITER-SEC
+           .
+      *
+       801-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       810-CSVDATA-EDIT-SEC            SECTION.
+      *
+           PERFORM 820-CSVDATA-EDIT-SEC
+           PERFORM 800-PUT-CR-SEC
+           .
+      *
+       810-CSVDATA-EDIT-EXE.
+           EXIT.
+      *****************************************************************
+      *    CSVデータ編集処理
+      *****************************************************************
+       820-CSVDATA-EDIT-SEC            SECTION.
+      *
+           IF   WRK-ITEM  NOT =  SPACE
+             PERFORM  800-GET-ITEM-SIZE-SEC
+             STRING  WRK-ITEM(IDX-ST:IDX-ED)  DELIMITED   BY  SIZE
+                                              INTO  WRK-CSVDATA
+                                              WITH  POINTER  IDXP
+             END-STRING
+           END-IF
+           .
+      *
+       820-CSVDATA-EDIT-EXT.
+           EXIT.
+      *****************************************************************
+      *    区切り文字編集処理
+      *****************************************************************
+       800-PUT-DELIMITER-SEC           SECTION.
+      *
+           STRING    ","       DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-DELIMITER-EXT.
+           EXIT.
+      *****************************************************************
+      *    改行文字編集処理
+      *****************************************************************
+       800-PUT-CR-SEC                  SECTION.
+      *
+           STRING    X"0D"     DELIMITED  BY  SIZE
+                               INTO  WRK-CSVDATA
+                               WITH  POINTER  IDXP
+           END-STRING
+      *
+           .
+       800-PUT-CR-EXT.
+           EXIT.
+      *****************************************************************
+      *    項目サイズ取得処理
+      *****************************************************************
+       800-GET-ITEM-SIZE-SEC           SECTION.
+      *
+           MOVE    ZERO            TO  IDX-ST
+                                       IDX-ED
+      *
+           PERFORM  VARYING  IDX10  FROM  1  BY  1
+                    UNTIL  IDX10  >  WRK-ITEM-SIZE
+                    OR  WRK-ITEM(IDX10:)    =  SPACE
+      *
+             IF  IDX-ST  =  ZERO
+               IF  WRK-ITEM(IDX10:1)  NOT =  SPACE
+                 MOVE    IDX10      TO  IDX-ST
+                 MOVE    1          TO  IDX-ED
+               END-IF
+             ELSE
+               COMPUTE  IDX-ED  =  IDX-ED  +  1
+             END-IF
+      *
+           END-PERFORM
+      *
+           .
+       800-GET-ITEM-SIZE-EXT.
+           EXIT.
+      *****************************************************************
+      *    ＣＳＶ出力処理
+      *****************************************************************
+       230-TOUKEICSV-SEC               SECTION.
+      *
+           INITIALIZE                        ORCSTOUKEICSVAREA
+           MOVE    "INS"                     TO  STOUKEICSV-MODE
+           MOVE    LNK-PRTKANRI-TBL-KEY      TO  STOUKEICSV-TBL-KEY
+           MOVE    LNK-PRTKANRI-RENNUM       TO  STOUKEICSV-RENNUM
+           MOVE    LNK-PRTKANRI-TBL-GROUP    TO  STOUKEICSV-TBL-GROUP
+           MOVE    LNK-PRTKANRI-SHORI-RENNUM TO  STOUKEICSV-SHORI-RENNUM
+           MOVE    LNK-PRTKANRI-SHELLID      TO  STOUKEICSV-SHELLID
+           MOVE    LNK-PRTKANRI-SRYYM        TO  STOUKEICSV-SRYYM
+           MOVE    ZERO                      TO  STOUKEICSV-PTID
+           MOVE    "/var/tmp/"               TO  STOUKEICSV-TO-FOLDER
+      *
+           STRING  SPA-HOSPNUM               DELIMITED  BY  SIZE
+                   "horyu_saiseikyu_tukiokure_"
+                                             DELIMITED  BY  SIZE
+                   WRK-PARA-SKYYM            DELIMITED  BY  SPACE
+                   ".csv"                    DELIMITED  BY  SIZE
+                                             INTO  STOUKEICSV-TO-DATA
+           END-STRING
+           MOVE    "2"                       TO  STOUKEICSV-CODE-TYPE
+           MOVE    WRK-CSVDATA               TO  STOUKEICSV-CSVDATA
+           MOVE    "保留・再請求・月遅れリスト"
+                                             TO  STOUKEICSV-TITLE
+      *
+           CALL    "ORCSTOUKEICSV"           USING
+                                             ORCSTOUKEICSVAREA
+                                             SPA-AREA
+           IF  ( STOUKEICSV-RETURN  =  ZERO )
+             CONTINUE
+           ELSE
+             MOVE    "統計ＣＳＶＤＢに更新できませんでした"
+                                               TO  WRK-RECEERR
+             PERFORM  500-ERR-HENSYU-SEC
+           END-IF
+      *
+           INITIALIZE                        WRK-CSVDATA
+           MOVE    1                         TO  IDXP
+      *
+           .
+      *
+       230-TOUKEICSV-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    一時ファイル読込
       *****************************************************************
@@ -2171,7 +2631,7 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事日数
+      *    食事回数
            MOVE    A05TMP-SNISSU     TO  WRK-DATA
            MOVE    2                  TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
@@ -2297,7 +2757,7 @@
            MOVE    ","                TO  WRK-DATA
            MOVE    1                  TO  WRK-NAGASA
            PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事日数
+      *    食事回数
            MOVE    SUM-SNISSU          TO  WRK-DATA
            MOVE    4                  TO  WRK-NAGASA
            PERFORM 5005-MOJI-HENSYU-SEC
