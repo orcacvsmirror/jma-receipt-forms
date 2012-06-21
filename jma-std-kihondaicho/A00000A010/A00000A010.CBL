@@ -34,6 +34,10 @@
       *  01.00.04    @@@@-田中    11/11/21  室料差額情報取得時の不具合を修正
       *  01.00.05    @@@@-門間    12/03/09  コメント削除、改行コード変更
       *                           12/03/12  CSVファイル作成機能追加
+      *  01.00.06    @@@@-門間    12/06/18  集計区分「2」の場合、入院会計情報の集計時に、
+      *                                     開始年月を参照するように修正
+      *                                     入院のみ（診療行為無し）の場合、
+      *                                     帳票が出力されるように修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -911,7 +915,11 @@
       *    入院患者読み込み
            INITIALIZE              NYUIN-SRYACT-REC
            MOVE WRK-PARA-HOSPNUM   TO   NSRY-HOSPNUM
-           MOVE    WRK-PARA-PRTYMD(1:6)   TO   NSRY-SRYYM
+           IF   WRK-PARA-SYUKEIKBN  =  "2"
+             MOVE    WRK-PARA-PRTSTYMD(1:6)   TO   NSRY-SRYYM
+           ELSE
+             MOVE    WRK-PARA-PRTYMD(1:6)     TO   NSRY-SRYYM
+           END-IF
            PERFORM   900-NYUINACT-SELECT-SEC
            PERFORM   900-NYUINACT-FETCH-SEC
            MOVE   NSRY-PTID           TO   WRK-PTID
@@ -962,6 +970,8 @@
       *
                  EVALUATE   WRK-PARA-SYUKEIKBN
                    WHEN  "2"
+                     MOVE    WRK-PARA-PRTSYMD(7:2)     TO  WRK-DAY1
+                     MOVE    WRK-PARA-PRTLYMD(7:2)     TO  WRK-DAY2
                      PERFORM  VARYING IDX8  FROM  WRK-DAY1  BY 1
                               UNTIL   IDX8  >  WRK-DAY2
       *    外泊日に食事などのフラグを消す
