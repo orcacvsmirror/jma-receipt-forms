@@ -31,6 +31,8 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/01/24  4.6対応
       *  01.00.03    @@@@-田中    11/03/10  補足病名コメント対応
+      *  01.00.04    @@@@-門間    12/06/19  保険者名称が12文字を超えた場合、
+      *                                     2行表示（24文字）するように修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -833,9 +835,16 @@
                                           H01SA4-YUKOD
            END-IF
       *
-      *    保険者情報
+      *    保険者情報（国保、後期）
            MOVE    HKNJA-HKNJANAME    TO  H01KA4-HKNJANAME
-                                          H01SA4-HKNNAME
+      *
+      *    保険者情報（社保）
+           IF  HKNJA-HKNJANAME(25:)  =  SPACE
+             MOVE    HKNJA-HKNJANAME    TO  H01SA4-HKNNAME
+           ELSE
+             MOVE    HKNJA-HKNJANAME    TO  H01SA4-HKNNAME2
+           END-IF
+      *
            STRING  HKNJA-ADRS         DELIMITED  BY  SPACE
                    HKNJA-BANTI        DELIMITED  BY  SPACE
                                       INTO  H01SA4-HKNADRS
