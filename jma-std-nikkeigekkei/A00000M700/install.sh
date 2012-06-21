@@ -13,7 +13,7 @@ function echomsg() {
       echo `echo $1 | nkf -wE`
     else
       echo -n `echo $1 | nkf -wE`
-    fi 
+    fi
   else
     if [ -z $2 ]; then
       echo $1

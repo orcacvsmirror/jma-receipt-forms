@@ -31,8 +31,8 @@
       *                                     初診、再診、その他の判定条件を変更
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
-      *  01.00.03    @@@@-田中    11/10/13  CSVファイル作成機能追加 
-      *  01.00.04    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正 
+      *  01.00.03    @@@@-田中    11/10/13  CSVファイル作成機能追加
+      *  01.00.04    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1150,7 +1150,7 @@
                  END-IF
              END-EVALUATE
       *
-             IF  WRK-SYUHKN-KBN  NOT =  4  AND  5  AND  6 
+             IF  WRK-SYUHKN-KBN  NOT =  4  AND  5  AND  6
       *    自費,労災、自賠責以外の場合
                IF  SYU-SRYYMD  <=  "20070331"
                  COMPUTE  WRK-JIHI  =  SYU-TOTAL-TGMONEY
@@ -1761,7 +1761,7 @@
        800-CSV-HEAD-SEC            SECTION.
       *
            MOVE    1                 TO  IDXP
-      *    入外区分セット 
+      *    入外区分セット
            STRING    "入外区分："    DELIMITED  BY  SIZE
                      D601-NYUGAIKBN  DELIMITED  BY  SIZE
                                      INTO  WRK-ITEM
@@ -1777,7 +1777,7 @@
            END-STRING
            PERFORM  800-CSVDATA-EDIT-SEC
       *
-      *    システム日付セット 
+      *    システム日付セット
            MOVE    WRK-SYSYMDWH     TO  WRK-ITEM
            PERFORM  810-CSVDATA-EDIT-SEC
       *

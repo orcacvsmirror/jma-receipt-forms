@@ -31,8 +31,8 @@
       *                                     初診、再診、その他の判定条件を変更
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/04/18  処理速度の改善、コメント履歴削除
-      *  01.00.03    @@@@-田中    11/10/14  CSVファイル作成機能追加 
-      *  01.00.04    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正 
+      *  01.00.03    @@@@-田中    11/10/14  CSVファイル作成機能追加
+      *  01.00.04    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1208,7 +1208,7 @@
                  END-IF
              END-EVALUATE
       *
-             IF  WRK-SYUHKN-KBN  NOT =  4  AND  5  AND  6 
+             IF  WRK-SYUHKN-KBN  NOT =  4  AND  5  AND  6
       *    自費,労災、自賠責以外の場合
       *    自費分の集計
                IF  SYU-SRYYMD  <=  "20070331"
@@ -1991,7 +1991,7 @@
            END-STRING
            PERFORM  800-CSVDATA-EDIT-SEC
       *
-      *    入外区分セット 
+      *    入外区分セット
            INITIALIZE                WRK-ITEM
            STRING    "入外区分："    DELIMITED  BY  SIZE
                      M700-NYUGAIKBN  DELIMITED  BY  SIZE
@@ -1999,7 +1999,7 @@
            END-STRING
            PERFORM  800-CSVDATA-EDIT-SEC
       *
-      *    診療科セット 
+      *    診療科セット
            INITIALIZE                WRK-ITEM
            STRING    "診療科："      DELIMITED  BY  SIZE
                      M700-SRYKA      DELIMITED  BY  SIZE
