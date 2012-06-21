@@ -21,7 +21,7 @@
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 患者登録
       *  コンポーネント名  : カルテ（診療録）印刷
-      *  管理者            :
+      *  管理者            : 
       *  作成日付    作業者        記述
       *  03/03/31    @@@@−有村　  新規作成(ORCHC01 V1.0.6カスタマイズ)
       *****************************************************************
@@ -30,7 +30,8 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/01/24  4.6対応
-      *  01.00.03    @@@@-田中    11/03/10  補足病名コメント対応
+      *  01.00.04    @@@@-門間    12/06/19  保険者名称が12文字を超えた場合、
+      *                                     2行表示（24文字）するように修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -39,13 +40,13 @@
        FILE-CONTROL.
       *
       *    国保印刷用データ
-           SELECT  PRT-FILE     ASSIGN  HC01PARA
-                                FILE    STATUS  IS  STS-PARA.
+               SELECT  PRT-FILE       ASSIGN  HC01PARA
+                                   FILE    STATUS  IS  STS-PARA.
       *    健保印刷用データ
-           SELECT  PRT-FILE2    ASSIGN  HC01PARA2
-                                FILE    STATUS  IS  STS-PARA2.
-           SELECT  PRTX-FILE    ASSIGN  HC011PARA
-                                FILE    STATUS  IS  STSX-PARA.
+           SELECT  PRT-FILE2      ASSIGN  HC01PARA2
+                                   FILE    STATUS  IS  STS-PARA2.
+           SELECT  PRTX-FILE      ASSIGN  HC011PARA
+                                   FILE    STATUS  IS  STSX-PARA.
       *
        DATA                    DIVISION.
        FILE                        SECTION.
@@ -56,28 +57,27 @@
       *
       *    健保印刷用データ
        FD  PRT-FILE2.
-      *
            COPY    "A21000H01SA4.INC".
       *    印刷用データ続紙
        FD  PRTX-FILE.
            COPY    "HC011.INC".
       *
        WORKING-STORAGE             SECTION.
-      *     国保印刷用データ 名称領域
+      *     国保印刷用データ 名称領域 
            COPY    "CPCOMMONPRT.INC".
-      *
-      *     健保印刷用データ 名称領域
-           COPY    "CPCOMMONPRT.INC"   REPLACING  //HC01PARA//
-                                       BY         //HC01PARA2//.
-      *     印刷用データ 名称領域
+      *     健保印刷用データ 名称領域 
+           COPY    "CPCOMMONPRT.INC"
+                                     REPLACING  //HC01PARA//
+                                     BY         //HC01PARA2//.
+      *     印刷用データ 名称領域 
            COPY    "CPCOMMONPRT1.INC".
       *
       *    フラグ領域
        01  STS-AREA.
            03  STS-PARA            PIC X(02).
-           03  STS-PARA2           PIC X(02).
+           03  STS-PARA2            PIC X(02).
        01  STSX-AREA.
-           03  STSX-PARA           PIC X(02).
+           03  STSX-PARA            PIC X(02).
       *
       *    フラグ領域
        01  FLG-AREA.
@@ -122,9 +122,10 @@
       *    一時領域
        01  WRK-AREA.
            03  WRK-SYSYMD.
-               05  WRK-SYSYY       PIC 9(04).
-               05  WRK-SYSMM       PIC 9(02).
-               05  WRK-SYSDD       PIC 9(02).
+               05  WRK-SYSYY         PIC 9(04).
+               05  WRK-SYSMM         PIC 9(02).
+               05  WRK-SYSDD         PIC 9(02).
+      *
            03  WRK-WSYSYMD.
                05  WRK-WGO         PIC X(01).
                05  WRK-WYY         PIC 9(02).
@@ -134,36 +135,42 @@
                05  WRK-SYY         PIC 9(04).
                05  WRK-SMM         PIC 9(02).
                05  WRK-SDD         PIC 9(02).
+      *
            03  WRK-PAGE            PIC 9(03).
-           03  WRK-ADRS            PIC X(200).
+      *
+           03  WRK-ADRS          PIC X(200).
            03  WRK-NENREI-X.
-               05  WRK-NENREI      PIC 9(03).
+               05  WRK-NENREI        PIC 9(03).
+      *
            03  WRK-HKNJA           PIC X(08).
            03  WRK-HKNJA-G         PIC X(16).
-           03  WRK-BYOMEI          PIC X(100).
       *
       *    文字変換
            03  WRK-ZENKAKU-G.
-               05  WRK-ZENKAKU     PIC X(02)  OCCURS 10.
-           03  WRK-MOJI            PIC X(10).
-           03  WRK-MOJISU          PIC 9(02).
-           03  WRK-MAE-INPUT       PIC X(200).
-           03  WRK-OUT-INPUT       PIC X(200).
-           03  WRK-HEN-KIGONUM     PIC X(80).
-           03  WRK-KIGONUM         PIC X(80).
-           03  WRK-NUM             PIC X(80).
+               05  WRK-ZENKAKU         PIC X(02)   OCCURS   10.
+           03  WRK-MOJI                PIC X(10).
+           03  WRK-MOJISU              PIC 9(02).
+           03  WRK-MAE-INPUT           PIC X(200).
+           03  WRK-OUT-INPUT           PIC X(200).
+      *
+           03  WRK-HEN-KIGONUM         PIC X(80).
+           03  WRK-KIGONUM             PIC X(80).
+           03  WRK-NUM                 PIC X(80).
+      *
            03  WRK-WARI            PIC 9(02)V9.
            03  WRK-Z6              PIC ZZZZ.
            03  WRK-Z62             PIC Z9.9.
            03  WRK-Z3              PIC ZZ9.
            03  WRK-Z9V9            PIC Z9.9.
            03  WRK-Z9              PIC Z9.
+      *
            03  WRK-HKNCOMBI        PIC X(40).
-           03  WRK-HPTNUM          PIC X(08).
+           03  WRK-HPTNUM          PIC X(08). 
            03  WRK-FTNSNO          PIC X(16).
            03  WRK-JKYSNO          PIC X(20).
            03  WRK-TEKSTYMD        PIC X(22).
            03  WRK-TEKEDYMD        PIC X(22).
+      *
            03  WRK-STRYMD.
                05  WRK-STRGO       PIC X(04).
                05  WRK-STRYY       PIC X(04).
@@ -180,6 +187,7 @@
                05  WRK-END2        PIC X(02).
                05  WRK-ENDDD       PIC X(04).
                05  WRK-END3        PIC X(02).
+      *
            03  WRK-STRYMDW.
                05  WRK-STRGOW      PIC X(01).
                05  WRK-STRYYW      PIC X(02).
@@ -194,6 +202,7 @@
                05  WRK-ENDMMW      PIC X(02).
                05  WRK-END2W       PIC X(01).
                05  WRK-ENDDDW      PIC X(02).
+      *
            03  WRK-ERRMSG          PIC X(40).
            03  WRK-MSG             PIC X(200).
       *
@@ -218,12 +227,12 @@
                05  FILLER          PIC  X(01)  VALUE  "-".
                05  WRK-POST2       PIC  X(04).
       *
-      *    日本語数字
+      *   日本語数字
        01  TBL-SUJI-AREA.
-           03  FILLER              PIC X(20)
-                                   VALUE "１２３４５６７８９０".
-       01  TBL-SUJI-R              REDEFINES   TBL-SUJI-AREA.
-           03  TBL-SUJI            PIC X(02)   OCCURS   10.
+           03  FILLER          PIC X(20)   VALUE
+              "１２３４５６７８９０".
+       01  TBL-SUJI-R          REDEFINES   TBL-SUJI-AREA.
+           03  TBL-SUJI        PIC X(02)   OCCURS   10.
       *
        01  DUMMY PIC X(03).
       *****************************************************************
@@ -255,19 +264,18 @@
       *    患者病名マスタ
        01  PTBYOMEI-REC.
            COPY    "CPPTBYOMEI.INC".
-      *
       *    患者労災保険情報
        01  PTRSIINF-REC.
            COPY    "CPPTRSIINF.INC".
       *
       *    出力先プリンタ名割り当て情報
-           COPY    "CPSK1031.INC".
+           COPY  "CPSK1031.INC".
       *
       *    印刷パラメタ
            COPY    "CPORCSMKPRT.INC".
       *
       *    患者登録機能制御情報
-           COPY    "CPSK1017.INC".
+           COPY  "CPSK1017.INC".
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -279,10 +287,9 @@
            COPY  "CPORCSLNK.INC".
       *
       *    数字変換領域
-           COPY    "CPORCSNUM.INC".
-      *
+           COPY  "CPORCSNUM.INC".
       *    患者番号変換サブ
-           COPY    "CPORCSPTID.INC".
+           COPY  "CPORCSPTID.INC".
       *
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
@@ -326,11 +333,11 @@
       *****************************************************************
        000-PROC-SEC                SECTION.
       *
-           PERFORM  100-INIT-SEC
+           PERFORM 100-INIT-SEC
       *
-           PERFORM  200-MAIN-SEC  UNTIL  FLG-END  =  1
+           PERFORM 200-MAIN-SEC    UNTIL   FLG-END  =   1
       *
-           PERFORM  300-END-SEC
+           PERFORM 300-END-SEC
       *
            .
            EXIT    PROGRAM
@@ -347,7 +354,7 @@
            INITIALIZE                  H01SA4
            MOVE    ZERO                TO  WRK-PAGE
       *
-           ACCEPT  SYS-TIME            FROM  TIME
+           ACCEPT  SYS-TIME            FROM    TIME
       *
       *    ファイルＯＰＥＮ
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
@@ -370,60 +377,61 @@
            .
        100-INIT-EXT.
            EXIT.
-
+      
       *****************************************************************
       *    パラメタ編集処理
       *****************************************************************
        110-PARA-HENSYU-SEC                   SECTION.
       *
       *    出力先プリンタ名割り当て情報編集
-           INITIALIZE                SYS-1031-REC
-           INITIALIZE               ORCSPRTNMAREA
-           MOVE    "2"              TO  ORCSPRTNM-KBN
-           MOVE    SPA-SYSYMD       TO  ORCSPRTNM-SRYYMD
-           MOVE    "2"              TO  ORCSPRTNM-NYUGAIKBN
+           INITIALIZE                      SYS-1031-REC
+           INITIALIZE                      ORCSPRTNMAREA
+           MOVE    "2"                 TO  ORCSPRTNM-KBN
+           MOVE    SPA-SYSYMD          TO  ORCSPRTNM-SRYYMD
+           MOVE    "2"                 TO  ORCSPRTNM-NYUGAIKBN
       *
-           CALL    "ORCSPRTNM"      USING
-                                    ORCSPRTNMAREA
-                                    SPA-AREA
-                                    SYS-1031-REC
+           CALL    "ORCSPRTNM"         USING
+                                           ORCSPRTNMAREA
+                                           SPA-AREA
+                                           SYS-1031-REC
       *
-           IF   ORCSPRTNM-RC  NOT =  ZERO
-             MOVE    1              TO  FLG-END
-           END-IF
+           IF      ORCSPRTNM-RC    NOT =   ZERO
+               MOVE    1                   TO  FLG-END
+           END-IF 
+      *
       *
       *    患者登録機能制御情報
-           MOVE    SPACE            TO  SYS-1017-REC
-           INITIALIZE               SYS-1017-REC
-           MOVE    "1017"           TO  SYS-1017-KANRICD
-           MOVE    "*"              TO  SYS-1017-KBNCD
-           MOVE    SPA-SYSYMD       TO  SYS-1017-STYUKYMD
-           MOVE    SPA-SYSYMD       TO  SYS-1017-EDYUKYMD
-           MOVE    SPA-HOSPNUM      TO  SYS-1017-HOSPNUM
-           MOVE    SYS-1017-REC     TO  MCPDATA-REC
+           MOVE    SPACE               TO  SYS-1017-REC
+           INITIALIZE                  SYS-1017-REC
+           MOVE    "1017"              TO  SYS-1017-KANRICD
+           MOVE    "*"                 TO  SYS-1017-KBNCD
+           MOVE    SPA-SYSYMD          TO  SYS-1017-STYUKYMD
+           MOVE    SPA-SYSYMD          TO  SYS-1017-EDYUKYMD
+           MOVE    SPA-HOSPNUM         TO  SYS-1017-HOSPNUM
+           MOVE    SYS-1017-REC        TO  MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI  =  ZERO
-             MOVE    MCPDATA-REC    TO  SYS-1017-REC
-             IF   ORCHC01-SYORIKBN  =  "3"
-               MOVE  ORCHC01-BYOMEIFLG    TO  SYS-1017-KARUTE-BYOMEI
-             END-IF
+           IF      FLG-SYSKANRI        =   ZERO
+               MOVE    MCPDATA-REC         TO  SYS-1017-REC
+               IF   ORCHC01-SYORIKBN  =   "3"
+                 MOVE  ORCHC01-BYOMEIFLG  TO  SYS-1017-KARUTE-BYOMEI
+               END-IF
            ELSE
-             INITIALIZE             SYS-1017-REC
+               INITIALIZE                  SYS-1017-REC
            END-IF
       *    医療機関情報
-           MOVE    SPACE            TO   SYS-1001-REC
-           INITIALIZE               SYS-1001-REC
-           MOVE    "1001"           TO   SYS-1001-KANRICD
-           MOVE    "*"              TO   SYS-1001-KBNCD
-           MOVE    SPA-SYSYMD       TO   SYS-1001-EDYUKYMD
-           MOVE    SPA-SYSYMD       TO   SYS-1001-STYUKYMD
-           MOVE    SPA-HOSPNUM      TO   SYS-1001-HOSPNUM
-           MOVE    SYS-1001-REC     TO   MCPDATA-REC
+           MOVE    SPACE               TO   SYS-1001-REC
+           INITIALIZE                  SYS-1001-REC
+           MOVE    "1001"              TO   SYS-1001-KANRICD
+           MOVE    "*"                 TO   SYS-1001-KBNCD
+           MOVE    SPA-SYSYMD          TO   SYS-1001-EDYUKYMD
+           MOVE    SPA-SYSYMD          TO   SYS-1001-STYUKYMD
+           MOVE    SPA-HOSPNUM         TO   SYS-1001-HOSPNUM
+           MOVE    SYS-1001-REC        TO   MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
-           IF   FLG-SYSKANRI  =  ZERO
-             MOVE    MCPDATA-REC    TO   SYS-1001-REC
+           IF    FLG-SYSKANRI   =   ZERO
+             MOVE    MCPDATA-REC         TO   SYS-1001-REC
            ELSE
-             INITIALIZE             SYS-1001-REC
+             INITIALIZE                  SYS-1001-REC
            END-IF
            .
        110-PARA-HENSYU-EXT.
@@ -434,9 +442,9 @@
       *****************************************************************
        200-MAIN-SEC                SECTION.
       *
-      *    印刷項目編集
+      *　　印刷項目編集
             PERFORM 2001-SYORI-SEC
-      *    印刷用データ出力
+      *　　印刷用データ出力
       *
             WRITE  H01KA4
             WRITE  H01SA4
@@ -448,86 +456,87 @@
       *
       *     国保・健保印刷判別
              EVALUATE   TRUE
-               WHEN  PTHKN-HKNNUM  =  "060"  OR  "067"  OR  "039"
-                                  OR  "040"  OR  "068"  OR  "069"
-                 INITIALIZE                  ORCSMKPRTAREA
-                 MOVE   "HC01.sh"            TO  MKPRT-ID
-                 MOVE   "A21000H01KA4.red"   TO  MKPRT-DIA
-                 MOVE   SPACE                TO  MKPRT-DEF
-                 MOVE   HC01PARA             TO  MKPRT-DAT
-                 MOVE   SYS-1031-PRTNM(1)    TO  MKPRT-PRTNM
-                 CALL   "ORCSMKPRTSITE"      USING
-                                             ORCSMKPRTAREA
-                                             SPA-AREA
-               WHEN   OTHER
-                 INITIALIZE                  ORCSMKPRTAREA
-                 MOVE   "HC01.sh"            TO  MKPRT-ID
-                 MOVE   "A21000H01SA4.red"   TO  MKPRT-DIA
-                 MOVE   SPACE                TO  MKPRT-DEF
-                 MOVE   HC01PARA2            TO  MKPRT-DAT
-                 MOVE   SYS-1031-PRTNM(1)    TO  MKPRT-PRTNM
-                 CALL   "ORCSMKPRTSITE"      USING
-                                             ORCSMKPRTAREA
-                                             SPA-AREA
+             WHEN  PTHKN-HKNNUM   = "060"  OR   "067"
+                                   OR  "039" OR  "040"
+                                   OR  "068" OR  "069"
+               INITIALIZE                 ORCSMKPRTAREA
+               MOVE   "HC01.sh"           TO  MKPRT-ID
+               MOVE   "A21000H01KA4.red"          TO  MKPRT-DIA
+               MOVE   SPACE                       TO  MKPRT-DEF
+               MOVE   HC01PARA            TO  MKPRT-DAT
+               MOVE   SYS-1031-PRTNM(1)   TO  MKPRT-PRTNM
+               CALL   "ORCSMKPRTSITE"      USING
+                                           ORCSMKPRTAREA
+                                           SPA-AREA
+             WHEN   OTHER
+               INITIALIZE                 ORCSMKPRTAREA
+               MOVE   "HC01.sh"           TO  MKPRT-ID
+               MOVE   "A21000H01SA4.red"          TO  MKPRT-DIA
+               MOVE   SPACE                       TO  MKPRT-DEF
+               MOVE   HC01PARA2            TO  MKPRT-DAT
+               MOVE   SYS-1031-PRTNM(1)   TO  MKPRT-PRTNM
+              CALL   "ORCSMKPRTSITE"      USING
+                                           ORCSMKPRTAREA
+                                           SPA-AREA
              END-EVALUATE
       *
            ELSE
       *
       *     国保・健保印刷判別
              EVALUATE   TRUE
-               WHEN  PTHKN-HKNNUM  =  "060"  OR  "067"  OR  "039"
-                                  OR  "040"  OR  "068"  OR  "069"
+               WHEN  PTHKN-HKNNUM   = "060"  OR   "067"
+                                       OR  "039" OR  "040"
+                                       OR  "068" OR  "069"
       *
-                 MOVE    ORCHC01-PRTAREA   TO  ORCSPRTAREA
+               MOVE    ORCHC01-PRTAREA     TO  ORCSPRTAREA
       *
-                 MOVE    H01KA4       TO  SPRT-PRTDATA
-                 MOVE    "2"          TO  SPRT-SITEKBN
-                 MOVE    "A21000H01KA4.red"    TO  SPRT-PRTID
-                 MOVE    "診療録（カルテ１号紙）（外来）一括"
-                                      TO  SPRT-TITLE
-                 CALL    "ORCSPRT"    USING
-                                      ORCSPRTAREA
-                                      SPA-AREA
-                 IF  SPRT-RETURN  =  ZERO
-                   ADD     1          TO  ORCHC01-CNT
-                 ELSE
-                   MOVE    9          TO  ORCHC01-RC
-                 END-IF
-               WHEN   OTHER
+               MOVE    H01KA4              TO  SPRT-PRTDATA
+               MOVE    "2"                 TO  SPRT-SITEKBN
+               MOVE    "A21000H01KA4.red"         TO  SPRT-PRTID
+               MOVE    "診療録（カルテ１号紙）（外来）一括"
+                                           TO  SPRT-TITLE
+               CALL    "ORCSPRT"           USING
+                                           ORCSPRTAREA
+                                           SPA-AREA
+               IF      SPRT-RETURN         =   ZERO
+                       ADD     1               TO  ORCHC01-CNT
+               ELSE
+                   MOVE    9               TO  ORCHC01-RC
+               END-IF
+             WHEN   OTHER
       *
-                 MOVE    ORCHC01-PRTAREA   TO  ORCSPRTAREA
+               MOVE    ORCHC01-PRTAREA     TO  ORCSPRTAREA
       *
-                 MOVE    H01SA4       TO  SPRT-PRTDATA
-                 MOVE    "2"          TO  SPRT-SITEKBN
-                 MOVE    "A21000H01SA4.red"         TO  SPRT-PRTID
-                 MOVE    "診療録（カルテ１号紙）（外来）一括"
-                                      TO  SPRT-TITLE
-                 CALL    "ORCSPRT"    USING
-                                      ORCSPRTAREA
-                                      SPA-AREA
-                 IF  SPRT-RETURN  =  ZERO
-                   ADD     1          TO  ORCHC01-CNT
-                 ELSE
-                   MOVE    9          TO  ORCHC01-RC
-                 END-IF
+               MOVE    H01SA4              TO  SPRT-PRTDATA
+               MOVE    "2"                 TO  SPRT-SITEKBN
+               MOVE    "A21000H01SA4.red"         TO  SPRT-PRTID
+               MOVE    "診療録（カルテ１号紙）（外来）一括"
+                                           TO  SPRT-TITLE
+               CALL    "ORCSPRT"           USING
+                                           ORCSPRTAREA
+                                           SPA-AREA
+               IF      SPRT-RETURN         =   ZERO
+                   ADD     1               TO  ORCHC01-CNT
+               ELSE
+                   MOVE    9               TO  ORCHC01-RC
+               END-IF
              END-EVALUATE
            END-IF
       *
       *    続紙あり
-           IF  FLG-ZOKUSHI  =  1
-               AND  FLG-PTBYOMEI  =  ZERO
-             PERFORM 2002-ZOKUSHI-SEC
-             CLOSE                    PRT-FILE
-                                      PRT-FILE2
+           IF      FLG-ZOKUSHI         =   1  
+              AND  FLG-PTBYOMEI        =   ZERO
+               PERFORM 2002-ZOKUSHI-SEC
+               CLOSE                       PRT-FILE
+                                           PRT-FILE2
            END-IF
       *
-           MOVE    "DBCLOSECURSOR"    TO  MCP-FUNC
-           CALL    "ORCDBMAIN"        USING
-                                      MCPAREA
-                                      MCPDATA-REC
-                                      SPA-AREA
+               MOVE    "DBCLOSECURSOR"     TO      MCP-FUNC
+               CALL    "ORCDBMAIN"         USING   MCPAREA
+                                                   MCPDATA-REC
+                                                   SPA-AREA
       *
-           MOVE    1                  TO  FLG-END
+           MOVE    1                   TO  FLG-END 
            .
        200-MAIN-EXT.
            EXIT.
@@ -538,47 +547,48 @@
        2001-SYORI-SEC                SECTION.
       *
       *    患者マスター検索
-           INITIALIZE                PTINF-REC
+           INITIALIZE                      PTINF-REC
            MOVE    SPA-HOSPNUM       TO  PTINF-HOSPNUM
            MOVE    SPA-PTID          TO  PTINF-PTID
            PERFORM 900-PTINF-READ-SEC
       *
-           IF   FLG-PTINF  =  1
-             GO      TO      2001-SYORI-EXT
+           IF      FLG-PTINF           =   1
+               DISPLAY "*** PTINF  INVALIE:"   PTINF-KEY
+               GO      TO      2001-SYORI-EXT
            END-IF
       *
       *    保険組合せマスター検索
-           INITIALIZE                HKNCOMBI-REC
-           MOVE    SPA-HOSPNUM       TO  COMB-HOSPNUM
-           MOVE    SPA-PTID          TO  COMB-PTID
-           MOVE    SPA-HKNCOMBINUM   TO  COMB-HKNCOMBINUM
+           INITIALIZE                      HKNCOMBI-REC
+           MOVE    SPA-HOSPNUM         TO  COMB-HOSPNUM
+           MOVE    SPA-PTID            TO  COMB-PTID
+           MOVE    SPA-HKNCOMBINUM     TO  COMB-HKNCOMBINUM
            PERFORM 910-HKNCOMBI-READ-SEC
            IF   FLG-HKNCOMBI  =  1
              INITIALIZE                  HKNCOMBI-REC
            END-IF
       *
       *    患者保険情報検索
-           INITIALIZE                PTHKNINF-REC
-           MOVE    SPA-HOSPNUM       TO  PTHKN-HOSPNUM
-           MOVE    SPA-PTID          TO  PTHKN-PTID
+           INITIALIZE                      PTHKNINF-REC
+           MOVE    SPA-HOSPNUM         TO  PTHKN-HOSPNUM
+           MOVE    SPA-PTID            TO  PTHKN-PTID
       *    主保険−ＩＤ
-           MOVE    COMB-HKNID        TO  PTHKN-HKNID
+           MOVE    COMB-HKNID          TO  PTHKN-HKNID
            PERFORM 920-PTHKNINF-READ-SEC
            IF      FLG-PTHKNINF  NOT =   ZERO
              INITIALIZE              PTHKNINF-REC
            END-IF
       *
       *    保険者番号変換処理
-           MOVE    SPACE             TO  WRK-HKNJA
-           MOVE    9                 TO  IDY
-           MOVE    ZERO              TO  FLG-OK
+           MOVE    SPACE               TO  WRK-HKNJA
+           MOVE    9                   TO  IDY
+           MOVE    ZERO                TO  FLG-OK
            PERFORM  VARYING  IDX  FROM  8  BY  -1
                     UNTIL  IDX  <  1
              IF   PTHKN-HKNJANUM(IDX:1)   NOT =   SPACE
                MOVE    1             TO  FLG-OK
              END-IF
              IF    FLG-OK  =  1
-               COMPUTE IDY  =  IDY  -  1
+               COMPUTE IDY  =   IDY     -   1
                MOVE    PTHKN-HKNJANUM(IDX:1)   TO  WRK-HKNJA (IDY:1)
              END-IF
            END-PERFORM
@@ -644,263 +654,271 @@
            INITIALIZE  H01SA4-KANANAME
       *
       *    患者マスターより
-           MOVE    SPA-PTNUM         TO  H01KA4-PTNUM
-                                         H01SA4-PTNUM
+           MOVE    SPA-PTNUM           TO  H01KA4-PTNUM
+                                           H01SA4-PTNUM
            IF  PTINF-NAME(21:)  =  SPACE
-               MOVE    PTINF-NAME    TO  H01KA4-NAME
-                                         H01SA4-NAME
+               MOVE    PTINF-NAME          TO  H01KA4-NAME
+                                               H01SA4-NAME
            ELSE
-               MOVE    PTINF-NAME    TO  H01KA4-NAME2
-                                         H01SA4-NAME2
+               MOVE    PTINF-NAME          TO  H01KA4-NAME2
+                                               H01SA4-NAME2
            END-IF
-           MOVE    PTINF-KANANAME    TO  H01KA4-KANANAME
-                                         H01SA4-KANANAME
+           MOVE    PTINF-KANANAME      TO  H01KA4-KANANAME
+                                           H01SA4-KANANAME
       *
            EVALUATE    PTINF-SEX
-             WHEN  "1"
-               MOVE    "○"          TO  H01KA4-OTOKO
-                                         H01SA4-OTOKO
-             WHEN  "2"
-               MOVE    "○"          TO  H01SA4-ONNA
-               IF   PTHKN-HKNNUM  =  "039"  OR  "040"
-                 MOVE    "○"        TO  H01KA4-ONNA2
-               ELSE
-                 MOVE    "○"        TO  H01KA4-ONNA
-               END-IF
+               WHEN    "1"
+                   MOVE    "○"                  TO  H01KA4-OTOKO
+                                                     H01SA4-OTOKO
+               WHEN    "2"
+                    MOVE    "○"                  TO  H01SA4-ONNA
+                    IF   PTHKN-HKNNUM   =   "039" OR  "040"
+                      MOVE    "○"                TO  H01KA4-ONNA2
+                    ELSE
+                      MOVE    "○"                TO  H01KA4-ONNA
+                    END-IF
            END-EVALUATE
       *
-           MOVE    PTINF-BIRTHDAY    TO  WRK-SYMD
+           MOVE    PTINF-BIRTHDAY         TO  WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
            EVALUATE  LNK-DAY2-EDTYMD1-G
-             WHEN  "M"
-               MOVE    "○"          TO  H01KA4-MEIJI
-                                         H01SA4-MEIJI
-             WHEN  "T"
-               MOVE    "○"          TO  H01KA4-TAISYOU
-                                         H01SA4-TAISYOU
-             WHEN  "S"
-               MOVE    "○"          TO  H01KA4-SYOUWA
-                                         H01SA4-SYOUWA
-             WHEN  "H"
-               MOVE    "○"          TO  H01KA4-HEISEI
-                                         H01SA4-HEISEI
+           WHEN  "M"
+               MOVE    "○"           TO     H01KA4-MEIJI
+                                             H01SA4-MEIJI
+           WHEN  "T"
+               MOVE    "○"           TO     H01KA4-TAISYOU
+                                             H01SA4-TAISYOU
+           WHEN  "S"
+               MOVE    "○"           TO     H01KA4-SYOUWA
+                                             H01SA4-SYOUWA
+           WHEN  "H"
+               MOVE    "○"           TO     H01KA4-HEISEI
+                                             H01SA4-HEISEI
            END-EVALUATE
-           MOVE    WRK-HYY           TO  H01KA4-TANJYOY
-                                         H01SA4-TANJYOY
-           MOVE    WRK-HMM           TO  H01KA4-TANJYOM
-                                         H01SA4-TANJYOM
-           MOVE    WRK-HDD           TO  H01KA4-TANJYOD
-                                         H01SA4-TANJYOD
-      *    年齢
-           MOVE    SPA-SYSYMD(1:4)   TO  WRK-SPA-SYSYYYY
-           COMPUTE  WRK-NENREI  =  WRK-SPA-SYSYY
-                                -  WRK-SYY
-           IF   SPA-SYSYMD(5:2)  <  WRK-SYMD(5:2)
-      *    現在日付が誕生月に達していない場合
-             COMPUTE  WRK-NENREI  =  WRK-NENREI  -  1
+           MOVE    WRK-HYY             TO  H01KA4-TANJYOY
+                                           H01SA4-TANJYOY
+           MOVE    WRK-HMM             TO  H01KA4-TANJYOM
+                                           H01SA4-TANJYOM
+           MOVE    WRK-HDD             TO  H01KA4-TANJYOD
+                                           H01SA4-TANJYOD
+      *　　年齢
+           MOVE    SPA-SYSYMD(1:4)     TO  WRK-SPA-SYSYYYY
+           COMPUTE WRK-NENREI        =   WRK-SPA-SYSYY
+                                       -   WRK-SYY
+           IF      SPA-SYSYMD(5:2)     <   WRK-SYMD(5:2)
+      ***        現在日付が誕生月に達していない場合 
+                   COMPUTE WRK-NENREI   =   WRK-NENREI   -   1
            ELSE
-      *    現在日付と誕生月が一致して誕生日が１日以降の場合
-             IF   SPA-SYSYMD(5:2)   =  WRK-SYMD(5:2)
-                 AND  WRK-SYMD(7:2)  >  01
-               COMPUTE  WRK-NENREI  =  WRK-NENREI  -  1
-             END-IF
+      ***        現在日付と誕生月が一致して誕生日が１日以降の場合 
+                IF   SPA-SYSYMD(5:2)   =   WRK-SYMD(5:2)   AND
+                      WRK-SYMD(7:2)      >   01 
+                      COMPUTE WRK-NENREI   =   WRK-NENREI   -   1
+                END-IF 
            END-IF
-           MOVE    WRK-NENREI         TO  WRK-Z3
+           MOVE    WRK-NENREI       TO  WRK-Z3
       *
       *    自宅−住所
-           MOVE    SPACE              TO  WRK-ADRS
-           STRING  PTINF-HOME-ADRS    DELIMITED   BY  SPACE
-                   PTINF-HOME-BANTI   DELIMITED   BY  SPACE
-                   INTO                   WRK-ADRS
+           MOVE    SPACE               TO  WRK-ADRS
+           STRING  PTINF-HOME-ADRS     DELIMITED   BY  SPACE
+                   PTINF-HOME-BANTI    DELIMITED   BY  SPACE
+                   INTO                    WRK-ADRS
            END-STRING
-           MOVE    WRK-ADRS           TO  H01KA4-ADRS
-                                          H01SA4-ADRS
+           MOVE    WRK-ADRS            TO  H01KA4-ADRS
+                                           H01SA4-ADRS
       *    自宅郵便番号
-           MOVE    PTINF-HOME-POST(1:3)   TO  WRK-POST1
-           MOVE    PTINF-HOME-POST(4:4)   TO  WRK-POST2
-           MOVE    WRK-POSTG          TO  H01KA4-ADRSPOST
-                                          H01SA4-ADRSPOST
+           MOVE    PTINF-HOME-POST(1:3) TO  WRK-POST1
+           MOVE    PTINF-HOME-POST(4:4) TO  WRK-POST2
+           MOVE    WRK-POSTG            TO  H01KA4-ADRSPOST
+                                            H01SA4-ADRSPOST
       *
       *    自宅−昼電話番号
-           MOVE    PTINF-HOME-TEL1    TO  H01KA4-ADRSTEL
-                                          H01SA4-ADRSTEL
+           MOVE    PTINF-HOME-TEL1     TO  H01KA4-ADRSTEL
+                                           H01SA4-ADRSTEL
       *    続柄
-           MOVE    PTINF-ZOKUGARA     TO  H01KA4-TUZUKI
-                                          H01SA4-TUZUKI
-           IF   PTHKN-HKNNUM  =  "039"  OR  "040"
-             MOVE     SPACE           TO  H01KA4-TUZUKI
+           MOVE    PTINF-ZOKUGARA      TO  H01KA4-TUZUKI
+                                           H01SA4-TUZUKI
+           IF   PTHKN-HKNNUM   =       "039" OR  "040"
+               MOVE     SPACE          TO  H01KA4-TUZUKI
            END-IF
       *    職業
-           MOVE    PTINF-JOB          TO  H01KA4-WORK
-                                          H01SA4-WORK
+           MOVE    PTINF-JOB           TO  H01KA4-WORK
+                                           H01SA4-WORK
       *
       *事業所
       *    名称
-           MOVE    PTINF-OFFICE-NAME  TO  H01SA4-KINNAME
+           MOVE    PTINF-OFFICE-NAME   TO  H01SA4-KINNAME
       *    勤務先−住所,番地方書
-           MOVE    SPACE              TO  WRK-ADRS
+           MOVE    SPACE               TO  WRK-ADRS
            STRING  PTINF-OFFICE-ADRS   DELIMITED   BY  SPACE
                    PTINF-OFFICE-BANTI  DELIMITED   BY  SPACE
-                                       INTO        WRK-ADRS
+                   INTO                    WRK-ADRS
            END-STRING
-           MOVE    WRK-ADRS           TO  H01SA4-KINADRS
+           MOVE    WRK-ADRS            TO  H01SA4-KINADRS
       *    電話番号
-           MOVE    PTINF-OFFICE-TEL   TO  H01SA4-KINADRSTEL
-           IF  COMB-HKNNUM  =  "975"
-             MOVE    COMB-SYU-TANSEIDONAME   TO  WRK-HKNJA-G
+           MOVE    PTINF-OFFICE-TEL    TO  H01SA4-KINADRSTEL
+           IF      COMB-HKNNUM         =  "975"
+               MOVE    COMB-SYU-TANSEIDONAME   TO  WRK-HKNJA-G
            END-IF
       *
       *    保険者情報
       *    保険者番号
-           MOVE    WRK-HKNJA-G        TO  H01KA4-HPTNUM
-                                          H01SA4-HPTNUM
+           MOVE    WRK-HKNJA-G         TO  H01KA4-HPTNUM
+                                           H01SA4-HPTNUM
       *
       *    記号・番号
       *    全角変換
-           MOVE    PTHKN-KIGO         TO  WRK-MAE-INPUT
+           MOVE    PTHKN-KIGO          TO  WRK-MAE-INPUT
            PERFORM 2009-HENKAN-SEC
-           MOVE    WRK-OUT-INPUT(1:KANACHK-MAX)   TO  WRK-KIGONUM
-           MOVE    PTHKN-NUM          TO  WRK-MAE-INPUT
+           MOVE    WRK-OUT-INPUT(1:KANACHK-MAX)
+                                       TO  WRK-KIGONUM
+           MOVE    PTHKN-NUM           TO  WRK-MAE-INPUT
            PERFORM 2009-HENKAN-SEC
-           MOVE    WRK-OUT-INPUT(1:KANACHK-MAX)   TO  WRK-NUM
+           MOVE    WRK-OUT-INPUT(1:KANACHK-MAX)
+                                       TO  WRK-NUM
       *
-           IF   ( WRK-KIGONUM  =  SPACE )
-               AND  ( WRK-NUM  =  SPACE )
-             MOVE    SPACE            TO  WRK-HEN-KIGONUM
+           IF      (WRK-KIGONUM        =   SPACE )  AND
+                   (WRK-NUM            =   SPACE )
+               MOVE    SPACE               TO  WRK-HEN-KIGONUM
            ELSE
-             STRING  WRK-KIGONUM      DELIMITED   BY  SPACE
-                     "・"             DELIMITED   BY  SIZE
-                     WRK-NUM          DELIMITED   BY  SPACE
-                 INTO                 WRK-HEN-KIGONUM
-             END-STRING
+               STRING  WRK-KIGONUM         DELIMITED   BY  SPACE
+                       "・"                DELIMITED   BY  SIZE
+                       WRK-NUM             DELIMITED   BY  SPACE
+                   INTO                    WRK-HEN-KIGONUM
+               END-STRING
            END-IF
       *
       *    後期高齢者は番号のみ
-           MOVE    WRK-HEN-KIGONUM    TO  H01KA4-KIGONUM
-                                          H01SA4-KIGONUM
-           IF  (COMB-HKNNUM  =  "039" )
-               AND (WRK-KIGONUM  =  SPACE )
-             MOVE    WRK-NUM          TO  H01KA4-KIGONUM
-                                          H01SA4-KIGONUM
+           MOVE    WRK-HEN-KIGONUM     TO  H01KA4-KIGONUM
+                                           H01SA4-KIGONUM
+           IF     (COMB-HKNNUM         =  "039" )
+              AND (WRK-KIGONUM         =   SPACE )
+              MOVE   WRK-NUM     TO     H01KA4-KIGONUM
+                                         H01SA4-KIGONUM
            END-IF
       *
       *    記号・番号が１６文字以上は別行へ
-           IF   WRK-HEN-KIGONUM(33:)  NOT =  SPACE
-             MOVE    SPACE            TO  H01KA4-KIGONUM
-                                          H01SA4-KIGONUM
-             MOVE    WRK-KIGONUM      TO  H01KA4-KIGO
-                                          H01SA4-KIGO
-             MOVE    WRK-NUM          TO  H01KA4-NUM
-                                          H01SA4-NUM
+           IF      WRK-HEN-KIGONUM(33:)    NOT =   SPACE
+                   MOVE    SPACE         TO     H01KA4-KIGONUM
+                                                H01SA4-KIGONUM
+                   MOVE    WRK-KIGONUM   TO     H01KA4-KIGO
+                                                H01SA4-KIGO
+                   MOVE    WRK-NUM       TO     H01KA4-NUM
+                                                H01SA4-NUM
            END-IF
       *
       *    被保険者名・世帯主に変更
-           MOVE    PTINF-SETAINUSI    TO  H01KA4-HIHKNJNAME
-           MOVE    PTHKN-HIHKNJANAME  TO  H01SA4-HIHKNJNAME
+           MOVE    PTINF-SETAINUSI   TO  H01KA4-HIHKNJNAME
+           MOVE    PTHKN-HIHKNJANAME   TO  H01SA4-HIHKNJNAME
       *
       *    適用開始年月日（資格取得日へ）
-           IF   PTHKN-SKKGETYMD  =  SPACE
-             CONTINUE
+           IF      PTHKN-SKKGETYMD     =   SPACE
+               CONTINUE
            ELSE
-             MOVE    PTHKN-SKKGETYMD  TO  WRK-SYMD
-             PERFORM  31012-SEIWA-HEN-SEC
-             EVALUATE  LNK-DAY2-EDTYMD1-G
-             WHEN  "S"
-               MOVE    "○"           TO  H01KA4-SKKSYOWA
-                                          H01SA4-SKKSYOWA
-             WHEN  "H"
-               MOVE    "○"           TO  H01KA4-SKKHEISEI
-                                          H01SA4-SKKHEISEI
-             END-EVALUATE
-             MOVE    WRK-HYY          TO  H01KA4-SIKAKUY
-                                          H01SA4-SIKAKUY
-             MOVE    WRK-HMM          TO  H01KA4-SIKAKUM
-                                          H01SA4-SIKAKUM
-             MOVE    WRK-HDD          TO  H01KA4-SIKAKUD
-                                          H01SA4-SIKAKUD
+               MOVE    PTHKN-SKKGETYMD     TO  WRK-SYMD
+               PERFORM 31012-SEIWA-HEN-SEC
+               EVALUATE  LNK-DAY2-EDTYMD1-G
+               WHEN  "S"
+                   MOVE    "○"            TO    H01KA4-SKKSYOWA
+                                                 H01SA4-SKKSYOWA
+               WHEN  "H"
+                   MOVE    "○"            TO    H01KA4-SKKHEISEI
+                                                 H01SA4-SKKHEISEI
+               END-EVALUATE
+               MOVE    WRK-HYY             TO  H01KA4-SIKAKUY
+                                               H01SA4-SIKAKUY
+               MOVE    WRK-HMM             TO  H01KA4-SIKAKUM
+                                               H01SA4-SIKAKUM
+               MOVE    WRK-HDD             TO  H01KA4-SIKAKUD
+                                               H01SA4-SIKAKUD
            END-IF
       *    適用終了年月日
-           IF   PTHKN-TEKEDYMD  =  SPACE  OR  ALL "9"
-             CONTINUE
+           IF      PTHKN-TEKEDYMD      =   SPACE  OR  ALL "9"
+               CONTINUE
            ELSE
-             MOVE    PTHKN-TEKEDYMD   TO  WRK-SYMD
-             PERFORM 31012-SEIWA-HEN-SEC
-             MOVE    WRK-HYY          TO  H01KA4-YUKOY
-                                          H01SA4-YUKOY
-             MOVE    WRK-HMM          TO  H01KA4-YUKOM
-                                          H01SA4-YUKOM
-             MOVE    WRK-HDD          TO  H01KA4-YUKOD
-                                          H01SA4-YUKOD
+               MOVE    PTHKN-TEKEDYMD      TO  WRK-SYMD
+               PERFORM 31012-SEIWA-HEN-SEC
+               MOVE    WRK-HYY             TO  H01KA4-YUKOY
+                                               H01SA4-YUKOY
+               MOVE    WRK-HMM             TO  H01KA4-YUKOM
+                                               H01SA4-YUKOM
+               MOVE    WRK-HDD             TO  H01KA4-YUKOD
+                                               H01SA4-YUKOD
            END-IF
       *
-      *    保険者情報
-           MOVE    HKNJA-HKNJANAME    TO  H01KA4-HKNJANAME
-                                          H01SA4-HKNNAME
-           STRING  HKNJA-ADRS         DELIMITED  BY  SPACE
-                   HKNJA-BANTI        DELIMITED  BY  SPACE
-                                      INTO  H01SA4-HKNADRS
-           END-STRING
-           IF   PTHKN-HKNNUM  =  "039"  OR  "040"
-             STRING   HKNJA-ADRS      DELIMITED  BY  SPACE
-                      HKNJA-BANTI     DELIMITED  BY  SPACE
-                                      INTO  H01KA4-HKNJAADR
-             END-STRING
+      *    保険者情報（国保、後期）
+           MOVE    HKNJA-HKNJANAME         TO  H01KA4-HKNJANAME
+      *
+      *    保険者情報（社保）
+           IF  HKNJA-HKNJANAME(25:)  =  SPACE
+             MOVE    HKNJA-HKNJANAME    TO  H01SA4-HKNNAME
+           ELSE
+             MOVE    HKNJA-HKNJANAME    TO  H01SA4-HKNNAME2
            END-IF
-           MOVE    HKNJA-TEL          TO  H01SA4-HKNADRSTEL
+      *
+           STRING  HKNJA-ADRS        DELIMITED  BY  SPACE
+                   HKNJA-BANTI       DELIMITED  BY  SPACE
+                   INTO                    H01SA4-HKNADRS
+           END-STRING
+           IF   PTHKN-HKNNUM   =   "039" OR  "040"
+               STRING  HKNJA-ADRS        DELIMITED  BY  SPACE
+                   HKNJA-BANTI       DELIMITED  BY  SPACE
+                   INTO                    H01KA4-HKNJAADR
+               END-STRING
+           END-IF
+           MOVE    HKNJA-TEL           TO  H01SA4-HKNADRSTEL
       *
       *    保険算定年齢チェック等
-           INITIALIZE                 ORCSAGECHKAREA
-           MOVE    SPA-HOSPNUM        TO  AGECHK-HOSPNUM
-           MOVE    SPA-PTID           TO  AGECHK-PTID
-           MOVE    SPA-SRYYMD         TO  AGECHK-SRYYMD
-           MOVE    COMB-HKNCOMBINUM   TO  AGECHK-HKNCOMBINUM
-           CALL    "ORCSAGECHK"       USING
-                                      ORCSAGECHKAREA
-                                      SPA-AREA
-           IF   SPA-SRYYMD  <  "20080401"
-             IF   WRK-NENREI  <  3   AND  COMB-GAI-KFTNRATE = 30
-               MOVE    2              TO  WRK-Z9
-               MOVE    WRK-Z9         TO  H01KA4-FTNRITU
-                                           H01SA4-FTNRITU
-             ELSE
-               COMPUTE  WRK-WARI  =  COMB-GAI-KFTNRATE  /  10
-               IF   WRK-WARI(3:1)  =   ZERO
-                 MOVE    WRK-WARI     TO  WRK-Z9
-                 MOVE    WRK-Z9       TO  H01KA4-FTNRITU
-                                          H01SA4-FTNRITU
-               ELSE
-                 MOVE    WRK-WARI     TO  WRK-Z9V9
-                 MOVE    WRK-Z9V9     TO  H01KA4-FTNRITU
-                                          H01SA4-FTNRITU
+           INITIALIZE                  ORCSAGECHKAREA
+           MOVE    SPA-HOSPNUM         TO  AGECHK-HOSPNUM
+           MOVE    SPA-PTID            TO  AGECHK-PTID
+           MOVE    SPA-SRYYMD          TO  AGECHK-SRYYMD
+           MOVE    COMB-HKNCOMBINUM    TO  AGECHK-HKNCOMBINUM
+           CALL    "ORCSAGECHK"        USING
+                                       ORCSAGECHKAREA
+                                       SPA-AREA
+           IF SPA-SRYYMD  <  "20080401"
+               IF    WRK-NENREI  <  3   AND  COMB-GAI-KFTNRATE = 30
+                      MOVE   2            TO    WRK-Z9
+                      MOVE   WRK-Z9       TO    H01KA4-FTNRITU
+                                                H01SA4-FTNRITU
+               ELSE 
+                  COMPUTE WRK-WARI  =   COMB-GAI-KFTNRATE   /   10
+                  IF      WRK-WARI(3:1) =   ZERO
+                      MOVE    WRK-WARI    TO    WRK-Z9
+                      MOVE    WRK-Z9      TO    H01KA4-FTNRITU
+                                                H01SA4-FTNRITU
+                  ELSE
+                      MOVE    WRK-WARI    TO    WRK-Z9V9
+                      MOVE    WRK-Z9V9    TO    H01KA4-FTNRITU
+                                                H01SA4-FTNRITU
+                  END-IF
                END-IF
-             END-IF
            ELSE
-             IF  AGECHK-SYUGAKUKBN  =  1
-                 AND  COMB-GAI-KFTNRATE  =  30
-               MOVE   2               TO  WRK-Z9
-               MOVE   WRK-Z9          TO  H01KA4-FTNRITU
-                                          H01SA4-FTNRITU
-             ELSE
-               COMPUTE  WRK-WARI  =   COMB-GAI-KFTNRATE  /  10
-               IF   WRK-WARI(3:1) =   ZERO
-                 MOVE    WRK-WARI     TO  WRK-Z9
-                 MOVE    WRK-Z9       TO  H01KA4-FTNRITU
-                                          H01SA4-FTNRITU
-               ELSE
-                 MOVE    WRK-WARI     TO  WRK-Z9V9
-                 MOVE    WRK-Z9V9     TO  H01KA4-FTNRITU
-                                          H01SA4-FTNRITU
+               IF  AGECHK-SYUGAKUKBN = 1  AND  COMB-GAI-KFTNRATE = 30
+                      MOVE   2            TO    WRK-Z9
+                      MOVE   WRK-Z9       TO    H01KA4-FTNRITU
+                                                H01SA4-FTNRITU
+               ELSE 
+                  COMPUTE WRK-WARI  =   COMB-GAI-KFTNRATE   /   10
+                  IF      WRK-WARI(3:1) =   ZERO
+                      MOVE    WRK-WARI    TO    WRK-Z9
+                      MOVE    WRK-Z9      TO    H01KA4-FTNRITU
+                                                H01SA4-FTNRITU
+                  ELSE
+                      MOVE    WRK-WARI    TO    WRK-Z9V9
+                      MOVE    WRK-Z9V9    TO    H01KA4-FTNRITU
+                                                H01SA4-FTNRITU
+                  END-IF
                END-IF
-             END-IF
            END-IF
       *
-           IF   PTHKN-HKNNUM = SPACE
-             MOVE    SPACE        TO  H01KA4-FTNRITU
+           IF PTHKN-HKNNUM = SPACE
+               MOVE    SPACE    TO    H01KA4-FTNRITU
                                       H01SA4-FTNRITU
            END-IF
       *
-      *    保険区分 主保険−短縮制度名
-           MOVE    SPACE          TO  WRK-HKNCOMBI
+      *    保険区分　主保険−短縮制度名
+           MOVE    SPACE               TO  WRK-HKNCOMBI
       *
            STRING  COMB-SYU-TANSEIDONAME   DELIMITED  BY  SPACE
                    "　"                    DELIMITED  BY  SIZE
@@ -911,106 +929,108 @@
                    COMB-KOH3-TANSEIDONAME  DELIMITED  BY  SPACE
                    "　"                    DELIMITED  BY  SIZE
                    COMB-KOH4-TANSEIDONAME  DELIMITED  BY  SPACE
-                                           INTO       WRK-HKNCOMBI
+                         INTO              WRK-HKNCOMBI
            END-STRING
       *
       *    公費情報
-           PERFORM  VARYING  IDY FROM  1  BY  1
-                    UNTIL  IDY  >  2
-             INITIALIZE                  PTKOHINF-REC
-             MOVE    SPA-HOSPNUM         TO  PTKOH-HOSPNUM
-             MOVE    SPA-PTID            TO  PTKOH-PTID
-             MOVE    COMB-KOHID(IDY)     TO  PTKOH-KOHID
-             PERFORM 940-PTKOHINF-READ-SEC
-             IF   FLG-PTKOHINF  =  ZERO
-               IF   (PTKOH-KOHNUM  =  "141"
-                   OR   PTKOH-KOHNUM  =  "143"
-                   OR   PTKOH-KOHNUM  =  "144"
-                   OR   PTKOH-KOHNUM  =  "145"
-                   OR   PTKOH-KOHNUM  =  "146"
-                   OR   PTKOH-KOHNUM  =  "147")
-                   AND  SYS-1001-PREFNUM  =  "21"
-      *    受給者番号
-                 MOVE    PTKOH-JKYSNUM  TO  H01KA4-FK-JKYSNO
-                                            H01SA4-FK-JKYSNO
-      *    福祉医療費名称
-                 EVALUATE  PTKOH-KOHNUM
-                   WHEN  "141"
-                   WHEN  "147"
-                     MOVE    "老人"     TO  H01KA4-FK-NAME
-                                            H01SA4-FK-NAME
-                   WHEN  "145"
-                     MOVE    "乳児"     TO  H01KA4-FK-NAME
-                                            H01SA4-FK-NAME
-                   WHEN  "144"
-                     MOVE    "重老"     TO  H01KA4-FK-NAME
-                                            H01SA4-FK-NAME
-                   WHEN  "146"
-                     MOVE    "重度"     TO  H01KA4-FK-NAME
-                                            H01SA4-FK-NAME
-                   WHEN  "143"
-                     MOVE    "母子"     TO  H01KA4-FK-NAME
-                                            H01SA4-FK-NAME
-                 END-EVALUATE
-               ELSE
-                 PERFORM 3102-PTKOHINF-HEN-SEC
-                 MOVE    WRK-FTNSNO     TO  H01KA4-FTNSNO(IDY)
-                                            H01SA4-FTNSNO(IDY)
-                 IF   WRK-JKYSNO(15:)  =  SPACE
-                   MOVE    WRK-JKYSNO   TO  H01KA4-JKYSNO(IDY)
-                                            H01SA4-JKYSNO(IDY)
+           PERFORM VARYING IDY FROM    1   BY  1
+                   UNTIL   IDY >       2
+               INITIALIZE                  PTKOHINF-REC
+               MOVE    SPA-HOSPNUM         TO  PTKOH-HOSPNUM
+               MOVE    SPA-PTID            TO  PTKOH-PTID
+               MOVE    COMB-KOHID (IDY)    TO  PTKOH-KOHID
+               PERFORM 940-PTKOHINF-READ-SEC
+               IF      FLG-PTKOHINF          =   ZERO
+                 IF    (PTKOH-KOHNUM        =   "141"
+                  OR   PTKOH-KOHNUM        =   "143"
+                  OR   PTKOH-KOHNUM        =   "144"
+                  OR   PTKOH-KOHNUM        =   "145"
+                  OR   PTKOH-KOHNUM        =   "146"
+                  OR   PTKOH-KOHNUM        =   "147")
+                  AND  SYS-1001-PREFNUM   =  "21"
+      * 受給者番号
+                       MOVE  PTKOH-JKYSNUM TO  H01KA4-FK-JKYSNO
+                                               H01SA4-FK-JKYSNO 
+      * 福祉医療費名称
+                   EVALUATE  PTKOH-KOHNUM
+                       WHEN  "141"
+                       WHEN  "147"
+                             MOVE  "老人"  TO  H01KA4-FK-NAME
+                                               H01SA4-FK-NAME 
+                       WHEN  "145"
+                             MOVE  "乳児"  TO  H01KA4-FK-NAME
+                                               H01SA4-FK-NAME 
+                       WHEN  "144"
+                             MOVE  "重老"  TO  H01KA4-FK-NAME
+                                               H01SA4-FK-NAME 
+                       WHEN  "146"
+                             MOVE  "重度"  TO  H01KA4-FK-NAME
+                                               H01SA4-FK-NAME 
+                       WHEN  "143"
+                             MOVE  "母子"  TO  H01KA4-FK-NAME
+                                               H01SA4-FK-NAME 
+                   END-EVALUATE
                  ELSE
-                   MOVE    WRK-JKYSNO   TO  H01KA4-JKYSNON(IDY)
-                                            H01SA4-JKYSNON(IDY)
+                   PERFORM 3102-PTKOHINF-HEN-SEC
+                   MOVE    WRK-FTNSNO      TO  H01KA4-FTNSNO (IDY)
+                                               H01SA4-FTNSNO (IDY)
+                   IF      WRK-JKYSNO(15:)     =   SPACE
+                       MOVE    WRK-JKYSNO      TO  H01KA4-JKYSNO(IDY)
+                                                   H01SA4-JKYSNO(IDY)
+                   ELSE
+                       MOVE    WRK-JKYSNO      TO  H01KA4-JKYSNON(IDY)
+                                                   H01SA4-JKYSNON(IDY)
+                   END-IF
                  END-IF
+               ELSE
+                   MOVE    "平成　　年　　月　　日"
+                                           TO  WRK-TEKSTYMD
+                                               WRK-TEKEDYMD
                END-IF
-             ELSE
-               MOVE    "平成　　年　　月　　日"   TO  WRK-TEKSTYMD
-                                                      WRK-TEKEDYMD
-             END-IF
            END-PERFORM
       *
       *    労災の時、保険者番号・記号の変更
-           IF   COMB-HKNNUM  =  "971"  OR  "973"
-      *    患者保険情報検索
-             INITIALIZE                      PTRSIINF-REC
-             MOVE    SPA-HOSPNUM         TO  PTRSI-HOSPNUM
-             MOVE    SPA-PTID            TO  PTRSI-PTID
-             MOVE    COMB-HKNID          TO  PTRSI-HKNID
-             MOVE    PTRSIINF-REC        TO  MCPDATA-REC
-             MOVE    "DBSELECT"          TO  MCP-FUNC
-             MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
-             MOVE    "key"               TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"         USING
-                                         MCPAREA
-                                         MCPDATA-REC
-                                         SPA-AREA
-             IF   MCP-RC  =  ZERO
-               MOVE    "tbl_ptrsiinf"    TO  MCP-TABLE
-               MOVE    "key"             TO  MCP-PATHNAME
-               PERFORM 993-PTRSIINF-NEXT-SEC
-             ELSE
-               INITIALIZE                    PTRSIINF-REC
-               MOVE    1                 TO  FLG-PTRSIINF
-             END-IF
-             MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-             MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
-             MOVE    "key"               TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"         USING
-                                         MCPAREA
-                                         MCPDATA-REC
-                                         SPA-AREA
-             IF   FLG-PTRSIINF  =  ZERO
-      *    保険者番号へ記号（労災区分名）
-               MOVE    WRK-HEN-KIGONUM   TO  H01KA4-HPTNUM
-                                             H01SA4-HPTNUM
-      *    記号へ患者交付番号
-               MOVE    PTRSI-KOFUNUM     TO  WRK-MAE-INPUT
-               PERFORM  2009-HENKAN-SEC
-               MOVE    WRK-OUT-INPUT(1:KANACHK-MAX)  TO  H01KA4-KIGONUM
-                                                         H01SA4-KIGONUM
+           IF      COMB-HKNNUM         =   "971"  OR  "973"
+      *        患者保険情報検索
+               INITIALIZE                      PTRSIINF-REC
+               MOVE    SPA-HOSPNUM         TO  PTRSI-HOSPNUM
+               MOVE    SPA-PTID            TO  PTRSI-PTID
+               MOVE    COMB-HKNID          TO  PTRSI-HKNID
+               MOVE    PTRSIINF-REC        TO  MCPDATA-REC
+               MOVE    "DBSELECT"          TO  MCP-FUNC
+               MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+               MOVE    "key"               TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+               IF      MCP-RC              =   ZERO
+                   MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+                   MOVE    "key"               TO  MCP-PATHNAME
+                   PERFORM 993-PTRSIINF-NEXT-SEC
+               ELSE
+                   INITIALIZE                      PTRSIINF-REC
+                   MOVE    1                   TO  FLG-PTRSIINF
+               END-IF
+               MOVE    "DBCLOSECURSOR"       TO  MCP-FUNC
+               MOVE    "tbl_ptrsiinf"        TO  MCP-TABLE
+               MOVE    "key"                 TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"           USING
+                                             MCPAREA
+                                             MCPDATA-REC
+                                             SPA-AREA
+               IF      FLG-PTRSIINF        =   ZERO
+      *            保険者番号へ記号（労災区分名）
+                   MOVE    WRK-HEN-KIGONUM     TO  H01KA4-HPTNUM
+                                                   H01SA4-HPTNUM
+      *            記号へ患者交付番号
+                   MOVE    PTRSI-KOFUNUM       TO  WRK-MAE-INPUT
+                   PERFORM 2009-HENKAN-SEC
+                   MOVE    WRK-OUT-INPUT(1:KANACHK-MAX)
+                                               TO  H01KA4-KIGONUM
+                                                   H01SA4-KIGONUM
       *
-             END-IF
+               END-IF
            END-IF
            .
        310-HC01-HEN-EXT.
@@ -1027,6 +1047,7 @@
            MOVE    SPA-HOSPNUM         TO  PTBYO-HOSPNUM
            MOVE    SPA-PTID            TO  PTBYO-PTID
            MOVE    SPA-SRYKA           TO  PTBYO-SRYKA
+      *
            MOVE    PTBYOMEI-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
@@ -1035,79 +1056,68 @@
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    "tbl_ptbyomei"    TO  MCP-TABLE
-             MOVE    "key2"            TO  MCP-PATHNAME
-             PERFORM 950-PTBYOMEI-READ-SEC
+           IF      MCP-RC              =   ZERO
+               MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
+               MOVE    "key2"              TO  MCP-PATHNAME
+               PERFORM 950-PTBYOMEI-READ-SEC
            ELSE
-             MOVE    1                 TO  FLG-PTBYOMEI
+               MOVE    1                   TO  FLG-PTBYOMEI
            END-IF
-           PERFORM  UNTIL  ( FLG-PTBYOMEI  NOT =  ZERO )
-                    OR  ( FLG-ZOKUSHI  NOT =  ZERO )
-      *    継続病名のみの時、転帰日のあるものを対象外とする
-             IF  ( SYS-1017-KARUTE-BYOMEI  =  "1" )
-                 AND  ( PTBYO-TENKIYMD  NOT =  SPACE )
+           PERFORM 
+                   UNTIL      (FLG-PTBYOMEI    NOT =   ZERO  )
+                        OR    (FLG-ZOKUSHI     NOT =   ZERO  )
+      **      継続病名のみの時、転帰日のあるものを対象外とする
+             IF     (SYS-1017-KARUTE-BYOMEI    =   "1"  )  AND
+                    (PTBYO-TENKIYMD        NOT =   SPACE)
                CONTINUE
              ELSE
-               IF     SYS-1017-KARUTE-BYOMEI  =  "2"
+               IF     SYS-1017-KARUTE-BYOMEI    =   "2"
                  CONTINUE
                ELSE
-      *    病名編集処理
+      *          病名編集処理
                  PERFORM 3103-BYOMEI-SET-SEC
-      *    カルテ病名がある時はカルテ病名
-                 IF   PTBYO-CHARTBYOMEI  =  SPACE
-                   MOVE    SPACE          TO  WRK-BYOMEI
-                   IF   PTBYO-HOSOKU-COMMENT  =  SPACE
-                     MOVE    PTBYO-BYOMEI     TO  H01KA4-BYOMEI(IDX)
-                                                  H01SA4-BYOMEI(IDX)
-                   ELSE
-                     STRING  PTBYO-BYOMEI          DELIMITED  BY  SPACE
-                             "（"                  DELIMITED  BY  SIZE
-                             PTBYO-HOSOKU-COMMENT  DELIMITED  BY  SPACE
-                             "）"                  DELIMITED  BY  SIZE
-                                                   INTO   WRK-BYOMEI
-                     END-STRING
-                     MOVE    WRK-BYOMEI   TO  H01KA4-BYOMEI(IDX)
-                                              H01SA4-BYOMEI(IDX)
-                   END-IF
+      *          カルテ病名がある時はカルテ病名
+                 IF      PTBYO-CHARTBYOMEI   =   SPACE
+                   MOVE    PTBYO-BYOMEI        TO  H01KA4-BYOMEI (IDX)
+                                                   H01SA4-BYOMEI (IDX)
                  ELSE
-                   MOVE    PTBYO-CHARTBYOMEI   TO  H01KA4-BYOMEI(IDX)
-                                                   H01SA4-BYOMEI(IDX)
+                   MOVE    PTBYO-CHARTBYOMEI   TO  H01KA4-BYOMEI (IDX)
+                                                   H01SA4-BYOMEI (IDX)
                  END-IF
-                 MOVE    WRK-STRYYW      TO  H01KA4-STRYMDY(IDX)
-                                             H01SA4-STRYMDY(IDX)
-                 MOVE    WRK-STRMMW      TO  H01KA4-STRYMDM(IDX)
-                                             H01SA4-STRYMDM(IDX)
-                 MOVE    WRK-STRDDW      TO  H01KA4-STRYMDD(IDX)
-                                             H01SA4-STRYMDD(IDX)
-                 MOVE    WRK-ENDYYW      TO  H01KA4-ENDYMDY(IDX)
-                                             H01SA4-ENDYMDY(IDX)
-                 MOVE    WRK-ENDMMW      TO  H01KA4-ENDYMDM(IDX)
-                                             H01SA4-ENDYMDM(IDX)
-                 MOVE    WRK-ENDDDW      TO  H01KA4-ENDYMDD(IDX)
-                                               H01SA4-ENDYMDD(IDX)
-                 EVALUATE  IDX2
-                 WHEN  1
-                   MOVE    "治癒"        TO  H01KA4-TENKI(IDX)
-                                             H01SA4-TENKI(IDX)
-                 WHEN  2
-                   MOVE    "死亡"        TO  H01KA4-TENKI(IDX)
-                                             H01SA4-TENKI(IDX)
-                 WHEN  3
-                   MOVE    "中止"        TO  H01KA4-TENKI(IDX)
-                                             H01SA4-TENKI(IDX)
+                 MOVE    WRK-STRYYW          TO  H01KA4-STRYMDY  (IDX)
+                                                 H01SA4-STRYMDY  (IDX)
+                 MOVE    WRK-STRMMW          TO  H01KA4-STRYMDM  (IDX)
+                                                 H01SA4-STRYMDM  (IDX)
+                 MOVE    WRK-STRDDW          TO  H01KA4-STRYMDD  (IDX)
+                                                 H01SA4-STRYMDD  (IDX)
+                 MOVE    WRK-ENDYYW          TO  H01KA4-ENDYMDY  (IDX)
+                                                 H01SA4-ENDYMDY  (IDX)
+                 MOVE    WRK-ENDMMW          TO  H01KA4-ENDYMDM  (IDX)
+                                                 H01SA4-ENDYMDM  (IDX)
+                 MOVE    WRK-ENDDDW          TO  H01KA4-ENDYMDD  (IDX)
+                                                 H01SA4-ENDYMDD  (IDX)
+                 EVALUATE IDX2
+                 WHEN    1
+                   MOVE    "治癒"          TO    H01KA4-TENKI(IDX)
+                                                 H01SA4-TENKI(IDX)
+                 WHEN    2
+                   MOVE    "死亡"          TO    H01KA4-TENKI(IDX)
+                                                 H01SA4-TENKI(IDX)
+                 WHEN    3
+                   MOVE    "中止"          TO    H01KA4-TENKI(IDX)
+                                                 H01SA4-TENKI(IDX)
                  END-EVALUATE
                END-IF
              END-IF
       *
-             MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
-             MOVE    "key2"              TO  MCP-PATHNAME
-             PERFORM  950-PTBYOMEI-READ-SEC
+               MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
+               MOVE    "key2"              TO  MCP-PATHNAME
+               PERFORM 950-PTBYOMEI-READ-SEC
       *
-             IF   IDX  >=  17
-      *    続紙無し
-               MOVE    1          TO  FLG-ZOKUSHI
-             END-IF
+               IF      IDX             >=  17
+      *            続紙無し
+                   MOVE      1                 TO  FLG-ZOKUSHI
+               END-IF
            END-PERFORM
       *
            .
@@ -1119,10 +1129,10 @@
       *****************************************************************
        3102-PTKOHINF-HEN-SEC        SECTION.
       *
-           MOVE    SPACE         TO  WRK-TEKSTYMD
-           MOVE    SPACE         TO  WRK-TEKEDYMD
-           MOVE    SPACE         TO  WRK-FTNSNO
-           MOVE    SPACE         TO  WRK-JKYSNO
+           MOVE    SPACE               TO  WRK-TEKSTYMD
+           MOVE    SPACE               TO  WRK-TEKEDYMD
+           MOVE    SPACE               TO  WRK-FTNSNO
+           MOVE    SPACE               TO  WRK-JKYSNO
       *    保険者情報
       *    全角変換
            MOVE    PTKOH-FTNJANUM      TO  WRK-MAE-INPUT
@@ -1143,12 +1153,13 @@
            PERFORM 31012-SEIWA-HEN-SEC
            MOVE    WRK-HENYMDG         TO  WRK-TEKSTYMD
       *    適用終了年月日
-           IF   PTKOH-TEKEDYMD  =  SPACE  OR  ALL "9"
-             MOVE    "平成　　年　　月　　日"   TO  WRK-TEKEDYMD
+           IF      PTKOH-TEKEDYMD      =   SPACE  OR  ALL "9"
+               MOVE    "平成　　年　　月　　日"
+                                           TO  WRK-TEKEDYMD
            ELSE
-             MOVE    PTKOH-TEKEDYMD    TO  WRK-SYMD
-             PERFORM 31012-SEIWA-HEN-SEC
-             MOVE    WRK-HENYMDG       TO  WRK-TEKEDYMD
+               MOVE    PTKOH-TEKEDYMD      TO  WRK-SYMD
+               PERFORM 31012-SEIWA-HEN-SEC
+               MOVE    WRK-HENYMDG         TO  WRK-TEKEDYMD
            END-IF
       *
            .
@@ -1171,8 +1182,8 @@
            ADD     1                   TO  WRK-PAGE
            MOVE    WRK-PAGE            TO  HC01PARA-CNT
                                            HC01PARA2-CNT
-           OPEN    OUTPUT              PRT-FILE
-                                       PRT-FILE2
+           OPEN    OUTPUT               PRT-FILE
+                                        PRT-FILE2
       *
            INITIALIZE  H01KA4
            INITIALIZE  H01SA4
@@ -1180,81 +1191,69 @@
            PERFORM 310-HC01-HEN-SEC
       *
       *    印刷項目編集
-           PERFORM  UNTIL  FLG-PTBYOMEI  NOT =  ZERO
+           PERFORM  UNTIL      FLG-PTBYOMEI    NOT =   ZERO
       *
-             IF   IDX  >=  17
-               PERFORM 20021-HC011-PRINT-SEC
-               INITIALIZE             H01KA4
-               INITIALIZE             H01SA4
-               MOVE    ZERO           TO  IDX
-               PERFORM  310-HC01-HEN-SEC
-             END-IF
+               IF      IDX             >=  17
+                   PERFORM 20021-HC011-PRINT-SEC
+                   INITIALIZE  H01KA4
+                   INITIALIZE  H01SA4
+                   MOVE    ZERO                TO  IDX
+                   PERFORM 310-HC01-HEN-SEC
+               END-IF
       *
-      *    継続病名のみの時、転帰日のあるものを対象外とする
-             IF  (SYS-1017-KARUTE-BYOMEI  =  "1"  )
-                 AND  (PTBYO-TENKIYMD  NOT =  SPACE)
+      **      継続病名のみの時、転帰日のあるものを対象外とする
+             IF     (SYS-1017-KARUTE-BYOMEI    =   "1"  )  AND
+                    (PTBYO-TENKIYMD        NOT =   SPACE)
                CONTINUE
              ELSE
                IF     SYS-1017-KARUTE-BYOMEI   =  "2"
                  CONTINUE
                ELSE
       *
-      *    病名編集処理
+      *          病名編集処理
                  PERFORM 3103-BYOMEI-SET-SEC
-      *    カルテ病名がある時はカルテ病名
-                 IF   PTBYO-CHARTBYOMEI  =  SPACE
-                   MOVE    SPACE          TO  WRK-BYOMEI
-                   IF   PTBYO-HOSOKU-COMMENT  =  SPACE
-                     MOVE    PTBYO-BYOMEI     TO  H01KA4-BYOMEI(IDX)
-                                                  H01SA4-BYOMEI(IDX)
-                   ELSE
-                     STRING  PTBYO-BYOMEI          DELIMITED  BY  SPACE
-                             "（"                  DELIMITED  BY  SIZE
-                             PTBYO-HOSOKU-COMMENT  DELIMITED  BY  SPACE
-                             "）"                  DELIMITED  BY  SIZE
-                                                   INTO   WRK-BYOMEI
-                     END-STRING
-                     MOVE    WRK-BYOMEI  TO  H01KA4-BYOMEI(IDX)
-                                             H01SA4-BYOMEI(IDX)
-                   END-IF
+      *          カルテ病名がある時はカルテ病名
+                 IF      PTBYO-CHARTBYOMEI   =   SPACE
+                   MOVE    PTBYO-BYOMEI        TO  H01KA4-BYOMEI (IDX)
+                                                   H01SA4-BYOMEI (IDX)
                  ELSE
-                   MOVE    PTBYO-CHARTBYOMEI   TO  H01KA4-BYOMEI(IDX)
-                                                   H01SA4-BYOMEI(IDX)
+                   MOVE    PTBYO-CHARTBYOMEI   TO  H01KA4-BYOMEI (IDX)
+                                                   H01SA4-BYOMEI (IDX)
                  END-IF
-                 MOVE    WRK-STRYYW      TO  H01KA4-STRYMDY(IDX)
-                                             H01SA4-STRYMDY(IDX)
-                 MOVE    WRK-STRMMW      TO  H01KA4-STRYMDM(IDX)
-                                             H01SA4-STRYMDM(IDX)
-                 MOVE    WRK-STRDDW      TO  H01KA4-STRYMDD(IDX)
-                                             H01SA4-STRYMDD(IDX)
-                 MOVE    WRK-ENDYYW      TO  H01KA4-ENDYMDY(IDX)
-                                             H01SA4-ENDYMDY(IDX)
-                 MOVE    WRK-ENDMMW      TO  H01KA4-ENDYMDM(IDX)
-                                             H01SA4-ENDYMDM(IDX)
-                 MOVE    WRK-ENDDDW      TO  H01KA4-ENDYMDD(IDX)
-                                             H01SA4-ENDYMDD(IDX)
+                 MOVE    WRK-STRYYW          TO  H01KA4-STRYMDY  (IDX)
+                                                 H01SA4-STRYMDY  (IDX)
+                 MOVE    WRK-STRMMW          TO  H01KA4-STRYMDM  (IDX)
+                                                 H01SA4-STRYMDM  (IDX)
+                 MOVE    WRK-STRDDW          TO  H01KA4-STRYMDD  (IDX)
+                                                 H01SA4-STRYMDD  (IDX)
+                 MOVE    WRK-ENDYYW          TO  H01KA4-ENDYMDY  (IDX)
+                                                 H01SA4-ENDYMDY  (IDX)
+                 MOVE    WRK-ENDMMW          TO  H01KA4-ENDYMDM  (IDX)
+                                                 H01SA4-ENDYMDM  (IDX)
+                 MOVE    WRK-ENDDDW          TO  H01KA4-ENDYMDD  (IDX)
+                                                 H01SA4-ENDYMDD  (IDX)
       *
                  EVALUATE IDX2
                  WHEN    1
-                   MOVE    "治癒"        TO  H01KA4-TENKI(IDX)
-                                             H01SA4-TENKI(IDX)
+                   MOVE    "治癒"          TO    H01KA4-TENKI(IDX)
+                                                 H01SA4-TENKI(IDX)
                  WHEN    2
-                   MOVE    "死亡"        TO  H01KA4-TENKI(IDX)
-                                             H01SA4-TENKI(IDX)
+                   MOVE    "死亡"          TO    H01KA4-TENKI(IDX)
+                                                 H01SA4-TENKI(IDX)
                  WHEN    3
-                   MOVE    "中止"        TO  H01KA4-TENKI(IDX)
-                                             H01SA4-TENKI(IDX)
+                   MOVE    "中止"          TO    H01KA4-TENKI(IDX)
+                                                 H01SA4-TENKI(IDX)
                  END-EVALUATE
                END-IF
              END-IF
       *
-             MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
-             MOVE    "key2"              TO  MCP-PATHNAME
-             PERFORM  950-PTBYOMEI-READ-SEC
+               MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
+               MOVE    "key2"              TO  MCP-PATHNAME
+               PERFORM 950-PTBYOMEI-READ-SEC
            END-PERFORM
       *
-           IF   IDX  >  ZERO
-             PERFORM 20021-HC011-PRINT-SEC
+           IF      IDX                 >   ZERO
+               PERFORM 20021-HC011-PRINT-SEC
            END-IF
       *
            .
@@ -1277,15 +1276,16 @@
       *
       *     国保・健保印刷判別
              EVALUATE   TRUE
-             WHEN  PTHKN-HKNNUM   =  "060"  OR  "067"  OR  "039"
-                                 OR  "040"  OR  "068"  OR  "069"
-               INITIALIZE                  ORCSMKPRTAREA
-               MOVE    "HC01.sh"           TO  MKPRT-ID
-               MOVE    "A21000H01KA4.red"  TO  MKPRT-DIA
-               MOVE    SPACE               TO  MKPRT-DEF
-               MOVE    HC01PARA            TO  MKPRT-DAT
-               MOVE    SYS-1031-PRTNM(1)   TO  MKPRT-PRTNM
-               CALL    "ORCSMKPRTSITE"     USING
+             WHEN  PTHKN-HKNNUM   = "060"  OR   "067"
+                                OR  "039"  OR   "040"
+                                OR  "068"  OR   "069"
+               INITIALIZE                 ORCSMKPRTAREA
+               MOVE   "HC01.sh"           TO  MKPRT-ID
+               MOVE   "A21000H01KA4.red"          TO  MKPRT-DIA
+               MOVE   SPACE                       TO  MKPRT-DEF
+               MOVE   HC01PARA            TO  MKPRT-DAT
+               MOVE   SYS-1031-PRTNM(1)   TO  MKPRT-PRTNM
+               CALL   "ORCSMKPRTSITE"      USING
                                            ORCSMKPRTAREA
                                            SPA-AREA
              WHEN   OTHER
@@ -1303,42 +1303,43 @@
       *    一括印刷
            ELSE
       *
-      *    国保・健保印刷判別
-             EVALUATE  TRUE
-               WHEN  PTHKN-HKNNUM   =  "060"  OR  "067"  OR  "039"
-                                   OR  "040"  OR  "068"  OR  "069"
+      *     国保・健保印刷判別
+             EVALUATE   TRUE
+             WHEN  PTHKN-HKNNUM   =  "060"  OR   "067"
+                                 OR  "039"  OR   "040"
+                                 OR  "068"  OR   "069"
       *
-                 MOVE    ORCHC01-PRTAREA     TO  ORCSPRTAREA
+               MOVE    ORCHC01-PRTAREA     TO  ORCSPRTAREA
       *
-                 MOVE    H01KA4              TO  SPRT-PRTDATA
-                 MOVE    "2"                 TO  SPRT-SITEKBN
-                 MOVE    "A21000H01KA4.red"  TO  SPRT-PRTID
-                 MOVE    "診療録（カルテ１号紙）（外来）一括"
-                                             TO  SPRT-TITLE
-                 CALL    "ORCSPRT"           USING
-                                             ORCSPRTAREA
-                                             SPA-AREA
-                 IF   SPRT-RETURN  =  ZERO
-                   ADD     1                 TO  ORCHC01-CNT
-                 ELSE
-                   MOVE    9                 TO  ORCHC01-RC
-                 END-IF
-               WHEN   OTHER
-      *
-               MOVE    ORCHC01-PRTAREA       TO  ORCSPRTAREA
-      *
-               MOVE    H01SA4                TO  SPRT-PRTDATA
-               MOVE    "2"                   TO  SPRT-SITEKBN
-               MOVE    "A21000H01SA4.red"    TO  SPRT-PRTID
+               MOVE    H01KA4              TO  SPRT-PRTDATA
+               MOVE    "2"                 TO  SPRT-SITEKBN
+               MOVE    "A21000H01KA4.red"  TO  SPRT-PRTID
                MOVE    "診療録（カルテ１号紙）（外来）一括"
-                                             TO  SPRT-TITLE
+                                           TO  SPRT-TITLE
                CALL    "ORCSPRT"           USING
                                            ORCSPRTAREA
                                            SPA-AREA
-               IF   SPRT-RETURN  =  ZERO
-                 ADD     1             TO  ORCHC01-CNT
+               IF      SPRT-RETURN         =   ZERO
+                   ADD     1               TO  ORCHC01-CNT
                ELSE
-                 MOVE    9             TO  ORCHC01-RC
+                   MOVE    9               TO  ORCHC01-RC
+               END-IF
+             WHEN   OTHER
+      *
+               MOVE    ORCHC01-PRTAREA     TO  ORCSPRTAREA
+      *
+               MOVE    H01SA4              TO  SPRT-PRTDATA
+               MOVE    "2"                 TO  SPRT-SITEKBN
+               MOVE    "A21000H01SA4.red"  TO  SPRT-PRTID
+               MOVE    "診療録（カルテ１号紙）（外来）一括"
+                                          TO  SPRT-TITLE
+               CALL    "ORCSPRT"           USING
+                                           ORCSPRTAREA
+                                           SPA-AREA
+               IF      SPRT-RETURN         =   ZERO
+                   ADD     1               TO  ORCHC01-CNT
+               ELSE
+                   MOVE    9               TO  ORCHC01-RC
                END-IF
              END-EVALUATE
            END-IF
@@ -1355,8 +1356,8 @@
            ADD     1                   TO  WRK-PAGE
            MOVE    WRK-PAGE            TO  HC01PARA-CNT
                                            HC01PARA2-CNT
-           OPEN    OUTPUT              PRT-FILE
-                                       PRT-FILE2
+           OPEN    OUTPUT               PRT-FILE
+                                        PRT-FILE2
       *
            .
        20021-HC011-PRINT-EXT.
@@ -1367,13 +1368,12 @@
       *****************************************************************
        31012-SEIWA-HEN-SEC        SECTION.
       *
-           INITIALIZE                  STS-AREA-DAY
-           INITIALIZE                  LNK-DAY2-AREA
+           INITIALIZE                      STS-AREA-DAY
+           INITIALIZE                      LNK-DAY2-AREA
            MOVE    "21"                TO  LNK-DAY2-IRAI
            MOVE    WRK-SYMD            TO  LNK-DAY2-YMD
-           CALL    "ORCSDAY"           USING
-                                       STS-AREA-DAY
-                                       LNK-DAY2-AREA
+           CALL    "ORCSDAY"           USING   STS-AREA-DAY
+                                               LNK-DAY2-AREA
            MOVE    LNK-DAY2-EDTYMD3    TO  WRK-HENYMDG
            MOVE    LNK-DAY2-EDTYMD1    TO  WRK-HENYMD
            INSPECT WRK-HENYMDG    REPLACING  ALL "  "  BY  "　"
@@ -1395,21 +1395,21 @@
       *    終了年月日（転帰年月日）
            MOVE    SPACE               TO  WRK-ENDYMD
            MOVE    SPACE               TO  WRK-ENDYMDW
-           IF  PTBYO-TENKIYMD  NOT =   SPACE
-             MOVE    PTBYO-TENKIYMD    TO  WRK-SYMD
-             PERFORM 31012-SEIWA-HEN-SEC
-             MOVE    WRK-HENYMD        TO  WRK-ENDYMDW
+           IF      PTBYO-TENKIYMD  NOT =   SPACE
+               MOVE    PTBYO-TENKIYMD      TO  WRK-SYMD
+               PERFORM 31012-SEIWA-HEN-SEC
+               MOVE    WRK-HENYMD          TO  WRK-ENDYMDW
            END-IF
       *
-           EVALUATE  PTBYO-TENKIKBN
-             WHEN  "1"
-               MOVE    1               TO  IDX2
-             WHEN  "2"
-               MOVE    2               TO  IDX2
-             WHEN  "3"
-               MOVE    3               TO  IDX2
-             WHEN  OTHER
-               MOVE    ZERO            TO  IDX2
+           EVALUATE    PTBYO-TENKIKBN
+               WHEN    "1"
+                   MOVE    1               TO  IDX2
+               WHEN    "2"
+                   MOVE    2               TO  IDX2
+               WHEN    "3"
+                   MOVE    3               TO  IDX2
+               WHEN    OTHER
+                   MOVE    ZERO            TO  IDX2
            END-EVALUATE
       *
            .
@@ -1426,17 +1426,17 @@
            MOVE    WRK-MAE-INPUT       TO  KANACHK-MAE-INPUT
            CALL    "ORCSKANACHK"       USING
                                        ORCSKANACHKAREA
-           IF   KANACHK-RC  =  ZERO
-             MOVE    KANACHK-OUT-INPUT(1:KANACHK-MAX)
-                                       TO  WRK-OUT-INPUT
+           IF      KANACHK-RC          =   ZERO
+               MOVE    KANACHK-OUT-INPUT(1:KANACHK-MAX)
+                                           TO  WRK-OUT-INPUT
            ELSE
-             MOVE    WRK-MAE-INPUT     TO  WRK-OUT-INPUT
+               MOVE    WRK-MAE-INPUT       TO  WRK-OUT-INPUT
            END-IF
       *
            .
        2009-HENKAN-EXT.
            EXIT.
-      *
+      * 
       *****************************************************************
       *    患者マスター読み込み
       *****************************************************************
@@ -1450,22 +1450,22 @@
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    "DBFETCH"         TO  MCP-FUNC
-             MOVE    "tbl_ptinf"       TO  MCP-TABLE
-             MOVE    "key"             TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"       USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-             IF  MCP-RC  =  ZERO
-               MOVE    MCPDATA-REC     TO  PTINF-REC
-               MOVE    ZERO            TO  FLG-PTINF
-             ELSE
-               MOVE    1               TO  FLG-PTINF
-             END-IF
+           IF      MCP-RC              =   ZERO
+               MOVE    "DBFETCH"           TO  MCP-FUNC
+               MOVE    "tbl_ptinf"         TO  MCP-TABLE
+               MOVE    "key"               TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+               IF      MCP-RC              =   ZERO
+                   MOVE    MCPDATA-REC     TO  PTINF-REC
+                   MOVE    ZERO            TO  FLG-PTINF
+               ELSE
+                   MOVE    1               TO  FLG-PTINF
+               END-IF
            ELSE
-             MOVE    1                 TO  FLG-PTINF
+               MOVE    1               TO  FLG-PTINF
            END-IF
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
            MOVE    "tbl_ptinf"         TO  MCP-TABLE
@@ -1491,22 +1491,22 @@
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    "DBFETCH"         TO  MCP-FUNC
-             MOVE    "tbl_hkncombi"    TO  MCP-TABLE
-             MOVE    "key"             TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"       USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-             IF   MCP-RC  =  ZERO
-               MOVE    MCPDATA-REC     TO  HKNCOMBI-REC
-               MOVE    ZERO            TO  FLG-HKNCOMBI
-             ELSE
-               MOVE    1               TO  FLG-HKNCOMBI
-             END-IF
+           IF      MCP-RC              =   ZERO
+               MOVE    "DBFETCH"           TO  MCP-FUNC
+               MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+               MOVE    "key"               TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+               IF      MCP-RC              =   ZERO
+                   MOVE    MCPDATA-REC     TO  HKNCOMBI-REC
+                   MOVE    ZERO            TO  FLG-HKNCOMBI
+               ELSE
+                   MOVE    1               TO  FLG-HKNCOMBI
+               END-IF
            ELSE
-             MOVE    1                 TO  FLG-HKNCOMBI
+               MOVE    1               TO  FLG-HKNCOMBI
            END-IF
       *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
@@ -1533,22 +1533,22 @@
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    "DBFETCH"         TO  MCP-FUNC
-             MOVE    "tbl_pthkninf"    TO  MCP-TABLE
-             MOVE    "key"             TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"       USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-             IF   MCP-RC  =  ZERO
-               MOVE    MCPDATA-REC     TO  PTHKNINF-REC
-               MOVE    ZERO            TO  FLG-PTHKNINF
-             ELSE
-               MOVE    1               TO  FLG-PTHKNINF
-             END-IF
+           IF      MCP-RC              =   ZERO
+               MOVE    "DBFETCH"           TO  MCP-FUNC
+               MOVE    "tbl_pthkninf"      TO  MCP-TABLE
+               MOVE    "key"               TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+               IF      MCP-RC              =   ZERO
+                   MOVE    MCPDATA-REC     TO  PTHKNINF-REC
+                   MOVE    ZERO            TO  FLG-PTHKNINF
+               ELSE
+                   MOVE    1               TO  FLG-PTHKNINF
+               END-IF
            ELSE
-             MOVE    1                 TO  FLG-PTHKNINF
+               MOVE    1               TO  FLG-PTHKNINF
            END-IF
       *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
@@ -1576,20 +1576,20 @@
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    "DBFETCH"         TO  MCP-FUNC
-             MOVE    "tbl_hknnum"      TO  MCP-TABLE
-             MOVE    "key"             TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"       USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-             IF   MCP-RC  =  ZERO
-               MOVE    MCPDATA-REC     TO  HKNNUM-REC
-               MOVE    ZERO            TO  FLG-HKNNUM
-             ELSE
-               MOVE    1               TO  FLG-HKNNUM
-             END-IF
+           IF      MCP-RC              =   ZERO
+               MOVE    "DBFETCH"           TO  MCP-FUNC
+               MOVE    "tbl_hknnum"        TO  MCP-TABLE
+               MOVE    "key"               TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+               IF      MCP-RC              =   ZERO
+                   MOVE    MCPDATA-REC     TO  HKNNUM-REC
+                   MOVE    ZERO            TO  FLG-HKNNUM
+               ELSE
+                   MOVE    1               TO  FLG-HKNNUM
+               END-IF
            ELSE
                MOVE    1               TO  FLG-HKNNUM
            END-IF
@@ -1619,28 +1619,28 @@
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    "DBFETCH"         TO  MCP-FUNC
-             MOVE    "tbl_ptkohinf"    TO  MCP-TABLE
-             MOVE    "key"             TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"       USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-             IF   MCP-RC  =  ZERO
-               MOVE    MCPDATA-REC     TO  PTKOHINF-REC
-               MOVE    ZERO            TO  FLG-PTKOHINF
-             ELSE
-               MOVE    1               TO  FLG-PTKOHINF
-             END-IF
+           IF      MCP-RC              =   ZERO
+               MOVE    "DBFETCH"           TO  MCP-FUNC
+               MOVE    "tbl_ptkohinf"      TO  MCP-TABLE
+               MOVE    "key"               TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+               IF      MCP-RC              =   ZERO
+                   MOVE    MCPDATA-REC     TO  PTKOHINF-REC
+                   MOVE    ZERO            TO  FLG-PTKOHINF
+               ELSE
+                   MOVE    1               TO  FLG-PTKOHINF
+               END-IF
            ELSE
-             MOVE    1                 TO  FLG-PTKOHINF
+               MOVE    1               TO  FLG-PTKOHINF
            END-IF
       *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
            MOVE    "tbl_ptkohinf"      TO  MCP-TABLE
            MOVE    "key"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"         USING
+           CALL    "ORCDBMAIN"          USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
@@ -1655,15 +1655,15 @@
        950-PTBYOMEI-READ-SEC         SECTION.
       *
            MOVE    "DBFETCH"           TO  MCP-FUNC
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    MCPDATA-REC       TO  PTBYOMEI-REC
-             MOVE    ZERO              TO  FLG-PTBYOMEI
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF      MCP-RC              =   ZERO
+               MOVE    MCPDATA-REC     TO  PTBYOMEI-REC
+               MOVE    ZERO            TO  FLG-PTBYOMEI
            ELSE
-             MOVE    1                 TO  FLG-PTBYOMEI
+               MOVE    1               TO  FLG-PTBYOMEI
            END-IF
       *
            .
@@ -1677,31 +1677,31 @@
       *
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
-           MOVE    "key10"             TO  MCP-PATHNAME
+           MOVE    "key10"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
                                        SPA-AREA
-           IF   MCP-RC  =   ZERO
-             MOVE    "DBFETCH"         TO  MCP-FUNC
-             MOVE    "tbl_syskanri"    TO  MCP-TABLE
-           MOVE    "key10"             TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"       USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-             IF   MCP-RC  =  ZERO
-               MOVE    ZERO            TO  FLG-SYSKANRI
-             ELSE
-               MOVE    1               TO  FLG-SYSKANRI
-             END-IF
+           IF      MCP-RC              =   ZERO
+               MOVE    "DBFETCH"           TO  MCP-FUNC
+               MOVE    "tbl_syskanri"      TO  MCP-TABLE
+           MOVE    "key10"               TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"         USING
+                                           MCPAREA
+                                           MCPDATA-REC
+                                           SPA-AREA
+               IF      MCP-RC              =   ZERO
+                   MOVE    ZERO            TO  FLG-SYSKANRI
+               ELSE
+                   MOVE    1               TO  FLG-SYSKANRI
+               END-IF
            ELSE
-             MOVE    1                 TO  FLG-SYSKANRI
+               MOVE    1               TO  FLG-SYSKANRI
            END-IF
       *
            MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
-           MOVE    "key10"             TO  MCP-PATHNAME
+           MOVE    "key10"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
@@ -1716,17 +1716,17 @@
       *****************************************************************
        900-HKNJAINF-READ-SEC              SECTION.
       *
-           MOVE    "DBFETCH"         TO  MCP-FUNC
-           CALL    "ORCDBMAIN"       USING
-                                     MCPAREA
-                                     MCPDATA-REC
-                                     SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    MCPDATA-REC     TO  HKNJAINF-REC
-             MOVE    ZERO            TO  FLG-HKNJAINF
+           MOVE    "DBFETCH"           TO  MCP-FUNC
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF      MCP-RC              =   ZERO
+               MOVE    MCPDATA-REC         TO  HKNJAINF-REC
+               MOVE    ZERO            TO  FLG-HKNJAINF
            ELSE
-             INITIALIZE              HKNJAINF-REC
-             MOVE    1               TO  FLG-HKNJAINF
+               INITIALIZE              HKNJAINF-REC
+               MOVE    1               TO  FLG-HKNJAINF
            END-IF
            .
        900-HKNJAINF-READ-EXT.
@@ -1737,17 +1737,17 @@
       *****************************************************************
        993-PTRSIINF-NEXT-SEC        SECTION.
       *
-           MOVE    "DBFETCH"         TO  MCP-FUNC
-           CALL    "ORCDBMAIN"       USING
-                                     MCPAREA
-                                     MCPDATA-REC
-                                     SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    MCPDATA-REC     TO  PTRSIINF-REC
-             MOVE    ZERO            TO  FLG-PTRSIINF
+           MOVE    "DBFETCH"           TO  MCP-FUNC
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF      MCP-RC              =   ZERO
+               MOVE    MCPDATA-REC     TO  PTRSIINF-REC
+               MOVE    ZERO            TO  FLG-PTRSIINF
            ELSE
-             INITIALIZE                  PTRSIINF-REC
-             MOVE    1               TO  FLG-PTRSIINF
+               INITIALIZE                  PTRSIINF-REC
+               MOVE    1               TO  FLG-PTRSIINF
            END-IF
       *
            .
