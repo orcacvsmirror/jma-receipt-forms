@@ -21,7 +21,7 @@
       *  システム名        : ＯＲＣＡ
       *  サブシステム名    : 日次帳票
       *  コンポーネント名  : 患者数集計表制御処理
-      *  管理者            : 
+      *  管理者            :
       *  作成日付    作業者       記述
       *  04/01/22    @@@@-半田    新規作成
       *****************************************************************
@@ -50,7 +50,7 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域 
+      *    エラーファイル 名称領域
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
@@ -122,7 +122,7 @@
       *
       *    一時領域
        01  WRK-AREA.
-      *  
+      *
            03  WRK-PRDTLCNT          PIC 9(06).
            03  WRK-RECCNT            PIC 9(06).
            03  WRK-HONKZKKBN         PIC X(04).
@@ -132,9 +132,9 @@
            03  WRK-SYSYMDWH          PIC X(22).
            03  WRK-RENNUM            PIC 9(05).
            03  WRK-PTNUM             PIC X(20).
-           03  WRK-PTNUM6            PIC 9(06). 
-           03  WRK-SYUHKNNUM         PIC X(03). 
-      *  
+           03  WRK-PTNUM6            PIC 9(06).
+           03  WRK-SYUHKNNUM         PIC X(03).
+      *
            03  WRK-SYSYMD.
                05  WRK-SYSYY         PIC 9(04).
                05  WRK-SYSMM         PIC 9(02).
@@ -144,7 +144,7 @@
                05  WRK-SMM           PIC 9(02).
                05  WRK-SDD           PIC 9(02).
            03  WRK-HENYMDG           PIC X(22).
-      *  
+      *
       *    郵便番号変換
 	   03  WRK-POSTMAEG.
                05  WRK-POSTMAE1    PIC X(03).
@@ -170,8 +170,8 @@
            03  DEBUG-CNT             PIC 9(03).
       *
            COPY    "CPSHELLTBL.INC".
-      *     
-           COPY    "CPORCSSRYSYU.INC".        
+      *
+           COPY    "CPORCSSRYSYU.INC".
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -185,7 +185,7 @@
            COPY    "CPPRTKANRI.INC".
       *
        01  PRTDATA-REC.
-           COPY    "CPPRTDATA.INC".          
+           COPY    "CPPRTDATA.INC".
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -195,7 +195,7 @@
            COPY    "CPORCSJOBKANRI.INC".
       *
       *    印刷ＤＢ更新サブ
-           COPY    "CPORCSPRT.INC".          
+           COPY    "CPORCSPRT.INC".
       *
       *    日付変換サブ
            COPY    "CPORCSDAY.INC".
@@ -257,8 +257,8 @@
                                                LNK-PRTKANRI-SHELLID
                                                LNK-PRTKANRI-PRIORITY
                                                LNK-PRTKANRI-TERMID
-                                               LNK-PRTKANRI-OPID    
-                                               LNK-PRTKANRI-PRTNM    
+                                               LNK-PRTKANRI-OPID
+                                               LNK-PRTKANRI-PRTNM
                                                WRK-PARA-JOBID
                                                WRK-PARA-SHELLID
                                                WRK-PARA-HOSPNUM

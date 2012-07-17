@@ -30,7 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/15  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/10/18  システム管理のDB検索処理を変更(key→key10)
-      *  01.00.03    @@@@-田中    12/01/18  CSVファイル作成機能追加 
+      *  01.00.03    @@@@-田中    12/01/18  CSVファイル作成機能追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -988,7 +988,7 @@
                   MOVE    WRK-Z9-5    TO  C100N-99-CNT(IDX3 IDX6)
                   ADD  WRK-ZAINISSU   TO  SUM-GZAIIN(IDX2)
                   COMPUTE  IDX9  =  IDX4  +  1
-                  MOVE    SUM-TOUZAN(IDX2 IDX4) 
+                  MOVE    SUM-TOUZAN(IDX2 IDX4)
                                       TO  SUM-ZENZAN(IDX2 IDX9)
       *
                  END-IF
