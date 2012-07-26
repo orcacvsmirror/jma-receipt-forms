@@ -44,6 +44,7 @@
       *  01.00.08    @@@@-門間    12/03/21  返戻患者の公費適用期間が「請求年月」以前に終了している場合、
       *                                     公費番号、負担者番号、受給者番号が印字されない。
       *  01.00.09    @@@@-門間    12/05/25  CSVファイル作成機能追加
+      *  01.00.10    @@@@-門間    12/07/12  複数科保険(保険組合せ)でまとめ入力を行った時の不具合を修正
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -138,6 +139,8 @@
            03  FLG-OK               PIC 9(01).
            03  FLG-KBN              PIC 9(01).
            03  FLG-KOHCHK           PIC 9(01).
+           03  FLG-HKNCOMBI         PIC 9(01).
+           03  FLG-INVALID          PIC 9(01).
       *
       *    添字領域
        01  IDX-AREA.
@@ -311,6 +314,10 @@
            COPY  "CPKOHSKY.INC"
                  REPLACING  //KOHSKY//
                  BY         //RECE02//.
+      *
+      *    保険組合せ
+       01  HKNCOMBI-REC.
+           COPY    "CPHKNCOMBI.INC".
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -552,10 +559,10 @@
       *
            PERFORM  900-SEIKYU-SELECT-SEC
       *
-      *    データ設定
+           INITIALIZE  MF100-REC
            MOVE    RECE10-HOSPNUM        TO   MF100-HOSPNUM
+           MOVE    PTKOH-KOHNUM          TO   MF100-KOHNUM-KEY
            MOVE    RECE10-PTNUM          TO   MF100-PTNUM
-           MOVE    RECE10-PTID           TO   MF100-PTID
            MOVE    RECE10-SRYYM          TO   MF100-SRYYM
            MOVE    RECE10-NYUGAIKBN      TO   MF100-NYUGAIKBN
            MOVE    RECE10-RECEKA         TO   MF100-SRYKA
@@ -563,6 +570,12 @@
            MOVE    RECE10-RECESYUBETU    TO   MF100-RECESYUBETU
            MOVE    RECE10-HKNJANUM       TO   MF100-HKNJANUM
            MOVE    RECE10-TEKSTYMD       TO   MF100-TEKSTYMD
+      *
+      *    一時ファイル読込
+           PERFORM  700-TMP-READ-SEC
+      *
+      *    データ設定
+           MOVE    RECE10-PTID           TO   MF100-PTID
            MOVE    PTINF-NAME            TO   MF100-NAME
            MOVE    PTINF-KANANAME        TO   MF100-FURIGANA
            MOVE    PTINF-SEX             TO   MF100-SEX
@@ -570,6 +583,10 @@
            MOVE    RECE10-NUM            TO   MF100-NUM
            MOVE    RECE10-KYURATE        TO   MF100-KYURATE
            MOVE    RECE10-RJNHKNNUM      TO   MF100-RJNHKNNUM
+      *
+           MOVE    PTKOH-KOHNUM          TO   MF100-KOHNUM
+           MOVE    PTKOH-FTNJANUM        TO   MF100-FTNJANUM
+           MOVE    PTKOH-JKYSNUM         TO   MF100-JKYSNUM
       *
       *    公費名取得
            MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
@@ -602,9 +619,6 @@
                ADD      1                    TO   IDX1
              END-IF
            END-PERFORM
-      *
-      *    公費番号でソートする
-           MOVE     MF100-KOHNUM      TO   MF100-KOHNUM-KEY
       *
       *    公費請求テーブルより、実日数(外来)を集計
            IF  RECE02-NYUGAIKBN  =  "2"
@@ -746,7 +760,7 @@
       *
            PERFORM  910-SYUNOU-CLOSE-SEC
       *
-           IF  FLG-KBN   =   ZERO
+           IF  FLG-INVALID  =  1
              WRITE    MF100-REC
              ADD     1        TO   CNT-MF100
            ELSE
@@ -801,8 +815,13 @@
                      CONTINUE
                    END-PERFORM
       *
-                   INITIALIZE  MF100-REC
-                               FLG-KOHCHK
+      *            保険組合せマスター検索
+                   INITIALIZE                     HKNCOMBI-REC
+                   MOVE    RECE02-HOSPNUM         TO  COMB-HOSPNUM
+                   MOVE    RECE02-PTID            TO  COMB-PTID
+                   MOVE    RECE02-HKNCOMBI(IDX8)  TO  COMB-HKNCOMBINUM
+                   PERFORM  910-HKNCOMBI-READ-SEC
+      *
                    PERFORM  9001-CHK-SEC
                    IF   FLG-KOHCHK  =  1
                      PERFORM  2002-HENSYU-SEC
@@ -1702,9 +1721,9 @@
       *
            INITIALIZE  PTKOHINF-REC
       *
-           MOVE    RECE02-HOSPNUM       TO   PTKOH-HOSPNUM
-           MOVE    RECE02-PTID          TO   PTKOH-PTID
-           MOVE    RECE02-KOHID(IDX9)   TO   PTKOH-KOHID
+           MOVE    COMB-HOSPNUM         TO   PTKOH-HOSPNUM
+           MOVE    COMB-PTID            TO   PTKOH-PTID
+           MOVE    COMB-KOHID(IDX7)     TO   PTKOH-KOHID
            MOVE    PTKOHINF-REC         TO   MCPDATA-REC
            MOVE    "DBSELECT"           TO   MCP-FUNC
            MOVE    "tbl_ptkohinf"       TO   MCP-TABLE
@@ -1718,14 +1737,11 @@
              MOVE    "key"              TO   MCP-PATHNAME
              PERFORM  935-PTKOHINF-READ-SEC
       *
-                 IF  (PTKOH-TEKSTYMD(1:6)  <=  RECE02-SRYYM
-                     AND   PTKOH-TEKEDYMD(1:6)  >=  RECE02-SRYYM)
-                     AND   PTKOH-SAKJOKBN   NOT =  "1"
-                   MOVE  PTKOH-KOHNUM        TO   MF100-KOHNUM
-                   MOVE  PTKOH-FTNJANUM      TO   MF100-FTNJANUM
-                   MOVE  PTKOH-JKYSNUM       TO   MF100-JKYSNUM
-                 END-IF
-                 MOVE    1     TO   FLG-KOHCHK
+             IF   ( PTKOH-TEKSTYMD(1:6)     <=  RECE02-SRYYM
+               AND  PTKOH-TEKEDYMD(1:6)     >=  RECE02-SRYYM )
+               AND  PTKOH-SAKJOKBN       NOT =  "1"
+               MOVE    1     TO   FLG-KOHCHK
+             END-IF
            ELSE
              DISPLAY  "PTKOHINF SELECT ERR"
            END-IF
@@ -1956,8 +1972,6 @@
       *****************************************************************
        950-HKNNUM-SET-SEC  SECTION.
       *
-           MOVE    WRK-PARA-SRYYM       TO   WRK-SRYYMD (1:6)
-           MOVE    "01"                 TO   WRK-SRYYMD (7:2)
            INITIALIZE  HKNNUM-REC
            MOVE    SYS-1001-HOSPNUM     TO   HKN-HOSPNUM
            MOVE    WRK-KOHNUM           TO   HKN-HKNNUM
@@ -1977,8 +1991,8 @@
              MOVE      1      TO       FLG-HKNNUM
            END-IF
            PERFORM    UNTIL  FLG-HKNNUM   =   1
-             IF   HKN-TEKSTYMD   <=  WRK-SRYYMD
-                 AND   HKN-TEKEDYMD   >=  WRK-SRYYMD
+             IF     HKN-TEKSTYMD(1:6)  <  WRK-PARA-SRYYM
+               AND  HKN-TEKEDYMD(1:6)  >  WRK-PARA-SRYYM
                MOVE     1               TO   FLG-HKNNUM
              END-IF
       *
@@ -2023,6 +2037,65 @@
       *
            .
        955-HKNNUM-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    保険組合せマスター読み込み
+      *****************************************************************
+       910-HKNCOMBI-READ-SEC         SECTION.
+      *
+           MOVE    HKNCOMBI-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF   MCP-RC  =  ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_hkncombi"    TO  MCP-TABLE
+             MOVE    "key"             TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF   MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC     TO  HKNCOMBI-REC
+               MOVE    ZERO            TO  FLG-HKNCOMBI
+             ELSE
+               MOVE    1               TO  FLG-HKNCOMBI
+             END-IF
+           ELSE
+             MOVE    1                 TO  FLG-HKNCOMBI
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+       910-HKNCOMBI-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療行為受診対象患者一時ファイル読込(NEXT READ)
+      *****************************************************************
+       700-TMP-READ-SEC              SECTION.
+      *
+           INITIALIZE                FLG-INVALID
+           READ    MF100-FILE
+               INVALID    KEY
+                 MOVE    1           TO  FLG-INVALID
+               NOT  INVALID  KEY
+                 MOVE    ZERO        TO  FLG-INVALID
+           END-READ
+           .
+       700-TMP-READ-EXT.
            EXIT.
       *
       *****************************************************************
