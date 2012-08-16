@@ -33,6 +33,7 @@
       *  01.00.02    @@@@-門間    11/10/18  システム管理のDB検索処理を変更(key→key10)
       *  01.00.03    @@@@-田中    12/01/17  CSVファイル作成機能追加
       *  01.00.04    @@@@-門間    12/07/18  初診、再診、その他の判定条件を再変更
+      *                                     その他件数を修正(CSVデータ)
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1145,7 +1146,7 @@
                MOVE    WRK-Z9-5-2            TO  WRK-ITEM
                PERFORM  800-CSVDATA-EDIT-SEC
       *    その他
-               MOVE    SUM-SAISHIN(IDX-SRYKA IDX-LINE)  TO  WRK-Z9-5-2
+               MOVE    SUM-ETC(IDX-SRYKA IDX-LINE)      TO  WRK-Z9-5-2
                MOVE    WRK-Z9-5-2        TO  WRK-ITEM
                IF  IDX-SRYKA  =  SUM-SRYKAMAX
                  PERFORM  810-CSVDATA-EDIT-SEC
