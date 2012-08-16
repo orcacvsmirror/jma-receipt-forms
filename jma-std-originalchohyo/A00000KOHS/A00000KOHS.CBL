@@ -45,6 +45,7 @@
       *                                     公費番号、負担者番号、受給者番号が印字されない。
       *  01.00.09    @@@@-門間    12/05/25  CSVファイル作成機能追加
       *  01.00.10    @@@@-門間    12/07/12  複数科保険(保険組合せ)でまとめ入力を行った時の不具合を修正
+      *  01.00.10    @@@@-門間    12/08/10  保険者番号が不明な場合、患者名が正しく印字されない不具合を修正
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -1617,19 +1618,6 @@
            IF   MCP-RC   =   ZERO
              MOVE    ZERO              TO   FLG-END
              MOVE    MCPDATA-REC       TO   RECE10-REC
-      *
-      *        テスト患者のときは読み飛ばす
-             MOVE    SPACE             TO   PTINF-REC
-             INITIALIZE                     PTINF-REC
-             MOVE    RECE10-HOSPNUM    TO   PTINF-HOSPNUM
-             MOVE    RECE10-PTID       TO   PTINF-PTID
-             MOVE    PTINF-REC         TO   MCPDATA-REC
-             PERFORM 800-PTINF-READ-SEC
-             IF   FLG-PTINF   =   ZERO
-                 AND   PTINF-TSTPTNUMKBN   =   "1"
-               GO  TO  900-SEIKYU-READ-SEC
-             END-IF
-      *
              ADD    1                  TO   CNT-RECE10
            ELSE
              MOVE    1                 TO   FLG-END
@@ -1692,6 +1680,19 @@
                                         SPA-AREA
            IF   MCP-RC   =   ZERO
              MOVE    MCPDATA-REC        TO   RECE02-REC
+      *
+      *        テスト患者のときは読み飛ばす
+             MOVE    SPACE             TO   PTINF-REC
+             INITIALIZE                     PTINF-REC
+             MOVE    RECE02-HOSPNUM    TO   PTINF-HOSPNUM
+             MOVE    RECE02-PTID       TO   PTINF-PTID
+             MOVE    PTINF-REC         TO   MCPDATA-REC
+             PERFORM 800-PTINF-READ-SEC
+             IF   FLG-PTINF   =   ZERO
+                 AND   PTINF-TSTPTNUMKBN   =   "1"
+               GO  TO  900-KOHSKY-FETCH-EXT
+             END-IF
+      *
            ELSE
              MOVE    1                  TO   FLG-KOHSKY
              INITIALIZE                 RECE02-REC
