@@ -34,6 +34,7 @@
       *  01.00.03    @@@@-田中    11/10/13  CSVファイル作成機能追加
       *  01.00.04    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.05    @@@@-門間    12/07/03  初診、再診、その他の判定条件を再度変更
+      *  01.00.06    @@@@-門間    12/08/24  新患件数が重複カウントされる不具合を修正
       *****************************************************************
       *
       *
@@ -1729,6 +1730,7 @@
            IF     FLG-JYURRK     =  ZERO
              AND  JYURRK-SRYYMD  =  SYU-SRYYMD
              AND  JYURRK-SRYKA   =  SYU-SRYKA
+             AND  JYURRK-DENPNUM =  SYU-DENPNUM
       *
              INITIALIZE                 WRK-SYOSINYMD
                                         FLG-SRYKARRK
