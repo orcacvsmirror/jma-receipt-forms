@@ -39,6 +39,7 @@
       *                                     「保険者番号、本家区分、主保険、給付割合」が印字されない。
       *  01.00.07    @@@@-門間    12/05/25  公費単独の「回数、金額、標準負担額」が印字されない。
       *                                     CSVファイル作成機能追加
+      *  01.00.08    @@@@-門間    12/09/26  公費併用の場合、一部負担金が印字されない。
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -676,10 +677,6 @@
                        ADD     RECE10-TOTALTEN(IDX4 + 1)
                                                      TO  A05TMP-TENSU
       *
-      *                一部負担金
-                       MOVE    RECE10-FTNMONEY(IDX4 + 1)
-                                                     TO  A05TMP-ITBFTN
-      *
       *                食事回数
                        MOVE    RECE10-SHOKUJINISSU(IDX4 + 1)
                                                      TO  A05TMP-SNISSU
@@ -777,9 +774,6 @@
       *            点数設定
                    MOVE    RECE10-TOTALTEN(2)   TO  A05TMP-TENSU
       *
-      *            一部負担金
-                   MOVE    RECE10-FTNMONEY(2)   TO  A05TMP-ITBFTN
-      *
       *            食事回数
                    MOVE    RECE10-SHOKUJINISSU(2)
                                                 TO  A05TMP-SNISSU
@@ -800,9 +794,6 @@
       *          点数設定
                  MOVE    RECE10-TOTALTEN(1)   TO  A05TMP-TENSU
       *
-      *          一部負担金
-                 MOVE    RECE10-FTNMONEY(1)   TO  A05TMP-ITBFTN
-      *
       *          食事回数
                  MOVE    RECE10-SHOKUJINISSU(1)
                                               TO  A05TMP-SNISSU
@@ -815,6 +806,28 @@
                  MOVE    RECE10-SHOKUJIFTN(1)
                                               TO  A05TMP-SFTNGK
       *
+               END-IF
+      *
+      *        一部負担金
+               IF    ( RECE10-KOHNUM(1) =  SPACE )
+                 AND ( RECE10-KOHNUM(2) =  SPACE )
+                 AND ( RECE10-KOHNUM(3) =  SPACE )
+                 AND ( RECE10-KOHNUM(4) =  SPACE )
+                 MOVE    RECE10-FTNMONEY(1)   TO    A05TMP-ITBFTN
+               ELSE
+                 IF  RECE10-KOHNUM(2) =  SPACE
+                   MOVE    RECE10-FTNMONEY(2)   TO    A05TMP-ITBFTN
+                 ELSE
+                   IF  RECE10-KOHNUM(3) =  SPACE
+                     MOVE    RECE10-FTNMONEY(3)   TO    A05TMP-ITBFTN
+                   ELSE
+                     IF  RECE10-KOHNUM(4) =  SPACE
+                       MOVE    RECE10-FTNMONEY(4)   TO    A05TMP-ITBFTN
+                     ELSE
+                       MOVE    RECE10-FTNMONEY(5)   TO    A05TMP-ITBFTN
+                     END-IF
+                   END-IF
+                 END-IF
                END-IF
       *
              END-IF
@@ -885,9 +898,6 @@
       *
       *            点数設定
                    ADD     RECE02-TOTALTEN(IDX4 + 1)  TO  A05TMP-TENSU
-      *
-      *            一部負担金
-                   MOVE    RECE02-FTNMONEY(IDX4 + 1)  TO  A05TMP-ITBFTN
       *
       *            食事回数
                    MOVE    RECE02-SHOKUJINISSU(IDX4 + 1)
@@ -984,9 +994,6 @@
       *        点数設定
                MOVE    RECE02-TOTALTEN(2)        TO  A05TMP-TENSU
       *
-      *        一部負担金
-               MOVE    RECE02-FTNMONEY(2)        TO  A05TMP-ITBFTN
-      *
       *        食事回数
                MOVE    RECE02-SHOKUJINISSU(2)    TO  A05TMP-SNISSU
       *
@@ -1004,9 +1011,6 @@
       *      点数設定
              MOVE    RECE02-TOTALTEN(1)        TO  A05TMP-TENSU
       *
-      *      一部負担金
-             MOVE    RECE02-FTNMONEY(1)        TO  A05TMP-ITBFTN
-      *
       *      食事回数
              MOVE    RECE02-SHOKUJINISSU(1)    TO  A05TMP-SNISSU
       *
@@ -1016,6 +1020,28 @@
       *      標準負担額
              MOVE    RECE02-SHOKUJIFTN(1)      TO  A05TMP-SFTNGK
       *
+           END-IF
+      *
+      *    一部負担金
+           IF    ( RECE02-KOHNUM(1) =  SPACE )
+             AND ( RECE02-KOHNUM(2) =  SPACE )
+             AND ( RECE02-KOHNUM(3) =  SPACE )
+             AND ( RECE02-KOHNUM(4) =  SPACE )
+             MOVE    RECE02-FTNMONEY(1)   TO    A05TMP-ITBFTN
+           ELSE
+             IF  RECE02-KOHNUM(2) =  SPACE
+               MOVE    RECE02-FTNMONEY(2)   TO    A05TMP-ITBFTN
+             ELSE
+               IF  RECE02-KOHNUM(3) =  SPACE
+                 MOVE    RECE02-FTNMONEY(3)   TO    A05TMP-ITBFTN
+               ELSE
+                 IF  RECE02-KOHNUM(4) =  SPACE
+                   MOVE    RECE02-FTNMONEY(4)   TO    A05TMP-ITBFTN
+                 ELSE
+                   MOVE    RECE02-FTNMONEY(5)   TO    A05TMP-ITBFTN
+                 END-IF
+               END-IF
+             END-IF
            END-IF
       *
            .
