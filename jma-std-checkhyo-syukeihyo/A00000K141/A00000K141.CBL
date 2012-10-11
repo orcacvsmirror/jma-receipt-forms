@@ -31,6 +31,7 @@
       *                                     コメント履歴削除
       *   01.00.02    @@@@-門間   11/12/13  ヘッダ項目に数列が表示される不具合を修正
       *   01.00.03    @@@@-門間   12/05/22  CSVファイル作成機能追加
+      *   01.00.04    @@@@-門間   12/09/26  医師が多い場合にCSVファイルが正常に出力されない不具合を修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -309,16 +310,16 @@
            COPY    "CPSHELLTBL.INC".
       *
        01  CSV-BODY-AREA.
-           03  CSV-BODY-G                OCCURS 30.
+           03  CSV-BODY-G                OCCURS 200.
              05  WRK-BODY-NAME             PIC X(20).
              05  WRK-BODY-TBL              OCCURS 56.
                07  WRK-BODY-KAISU            PIC X(11).
                07  WRK-BODY-TENSU            PIC X(11).
       *
        01  WRK-CSV-AREA.
-           03  WRK-ITEM-SIZE           PIC 9(03)    VALUE 100.
-           03  WRK-ITEM                PIC X(100)   VALUE SPACE.
-           03  WRK-CSVDATA             PIC X(20000) VALUE SPACE.
+           03  WRK-ITEM-SIZE           PIC 9(03)     VALUE 100.
+           03  WRK-ITEM                PIC X(100)    VALUE SPACE.
+           03  WRK-CSVDATA             PIC X(300000) VALUE SPACE.
       *
        01  CSV-HEAD-AREA.
            03  CSV-HEAD-G.
@@ -4315,7 +4316,6 @@
            MOVE    "key8"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                         MCPAREA
-                                        ORCMCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
            .
