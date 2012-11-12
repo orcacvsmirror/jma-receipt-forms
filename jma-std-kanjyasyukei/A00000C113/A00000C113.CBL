@@ -31,6 +31,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/10/18  システム管理のDB検索処理を変更(key→key10)
       *  01.00.03    @@@@-田中    12/01/18  CSVファイル作成機能追加
+      *  01.00.04    @@@@-門間    12/11/12  処理が終了しない不具合の修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -125,7 +126,7 @@
            03  IDX-MAX                 PIC 9(07).
            03  JIHIIDX                 PIC 9(04).
            03  IDX-LINE                PIC 9(02).
-           03  IDX-DR                  PIC 9(02).
+           03  IDX-DR                  PIC 9(04).
            03  IDX-ST                  PIC 9(03).
            03  IDX-ED                  PIC 9(03).
            03  IDX-LEN                 PIC 9(03).
@@ -191,7 +192,7 @@
            03  WRK-ZAINISSU            PIC  S9(05).
       *
        01  SUM-AREA                    VALUE ZERO.
-           03  SUM-DRCDMAX             PIC 9(03).
+           03  SUM-DRCDMAX             PIC 9(04).
            03  SUM-SRYYMDIMAX          PIC 9(05).
            03  SUM-SRYYMD-TBL          OCCURS 1000.
                05  SUM-SRYYMD          PIC X(08).
