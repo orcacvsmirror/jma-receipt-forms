@@ -31,7 +31,7 @@ if [ $usrname != "root" ] ; then
 fi
 
 # start message
-echomsg "公開帳票 プログラムコピー中..."
+echomsg "公開帳票 保険別外来患者数集計表 プログラムコピー中..."
 
 # copy
 cp -af *.CBL ${SITESRCDIR}/cobol 2> /dev/null
@@ -43,11 +43,11 @@ cp -af version_* ${SITESRCDIR}/doc
 if [ -f ${SCRIPTSDIR}/allways/site-upgrade.sh ] ; then
   sh ${SCRIPTSDIR}/allways/site-upgrade.sh
 else
-  echomsg "公開帳票 プログラムコピー異常終了!!"
+  echomsg "公開帳票 保険別外来患者数集計表 プログラムコピー異常終了!!"
   exit 1
 fi
 
 # end message
 sync
-echomsg "公開帳票 プログラムコピー終了!!"
+echomsg "公開帳票 保険別外来患者数集計表 プログラムコピー終了!!"
 exit 0
