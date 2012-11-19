@@ -13,7 +13,7 @@ function echomsg() {
       echo `echo $1 | nkf -wE`
     else
       echo -n `echo $1 | nkf -wE`
-    fi
+    fi 
   else
     if [ -z $2 ]; then
       echo $1
@@ -31,7 +31,7 @@ if [ $usrname != "root" ] ; then
 fi
 
 # start message
-echomsg "公開帳票 (受診)患者一覧表 プログラムコピー中..."
+echomsg "公開帳票 プログラムコピー中..."
 
 # copy
 cp -af *.CBL ${SITESRCDIR}/cobol 2> /dev/null
@@ -41,13 +41,13 @@ cp -af version_* ${SITESRCDIR}/doc
 
 # run site-upgrade.sh
 if [ -f ${SCRIPTSDIR}/allways/site-upgrade.sh ] ; then
-  bash ${SCRIPTSDIR}/allways/site-upgrade.sh
+  sh ${SCRIPTSDIR}/allways/site-upgrade.sh
 else
-  echomsg "公開帳票 (受診)患者一覧表 プログラムコピー異常終了!!"
+  echomsg "公開帳票 プログラムコピー異常終了!!"
   exit 1
 fi
 
 # end message
 sync
-echomsg "公開帳票 (受診)患者一覧表 プログラムコピー終了!!"
+echomsg "公開帳票 プログラムコピー終了!!"
 exit 0
