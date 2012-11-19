@@ -31,7 +31,7 @@ if [ $usrname != "root" ] ; then
 fi
 
 # start message
-echomsg "医薬品名・一般名対応リスト プログラムコピー中..."
+echomsg "公開帳票 医薬品名・一般名対応リスト プログラムコピー中..."
 
 # copy
 cp -af *.CBL ${SITESRCDIR}/cobol 2> /dev/null
@@ -40,13 +40,13 @@ cp -af *.red ${SITESRCDIR}/form 2> /dev/null
 
 # run site-upgrade.sh
 if [ -f ${SCRIPTSDIR}/allways/site-upgrade.sh ] ; then
-  sh ${SCRIPTSDIR}/allways/site-upgrade.sh
+  bash ${SCRIPTSDIR}/allways/site-upgrade.sh
 else
-  echomsg "医薬品名・一般名対応リスト プログラムコピー異常終了!!"
+  echomsg "公開帳票 医薬品名・一般名対応リスト プログラムコピー異常終了!!"
   exit 1
 fi
 
 # end message
 sync
-echomsg "医薬品名・一般名対応リスト プログラムコピー終了!!"
+echomsg "公開帳票 医薬品名・一般名対応リスト プログラムコピー終了!!"
 exit 0
