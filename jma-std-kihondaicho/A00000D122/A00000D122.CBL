@@ -32,6 +32,7 @@
       *  01.00.02    @@@@-門間    11/02/21  処理速度の改善
       *  01.00.03    @@@@-門間    12/02/29  インデント整理
       *                           12/03/09  CSVファイル作成機能追加
+      *  01.00.04    @@@@-門間    12/11/29  病床数修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -163,6 +164,11 @@
            03  IDX-ED            PIC 9(03).
            03  IDXP              PIC 9(05).
       *
+           03  IDX-BED           PIC 9(02).
+           03  IDX-BED2          PIC 9(02).
+           03  IDX-BED-ST        PIC 9(02).
+           03  IDX-BED-ED        PIC 9(02).
+      *
       *    一時領域
        01  WRK-AREA.
            03  WRK-PATH              PIC X(64).
@@ -282,7 +288,8 @@
            03         SUM-DR-G.    
              05       SUM-DRCD          PIC  X(04).
              05       SUM-DRNAME        PIC  X(20).
-           03         SUM-BEDSUIPN      PIC  9(04).
+           03         SUM-BED-TBL       OCCURS   32.
+             05         SUM-BEDSU       PIC  9(04).
            03         SUM-PRFLG         PIC  9(01).
            03         SUM-BF-MISYU      PIC S9(09).
            03         SUM-TENKI-G       OCCURS   3.
@@ -617,6 +624,7 @@
            INITIALIZE                  CNT-AREA
            INITIALIZE                  SUM-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  IDX-AREA
       *
            PERFORM 100-DBOPEN-SEC
            MOVE    D100LNK-HOSPNUM     TO  SPA-HOSPNUM
@@ -670,23 +678,42 @@
       *    医療機関ＩＤ編集
            MOVE    SPACE               TO  SYS-1001-REC
            INITIALIZE                  SYS-1001-REC
+           MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
            MOVE    "1001"              TO  SYS-1001-KANRICD
            MOVE    "*"                 TO  SYS-1001-KBNCD
-           MOVE  D100LNK-YMD1          TO  SYS-1001-EDYUKYMD
-           MOVE  D100LNK-YMD2          TO  SYS-1001-STYUKYMD
-           MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
+           MOVE    D100LNK-YMD1        TO  SYS-1001-EDYUKYMD
+           MOVE    D100LNK-YMD2        TO  SYS-1001-STYUKYMD
       *
            MOVE    SYS-1001-REC        TO  MCPDATA-REC
            PERFORM 800-SYSKANRI-READ-SEC
            IF      FLG-SYSKANRI        =   ZERO
-               MOVE    MCPDATA-REC         TO  SYS-1001-REC
-               MOVE    SYS-1001-HOSPNUM     TO  D100LNK-HOSPNUM
-               MOVE    SYS-1001-BEDSU      TO  WRK-SYS-BEDSU
+               MOVE    SYS-1001-HOSPNUM    TO  D100LNK-HOSPNUM
            ELSE    
                MOVE    "医療機関ＩＤが取得できませんでした。"
                                            TO  WRK-RECEERR
                PERFORM 500-ERR-HENSYU-SEC
            END-IF                                     
+      *
+      *    病床数の取得
+           MOVE    D100LNK-YMD1(7:2)      TO  IDX-BED-ST
+           MOVE    D100LNK-YMD2(7:2)      TO  IDX-BED-ED
+      *
+           PERFORM  VARYING  IDX-BED  FROM  IDX-BED-ST  BY  1
+                    UNTIL    IDX-BED  >  IDX-BED-ED
+             ADD     1                   TO  IDX-BED2
+             MOVE    SPACE               TO  SYS-1001-REC
+             INITIALIZE                  SYS-1001-REC
+             MOVE    "1001"              TO  SYS-1001-KANRICD
+             MOVE    "*"                 TO  SYS-1001-KBNCD
+             MOVE    SPA-HOSPNUM         TO  SYS-1001-HOSPNUM
+             MOVE    D100LNK-YMD1(1:6)   TO  SYS-1001-EDYUKYMD(1:6)
+             MOVE    D100LNK-YMD2(1:6)   TO  SYS-1001-STYUKYMD(1:6)
+             MOVE    IDX-BED             TO  SYS-1001-EDYUKYMD(7:2)
+                                             SYS-1001-STYUKYMD(7:2)
+             MOVE    SYS-1001-REC        TO  MCPDATA-REC
+             PERFORM 800-SYSKANRI-READ-SEC
+             MOVE    SYS-1001-BEDSU      TO  SUM-BEDSU(IDX-BED2)
+           END-PERFORM
       *
       *    画面入力パラメタ値のチェック
       *    集計対象か期間のチェック
@@ -1003,9 +1030,6 @@
            END-IF
            MOVE  SUM-TENKI-MSG(1)  TO  SUM-TENKI-MSG(2)
            MOVE  SUM-TENKI-MSG(1)  TO  SUM-TENKI-MSG(3)
-      *
-      *    病床数の取得
-           ADD  WRK-SYS-BEDSU      TO  SUM-BEDSUIPN
       *
       *    プログラムオプション取込み（預り金コード）
            INITIALIZE                      ORCSPRGOPTIONAREA
@@ -1446,7 +1470,7 @@
                     UNTIL    I3     >=   SUM-DAYMAX
       *
       *    病床数
-                    MOVE    SUM-BEDSUIPN  TO  SUM-YOSO (I3 5)
+                    MOVE    SUM-BEDSU(I3)  TO  SUM-YOSO (I3 5)
                     COMPUTE SUM-YOSO(SUM-DAYMAX 5) =
                             SUM-YOSO(SUM-DAYMAX 5) +
                             SUM-YOSO(I3 5)
@@ -3345,6 +3369,7 @@
            .
        900-SYUNOU-KEY-SEL-EXT.
            EXIT.
+      *
       *****************************************************************
       *    管理マスタ読み込み
       *****************************************************************
@@ -3359,16 +3384,16 @@
                                         SPA-AREA
       *
            IF      MCP-RC              =   ZERO
-               MOVE    "DBFETCH"          TO  MCP-FUNC
-              MOVE    "tbl_syskanri"      TO  MCP-TABLE
-              MOVE    "key10"             TO  MCP-PATHNAME
-              CALL    "ORCDBMAIN"         USING
-                                          MCPAREA
-                                          MCPDATA-REC
-                                          SPA-AREA
-      *
+               MOVE    "DBFETCH"        TO  MCP-FUNC
+               MOVE    "tbl_syskanri"   TO  MCP-TABLE
+               MOVE    "key10"          TO  MCP-PATHNAME
+               CALL    "ORCDBMAIN"      USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
                IF      MCP-RC              =   ZERO
                    MOVE    ZERO            TO  FLG-SYSKANRI
+                   MOVE    MCPDATA-REC     TO  SYS-1001-REC
                ELSE
                    MOVE    1               TO  FLG-SYSKANRI
                END-IF
