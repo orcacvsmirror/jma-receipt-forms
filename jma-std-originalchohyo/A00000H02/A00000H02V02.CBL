@@ -84,6 +84,7 @@
       *                                     含量規格変更不可等の対応
       * 01.00.04     @@@@-門間    12/05/18  処方せんの器材換算値エラー対応
       *                                     薬価基準コード１２桁対応
+      * 01.00.05     @@@@-門間    12/11/29  医療機関住所、医療機関名の印字ずれ修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1542,8 +1543,10 @@
       *
       *    医療機関住所
            MOVE    WRK-HOSPADRS        TO  HCM19-HOSPADRS
+           INSPECT HCM19-HOSPADRS      REPLACING ALL "  " BY "　"
       *    医療機関名
            MOVE    WRK-HOSPNAME        TO  HCM19-HOSPNAME
+           INSPECT HCM19-HOSPNAME      REPLACING ALL "  " BY "　"
       *    医療機関ＴＥＬ
            MOVE    WRK-HOSPTEL         TO  HCM19-HOSPTEL
       *    ドクター

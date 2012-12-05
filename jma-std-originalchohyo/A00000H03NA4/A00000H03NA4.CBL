@@ -700,8 +700,10 @@
       *
       *    ∞ÂŒ≈µ°¥ÿΩªΩÍ
            MOVE    WRK-HOSPADRS        TO  HCN03-IRYOADRS
+           INSPECT HCN03-IRYOADRS      REPLACING ALL "  " BY "°°"
       *    ∞ÂŒ≈µ°¥ÿÃæ
            MOVE    WRK-HOSPNAME        TO  HCN03-IRYOMEI
+           INSPECT HCN03-IRYOMEI       REPLACING ALL "  " BY "°°"
       *    ∞ÂŒ≈µ°¥ÿ£‘£≈£Ã
            MOVE    WRK-HOSPTEL         TO  HCN03-IRYOTEL
       *

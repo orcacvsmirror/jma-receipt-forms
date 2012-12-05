@@ -918,8 +918,10 @@
       *
       *    ∞ÂŒ≈µ°¥ÿΩªΩÍ
            MOVE    WRK-HOSPADRS        TO  HC03-IRYOADRS
+           INSPECT HC03-IRYOADRS       REPLACING ALL "  " BY "°°"
       *    ∞ÂŒ≈µ°¥ÿÃæ
            MOVE    WRK-HOSPNAME        TO  HC03-IRYOMEI
+           INSPECT HC03-IRYOMEI        REPLACING ALL "  " BY "°°"
       *    ∞ÂŒ≈µ°¥ÿ£‘£≈£Ã
            MOVE    WRK-HOSPTEL         TO  HC03-IRYOTEL
       *

@@ -31,7 +31,8 @@
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/03/10  用法コードコメント対応
-      *  01.00.02    @@@@-門間    12/03/23  Ｈ２４年４月改正対応
+      *  01.00.03    @@@@-門間    12/03/23  Ｈ２４年４月改正対応
+      *  01.00.04    @@@@-門間    12/11/29  医療機関住所、医療機関名の印字ずれ修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1603,8 +1604,10 @@
       *
       *    医療機関住所
            MOVE    WRK-HOSPADRS        TO  HCM19-HOSPADRS
+           INSPECT HCM19-HOSPADRS      REPLACING ALL "  " BY "　"
       *    医療機関名
            MOVE    WRK-HOSPNAME        TO  HCM19-HOSPNAME
+           INSPECT HCM19-HOSPNAME      REPLACING ALL "  " BY "　"
       *    医療機関ＴＥＬ
            MOVE    WRK-HOSPTEL         TO  HCM19-HOSPTEL
       *    県番号
