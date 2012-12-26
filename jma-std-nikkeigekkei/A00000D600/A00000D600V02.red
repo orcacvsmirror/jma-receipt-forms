@@ -1746,7 +1746,7 @@
       </dia:attribute>
     </dia:object>
   </dia:layer>
-  <dia:layer name="文字" visible="true">
+  <dia:layer name="文字" visible="true" active="true">
     <dia:object type="Standard - Text" version="1" id="O81">
       <dia:attribute name="obj_pos">
         <dia:point val="10.8836,1.62892"/>
@@ -2115,12 +2115,12 @@
         <dia:point val="0.75,20.25"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="0.75,20.03;19.25,20.2825"/>
+        <dia:rectangle val="0.75,20.0237;14.2563,20.2951"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#(注１：自費負担額には、保険給付額以外の全項目金額(自費診療金額、保険適用外金額、公費助成金、室料差額、食事療養費標準負担額を含む)を集計しています。)#</dia:string>
+            <dia:string>#注１：自費負担額には、患者負担額、自費診療金額、保険適用外金額、室料差額、食事療養費標準負担額を集計します。#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="Takao明朝" style="0" name="Courier"/>
@@ -2883,7 +2883,7 @@
       </dia:attribute>
     </dia:object>
   </dia:layer>
-  <dia:layer name="差し込み" visible="true" active="true">
+  <dia:layer name="差し込み" visible="true">
     <dia:object type="Embed - Text" version="1" id="O115">
       <dia:attribute name="obj_pos">
         <dia:point val="28.6005,3.15"/>

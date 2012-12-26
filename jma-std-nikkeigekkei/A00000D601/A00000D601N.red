@@ -1487,12 +1487,12 @@
         <dia:point val="1.51429,10.6985"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="1.51429,10.4785;23.0143,10.731"/>
+        <dia:rectangle val="1.51429,10.4722;15.0206,10.7436"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#(注１：自費負担額には、保険給付額以外の全項目金額(保険診療分の患者負担額、自費診療金額、保険適用外金額、公費助成金、室料差額、食事療養費標準負担額を含む)を集計しています。)#</dia:string>
+            <dia:string>#注１：自費負担額には、患者負担額、自費診療金額、保険適用外金額、室料差額、食事療養費標準負担額を集計します。#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="Takao明朝" style="0" name="Courier"/>
@@ -1520,12 +1520,12 @@
         <dia:point val="1.51429,11.0201"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="1.51429,10.8001;7.76429,11.0526"/>
+        <dia:rectangle val="1.51429,10.7938;8.2706,11.0652"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#(注２：その他件数は初診、再診以外の件数を全て含む)#</dia:string>
+            <dia:string>#注２：その他件数は初診、再診以外の件数を全て含みます。#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="Takao明朝" style="0" name="Courier"/>
