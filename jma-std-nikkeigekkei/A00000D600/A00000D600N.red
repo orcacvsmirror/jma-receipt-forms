@@ -2111,42 +2111,6 @@
     </object>
     <object type="Standard - Text" version="0" id="O92">
       <attribute name="obj_pos">
-        <point val="0.75,20.25"/>
-      </attribute>
-      <attribute name="obj_bb">
-        <rectangle val="0.75,20.0509;19.536,20.3009"/>
-      </attribute>
-      <attribute name="text">
-        <composite type="text">
-          <attribute name="string">
-            <string>#(&#195;&#237;&#163;&#177;&#161;&#167;&#188;&#171;&#200;&#241;&#201;&#233;&#195;&#180;&#179;&#219;&#164;&#203;&#164;&#207;&#161;&#162;&#202;&#221;&#184;&#177;&#181;&#235;&#201;&#213;&#179;&#219;&#176;&#202;&#179;&#176;&#164;&#206;&#193;&#180;&#185;&#224;&#204;&#220;&#182;&#226;&#179;&#219;(&#188;&#171;&#200;&#241;&#191;&#199;&#206;&#197;&#182;&#226;&#179;&#219;&#161;&#162;&#202;&#221;&#184;&#177;&#197;&#172;&#205;&#209;&#179;&#176;&#182;&#226;&#179;&#219;&#161;&#162;&#184;&#248;&#200;&#241;&#189;&#245;&#192;&#174;&#182;&#226;&#161;&#162;&#188;&#188;&#206;&#193;&#186;&#185;&#179;&#219;&#161;&#162;&#191;&#169;&#187;&#246;&#206;&#197;&#205;&#220;&#200;&#241;&#201;&#184;&#189;&#224;&#201;&#233;&#195;&#180;&#179;&#219;&#164;&#242;&#180;&#222;&#164;&#224;)&#164;&#242;&#189;&#184;&#183;&#215;&#164;&#183;&#164;&#198;&#164;&#164;&#164;&#222;&#164;&#185;&#161;&#163;)#</string>
-          </attribute>
-          <attribute name="font">
-            <font name="Courier"/>
-          </attribute>
-          <attribute name="height">
-            <real val="0.25"/>
-          </attribute>
-          <attribute name="pos">
-            <point val="0.75,20.25"/>
-          </attribute>
-          <attribute name="color">
-            <color val="#000000"/>
-          </attribute>
-          <attribute name="alignment">
-            <enum val="0"/>
-          </attribute>
-          <attribute name="single">
-            <real val="0.1515"/>
-          </attribute>
-          <attribute name="multi">
-            <real val="0.12625"/>
-          </attribute>
-        </composite>
-      </attribute>
-    </object>
-    <object type="Standard - Text" version="0" id="O93">
-      <attribute name="obj_pos">
         <point val="8.6,19.7"/>
       </attribute>
       <attribute name="obj_bb">
@@ -2181,7 +2145,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O94">
+    <object type="Standard - Text" version="0" id="O93">
       <attribute name="obj_pos">
         <point val="10.4,3.8"/>
       </attribute>
@@ -2217,7 +2181,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O95">
+    <object type="Standard - Text" version="0" id="O94">
       <attribute name="obj_pos">
         <point val="17.4,4.05"/>
       </attribute>
@@ -2253,7 +2217,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O96">
+    <object type="Standard - Text" version="0" id="O95">
       <attribute name="obj_pos">
         <point val="17.65,3.55"/>
       </attribute>
@@ -2289,7 +2253,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O97">
+    <object type="Standard - Text" version="0" id="O96">
       <attribute name="obj_pos">
         <point val="16.25,4.05"/>
       </attribute>
@@ -2325,7 +2289,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O98">
+    <object type="Standard - Text" version="0" id="O97">
       <attribute name="obj_pos">
         <point val="16.25,3.55"/>
       </attribute>
@@ -2361,7 +2325,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O99">
+    <object type="Standard - Text" version="0" id="O98">
       <attribute name="obj_pos">
         <point val="14.9,4.05"/>
       </attribute>
@@ -2397,7 +2361,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O100">
+    <object type="Standard - Text" version="0" id="O99">
       <attribute name="obj_pos">
         <point val="14.9,3.55"/>
       </attribute>
@@ -2433,7 +2397,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O101">
+    <object type="Standard - Text" version="0" id="O100">
       <attribute name="obj_pos">
         <point val="13.45,4.05"/>
       </attribute>
@@ -2469,7 +2433,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O102">
+    <object type="Standard - Text" version="0" id="O101">
       <attribute name="obj_pos">
         <point val="13.2,3.55"/>
       </attribute>
@@ -2505,7 +2469,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O103">
+    <object type="Standard - Text" version="0" id="O102">
       <attribute name="obj_pos">
         <point val="11.7,4.05"/>
       </attribute>
@@ -2541,7 +2505,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O104">
+    <object type="Standard - Text" version="0" id="O103">
       <attribute name="obj_pos">
         <point val="11.7,3.55"/>
       </attribute>
@@ -2577,7 +2541,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O105">
+    <object type="Standard - Text" version="0" id="O104">
       <attribute name="obj_pos">
         <point val="8.95,3.8"/>
       </attribute>
@@ -2613,7 +2577,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O106">
+    <object type="Standard - Text" version="0" id="O105">
       <attribute name="obj_pos">
         <point val="18.8,3.55"/>
       </attribute>
@@ -2649,7 +2613,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O107">
+    <object type="Standard - Text" version="0" id="O106">
       <attribute name="obj_pos">
         <point val="18.8,4.05"/>
       </attribute>
@@ -2685,7 +2649,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O108">
+    <object type="Standard - Text" version="0" id="O107">
       <attribute name="obj_pos">
         <point val="20.35,3.55"/>
       </attribute>
@@ -2721,7 +2685,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O109">
+    <object type="Standard - Text" version="0" id="O108">
       <attribute name="obj_pos">
         <point val="20.2,4.05"/>
       </attribute>
@@ -2757,7 +2721,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O110">
+    <object type="Standard - Text" version="0" id="O109">
       <attribute name="obj_pos">
         <point val="23.15,3.7"/>
       </attribute>
@@ -2794,7 +2758,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O111">
+    <object type="Standard - Text" version="0" id="O110">
       <attribute name="obj_pos">
         <point val="24.6,3.7"/>
       </attribute>
@@ -2831,7 +2795,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O112">
+    <object type="Standard - Text" version="0" id="O111">
       <attribute name="obj_pos">
         <point val="26.05,3.7"/>
       </attribute>
@@ -2868,7 +2832,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Standard - Text" version="0" id="O113">
+    <object type="Standard - Text" version="0" id="O112">
       <attribute name="obj_pos">
         <point val="27.5,3.7"/>
       </attribute>
@@ -2905,7 +2869,7 @@
         </composite>
       </attribute>
     </object>
-    <object type="Embed - Text" version="0" id="O114">
+    <object type="Embed - Text" version="0" id="O113">
       <attribute name="obj_pos">
         <point val="24.25,19.7"/>
       </attribute>
@@ -2943,6 +2907,42 @@
           </attribute>
           <attribute name="multi">
             <real val="0.13635"/>
+          </attribute>
+        </composite>
+      </attribute>
+    </object>
+    <object type="Standard - Text" version="0" id="O114">
+      <attribute name="obj_pos">
+        <point val="0.9,20.25"/>
+      </attribute>
+      <attribute name="obj_bb">
+        <rectangle val="0.9,20.0509;14.2825,20.3009"/>
+      </attribute>
+      <attribute name="text">
+        <composite type="text">
+          <attribute name="string">
+            <string>#&#195;&#237;&#163;&#177;&#161;&#167;&#188;&#171;&#200;&#241;&#201;&#233;&#195;&#180;&#179;&#219;&#164;&#203;&#164;&#207;&#161;&#162;&#180;&#181;&#188;&#212;&#201;&#233;&#195;&#180;&#179;&#219;&#161;&#162;&#188;&#171;&#200;&#241;&#191;&#199;&#206;&#197;&#182;&#226;&#179;&#219;&#161;&#162;&#202;&#221;&#184;&#177;&#197;&#172;&#205;&#209;&#179;&#176;&#182;&#226;&#179;&#219;&#161;&#162;&#188;&#188;&#206;&#193;&#186;&#185;&#179;&#219;&#161;&#162;&#191;&#169;&#187;&#246;&#206;&#197;&#205;&#220;&#200;&#241;&#201;&#184;&#189;&#224;&#182;&#226;&#179;&#219;&#164;&#242;&#189;&#184;&#183;&#215;&#164;&#183;&#164;&#222;&#164;&#185;&#161;&#163;#</string>
+          </attribute>
+          <attribute name="font">
+            <font name="Courier"/>
+          </attribute>
+          <attribute name="height">
+            <real val="0.25"/>
+          </attribute>
+          <attribute name="pos">
+            <point val="0.9,20.25"/>
+          </attribute>
+          <attribute name="color">
+            <color val="#000000"/>
+          </attribute>
+          <attribute name="alignment">
+            <enum val="0"/>
+          </attribute>
+          <attribute name="single">
+            <real val="0.1515"/>
+          </attribute>
+          <attribute name="multi">
+            <real val="0.12625"/>
           </attribute>
         </composite>
       </attribute>
