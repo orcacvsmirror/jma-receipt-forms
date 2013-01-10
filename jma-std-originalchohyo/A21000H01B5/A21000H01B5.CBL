@@ -31,6 +31,8 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-田中    11/01/24  4.6対応
       *  01.00.03    @@@@-田中    11/03/10  病名補足コメント対応
+      *  01.00.05    @@@@-萩野    13/01/09  カルテ発行(病名無)を選択した場合、
+      *                                     病名を印字しないように修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -499,20 +501,22 @@
       *
            END-IF
       *
+           IF  ORCHC01-SYORIKBN   NOT = "4"
       *    続紙あり
-           IF   FLG-ZOKUSHI  =  1
-               AND   FLG-PTBYOMEI  =   ZERO
-             PERFORM  2002-ZOKUSHI-SEC
-             CLOSE                       PRT-FILE
-                                         PRT-FILE2
-           ELSE
-             MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-             MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
-             MOVE    "key2"              TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"         USING
-                                         MCPAREA
-                                         MCPDATA-REC
-                                         SPA-AREA
+               IF   FLG-ZOKUSHI  =  1
+                   AND   FLG-PTBYOMEI  =   ZERO
+                 PERFORM  2002-ZOKUSHI-SEC
+                 CLOSE                       PRT-FILE
+                                             PRT-FILE2
+               ELSE
+                 MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+                 MOVE    "tbl_ptbyomei"      TO  MCP-TABLE
+                 MOVE    "key2"              TO  MCP-PATHNAME
+                 CALL    "ORCDBMAIN"         USING
+                                             MCPAREA
+                                             MCPDATA-REC
+                                             SPA-AREA
+               END-IF
            END-IF
       *
            MOVE    1         TO  FLG-END
@@ -617,7 +621,9 @@
            PERFORM  310-HC01-HEN-SEC
       *
       *    患者病名編集
-           PERFORM  311-HC01-HEN-SEC
+           IF  ORCHC01-SYORIKBN   NOT = "4"
+               PERFORM  311-HC01-HEN-SEC
+           END-IF
       *
            .
        2001-SYORI-EXT.
