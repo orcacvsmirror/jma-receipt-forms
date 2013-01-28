@@ -45,7 +45,8 @@
       *                                     公費番号、負担者番号、受給者番号が印字されない。
       *  01.00.09    @@@@-門間    12/05/25  CSVファイル作成機能追加
       *  01.00.10    @@@@-門間    12/07/12  複数科保険(保険組合せ)でまとめ入力を行った時の不具合を修正
-      *  01.00.10    @@@@-門間    12/08/10  保険者番号が不明な場合、患者名が正しく印字されない不具合を修正
+      *  01.00.11    @@@@-門間    12/08/10  保険者番号が不明な場合、患者名が正しく印字されない不具合を修正
+      *  01.00.12    @@@@-門間    13/01/23  テーブルのprimary key変更対応
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -1573,18 +1574,7 @@
       *
       *    請求管理ＤＢ検索
            INITIALIZE                  RECE10-REC
-      *
-           MOVE    SPA-HOSPNUM           TO   RECE10-HOSPNUM
-           MOVE    RECE02-SRYYM          TO   RECE10-SRYYM
-           MOVE    RECE02-NYUGAIKBN      TO   RECE10-NYUGAIKBN
-           MOVE    RECE02-PTID           TO   RECE10-PTID
-           MOVE    RECE02-RECEKA         TO   RECE10-RECEKA
-           MOVE    RECE02-TEISYUTUSAKI   TO   RECE10-TEISYUTUSAKI
-           MOVE    RECE02-RECESYUBETU    TO   RECE10-RECESYUBETU
-           MOVE    RECE02-HKNJANUM       TO   RECE10-HKNJANUM
-           MOVE    RECE02-HOJOKBN-KEY    TO   RECE10-HOJOKBN-KEY
-           MOVE    RECE02-TEKSTYMD       TO   RECE10-TEKSTYMD
-      *
+           MOVE    RECE02-KEY          TO   RECE10-KEY
            MOVE    RECE10-REC          TO   MCPDATA-REC
            MOVE    "DBSELECT"          TO   MCP-FUNC
            MOVE    "tbl_seikyu"        TO   MCP-TABLE
