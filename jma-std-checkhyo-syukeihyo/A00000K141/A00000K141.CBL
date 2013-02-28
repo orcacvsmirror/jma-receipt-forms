@@ -32,6 +32,8 @@
       *   01.00.02    @@@@-門間   11/12/13  ヘッダ項目に数列が表示される不具合を修正
       *   01.00.03    @@@@-門間   12/05/22  CSVファイル作成機能追加
       *   01.00.04    @@@@-門間   12/09/26  医師が多い場合にCSVファイルが正常に出力されない不具合を修正
+      *   01.00.05    @@@@-門間   13/02/21  CSVデータの処理順を変更
+      *                                     医師取消し時の不具合を修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -672,8 +674,8 @@
       *    医師データ取得
            MOVE    "1010"            TO   SYS-1010-KANRICD
            MOVE    SPA-HOSPNUM       TO   SYS-1010-HOSPNUM
-           MOVE    WRK-PARA-PRTSYMD  TO   SYS-1010-STYUKYMD
-           MOVE    WRK-PARA-PRTLYMD  TO   SYS-1010-EDYUKYMD
+           MOVE    WRK-PARA-PRTSYMD  TO   SYS-1010-EDYUKYMD
+           MOVE    WRK-PARA-PRTLYMD  TO   SYS-1010-STYUKYMD
            MOVE    WRK-PARA-PRTLYMD  TO   WRK-SYSYMD
            PERFORM 820-SYSKANRI-DBSELECT-SEC
            MOVE   1        TO     IDX1
@@ -1152,10 +1154,10 @@
       *    CSV印字処理
       *    CSV ヘッダー処理
            PERFORM  800-CSV-HEAD-SEC
-      *    CSV 明細処理
-           PERFORM  400-CSV-DATA-SEC
       *    CSV 出力処理
            PERFORM  230-TOUKEICSV-SEC
+      *    CSV 明細処理
+           PERFORM  400-CSV-DATA-SEC
       *
            .
        200-MAIN-EXT.
@@ -3015,6 +3017,7 @@
            END-PERFORM
       *
            IF   IDX4   >    WRK-DRMAX
+             ADD     1                  TO  IDX-S
              MOVE    "医師取消し"       TO  K100-TNAME(IDX2)
                                             WRK-BODY-NAME(IDX-S)
            END-IF
@@ -3366,6 +3369,8 @@
                END-IF
       *
              END-PERFORM
+      *
+             PERFORM  230-TOUKEICSV-SEC
       *
            END-PERFORM
       *
