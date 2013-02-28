@@ -32,6 +32,7 @@
       *   01.00.02    @@@@-門間   11/12/13  ヘッダ項目に数列が表示される不具合を修正
       *   01.00.03    @@@@-門間   11/12/13  保険別振分けを修正
       *   01.00.04    @@@@-門間   12/05/22  CSVファイル作成機能追加
+      *   01.00.05    @@@@-門間   13/02/21  CSVデータの処理順を変更
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1177,10 +1178,10 @@
       *    CSV印字処理
       *    CSV ヘッダー処理
            PERFORM  800-CSV-HEAD-SEC
-      *    CSV 明細処理
-           PERFORM  400-CSV-DATA-SEC
       *    CSV 出力処理
            PERFORM  230-TOUKEICSV-SEC
+      *    CSV 明細処理
+           PERFORM  400-CSV-DATA-SEC
       *
            .
        200-MAIN-EXT.
@@ -3035,6 +3036,8 @@
                END-IF
       *
              END-PERFORM
+      *
+             PERFORM  230-TOUKEICSV-SEC
       *
            END-PERFORM
       *
