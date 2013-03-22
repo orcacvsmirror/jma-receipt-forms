@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/bash
 
 . /etc/jma-receipt/jma-receipt.env
 
@@ -31,23 +31,22 @@ if [ $usrname != "root" ] ; then
 fi
 
 # start message
-echomsg "公開帳票 患者一覧表 起動プログラム プログラムコピー中..."
+echomsg "公開帳票 患者一覧表 プログラムコピー中..."
 
-# copy
-cp -af *.CBL ${SITESRCDIR}/cobol 2> /dev/null
-cp -af *.INC ${SITESRCDIR}/cobol/copy 2> /dev/null
-cp -af *.red ${SITESRCDIR}/form 2> /dev/null
-cp -af version_* ${SITESRCDIR}/doc
+# file copy
+for d in cobol form doc ; do
+  cp -af ${d} ${SITESRCDIR}
+done
 
 # run site-upgrade.sh
 if [ -f ${SCRIPTSDIR}/allways/site-upgrade.sh ] ; then
   bash ${SCRIPTSDIR}/allways/site-upgrade.sh
 else
-  echomsg "公開帳票 患者一覧表 起動プログラム プログラムコピー異常終了!!"
+  echomsg "公開帳票 患者一覧表 プログラムコピー異常終了!!"
   exit 1
 fi
 
 # end message
 sync
-echomsg "公開帳票 患者一覧表 起動プログラム プログラムコピー終了!!"
+echomsg "公開帳票 患者一覧表 プログラムコピー終了!!"
 exit 0
