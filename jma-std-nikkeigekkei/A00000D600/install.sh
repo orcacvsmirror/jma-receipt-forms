@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/bash
 
 . /etc/jma-receipt/jma-receipt.env
 
@@ -33,11 +33,10 @@ fi
 # start message
 echomsg "¸ø³«Ä¢É¼ Æü·×É½ÌÀºÙ(¿ÇÎÅÈñÀÁµáÌÀºÙ) ¥×¥í¥°¥é¥à¥³¥Ô¡¼Ãæ..."
 
-# copy
-cp -af *.CBL ${SITESRCDIR}/cobol 2> /dev/null
-cp -af *.INC ${SITESRCDIR}/cobol/copy 2> /dev/null
-cp -af *.red ${SITESRCDIR}/form 2> /dev/null
-cp -af version_* ${SITESRCDIR}/doc
+# file copy
+for d in cobol form doc ; do
+  cp -af ${d} ${SITESRCDIR}
+done
 
 # run site-upgrade.sh
 if [ -f ${SCRIPTSDIR}/allways/site-upgrade.sh ] ; then
