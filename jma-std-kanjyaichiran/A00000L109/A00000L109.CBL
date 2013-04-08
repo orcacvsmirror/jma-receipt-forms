@@ -31,6 +31,8 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@-田中   2011/08/03  診療行為の集計方法を修正
       *  01.00.03    @@@-門間   2011/11/07  CSVファイル作成機能追加
+      *  01.00.04    @@@-門間   2013/04/08  同患者、同科で医師が異なる場合、
+      *                                     先に受診した医師にまとまる不具合の修正
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -158,6 +160,7 @@
            03  IDX-ED                  PIC 9(03).
       *
            03  IDXP              PIC 9(05).
+           03  IDX-R                   PIC 9(01).
       *
       *    パラメタ領域
        01  WRK-PARA.
@@ -831,8 +834,22 @@
              END-IF
            ELSE
              IF  FLG-NYUGAI  =  2
+      *
+      *        該当医師抽出処理
                PERFORM  900-JYURRK-READ-SEC
-               MOVE    JYURRK-DRCD        TO  L109T-DRCD
+               PERFORM  UNTIL  FLG-JYURRK  =  1
+      *
+                 COMPUTE  IDX-R  =  JYURRK-RENNUM + 1
+      *
+                 IF  (     JYURRK-SRYYMD(7:2)       =  IDX-DAY
+                       AND ACCT-DAY(IDX-R IDX-DAY)  >  ZERO    )
+                   MOVE    JYURRK-DRCD        TO  L109T-DRCD
+                 END-IF
+      *
+                 PERFORM  900-JYURRK-FETCH-SEC
+               END-PERFORM
+               PERFORM  900-JYURRK-CLOSE-SEC
+      *
              ELSE
                PERFORM  900-PTNYUINRRK-READ-SEC
                MOVE    PTNYUINRRK-DRCD1         TO  L109T-DRCD
@@ -872,10 +889,6 @@
            MOVE    L100LNK-HOSPNUM     TO  KARRK-HOSPNUM
            MOVE    WRK-PTID            TO  KARRK-PTID
            MOVE    WRK-SRYKA           TO  KARRK-SRYKA
-           DISPLAY "L100LNK-HOSPNUM  =  "L100LNK-HOSPNUM
-           DISPLAY "WRK-PTID         =  "WRK-PTID       
-           DISPLAY "WRK-SRYKA        =  "WRK-SRYKA      
-           DISPLAY "-------"
            PERFORM  970-SRYKARRK-READ-SEC
       *
       *    公費情報１
@@ -1660,7 +1673,7 @@
            EXIT.
       *
       *****************************************************************
-      *    受信履歴情報検索
+      *    受信履歴情報検索処理
       *****************************************************************
        900-JYURRK-READ-SEC          SECTION.
       *
@@ -1695,22 +1708,43 @@
                                         SPA-AREA
       *
            IF  MCP-RC  =  ZERO
-             MOVE    "DBFETCH"          TO  MCP-FUNC
-             MOVE    "tbl_jyurrk"       TO  MCP-TABLE
-             MOVE    "key20"            TO  MCP-PATHNAME
-             CALL    "ORCDBMAIN"        USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-             IF  MCP-RC  =  ZERO
-               MOVE    MCPDATA-REC      TO  JYURRK-REC
                MOVE    ZERO             TO  FLG-JYURRK
-             ELSE
-               MOVE    1                TO  FLG-JYURRK
-             END-IF
            ELSE
              MOVE    1                  TO  FLG-JYURRK
            END-IF
+      *
+           .
+       900-JYURRK-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    受信履歴情報読み込み処理
+      *****************************************************************
+       900-JYURRK-FETCH-SEC             SECTION.
+      *
+           MOVE    "DBFETCH"            TO  MCP-FUNC
+           MOVE    "tbl_jyurrk"         TO  MCP-TABLE
+           MOVE    "key20"              TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             MOVE    MCPDATA-REC        TO  JYURRK-REC
+             MOVE    ZERO               TO  FLG-JYURRK
+           ELSE
+             MOVE    1                  TO  FLG-JYURRK
+           END-IF
+      *
+           .
+       900-JYURRK-FETCH-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    受信履歴情報クローズ処理
+      *****************************************************************
+       900-JYURRK-CLOSE-SEC             SECTION.
       *
            MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE    "tbl_jyurrk"         TO  MCP-TABLE
@@ -1719,8 +1753,9 @@
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
+      *
            .
-       900-JYURRK-READ-EXT.
+       900-JYURRK-CLOSE-EXT.
            EXIT.
       *
       *****************************************************************
