@@ -842,7 +842,8 @@
                  COMPUTE  IDX-R  =  JYURRK-RENNUM + 1
       *
                  IF  (     JYURRK-SRYYMD(7:2)       =  IDX-DAY
-                       AND ACCT-DAY(IDX-R IDX-DAY)  >  ZERO    )
+                       AND ACCT-DAY(IDX-R IDX-DAY)  >  ZERO
+                       AND JYURRK-DRCD              =  L100LNK-DRCD )
                    MOVE    JYURRK-DRCD        TO  L109T-DRCD
                  END-IF
       *
