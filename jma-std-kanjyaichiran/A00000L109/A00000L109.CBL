@@ -824,6 +824,8 @@
       *****************************************************************
        320-WRITE-TEMP-SEC      SECTION.
       *
+           INITIALIZE  L109T
+      *
       *    ø«Œ≈≤ °¶∞Âª’°¶ ›∏±¡»πÁ§ªæ Û
            IF   FLG-DRCD-ALL  =  "1"
              MOVE    SPACE             TO  L109T-DRCD
@@ -1709,7 +1711,8 @@
                                         SPA-AREA
       *
            IF  MCP-RC  =  ZERO
-               MOVE    ZERO             TO  FLG-JYURRK
+             MOVE    ZERO             TO  FLG-JYURRK
+             PERFORM  900-JYURRK-FETCH-SEC
            ELSE
              MOVE    1                  TO  FLG-JYURRK
            END-IF
