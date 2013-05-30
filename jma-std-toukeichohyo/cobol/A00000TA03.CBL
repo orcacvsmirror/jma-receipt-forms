@@ -1226,7 +1226,8 @@
            MOVE    ZERO                      TO  STOUKEICSV-PTID
            MOVE    "/var/tmp/"               TO  STOUKEICSV-TO-FOLDER
       *
-           STRING  "misyu_ichiran_"          DELIMITED   BY  SIZE
+           STRING  SPA-HOSPNUM               DELIMITED  BY  SIZE
+                   "misyu_ichiran_"          DELIMITED   BY  SIZE
                    WRK-PARA-STYMD            DELIMITED   BY  SIZE
                    "_"
                    WRK-PARA-EDYMD            DELIMITED   BY  SIZE

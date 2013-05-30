@@ -2083,7 +2083,7 @@
       *
            STRING  SPA-HOSPNUM            DELIMITED  BY  SIZE
                    "raiinzaiin_"          DELIMITED  BY  SIZE
-                   WRK-PARA-PRTYM         DELIMITED  BY  SIZE
+                   WRK-PARA-PRTYM(1:6)    DELIMITED  BY  SIZE
                    ".csv"                 DELIMITED  BY  SIZE
                                           INTO  STOUKEICSV-TO-DATA
            END-STRING
