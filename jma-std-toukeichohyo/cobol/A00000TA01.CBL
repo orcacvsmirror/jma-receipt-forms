@@ -1382,7 +1382,7 @@
                  MOVE    "（退職国保）"  TO  TA01-SUBTITLE2
                WHEN  "4"
                  MOVE    "（後期高齢）"  TO  TA01-SUBTITLE2
-               WHEN  "2"
+               WHEN  "5"
                  MOVE    "（公費単独）"  TO  TA01-SUBTITLE2
              END-EVALUATE
            END-IF
