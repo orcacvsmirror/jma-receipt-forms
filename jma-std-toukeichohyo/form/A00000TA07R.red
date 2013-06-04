@@ -172,7 +172,7 @@
       </dia:composite>
     </dia:attribute>
   </dia:diagramdata>
-  <dia:layer name="背景" visible="true" active="true">
+  <dia:layer name="背景" visible="true">
     <dia:object type="Standard - Box" version="0" id="O0">
       <dia:attribute name="obj_pos">
         <dia:point val="1,2.5"/>
@@ -975,7 +975,7 @@
       </dia:attribute>
     </dia:object>
   </dia:layer>
-  <dia:layer name="差し込み" visible="true">
+  <dia:layer name="差し込み" visible="true" active="true">
     <dia:object type="Embed - Text" version="1" id="O44">
       <dia:attribute name="obj_pos">
         <dia:point val="1.1,2"/>
@@ -4998,7 +4998,7 @@
           <dia:string>#MEISAI-TBL[0].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5041,7 +5041,7 @@
           <dia:string>#MEISAI-TBL[1].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5084,7 +5084,7 @@
           <dia:string>#MEISAI-TBL[2].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5127,7 +5127,7 @@
           <dia:string>#MEISAI-TBL[3].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5170,7 +5170,7 @@
           <dia:string>#MEISAI-TBL[4].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5213,7 +5213,7 @@
           <dia:string>#MEISAI-TBL[5].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5256,7 +5256,7 @@
           <dia:string>#MEISAI-TBL[6].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5299,7 +5299,7 @@
           <dia:string>#MEISAI-TBL[7].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5342,7 +5342,7 @@
           <dia:string>#MEISAI-TBL[8].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5385,7 +5385,7 @@
           <dia:string>#MEISAI-TBL[9].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5428,7 +5428,7 @@
           <dia:string>#MEISAI-TBL[10].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5471,7 +5471,7 @@
           <dia:string>#MEISAI-TBL[11].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5514,7 +5514,7 @@
           <dia:string>#MEISAI-TBL[12].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5557,7 +5557,7 @@
           <dia:string>#MEISAI-TBL[13].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5600,7 +5600,7 @@
           <dia:string>#MEISAI-TBL[14].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5643,7 +5643,7 @@
           <dia:string>#MEISAI-TBL[15].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5686,7 +5686,7 @@
           <dia:string>#MEISAI-TBL[16].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5729,7 +5729,7 @@
           <dia:string>#MEISAI-TBL[17].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5772,7 +5772,7 @@
           <dia:string>#MEISAI-TBL[18].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5815,7 +5815,7 @@
           <dia:string>#MEISAI-TBL[19].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5858,7 +5858,7 @@
           <dia:string>#MEISAI-TBL[20].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5901,7 +5901,7 @@
           <dia:string>#MEISAI-TBL[21].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5944,7 +5944,7 @@
           <dia:string>#MEISAI-TBL[22].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -5987,7 +5987,7 @@
           <dia:string>#MEISAI-TBL[23].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -6030,7 +6030,7 @@
           <dia:string>#MEISAI-TBL[24].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -6073,7 +6073,7 @@
           <dia:string>#MEISAI-TBL[25].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -6116,7 +6116,7 @@
           <dia:string>#MEISAI-TBL[26].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -6159,7 +6159,7 @@
           <dia:string>#MEISAI-TBL[27].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -6202,7 +6202,7 @@
           <dia:string>#MEISAI-TBL[28].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
@@ -6245,7 +6245,7 @@
           <dia:string>#MEISAI-TBL[29].PTNUM20#</dia:string>
         </dia:attribute>
         <dia:attribute name="embed_column_size">
-          <dia:int val="5"/>
+          <dia:int val="10"/>
         </dia:attribute>
         <dia:attribute name="embed_char_type">
           <dia:enum val="0"/>
