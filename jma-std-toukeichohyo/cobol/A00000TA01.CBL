@@ -1941,6 +1941,11 @@
            PERFORM  UNTIL    KEY-NEW  NOT =  KEY-OLD
                     OR       FLG-PRINT  =  1
       *
+             IF  TA01TMP-HKNSBT-KEY  NOT =  WRK-HKNSBT
+      *         ›∏±ºÔ Ã¬‡»Ú
+               MOVE  TA01TMP-HKNSBT-KEY  TO  WRK-HKNSBT
+             END-IF
+      *
       *      ====================
       *             ∞Ï»Ã ¨
       *      ====================
