@@ -829,11 +829,11 @@
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    ÀÁµáÅÀ¿ô
-           MOVE    TA06-SKY-TEN(IDX)    TO  WRK-ITEM
+           MOVE    TA06TMP-SKY-TEN      TO  WRK-ITEM
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    ¼ýÇ¼ÅÀ¿ô
-           MOVE    TA06-SYU-TEN(IDX)    TO  WRK-ITEM
+           MOVE    TA06TMP-SYU-TEN      TO  WRK-ITEM
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    È÷¹Í
