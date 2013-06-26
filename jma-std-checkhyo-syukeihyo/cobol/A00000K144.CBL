@@ -33,6 +33,7 @@
       *   01.00.03    @@@@-門間   11/12/13  保険別振分けを修正
       *   01.00.04    @@@@-門間   12/05/22  CSVファイル作成機能追加
       *   01.00.05    @@@@-門間   13/02/21  CSVデータの処理順を変更
+      *   01.00.06    @@@@-門間   13/06/26  診療区分「97」を集計処理から除外
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1472,17 +1473,22 @@
              END-IF
       *
       *    診療行為情報集計
-             IF  K100LNK-HOUKATU  NOT =  "0"
-               IF ACCT-HKNCOMBI NOT = "9999"
-                   AND  ACCT-JIHOKBN  NOT =  "1"
+             IF    (  ACCT-SRYKBN  NOT =  "97"  )
+      *
+               IF  K100LNK-HOUKATU  NOT =  "0"
+                 IF ACCT-HKNCOMBI NOT = "9999"
+                     AND  ACCT-JIHOKBN  NOT =  "1"
+                   PERFORM  20012-SRY-SET
+                 END-IF
+               ELSE
+                 IF  ACCT-JIHOKBN  =  "1"
+                   MOVE   9   TO   WRK-HKN-INDEX
+                 END-IF
                  PERFORM  20012-SRY-SET
                END-IF
-             ELSE
-               IF  ACCT-JIHOKBN  =  "1"
-                 MOVE   9   TO   WRK-HKN-INDEX
-               END-IF
-               PERFORM  20012-SRY-SET
+      *
              END-IF
+      *
              PERFORM  900-SRYACCT-FETCH-SEC
            END-PERFORM
       *

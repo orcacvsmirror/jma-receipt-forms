@@ -32,6 +32,7 @@
       *   01.00.02    @@@@-門間   11/12/13  ヘッダ項目に数列が表示される不具合を修正
       *   01.00.03    @@@@-門間   12/05/22  CSVファイル作成機能追加
       *   01.00.04    @@@@-門間   13/02/21  CSVデータの処理順を変更
+      *   01.00.05    @@@@-門間   13/06/26  診療区分「97」を集計処理から除外
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1297,15 +1298,20 @@
                      MOVE   IDX-TEN      TO   WRK-TENYMD(7:2)
                    END-IF
                  END-PERFORM
+      *
+                 IF    (  ACCT-SRYKBN  NOT =  "97"  )
+      *
       *    麻毒、調剤の場合、対象外にする
-                 IF  ACCT-SRYKBN NOT = "24"
-                     AND  ACCT-SRYKBN NOT = "26"
+                   IF  ACCT-SRYKBN NOT = "24"
+                       AND  ACCT-SRYKBN NOT = "26"
       *    年齢インデックス
-                   MOVE  JYURRK-SRYYMD  TO  WRK-BTU-SRYYMD
-                   PERFORM  220-BTU-GROUPING-SEC
-                   IF  WRK-BTU-INDEX    NOT =   "0"
-                     PERFORM  20012-SRY-SET
+                     MOVE  JYURRK-SRYYMD  TO  WRK-BTU-SRYYMD
+                     PERFORM  220-BTU-GROUPING-SEC
+                     IF  WRK-BTU-INDEX    NOT =   "0"
+                       PERFORM  20012-SRY-SET
+                     END-IF
                    END-IF
+      *
                  END-IF
       *
                END-IF
