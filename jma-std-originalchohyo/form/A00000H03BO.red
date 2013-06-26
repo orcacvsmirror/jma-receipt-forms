@@ -334,7 +334,7 @@
     <dia:attribute name="paper">
       <dia:composite type="paper">
         <dia:attribute name="name">
-          <dia:string>#B5#</dia:string>
+          <dia:string>#B5-Japan#</dia:string>
         </dia:attribute>
         <dia:attribute name="tmargin">
           <dia:real val="0"/>
