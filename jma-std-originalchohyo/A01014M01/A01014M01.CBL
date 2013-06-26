@@ -32,6 +32,7 @@
       *  01.00.02    @@@@-田中    11/01/20  点数単価取得条件を修正
       *  01.00.03    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.04    @@@@-門間    12/05/25  CSVファイル作成機能追加
+      *  01.00.05    @@@@-門間    13/06/26  診療区分「97」を集計処理から除外
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -755,9 +756,10 @@
            PERFORM  UNTIL    FLG-SRYACCT   =   1
       *
       *    入院料取得処理
+             IF  ( ACCT-SRYKBN  NOT =  "97"  )
                PERFORM  20012-SRY-SET
-
-               PERFORM  900-SRYACCT-FETCH-SEC
+             END-IF
+             PERFORM  900-SRYACCT-FETCH-SEC
       *
            END-PERFORM
            PERFORM  900-SRYACCT-CLOSE-SEC

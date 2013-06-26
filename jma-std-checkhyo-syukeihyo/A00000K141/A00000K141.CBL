@@ -34,6 +34,7 @@
       *   01.00.04    @@@@-門間   12/09/26  医師が多い場合にCSVファイルが正常に出力されない不具合を修正
       *   01.00.05    @@@@-門間   13/02/21  CSVデータの処理順を変更
       *                                     医師取消し時の不具合を修正
+      *   01.00.06    @@@@-門間   13/06/26  診療区分「97」を集計処理から除外
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1273,14 +1274,19 @@
                      MOVE   IDX-TEN      TO   WRK-TENYMD(7:2)
                    END-IF
                  END-PERFORM
-                 IF  WRK-NYUGAIKBN  =   "1"
+      *
+                 IF  ( ACCT-SRYKBN  NOT =  "97"  )
+      *
+                   IF  WRK-NYUGAIKBN  =   "1"
       *    麻毒、調剤の場合、対象外にする
-                   IF  ACCT-SRYKBN  NOT = "24"
-                       AND  ACCT-SRYKBN NOT = "26"
-                     PERFORM  20012-SRY-SET
+                     IF  ACCT-SRYKBN  NOT = "24"
+                         AND  ACCT-SRYKBN NOT = "26"
+                       PERFORM  20012-SRY-SET
+                     END-IF
+                   ELSE
+                      PERFORM  20012-SRY-SET
                    END-IF
-                 ELSE
-                    PERFORM  20012-SRY-SET
+      *
                  END-IF
       *
                END-IF
