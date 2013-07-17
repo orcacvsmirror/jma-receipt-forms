@@ -24,6 +24,7 @@
       *  管理者            : 
       *  Maj/Min/Rev  修正者  日付       内容
       *   01.00.00    門間    11/03/29   新規作成
+      *   01.00.01    門間    13/07/17   保険欄（CSV）の不具合を修正
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -1001,7 +1002,7 @@
        400-CSV-DATA-SEC              SECTION.
       *
       *    連番
-           MOVE     CNT-RENNUM               TO  WRK-ITEM
+           MOVE     CNT-RENNUM            TO  WRK-ITEM
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    患者番号
@@ -1013,7 +1014,7 @@
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    保険
-           MOVE     TA03TMP-HKN-TOTAL     TO  WRK-ITEM
+           MOVE     TA03TMP-HKN           TO  WRK-ITEM
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    請求月日
