@@ -25,6 +25,8 @@
       *  Maj/Min/Rev  修正者  日付       内容
       *   01.00.00    門間    11/03/29   新規作成
       *   01.00.01    門間    13/07/17   保険欄（CSV）の不具合を修正
+      *   01.00.02    門間    13/07/24   CSVファイルが20kBを超える場合、
+      *                                  正しく出力されない不具合を修正
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -636,10 +638,6 @@
                    COMPUTE  WRK-KINGAKU      =  WRK-KINGAKU
                                              +  SMEI2-SKYMONEY
                                              -  SMEI2-NYUHEN-MONEY
-               DISPLAY "SMEI2-DENPNUM  " SMEI2-DENPNUM
-               DISPLAY "SMEI2-SKYMONEY "SMEI2-SKYMONEY
-               DISPLAY "SMEI2-NYUHEN-MONEY "SMEI2-NYUHEN-MONEY
-               DISPLAY "WRK-KINGAKU "WRK-KINGAKU
                  END-IF
                ELSE
                  COMPUTE  WRK-KINGAKU      =  WRK-KINGAKU
@@ -740,6 +738,7 @@
       *
       *    CSVヘッダ編集処理
            PERFORM  800-CSV-HEAD-SEC
+           PERFORM  230-TOUKEICSV-SEC
       *
       *    一時ファイル読込
            PERFORM  710-TMP-READ-SEC
@@ -805,6 +804,7 @@
       *
       *      ＣＳＶボディ
              PERFORM  400-CSV-DATA-SEC
+             PERFORM  230-TOUKEICSV-SEC
       *
       *      一時ファイル読込
              PERFORM  710-TMP-READ-SEC
@@ -1249,6 +1249,9 @@
                                                TO  WRK-RECEERR
              PERFORM  800-ERR-HENSYU-SEC
            END-IF
+      *
+           INITIALIZE  WRK-CSVDATA
+           MOVE    1   TO  IDXP
       *
            .
       *
