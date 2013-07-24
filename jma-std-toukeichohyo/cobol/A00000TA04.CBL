@@ -24,6 +24,7 @@
       *  管理者            : 
       *  Maj/Min/Rev  修正者  日付        内容
       *   01.00.00    田中    2011/01/20  新規作成
+      *   01.00.01    門間    2013/07/24  発行区分が空白の場合、在院数が集計されるように修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -702,6 +703,7 @@
                       OR  FLG-LOOPEND  =  1
                EVALUATE  WRK-PARA-PRTKBN
                  WHEN  "1"
+                 WHEN  SPACE
       *    診療科別
                    IF  ( WRK-PTID(IDX5)  =  PTNYUINRRK-PTID
                        AND  WRK-KEYKBN(IDX5)(1:2)  =  PTNYUINRRK-NYUINKA
