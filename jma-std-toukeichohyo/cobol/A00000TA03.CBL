@@ -27,6 +27,7 @@
       *   01.00.01    門間    13/07/17   保険欄（CSV）の不具合を修正
       *   01.00.02    門間    13/07/24   CSVファイルが20kBを超える場合、
       *                                  正しく出力されない不具合を修正
+      *                       13/07/30   CSV出力選択画面での入外印字を修正
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -1223,7 +1224,7 @@
            MOVE    LNK-PRTKANRI-SHORI-RENNUM TO  STOUKEICSV-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-SHELLID      TO  STOUKEICSV-SHELLID
            MOVE    LNK-PRTKANRI-SRYYM        TO  STOUKEICSV-SRYYM
-           MOVE    "2"                       TO  STOUKEICSV-NYUGAIKBN
+           MOVE    WRK-PARA-NYUGAIKBN        TO  STOUKEICSV-NYUGAIKBN
            MOVE    ZERO                      TO  STOUKEICSV-PTID
            MOVE    "/var/tmp/"               TO  STOUKEICSV-TO-FOLDER
       *
