@@ -28,6 +28,7 @@
       *   01.00.02    門間    13/07/24   CSVファイルが20kBを超える場合、
       *                                  正しく出力されない不具合を修正
       *                       13/07/30   CSV出力選択画面での入外印字を修正
+      *   01.00.03    門間    13/08/02   未収金欄（CSV）マイナス処理時の修正
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -137,9 +138,13 @@
            03  WRK-Z6                  PIC ZZZZZ9.
            03  WRK-Z7                  PIC ZZZZZZ9.
            03  WRK-Z9                  PIC Z,ZZZ,ZZZ.
+           03  WRK-Z92                 PIC ZZZZZZZZZ.
            03  WRK-Z10                 PIC ZZ,ZZZ,ZZZ.
-           03  WRK-M9                  PIC -----,--9.
+           03  WRK-Z102                PIC ZZZZZZZZZZ.
+           03  WRK-M9                  PIC -,---,--9.
+           03  WRK-M92                 PIC --------9.
            03  WRK-M10                 PIC --,---,--9.
+           03  WRK-M102                PIC ---------9.
            03  WRK-AMARI               PIC 9(02).
            03  WRK-SYMD                PIC 9(08).
            03  WRK-DATA                PIC 9(04).
@@ -517,7 +522,6 @@
            PERFORM  900-SYUMEI-READ-SEC
            PERFORM  UNTIL  FLG-SYUMEI  =  1
              IF     SMEI-DENPEDANUM    =  1
-      *         AND  SMEI-SKYMONEY  NOT =  SMEI-NYUHEN-MONEY
                PERFORM  410-BODY-HEN-SEC
              END-IF
              PERFORM  900-SYUMEI-FETCH-SEC
@@ -1043,15 +1047,21 @@
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    未収額
-           MOVE     TA03TMP-MISYU         TO  WRK-ITEM
+           IF  TA03TMP-MISYU  >=  ZERO
+             MOVE    TA03TMP-MISYU          TO  WRK-Z92
+             MOVE    WRK-Z92                TO  WRK-ITEM
+           ELSE
+             MOVE    TA03TMP-MISYU          TO  WRK-M92
+             MOVE    WRK-M92                TO  WRK-ITEM
+           END-IF
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    入金額
-           MOVE     SPACE                    TO  WRK-ITEM
+           MOVE     SPACE                 TO  WRK-ITEM
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    入金月日
-           MOVE     SPACE                    TO  WRK-ITEM
+           MOVE     SPACE                 TO  WRK-ITEM
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    最終受診日
@@ -1115,7 +1125,13 @@
            PERFORM  800-CSVDATA-EDIT-SEC
       *
       *    未収額
-           MOVE     WRK-GMISYU               TO  WRK-ITEM
+           IF  WRK-GMISYU  >=  ZERO
+             MOVE    WRK-GMISYU                TO  WRK-Z102
+             MOVE    WRK-Z102                  TO  WRK-ITEM
+           ELSE
+             MOVE    WRK-GMISYU                TO  WRK-M102
+             MOVE    WRK-M102                  TO  WRK-ITEM
+           END-IF
            PERFORM  810-CSVDATA-EDIT-SEC
       *
            .
