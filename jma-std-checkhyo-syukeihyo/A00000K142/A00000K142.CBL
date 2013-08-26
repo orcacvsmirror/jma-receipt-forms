@@ -33,6 +33,7 @@
       *   01.00.03    @@@@-門間   12/05/22  CSVファイル作成機能追加
       *   01.00.04    @@@@-門間   13/02/21  CSVデータの処理順を変更
       *   01.00.05    @@@@-門間   13/06/26  診療区分「97」を集計処理から除外
+      *   01.00.06    @@@@-吉川   13/08/26  在宅の集計不具合を修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1580,7 +1581,7 @@
       *
       *    点数加算
            IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM
-               OR  ( ACCT-ZAINUM  NOT =  WRK-ZAINUM
+               OR  ( ACCT-ZAINUM  =  WRK-ZAINUM
                AND   ACCT-PTID  NOT =  WRK-PTID2 )
       *
              COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
