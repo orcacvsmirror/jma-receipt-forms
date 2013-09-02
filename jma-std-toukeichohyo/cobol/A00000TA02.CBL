@@ -24,6 +24,9 @@
       *  管理者            : 
       *  Maj/Min/Rev  修正者  日付        内容
       *   01.00.00    田中    2011/02/14  新規作成
+      *   01.00.01    吉川    2013/09/02  発行区分を病棟別に指定した場合
+      *                                   病棟別に集計するように修正
+      *                                   病棟名が印字されないのを修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -613,16 +616,18 @@
                MOVE    SPA-HOSPNUM           TO  SYS-5001-HOSPNUM
                MOVE    WRK-PARA-PRTSTYMD     TO  SYS-5001-EDYUKYMD
                MOVE    WRK-PARA-PRTEDYMD     TO  SYS-5001-STYUKYMD
+               MOVE    SYS-5001-REC          TO  MCPDATA-REC
                PERFORM  910-SYSKANRI-SELECT-SEC
-               MOVE    1                     TO  IDX1
+               MOVE    MCPDATA-REC           TO  SYS-5001-REC
                PERFORM  UNTIL  FLG-SYSKANRI  =  1
                  MOVE    SYS-5001-BTU-NAME   TO  WRK-NAME(IDX1)
                  MOVE    SYS-5001-BTU-NUM    TO  WRK-NAMEKBN(IDX1)
                  MOVE    SYS-5001-STYUKYMD   TO  WRK-STYUKYMD(IDX1)
                  MOVE    SYS-5001-EDYUKYMD   TO  WRK-EDYUKYMD(IDX1)
                  ADD  1                      TO  IDX1
-      *
+                 MOVE    IDX1                TO  WRK-MAX
                  PERFORM  910-SYSKANRI-FETCH-SEC
+                 MOVE    MCPDATA-REC         TO  SYS-5001-REC
                END-PERFORM
       *
                MOVE    "該当病棟なし"        TO  WRK-NAME(WRK-MAX)
@@ -1092,7 +1097,7 @@
                      PERFORM  VARYING  IDX2  FROM  1  BY  1
                               UNTIL  IDX2  >  WRK-MAX
                        MOVE    IDX2           TO  TA02TMP-PRTKBN
-                       IF  PTNYUINRRK-BTUNUM  =  WRK-NAMEKBN(IDX2)
+                       IF  PTNYUINRRK-BTUNUM  =  WRK-NAMEKBN(IDX2)(4:2)
                            AND  WRK-OBJYMD  >=  WRK-STYUKYMD(IDX2)
                            AND  WRK-OBJYMD  <=  WRK-EDYUKYMD(IDX2)
                          MOVE    999          TO  IDX2
