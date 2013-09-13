@@ -54,8 +54,8 @@
       *    合計使用量
              05  TA02TMP-TOTAL-SIYO       PIC 9(10).
       *    外来金額
-             05  TA02TMP-GAIRAI-KIN       PIC 9(09).
+             05  TA02TMP-GAIRAI-KIN       PIC 9(10).
       *    入院金額
-             05  TA02TMP-NYUIN-KIN        PIC 9(09).
+             05  TA02TMP-NYUIN-KIN        PIC 9(10).
       *    合計金額
-             05  TA02TMP-TOTAL-KIN        PIC 9(10).
+             05  TA02TMP-TOTAL-KIN        PIC 9(11).

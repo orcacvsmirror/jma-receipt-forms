@@ -64,11 +64,11 @@
       *    çáåvégópó 
                05  TA02-TOTAL-SIYO      PIC X(10).
       *    äOóàã‡äz
-               05  TA02-GAIRAI-KIN      PIC X(09).
+               05  TA02-GAIRAI-KIN      PIC X(10).
       *    ì¸â@ã‡äz
-               05  TA02-NYUIN-KIN       PIC X(09).
+               05  TA02-NYUIN-KIN       PIC X(10).
       *    çáåvã‡äz
-               05  TA02-TOTAL-KIN       PIC X(10).
+               05  TA02-TOTAL-KIN       PIC X(11).
       *    çwì¸ã‡äz
                05  TA02-KONYU-KIN       PIC X(09).
       *    ç∑äz
@@ -98,11 +98,11 @@
       *    çáåvÅ|çáåvégópó 
                05  TA02-GTOTAL-SIYO     PIC X(11).
       *    çáåvÅ|äOóàã‡äz
-               05  TA02-GGAIRAI-KIN     PIC X(10).
+               05  TA02-GGAIRAI-KIN     PIC X(11).
       *    çáåvÅ|ì¸â@ã‡äz
-               05  TA02-GNYUIN-KIN      PIC X(10).
+               05  TA02-GNYUIN-KIN      PIC X(11).
       *    çáåvÅ|çáåvã‡äz
-               05  TA02-GTOTAL-KIN      PIC X(11).
+               05  TA02-GTOTAL-KIN      PIC X(12).
       *    çáåvÅ|çwì¸ã‡äz
                05  TA02-GKONYU-KIN      PIC X(10).
       *    çáåvÅ|ç∑äz

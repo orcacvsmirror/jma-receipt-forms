@@ -27,6 +27,7 @@
       *   01.00.01    吉川    2013/09/02  発行区分を病棟別に指定した場合
       *                                   病棟別に集計するように修正
       *                                   病棟名が印字されないのを修正
+      *   01.00.02    門間    2013/09/13  金額欄の桁数変更
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -138,6 +139,7 @@
            03  WRK-Z9                      PIC Z,ZZZ,ZZ9.
            03  WRK-Z10                     PIC ZZ,ZZZ,ZZ9.
            03  WRK-Z11                     PIC ZZZ,ZZZ,ZZ9.
+           03  WRK-Z12                     PIC ZZZZ,ZZZ,ZZ9.
            03  WRK-V12                     PIC Z,ZZZ,ZZ9.99.
            03  WRK-CSV-Z4                  PIC ZZZ9.
            03  WRK-CSV-V4                  PIC Z9.99.
@@ -1369,22 +1371,22 @@
                                               WRK-SUM-GTOTAL-SIYO
       *
       *    外来金額
-             MOVE    TA02TMP-GAIRAI-KIN   TO  WRK-Z9
-             MOVE    WRK-Z9               TO  TA02-GAIRAI-KIN(IDX1)
+             MOVE    TA02TMP-GAIRAI-KIN   TO  WRK-Z10
+             MOVE    WRK-Z10              TO  TA02-GAIRAI-KIN(IDX1)
              ADD  TA02TMP-GAIRAI-KIN      TO  WRK-SUM-SGAIRAI-KIN
                                               WRK-SUM-GGAIRAI-KIN
       *
       *    入院金額
-             MOVE    TA02TMP-NYUIN-KIN    TO  WRK-Z9
-             MOVE    WRK-Z9               TO  TA02-NYUIN-KIN(IDX1)
+             MOVE    TA02TMP-NYUIN-KIN    TO  WRK-Z10
+             MOVE    WRK-Z10              TO  TA02-NYUIN-KIN(IDX1)
              ADD  TA02TMP-NYUIN-KIN       TO  WRK-SUM-SNYUIN-KIN
                                               WRK-SUM-GNYUIN-KIN
       *
       *    合計金額
              COMPUTE  WRK-KINGAKU  =  TA02TMP-GAIRAI-KIN
                                    +  TA02TMP-NYUIN-KIN
-             MOVE    WRK-KINGAKU          TO  WRK-Z10
-             MOVE    WRK-Z10              TO  TA02-TOTAL-KIN(IDX1)
+             MOVE    WRK-KINGAKU          TO  WRK-Z11
+             MOVE    WRK-Z11              TO  TA02-TOTAL-KIN(IDX1)
              ADD  WRK-KINGAKU             TO  WRK-SUM-STOTAL-KIN
                                               WRK-SUM-GTOTAL-KIN
       *
@@ -1620,16 +1622,16 @@
            MOVE    WRK-Z10               TO  TA02-TOTAL-SIYO(IDX1)
       *
       *    外来金額
-           MOVE    WRK-SUM-SGAIRAI-KIN   TO  WRK-Z9
-           MOVE    WRK-Z9                TO  TA02-GAIRAI-KIN(IDX1)
+           MOVE    WRK-SUM-SGAIRAI-KIN   TO  WRK-Z10
+           MOVE    WRK-Z10               TO  TA02-GAIRAI-KIN(IDX1)
       *
       *    入院金額
-           MOVE    WRK-SUM-SNYUIN-KIN    TO  WRK-Z9
-           MOVE    WRK-Z9                TO  TA02-NYUIN-KIN(IDX1)
+           MOVE    WRK-SUM-SNYUIN-KIN    TO  WRK-Z10
+           MOVE    WRK-Z10               TO  TA02-NYUIN-KIN(IDX1)
       *
       *    合計金額
-           MOVE    WRK-SUM-STOTAL-KIN    TO  WRK-Z10
-           MOVE    WRK-Z10               TO  TA02-TOTAL-KIN(IDX1)
+           MOVE    WRK-SUM-STOTAL-KIN    TO  WRK-Z11
+           MOVE    WRK-Z11               TO  TA02-TOTAL-KIN(IDX1)
       *
       *    全体比率
            IF  WRK-SUM-SZENHI  >=  100
@@ -1682,16 +1684,16 @@
            MOVE    WRK-Z11               TO  TA02-GTOTAL-SIYO
       *
       *    外来金額
-           MOVE    WRK-SUM-GGAIRAI-KIN   TO  WRK-Z10
-           MOVE    WRK-Z10               TO  TA02-GGAIRAI-KIN
+           MOVE    WRK-SUM-GGAIRAI-KIN   TO  WRK-Z11
+           MOVE    WRK-Z11               TO  TA02-GGAIRAI-KIN
       *
       *    入院金額
-           MOVE    WRK-SUM-GNYUIN-KIN    TO  WRK-Z10
-           MOVE    WRK-Z10               TO  TA02-GNYUIN-KIN
+           MOVE    WRK-SUM-GNYUIN-KIN    TO  WRK-Z11
+           MOVE    WRK-Z11               TO  TA02-GNYUIN-KIN
       *
       *    合計金額
-           MOVE    WRK-SUM-GTOTAL-KIN    TO  WRK-Z11
-           MOVE    WRK-Z11               TO  TA02-GTOTAL-KIN
+           MOVE    WRK-SUM-GTOTAL-KIN    TO  WRK-Z12
+           MOVE    WRK-Z12               TO  TA02-GTOTAL-KIN
       *
       *    全体比率
            MOVE    "100.0"               TO  TA02-GZENHI
