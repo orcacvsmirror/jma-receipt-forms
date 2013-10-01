@@ -34,8 +34,9 @@
       *  01.00.03    @@@@-田中    11/10/14  CSVファイル作成機能追加
       *  01.00.04    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.05    @@@@-門間    12/07/03  初診、再診、その他の判定条件を再度変更
-      *  01.00.10    @@@@-門間    12/12/06  公費単独の場合、項目「自費負担額」に
+      *  01.00.06    @@@@-門間    12/12/06  公費単独の場合、項目「自費負担額」に
       *                                     公費１計算負担金を参照するように修正
+      *  01.00.07    @@@@-門間    13/09/30  プレビュー画面の表示修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -717,14 +718,6 @@
       *    収納テーブル再読み込み
             PERFORM 901-SYUNOU-READ-SEC
             IF    FLG-SYUNOU = ZERO
-      *
-            IF    ( SYU-SRYYMD              >=  CONST-H200401 )
-                MOVE    "A00000M700N.red"       TO  WRK-FORMID
-                MOVE    "A00000M7001N.red"      TO  WRK-FORMID1
-            ELSE
-                MOVE    "A00000M700O.red"       TO  WRK-FORMID
-                MOVE    "A00000M7001O.red"      TO  WRK-FORMID1
-            END-IF
       *
       *    入外区分ブレイクチェック処理
             IF  WRK-SMEI-NYUGAIKBN(IDX-S)  NOT = WRK-NYUGAIKBN
@@ -1496,6 +1489,15 @@
                                        TO  SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY
                                        TO  SPRT-PRIORITY
+      *
+           IF    ( WRK-PARA-PRTSYMD  >=  CONST-H200401 )
+               MOVE    "A00000M700N.red"       TO  WRK-FORMID
+               MOVE    "A00000M7001N.red"      TO  WRK-FORMID1
+           ELSE
+               MOVE    "A00000M700O.red"       TO  WRK-FORMID
+               MOVE    "A00000M7001O.red"      TO  WRK-FORMID1
+           END-IF
+      *
            MOVE    WRK-FORMID          TO  SPRT-PRTID
            MOVE    "月計表（診療費請求明細）"
                                        TO  SPRT-TITLE
@@ -1748,6 +1750,15 @@
                                        TO  SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY
                                        TO  SPRT-PRIORITY
+      *
+           IF    ( WRK-PARA-PRTSYMD  >=  CONST-H200401 )
+               MOVE    "A00000M700N.red"       TO  WRK-FORMID
+               MOVE    "A00000M7001N.red"      TO  WRK-FORMID1
+           ELSE
+               MOVE    "A00000M700O.red"       TO  WRK-FORMID
+               MOVE    "A00000M7001O.red"      TO  WRK-FORMID1
+           END-IF
+      *
            MOVE    WRK-FORMID          TO  SPRT-PRTID
            MOVE    "月計表（診療費請求明細）"
                                        TO  SPRT-TITLE
