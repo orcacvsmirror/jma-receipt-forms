@@ -36,6 +36,7 @@
       *  01.00.05    @@@@-門間    12/07/03  初診、再診、その他の判定条件を再度変更
       *  01.00.06    @@@@-門間    12/12/06  公費単独の場合、項目「自費負担額」に
       *                                     公費１計算負担金を参照するように修正
+      *  01.00.07    @@@@-門間    13/09/30  プレビュー画面の表示修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -438,12 +439,15 @@
       *****************************************************************
        000-PROC-SEC                SECTION.
       *
+           DISPLAY  "start"
            PERFORM 100-INIT-SEC
       *
            PERFORM 200-MAIN-SEC
                    UNTIL       FLG-END     =   1
       *
+           DISPLAY  "end"
            PERFORM 300-END-SEC
+           DISPLAY  "end2"
       *
            STOP    RUN
            .
@@ -717,14 +721,6 @@
       *    収納テーブル再読み込み
             PERFORM 901-SYUNOU-READ-SEC
             IF    FLG-SYUNOU = ZERO
-      *
-            IF    ( SYU-SRYYMD              >=  CONST-H200401 )
-                MOVE    "A00000M700N.red"       TO  WRK-FORMID
-                MOVE    "A00000M7001N.red"      TO  WRK-FORMID1
-            ELSE
-                MOVE    "A00000M700O.red"       TO  WRK-FORMID
-                MOVE    "A00000M7001O.red"      TO  WRK-FORMID1
-            END-IF
       *
       *    入外区分ブレイクチェック処理
             IF  WRK-SMEI-NYUGAIKBN(IDX-S)  NOT = WRK-NYUGAIKBN
@@ -1496,6 +1492,15 @@
                                        TO  SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY
                                        TO  SPRT-PRIORITY
+      *
+           IF    ( WRK-PARA-PRTSYMD  >=  CONST-H200401 )
+               MOVE    "A00000M700N.red"       TO  WRK-FORMID
+               MOVE    "A00000M7001N.red"      TO  WRK-FORMID1
+           ELSE
+               MOVE    "A00000M700O.red"       TO  WRK-FORMID
+               MOVE    "A00000M7001O.red"      TO  WRK-FORMID1
+           END-IF
+      *
            MOVE    WRK-FORMID          TO  SPRT-PRTID
            MOVE    "月計表（診療費請求明細）"
                                        TO  SPRT-TITLE
@@ -1748,6 +1753,15 @@
                                        TO  SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY
                                        TO  SPRT-PRIORITY
+      *
+           IF    ( WRK-PARA-PRTSYMD  >=  CONST-H200401 )
+               MOVE    "A00000M700N.red"       TO  WRK-FORMID
+               MOVE    "A00000M7001N.red"      TO  WRK-FORMID1
+           ELSE
+               MOVE    "A00000M700O.red"       TO  WRK-FORMID
+               MOVE    "A00000M7001O.red"      TO  WRK-FORMID1
+           END-IF
+      *
            MOVE    WRK-FORMID          TO  SPRT-PRTID
            MOVE    "月計表（診療費請求明細）"
                                        TO  SPRT-TITLE
@@ -2887,7 +2901,7 @@
       *****************************************************************
        900-DBDISCONNECT-SEC            SECTION.
       *
-           MOVE    "DBCOMMIT"          TO  MCP-FUNC.
+           MOVE    "DBCOMMIT"           TO   MCP-FUNC.
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
@@ -2896,7 +2910,7 @@
                                         SPA-AREA
                                         .
       *
-           MOVE    "DBDISCONNECT"      TO  MCP-FUNC.
+           MOVE    "DBDISCONNECT"       TO   MCP-FUNC.
            MOVE    LOW-VALUE            TO     MCP-TABLE
                                                MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
