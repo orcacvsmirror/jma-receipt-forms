@@ -26,8 +26,7 @@
       *   01.00.00    吉川    2011/10/27   新規作成
       *   01.00.01    吉川    2013/09/02   患者数が100件以上の場合、
       *                                    処理が終了しない不具合を修正
-      *   01.00.02    門間    2013/10/03   CSVファイルが20kBを超える場合、
-      *                                    正しく出力されない不具合を修正
+      *                                    集計範囲期間の計算修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -685,25 +684,24 @@
       *
            IF  (WRK-PARA-PRTYMED  NOT =  SPACE)
            AND (WRK-PARA-PRTYMST  NOT =  WRK-PARA-PRTYMED)
-      *      年
-             COMPUTE  WRK-YEAR  =  WRK-PRTYYED  -  WRK-PRTYYST
-             IF  WRK-MONTH  >  1
-               COMPUTE  WRK-YEAR  =  (WRK-YEAR - 1)  *  12
-             ELSE
-               MOVE    ZERO                   TO  WRK-YEAR
-             END-IF
-      *      月
+      *      開始月＞終了月か
              IF  WRK-PRTMMST  >  WRK-PRTMMED
-               COMPUTE  WRK-MONTH  =  WRK-PRTMMED  +  12
+      *        年
+               COMPUTE  WRK-YEAR  =  WRK-PRTYYED - WRK-PRTYYST - 1
+      *        月（年またぎ考慮）
+               COMPUTE  WRK-MONTH = (WRK-PRTMMED + 12 - WRK-PRTMMST) + 1
              ELSE
-               MOVE    WRK-PRTMMED            TO  WRK-MONTH
+      *        年
+               COMPUTE  WRK-YEAR  =  WRK-PRTYYED - WRK-PRTYYST
+      *        月
+               COMPUTE  WRK-MONTH =  WRK-PRTMMED - WRK-PRTMMST + 1
              END-IF
-      *      対象年月数
-             COMPUTE  CNT-PRTYM  =  WRK-YEAR
-                                 +  (WRK-MONTH - WRK-PRTMMST + 1)
+      *      期間月数
+             COMPUTE  CNT-PRTYM = (WRK-YEAR * 12)  +  WRK-MONTH
            ELSE
              MOVE    1                        TO  CNT-PRTYM
            END-IF
+           DISPLAY "期間月数 =" CNT-PRTYM
       *
       *    集計
            IF  WRK-PARA-HKNSBT  NOT =  SPACE
@@ -1183,6 +1181,9 @@
                PERFORM  330-CSV-GOUKEI-SEC
              END-IF
            END-PERFORM
+      *
+      *    CSV出力処理
+           PERFORM  500-CSV-OUTPUT-SEC
       *
            CLOSE  TA01-FILE
       *
@@ -1930,8 +1931,6 @@
       *
            END-PERFORM
       *
-           PERFORM  500-CSV-OUTPUT-SEC
-      *
            .
        500-CSV-HEAD-EXT.
            EXIT.
@@ -1943,8 +1942,6 @@
       *
            PERFORM  UNTIL    KEY-NEW  NOT =  KEY-OLD
                     OR       FLG-PRINT  =  1
-      *
-           MOVE    1      TO  IDX-POINT
       *
              IF  TA01TMP-HKNSBT-KEY  NOT =  WRK-HKNSBT
       *        保険種別退避
@@ -2135,8 +2132,6 @@
              END-IF
              PERFORM  510-CSV-DATAHEN-SEC
       *
-             PERFORM  500-CSV-OUTPUT-SEC
-      *
       *      次データ読み込み
              PERFORM  390-TMP-READ-SEC
       *
@@ -2156,8 +2151,6 @@
       *    CSV小計集計
       *****************************************************************
        325-CSV-SYOKEI-SEC           SECTION.
-      *
-           MOVE    1      TO  IDX-POINT
       *
       *    空白４つ
            MOVE    SPACE                 TO  CSV-DATA
@@ -2240,8 +2233,6 @@
       *    小計初期化
            INITIALIZE                        SUM-SYOKEI
       *
-           PERFORM  500-CSV-OUTPUT-SEC
-      *
            .
        325-CSV-SYOKEI-EXT.
            EXIT.
@@ -2249,8 +2240,6 @@
       *    CSV合計集計
       *****************************************************************
        330-CSV-GOUKEI-SEC           SECTION.
-      *
-           MOVE    1      TO  IDX-POINT
       *
       *    実人数
            MOVE    "実人数"              TO  CSV-DATA
@@ -2333,8 +2322,6 @@
            PERFORM  510-CSV-DATAHEN-SEC
       *
            INITIALIZE                        SUM-GOKEI
-      *
-           PERFORM  500-CSV-OUTPUT-SEC
       *
            .
        330-CSV-GOUKEI-SEC-EXT.
