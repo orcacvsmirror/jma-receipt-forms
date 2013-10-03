@@ -27,6 +27,8 @@
       *   01.00.01    吉川    2013/09/02   患者数が100件以上の場合、
       *                                    処理が終了しない不具合を修正
       *                                    集計範囲期間の計算修正
+      *   01.00.02    門間    2013/10/03   CSVファイルが20kBを超える場合、
+      *                                    正しく出力されない不具合を修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1182,9 +1184,6 @@
              END-IF
            END-PERFORM
       *
-      *    CSV出力処理
-           PERFORM  500-CSV-OUTPUT-SEC
-      *
            CLOSE  TA01-FILE
       *
       *
@@ -1931,6 +1930,8 @@
       *
            END-PERFORM
       *
+           PERFORM  500-CSV-OUTPUT-SEC
+      *
            .
        500-CSV-HEAD-EXT.
            EXIT.
@@ -1942,6 +1943,8 @@
       *
            PERFORM  UNTIL    KEY-NEW  NOT =  KEY-OLD
                     OR       FLG-PRINT  =  1
+      *
+             MOVE    1      TO  IDX-POINT
       *
              IF  TA01TMP-HKNSBT-KEY  NOT =  WRK-HKNSBT
       *        保険種別退避
@@ -2132,6 +2135,8 @@
              END-IF
              PERFORM  510-CSV-DATAHEN-SEC
       *
+             PERFORM  500-CSV-OUTPUT-SEC
+      *
       *      次データ読み込み
              PERFORM  390-TMP-READ-SEC
       *
@@ -2241,6 +2246,8 @@
       *****************************************************************
        330-CSV-GOUKEI-SEC           SECTION.
       *
+           MOVE    1      TO  IDX-POINT
+      *
       *    実人数
            MOVE    "実人数"              TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
@@ -2322,6 +2329,8 @@
            PERFORM  510-CSV-DATAHEN-SEC
       *
            INITIALIZE                        SUM-GOKEI
+      *
+           PERFORM  500-CSV-OUTPUT-SEC
       *
            .
        330-CSV-GOUKEI-SEC-EXT.
