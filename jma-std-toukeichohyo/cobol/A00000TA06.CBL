@@ -22,8 +22,10 @@
       *  サブシステム名    : 月次帳票
       *  コンポーネント名  : 請求収納チェック表
       *  管理者            : 
-      *  Maj/Min/Rev  修正者  日付       内容
-      *   01.00.00    門間    11/08/31   新規作成
+      *  Maj/Min/Rev  修正者  日付         内容
+      *   01.00.00    門間    2011/08/31   新規作成
+      *   01.00.01    門間    2013/10/03   CSVファイルが20kBを超える場合、
+      *                                    正しく出力されない不具合を修正
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -137,7 +139,7 @@
        01  WRK-CSV-AREA.
            03  WRK-ITEM-SIZE           PIC 9(03)    VALUE 100.
            03  WRK-ITEM                PIC X(100)   VALUE SPACE.
-           03  WRK-CSVDATA             PIC X(20000) VALUE SPACE.
+           03  WRK-CSVDATA             PIC X(300) VALUE SPACE.
       *
        01  CSV-HEAD-AREA.
            03  CSV-HEAD-G.
@@ -678,8 +680,6 @@
              END-IF
            END-PERFORM
       *
-           PERFORM  230-TOUKEICSV-SEC
-      *
            CLOSE   TA06-FILE
       *
            .
@@ -839,6 +839,8 @@
       *    備考
            MOVE    TA06-BIKO(IDX)       TO  WRK-ITEM
            PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           PERFORM  230-TOUKEICSV-SEC
       *
            .
        400-CSV-DATA-EXT.
