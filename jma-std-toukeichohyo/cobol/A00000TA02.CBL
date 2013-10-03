@@ -28,6 +28,7 @@
       *                                   病棟別に集計するように修正
       *                                   病棟名が印字されないのを修正
       *   01.00.02    門間    2013/09/13  金額欄の桁数変更
+      *   01.00.03    門間    2013/10/03  食堂加算など加算手技料の修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1143,24 +1144,30 @@
                      MOVE    1                TO  WRK-TENTNK
                    WHEN  "4"
       *    食事療養費
-                     EVALUATE  NACCT-DAY(IDX-DAY)
-                       WHEN  1
-                         MOVE    WRK-SYOKUJITEN1  TO  TA02TMP-YAKKA
-                                                      TA02TMP-TANKA
-                                                      WRK-TENSU
-                       WHEN  2
-                         MOVE    WRK-SYOKUJITEN2  TO  TA02TMP-YAKKA
-                                                      TA02TMP-TANKA
-                                                      WRK-TENSU
-                       WHEN  3
-                         MOVE    WRK-SYOKUJITEN3  TO  TA02TMP-YAKKA
-                                                      TA02TMP-TANKA
-                                                      WRK-TENSU
-                       WHEN  4
-                         MOVE    WRK-SYOKUJITEN4  TO  TA02TMP-YAKKA
-                                                      TA02TMP-TANKA
-                                                      WRK-TENSU
-                     END-EVALUATE
+                     IF  TNS-DATAKBN  =  "1"
+                       EVALUATE  NACCT-DAY(IDX-DAY)
+                         WHEN  1
+                           MOVE    WRK-SYOKUJITEN1  TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+                         WHEN  2
+                           MOVE    WRK-SYOKUJITEN2  TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+                         WHEN  3
+                           MOVE    WRK-SYOKUJITEN3  TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+                         WHEN  4
+                           MOVE    WRK-SYOKUJITEN4  TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+                       END-EVALUATE
+                     ELSE
+                       MOVE    TNS-TEN          TO  TA02TMP-YAKKA
+                                                    TA02TMP-TANKA
+                                                    WRK-TENSU
+                     END-IF
       **    食事療養は自費の為点数単価＝1
       *               MOVE    1              TO  WRK-TENTNK
                    WHEN  OTHER
