@@ -139,7 +139,7 @@
        01  WRK-CSV-AREA.
            03  WRK-ITEM-SIZE           PIC 9(03)    VALUE 100.
            03  WRK-ITEM                PIC X(100)   VALUE SPACE.
-           03  WRK-CSVDATA             PIC X(300) VALUE SPACE.
+           03  WRK-CSVDATA             PIC X(20000) VALUE SPACE.
       *
        01  CSV-HEAD-AREA.
            03  CSV-HEAD-G.
@@ -795,6 +795,8 @@
              END-IF
            END-PERFORM
       *
+           PERFORM  230-TOUKEICSV-SEC
+      *
            .
       *
        800-CSV-HEAD-EXT.
@@ -803,6 +805,8 @@
       *    CSV編集処理
       *****************************************************************
        400-CSV-DATA-SEC            SECTION.
+      *
+           MOVE    1               TO  IDXP
       *
       *    連番
            MOVE    TA06-RENNUM(IDX)     TO  WRK-ITEM
