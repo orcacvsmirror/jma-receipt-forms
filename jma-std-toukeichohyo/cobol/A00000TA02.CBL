@@ -29,6 +29,7 @@
       *                                   病棟名が印字されないのを修正
       *   01.00.02    門間    2013/09/13  金額欄の桁数変更
       *   01.00.03    門間    2013/10/03  食堂加算など加算手技料の修正
+      *   01.00.04    門間    2013/11/07  食事療養を金額として集計するように修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1168,8 +1169,8 @@
                                                     TA02TMP-TANKA
                                                     WRK-TENSU
                      END-IF
-      **    食事療養は自費の為点数単価＝1
-      *               MOVE    1              TO  WRK-TENTNK
+      *    食事療養は自費の為点数単価＝1
+                     MOVE    1                TO  WRK-TENTNK
                    WHEN  OTHER
                      MOVE    TNS-TEN          TO  TA02TMP-YAKKA
                                                 TA02TMP-TANKA
