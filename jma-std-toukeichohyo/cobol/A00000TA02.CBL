@@ -30,6 +30,7 @@
       *   01.00.02    Ìç´Ö    2013/09/13  ¶â³ÛÍó¤Î·å¿ôÊÑ¹¹
       *   01.00.03    Ìç´Ö    2013/10/03  ¿©Æ²²Ã»»¤Ê¤É²Ã»»¼êµ»ÎÁ¤Î½¤Àµ
       *   01.00.04    Ìç´Ö    2013/11/07  ¿©»öÎÅÍÜ¤ò¶â³Û¤È¤·¤Æ½¸·×¤¹¤ë¤è¤¦¤Ë½¤Àµ
+      *   01.00.05    Ìç´Ö    2013/11/20  ÉÂÅïÌ¾¡¢·ï¿ô¤Î½¤Àµ
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -194,6 +195,7 @@
                05  WRK-SYOKUJITEN3         PIC 9(08)V9(02).
                05  WRK-SYOKUJITEN4         PIC 9(08)V9(02).
            03  WRK-OBJYMD                  PIC 9(08).
+           03  WRK-PTID                    PIC 9(10).
       *
       *    ¿ÇÎÅ²Ê¡¢°å»Õ¡¢ÉÂÅïÊÌ½¸·×ÎÎ°è
        01  WRK-SYUKEI-AREA.
@@ -878,11 +880,12 @@
                        END-PERFORM
                        PERFORM  900-JYURRK-CLOSE-SEC
                      WHEN  "3"
+                       MOVE    SRY-PTID      TO  WRK-PTID
                        PERFORM  900-PTNYUINRRK-READ-SEC
                        PERFORM  VARYING  IDX2  FROM  1  BY  1
                                 UNTIL  IDX2  >  WRK-MAX
                          MOVE    IDX2          TO  TA02TMP-PRTKBN
-                         IF  PTNYUINRRK-BTUNUM  =  WRK-NAMEKBN(IDX2)
+                         IF  PTNYUINRRK-BTUNUM =  WRK-NAMEKBN(IDX2)(4:2)
                              AND  WRK-OBJYMD  >=  WRK-STYUKYMD(IDX2)
                              AND  WRK-OBJYMD  <=  WRK-EDYUKYMD(IDX2)
                            MOVE    999         TO  IDX2
@@ -938,11 +941,35 @@
                    IF   TA02TMP-SORTKBN  NOT =  12  AND  13  AND  14
                      IF   ACCT-NYUGAIKBN  =  "2"
       *    ³°Íè·ï¿ô
-                       MOVE    ACCT-ZAIKAISU   TO  WRK-GAIRAI-KEN
+                       EVALUATE  TNS-TENSIKIBETU
+                         WHEN  1
+                           COMPUTE  WRK-GAIRAI-KEN = SRY-SRYSURYO(IDX1)
+                                                   * ACCT-DAY(1 IDX-DAY)
+                         WHEN  0
+                         WHEN  3
+                         WHEN  4
+                         WHEN  5
+                         WHEN  6
+                         WHEN  7
+                         WHEN  8
+                           MOVE   ACCT-DAY(1 IDX-DAY) TO WRK-GAIRAI-KEN
+                       END-EVALUATE
                        ADD  WRK-GAIRAI-KEN     TO  TA02TMP-GAIRAI-KEN
                      ELSE
       *    Æþ±¡·ï¿ô
-                       MOVE    ACCT-ZAIKAISU   TO  WRK-NYUIN-KEN
+                       EVALUATE  TNS-TENSIKIBETU
+                         WHEN  1
+                           COMPUTE  WRK-NYUIN-KEN = SRY-SRYSURYO(IDX1)
+                                                  * ACCT-DAY(1 IDX-DAY)
+                         WHEN  0
+                         WHEN  3
+                         WHEN  4
+                         WHEN  5
+                         WHEN  6
+                         WHEN  7
+                         WHEN  8
+                           MOVE   ACCT-DAY(1 IDX-DAY) TO WRK-NYUIN-KEN
+                       END-EVALUATE
                        ADD  WRK-NYUIN-KEN      TO  TA02TMP-NYUIN-KEN
                      END-IF
                    END-IF
@@ -1066,6 +1093,8 @@
       *    ¥­¡¼ÀßÄê
       *    ½ç½øÀßÄê(Æþ±¡ÎÁ¸ÇÄê)
                  MOVE    11          TO  TA02TMP-SORTKBN
+      *
+                 MOVE    NSRY-PTID   TO  WRK-PTID
       *
       *    ²ÊÊÌ¡¢°å»ÕÊÌ¶èÊ¬
                  EVALUATE  WRK-PARA-PRTKBN
@@ -3233,7 +3262,7 @@
            MOVE    WRK-PARA-HOSPNUM     TO  PTNYUINRRK-HOSPNUM
            MOVE    WRK-OBJYMD           TO  PTNYUINRRK-NYUINYMD
            MOVE    WRK-OBJYMD           TO  PTNYUINRRK-TAIINYMD
-           MOVE    NSRY-PTID            TO  PTNYUINRRK-PTID
+           MOVE    WRK-PTID             TO  PTNYUINRRK-PTID
            MOVE    PTNYUINRRK-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
