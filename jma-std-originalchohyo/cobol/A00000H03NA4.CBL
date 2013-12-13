@@ -34,6 +34,7 @@
       *  01.00.04    @@@@-門間    11/12/07 「1 期別にまとめて発行する」を指定した場合、
       *                                     複数科保険でまとめて計算する
       *  01.00.05    @@@@-門間    12/01/30  主保険＋マル長の請求対応を削除
+      *  01.00.06    @@@@-門間    13/12/13  月途中の保険組合せ変更による請求期間印字を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -95,6 +96,7 @@
            03  IDX1                PIC 9(04).
            03  IDX-M               PIC 9(04).
            03  IDX-JIHI            PIC 9(04).
+           03  IDXD                PIC 9(04).
       *
       *    システム領域
        01  SYS-AREA.
@@ -290,6 +292,10 @@
       *
       *    請求書兼領収書まとめサブ
            COPY    "CPORCHCN03S02.INC".
+      *
+      *    請求期間編集サブ
+           COPY    "CPORCHCN03S03.INC".
+      *
       *
       *****************************************************************
       *    連絡　領域
@@ -600,6 +606,19 @@
       *****************************************************************
        2001-HCN03-HEN-SEC              SECTION.
       *
+           INITIALIZE                  ORCHCN03S03AREA
+           MOVE    SYU-PTID            TO  ORCHCN03S03-PTID
+           PERFORM VARYING IDXD    FROM    1   BY  1
+                   UNTIL ( IDXD    >   ORCHCN03S02-GRP-CNT )
+               MOVE    ORCHCN03S02-GRP-DENPNUM (IDXD)
+                                   TO  ORCHCN03S03-DENPNUM (IDXD)
+           END-PERFORM
+           MOVE    SYU-SKYSTYMD    TO  ORCHCN03S03-SYUSTYMD
+           MOVE    SYU-SKYEDYMD    TO  ORCHCN03S03-SYUEDYMD
+           CALL    "ORCHCN03S03"       USING
+                                       SPA-AREA
+                                       ORCHCN03S03AREA
+      *
            INITIALIZE                  HCN03
       *
       *    伝票番号
@@ -686,11 +705,13 @@
                END-IF
            END-IF
       *    請求開始日
-           MOVE    SYU-SKYSTYMD        TO  WRK-SYMD
+           MOVE    ORCHCN03S03-SKYSTYMD
+                                       TO  WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
            MOVE    WRK-HENYMDG         TO  HCN03-NYUINSTRYMD
       *    請求終了日
-           MOVE    SYU-SKYEDYMD        TO  WRK-SYMD
+           MOVE    ORCHCN03S03-SKYEDYMD
+                                       TO  WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
            MOVE    WRK-HENYMDG         TO  HCN03-NYUINENDYMD
       *    発行日
