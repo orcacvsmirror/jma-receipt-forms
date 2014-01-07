@@ -34,6 +34,7 @@
       *   01.00.04    @@@@-門間   13/02/21  CSVデータの処理順を変更
       *   01.00.05    @@@@-門間   13/06/26  診療区分「97」を集計処理から除外
       *   01.00.06    @@@@-吉川   13/08/26  在宅の集計不具合修正
+      *   01.00.07    @@@@-門間   14/01/07  療養担当手当の自動加算分を集計するように修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1369,6 +1370,10 @@
            ADD      SYU-RYOYOHI-SKJ        TO    K142TMP-TENSU(41)
            ADD      SYU-RYOYOHI-LIFE       TO    K142TMP-TENSU(41)
       *
+      *    療養担当手当
+           ADD    SYU-RYO-HKNTEN         TO    K142TMP-TENSU(39)
+                                               K142TMP-TENSU(40)
+      *
            IF  FLG-M01TMP   =  1
              WRITE    K142TMP-REC
            ELSE
@@ -1406,6 +1411,12 @@
       *    室料差額件数、食事件数加算
                    IF  NACCT-SRYCDTOTAL  NOT =  "00000197000570"
                      ADD    1         TO   K142TMP-KAISU(41)
+                   END-IF
+                 WHEN  "5"
+      *    療養担当手当
+                   IF  NACCT-SRYCDTOTAL  =  "00000099999914"
+                     ADD    1         TO   K142TMP-KAISU(39)
+                                           K142TMP-KAISU(40)
                    END-IF
                END-EVALUATE
              END-IF

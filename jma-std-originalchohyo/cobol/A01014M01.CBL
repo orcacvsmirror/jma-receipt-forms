@@ -33,6 +33,7 @@
       *  01.00.03    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.04    @@@@-門間    12/05/25  CSVファイル作成機能追加
       *  01.00.05    @@@@-門間    13/06/26  診療区分「97」を集計処理から除外
+      *  01.00.06    @@@@-門間    14/01/07  療養担当手当の自動加算分を集計するように修正
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -907,6 +908,7 @@
       *
       *    入院料加算
            MOVE    ZERO             TO    WRK-SYUEKI
+                                          WRK-SYUEKI2
            EVALUATE  WRK-HKNNUM
              WHEN "971"
              WHEN "973"
@@ -923,16 +925,22 @@
       *
                COMPUTE  WRK-SYUEKI  ROUNDED  =  SYU-NYN-HKNTEN
                                              *  WRK-TENTNK
+      *
+               COMPUTE  WRK-SYUEKI2 ROUNDED  =  SYU-RYO-HKNTEN
+                                             *  WRK-TENTNK
              WHEN  "980"  THRU  "989"
                IF   SYS-1001-JIHIPOSITION  =  "2"
                  IF   SYU-NYN-TGMONEY-TAX  NOT =  SPACE
                    COMPUTE  WRK-SYUEKI  =  SYU-NYN-TGMONEY-TAX
+                   COMPUTE  WRK-SYUEKI2 =  SYU-RYO-TGMONEY-TAX
                  ELSE
                    COMPUTE  WRK-SYUEKI  =  SYU-NYN-TGMONEY
+                   COMPUTE  WRK-SYUEKI2 =  SYU-RYO-TGMONEY
                  END-IF
                END-IF
              WHEN OTHER
                COMPUTE  WRK-SYUEKI  =  SYU-NYN-HKNTEN  *  WRK-TENTNK
+               COMPUTE  WRK-SYUEKI2 =  SYU-RYO-HKNTEN  *  WRK-TENTNK
            END-EVALUATE
       *
            MOVE    SYU-SKYEDYMD(7:2)     TO   IDA-G
@@ -958,6 +966,14 @@
       *    食事加算
            ADD    SYU-RYOYOHI-SKJ        TO   M01TMP-SYUEKI(43)
                                               M01TMP-SYUEKI(40)
+                                              M01TMP-SYUEKI(45)
+      *
+      *    療養担当手当
+           ADD    SYU-RYO-HKNTEN         TO   M01TMP-TENSU(36)
+                                              M01TMP-TENSU(39)
+                                              M01TMP-TENSU(45)
+           ADD    WRK-SYUEKI2            TO   M01TMP-SYUEKI(36)
+                                              M01TMP-SYUEKI(39)
                                               M01TMP-SYUEKI(45)
       *
            IF  FLG-M01TMP  =  1
@@ -1038,6 +1054,26 @@
                    IF    M01TMP-DAY(40 IDA)  =  ZERO
                      MOVE    1       TO   M01TMP-DAY(40 IDA)
                      ADD     1       TO   M01TMP-NISSU(40)
+                  END-IF
+                 END-IF
+               END-IF
+      *    療養担当手当
+               IF  NACCT-ZAISKBKBN  =  "5"
+                 IF  NACCT-SRYCDTOTAL  =  "00000099999914"
+                   ADD     1         TO   M01TMP-KENSU(36)
+                   ADD     1         TO   M01TMP-KENSU(39)
+                   ADD     1         TO   M01TMP-KENSU(45)
+                   IF    M01TMP-DAY(36 IDA)   =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(36 IDA)
+                     ADD     1       TO   M01TMP-NISSU(36)
+                   END-IF
+                   IF    M01TMP-DAY(39 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(39 IDA)
+                     ADD     1       TO   M01TMP-NISSU(39)
+                   END-IF
+                   IF    M01TMP-DAY(45 IDA)  =  ZERO
+                     MOVE    1       TO   M01TMP-DAY(45 IDA)
+                     ADD     1       TO   M01TMP-NISSU(45)
                   END-IF
                  END-IF
                END-IF

@@ -36,6 +36,7 @@
       *                                     医師取消し時の不具合を修正
       *   01.00.06    @@@@-門間   13/06/26  診療区分「97」を集計処理から除外
       *   01.00.07    @@@@-吉川   13/08/26  在宅の集計不具合修正
+      *   01.00.08    @@@@-門間   14/01/07  療養担当手当の自動加算分を集計するように修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1600,6 +1601,10 @@
            ADD    SYU-RYOYOHI-LIFE       TO    K141TMP-TENSU(41)
            ADD    WRK-N-NISSU            TO    K141TMP-KAISU(41)
       *
+      *    療養担当手当
+           ADD    SYU-RYO-HKNTEN         TO    K141TMP-TENSU(39)
+                                               K141TMP-TENSU(40)
+      *
            IF   FLG-M01TMP   =  1
              WRITE    K141TMP-REC
            ELSE
@@ -1641,6 +1646,12 @@
       *    室料差額件数、食事件数加算
                    IF  NACCT-SRYCDTOTAL  NOT =  "00000197000570"
                      ADD    1         TO   K141TMP-KAISU(41)
+                   END-IF
+                 WHEN  "5"
+      *    療養担当手当
+                   IF  NACCT-SRYCDTOTAL  =  "00000099999914"
+                     ADD    1         TO   K141TMP-KAISU(39)
+                                           K141TMP-KAISU(40)
                    END-IF
                END-EVALUATE
              END-IF
