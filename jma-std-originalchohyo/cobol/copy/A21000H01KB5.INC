@@ -81,3 +81,4 @@
            03  H01KB5-FTN-JKY-N-TBL       OCCURS 3. 
                05  H01KB5-JKYSNON         PIC X(20).
                05  H01KB5-FTNSNON         PIC X(20).
+           03  H01KB5-BIKO               PIC X(40).

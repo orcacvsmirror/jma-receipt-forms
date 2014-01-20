@@ -31,6 +31,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/05/26  主保険＋マル長の請求対応
       *  01.00.03    @@@@-門間    11/09/12  複数科保険の本家区分の印字修正
+      *  01.00.04    @@@@-門間    14/01/17  第三者行為対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1050,6 +1051,12 @@
                  MOVE  "内自賠診察等"     TO      HC03-RSIMIDASI
                  MOVE  "（"               TO      HC03-RSIMIDASI2
                  MOVE  "）"               TO      HC03-RSIMIDASI3
+               WHEN    OTHER
+                 IF    ( COMB-KOHHKNNUM (1)   =   "970" )
+                   MOVE  "内自賠文書等"     TO      HC03-RSIMIDASI
+                   MOVE  "（"               TO      HC03-RSIMIDASI2
+                   MOVE  "）"               TO      HC03-RSIMIDASI3
+                 END-IF
              END-EVALUATE
              MOVE    SYU-RSI-TOTAL        TO      WRK-Z72
              PERFORM 820-HENKAN-SEC
@@ -1091,6 +1098,8 @@
       *
            IF    ( COMB-HKNNUM             =    "971"
                                            OR   "973" )
+             OR  ( COMB-KOHHKNNUM (1)      =    "970"
+              AND  SYU-PTFTNRATE       NOT =     ZERO )
                IF    ( COMB-HKNNUM             =    "971"
                AND     PTRSI-HKNKBN        NOT =    "5"
                AND     SYS-4001-RSIIRYOKBN     =    "1" )
@@ -1107,6 +1116,7 @@
                                            +    SYU-RSISAISHIN-MONEY
                                            +    SYU-RSISDO-MONEY
                                            +    SYU-RSIETC-MONEY
+                                           +    SYU-KOH-FTN
                    MOVE    WRK-GOKTEN      TO  WRK-Z72
                    PERFORM 800-HENKAN-SEC
                    MOVE    WRK-Z72-G           TO  HC03-HOKENBUN

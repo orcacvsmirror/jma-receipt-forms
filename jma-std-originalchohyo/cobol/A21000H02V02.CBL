@@ -84,6 +84,7 @@
       *                                     含量規格変更不可等の対応
       * 01.00.03     @@@@-門間    12/05/18  処方せんの器材換算値エラー対応
       *                                     薬価基準コード１２桁対応
+      * 01.00.04     @@@@-門間    14/01/17  第三者行為対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1282,6 +1283,14 @@
                                             TO  WRK-JKYSNO
                MOVE    KANACHK-MAX          TO  WRK-JKYSNO-MAX
            END-IF
+           IF      COMB-KOH1HKNNUM     =   "970"
+      *        第三者行為は備考へ
+               ADD     1               TO  IDX-K3
+               MOVE    COMB-KOH1-TANSEIDONAME
+                                           TO  WRK-HEN-KOH(IDX-K3)
+               MOVE    SPACE               TO  WRK-FTNSNO
+               MOVE    SPACE               TO  WRK-JKYSNO
+           END-IF
       *@@@ 埼玉県対応
       *    負担者番号編集なし
            IF     SYS-1001-PREFNUM     =   "11"
@@ -1403,30 +1412,6 @@
                MOVE    WRK-HENYMDG         TO  WRK-KOFYMD
            END-IF
       *
-      *+
-      **    負担割合
-      *     MOVE    SPACE               TO  WRK-HEN-FTNRATE
-      *     MOVE    SPACE               TO  WRK-HEN-FTNWARI
-      *     EVALUATE    PARA-FTNKBN
-      *         WHEN    "1"
-      *             MOVE    AGECHK-FTNRATE      TO  WRK-FTN-ZZ9
-      *             MOVE    WRK-FTN-ZZ9         TO  WRK-HEN-FTNRATE
-      *             MOVE    "％"                TO  WRK-HEN-FTNWARI
-      *         WHEN    "2"
-      *             COMPUTE WRK-FTNRATE     =   AGECHK-FTNRATE  /  10
-      *             IF      WRK-FTNRATE-S2  =   ZERO
-      **                小数以下なし
-      *                 MOVE    WRK-FTNRATE         TO  WRK-FTN-ZZ9
-      *                 MOVE    WRK-FTN-ZZ9         TO  WRK-HEN-FTNRATE
-      *             ELSE
-      **                小数以下あり
-      *                 MOVE    WRK-FTNRATE         TO  WRK-FTN-Z92
-      *                 MOVE    WRK-FTN-Z92         TO  WRK-HEN-FTNRATE
-      *             END-IF
-      *             MOVE    "割"                TO  WRK-HEN-FTNWARI
-      *     END-EVALUATE
-      *+
-      *
       *    診療科名
            IF      PARA-SRYKAKBN       =   "1"
                MOVE    SYS-1005-SRYKANAME1 TO  WRK-HEN-SRYKANAME
@@ -1535,8 +1520,6 @@
                MOVE    PTINF-NAME      TO  HCM19-NAME2
            END-IF
       *
-      *+
-      *     MOVE    SPA-SEX             TO  HCM19-SEX
            EVALUATE     SPA-SEX
                WHEN    "男"
                    MOVE    "○"                TO  HCM19-SEX(1)
@@ -1547,7 +1530,6 @@
       *    生年月日
            MOVE    PTINF-BIRTHDAY      TO  WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
-      *     MOVE    WRK-HENYMDG         TO  HCM19-BIRTH
            EVALUATE     WRK-HENYMDG(1:4)
                WHEN    "明治"
                    MOVE    "○"                TO  HCM19-BIRTHGG(1)
@@ -1561,7 +1543,6 @@
            MOVE    WRK-HENYMDG(5:4)    TO  HCM19-BIRTHYY
            MOVE    WRK-HENYMDG(11:4)   TO  HCM19-BIRTHMM
            MOVE    WRK-HENYMDG(17:4)   TO  HCM19-BIRTHDD
-      *+
       *
       *    医療機関住所
            MOVE    WRK-HOSPADRS        TO  HCM19-HOSPADRS
@@ -1608,13 +1589,10 @@
                    MOVE    "＊＊＊＊＊＊＊＊"  TO  HCM19-HONKZKKBN(1)
            END-EVALUATE
       *
-      *+
       *    交付年月日
-      *     MOVE    WRK-KOFYMD          TO  HCM19-KOFYMD
            MOVE    WRK-KOFYMD(5:4)     TO  HCM19-KOFYY
            MOVE    WRK-KOFYMD(11:4)    TO  HCM19-KOFMM
            MOVE    WRK-KOFYMD(17:4)    TO  HCM19-KOFDD
-      *+
       *
       *    公費負担者番号
            MOVE    WRK-HEN-FTNJANUM (1)    TO  HCM19-FTNJA
@@ -1854,11 +1832,6 @@
       *
       *    診療科
            MOVE    WRK-HEN-SRYKANAME   TO  HCM19-SRYKAMEI
-      *+
-      **    負担割合
-      *     MOVE    WRK-HEN-FTNRATE     TO  HCM19-FTNRATE
-      *     MOVE    WRK-HEN-FTNWARI     TO  HCM19-FTNWARI
-      *+
       *
       *    ページ編集
            MOVE    SPACE               TO  WRK-HEN-PAGE

@@ -35,6 +35,7 @@
       *                                     複数科保険でまとめて計算する
       *  01.00.05    @@@@-門間    12/01/30  主保険＋マル長の請求対応を削除
       *  01.00.06    @@@@-門間    13/12/13  月途中の保険組合せ変更による請求期間印字を修正
+      *  01.00.07    @@@@-門間    14/01/17  第三者行為対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -795,6 +796,10 @@
                  MOVE  "（内労災診察等）"     TO      HCN03-RSIMIDASI
                WHEN    "973"
                  MOVE  "（内自賠診察等）"     TO      HCN03-RSIMIDASI
+               WHEN    OTHER
+                 IF    ( COMB-KOHHKNNUM (1)   =   "970" )
+                   MOVE  "（内自賠文書等）"     TO    HCN03-RSIMIDASI
+                 END-IF
              END-EVALUATE
              MOVE    SYU-RSI-TOTAL          TO  WRK-Z72
              PERFORM 820-HENKAN-SEC
@@ -815,6 +820,8 @@
       *    労災・自賠の時、点数表示なし
            IF    ( COMB-HKNNUM             =    "971"
                                            OR   "973" )
+            OR   ( COMB-KOHHKNNUM (1)      =    "970"
+              AND  SYU-PTFTNRATE       NOT =     ZERO )
              IF  ( COMB-HKNNUM             =    "971"   AND
                    PTRSI-HKNKBN        NOT =    "5"     AND
                    SYS-4001-RSIIRYOKBN     =    "1" )   OR
@@ -832,6 +839,7 @@
                                     +  SYU-RSISAISHIN-MONEY
                                     +  SYU-RSISDO-MONEY
                                     +  SYU-RSIETC-MONEY
+                                    +  SYU-KOH-FTN
                MOVE  WRK-GOKTEN     TO  WRK-KINGAKU-Z
                MOVE  WRK-KINGAKU-Z  TO  WRK-ZHENSYU12
                PERFORM  800-HENKAN-SEC

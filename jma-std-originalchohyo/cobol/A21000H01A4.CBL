@@ -35,6 +35,7 @@
       *                                     2行表示（24文字）するように修正
       *  01.00.05    @@@@-萩野    13/01/09  カルテ発行(病名無)を選択した場合、
       *                                     病名を印字しないように修正
+      *  01.00.06    @@@@-門間    14/01/16  第三者行為対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -98,6 +99,7 @@
            03  FLG-OK              PIC 9(01).
            03  FLG-ZOKUSHI         PIC 9(01).
            03  FLG-PTRSIINF        PIC 9(01).
+           03  FLG-INNO            PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -122,6 +124,7 @@
            03  IDY                 PIC 9(04).
            03  IDK                 PIC 9(04).
            03  IDX2-1              PIC 9(01).
+           03  IDX-H               PIC 9(04).
       *
       *    一時領域
        01  WRK-AREA.
@@ -201,6 +204,18 @@
            03  WRK-ERRMSG          PIC X(40).
            03  WRK-MSG             PIC X(200).
       *
+           03  WRK-BIKO            PIC X(40).
+      *
+           03  WRK-COMB-HKNNUM         PIC X(03).
+           03  WRK-COMB-KOHID          PIC 9(10).
+      *
+      *    保険組合せテーブル
+       01  TBL-HKNCOMBI-AREA.
+           03  TBL-HKNCOMBI-OCC        OCCURS   20.
+               05  TBL-HKNCOMBINUM     PIC X(04).
+               05  TBL-HKNNUM          PIC X(03).
+               05  TBL-KOHID           PIC 9(10).
+      *
        01  WRK-HENSYU-AREA.
            03  WRK-HENYMDG         PIC X(22).
            03  WRK-HENYMD.
@@ -230,6 +245,15 @@
            03  TBL-SUJI            PIC X(02)   OCCURS   10.
       *
        01  DUMMY PIC X(03).
+      *
+      *    プログラムオプションパラメタ
+       01  PARA-AREA.
+           03  PARA-HKNCOMBIKBN        PIC X(01).
+           03  PARA-DAISANKBN          PIC X(01).
+      *
+           03  WRK-PARA-NAME           PIC X(25).
+           03  WRK-PARA                PIC X(50).
+      *
       *****************************************************************
       *    ファイルレイアウト
       *****************************************************************
@@ -293,6 +317,9 @@
       *
       *    オンライン帳票名・出力先プリンタ名取得パラ
            COPY    "CPORCSPRTNM.INC".
+      *
+      *    プログラムオプション編集パラメタ
+           COPY    "CPORCSPRGOPTION.INC".
       *
       *    一括用
       *    印刷ＤＢ更新サブ
@@ -371,10 +398,13 @@
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
       *
+      *    プログラムオプション取込み
+           PERFORM 100-OPTION-SELECT-SEC
+      *
            .
        100-INIT-EXT.
            EXIT.
-
+      *
       *****************************************************************
       *    パラメタ編集処理
       *****************************************************************
@@ -431,6 +461,44 @@
            END-IF
            .
        110-PARA-HENSYU-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    プログラムオプション取込み処理
+      *****************************************************************
+       100-OPTION-SELECT-SEC             SECTION.
+      *
+           INITIALIZE                  PARA-AREA
+      *
+      *    保険適応病名区分
+           MOVE    "HKNCOMBIKBN"       TO  WRK-PARA-NAME
+           PERFORM 1001-OPTION-CALL-SEC
+           MOVE    WRK-PARA(1:1)       TO  PARA-HKNCOMBIKBN
+      *    第三者編集区分
+           MOVE    "DAISANKBN"         TO  WRK-PARA-NAME
+           PERFORM 1001-OPTION-CALL-SEC
+           MOVE    WRK-PARA(1:1)       TO  PARA-DAISANKBN
+      *
+           .
+       100-OPTION-SELECT-EXT.
+           EXIT.
+      *****************************************************************
+      *    プログラムオプションパラメタ取得処理
+      *****************************************************************
+       1001-OPTION-CALL-SEC             SECTION.
+      *
+           INITIALIZE                  ORCSPRGOPTIONAREA
+           MOVE    "A21000H01A4"       TO  ORCSPRGOPTION-PRGID
+           MOVE    WRK-PARA-NAME       TO  ORCSPRGOPTION-IN-DATA
+           CALL    "ORCSPRGOPTION"     USING   SPA-AREA
+                                               ORCSPRGOPTIONAREA
+           MOVE    SPACE               TO  WRK-PARA
+           IF      ORCSPRGOPTION-OT-TYPE   =   1
+      *        半角で１文字目を値とする
+               MOVE    ORCSPRGOPTION-OT-PARA(1:1)  TO  WRK-PARA(1:1)
+           END-IF
+           .
+       1001-OPTION-CALL-EXT.
            EXIT.
       *
       *****************************************************************
@@ -1036,6 +1104,22 @@
       *****************************************************************
        311-HC01-HEN-SEC        SECTION.
       *
+      *    保険組合せテーブル編集
+           INITIALIZE                  TBL-HKNCOMBI-AREA
+           IF      SPA-HKNCOMBINUM     =   ZERO
+             MOVE    SPACE               TO  WRK-COMB-HKNNUM
+           ELSE
+             MOVE    COMB-HKNNUM         TO  WRK-COMB-HKNNUM
+      *      第三者
+             IF      COMB-KOH1HKNNUM     =   "970"
+               MOVE    COMB-KOH1HKNNUM TO  WRK-COMB-HKNNUM
+               MOVE    COMB-KOH1ID     TO  WRK-COMB-KOHID
+             END-IF
+           END-IF
+           IF     (PARA-HKNCOMBIKBN    =   "1"  OR  "2" )
+             PERFORM 2009-HKNCOMBI-HEN-SEC
+           END-IF
+      *
       *    患者病名マスタより編集
            MOVE    ZERO                TO  IDX
            MOVE    ZERO                TO  FLG-ZOKUSHI
@@ -1060,11 +1144,24 @@
            END-IF
            PERFORM  UNTIL  ( FLG-PTBYOMEI  NOT =  ZERO )
                     OR  ( FLG-ZOKUSHI  NOT =  ZERO )
+      *
+             MOVE    ZERO                TO  FLG-INNO
+             IF  ( SYS-1017-KARUTE-BYOMEI   =   "1"   )  AND
+                 ( PTBYO-TENKIYMD       NOT =   SPACE )
+               MOVE    1                   TO  FLG-INNO
+             END-IF
+      *      入院分は対象外
+             IF  ( PTBYO-NYUGAIKBN          =   "1" )
+               MOVE    1                   TO  FLG-INNO
+             END-IF
+      *      保険適応病名判定
+             IF  ( FLG-INNO                 =   ZERO  )  AND
+                 ( PARA-HKNCOMBIKBN         =   "1"  OR  "2" )
+                 PERFORM 20024-HKNCOMBI-CHK-SEC
+             END-IF
+      *
       *    継続病名のみの時、転帰日のあるものを対象外とする
-             IF  ( SYS-1017-KARUTE-BYOMEI  =  "1" )
-                 AND  ( PTBYO-TENKIYMD  NOT =  SPACE )
-               CONTINUE
-             ELSE
+             IF      FLG-INNO        =   ZERO
                IF     SYS-1017-KARUTE-BYOMEI  =  "2"
                  CONTINUE
                ELSE
@@ -1131,6 +1228,69 @@
            EXIT.
       *
       *****************************************************************
+      *    保険適応病名判定処理
+      *****************************************************************
+       20024-HKNCOMBI-CHK-SEC          SECTION.
+      *
+           EVALUATE    PARA-HKNCOMBIKBN
+           WHEN    "1"
+      *        労災・自賠責とその他保険
+               IF      WRK-COMB-HKNNUM         =   "971"
+                                               OR  "973"
+                                               OR  "970"
+      *            保険組合せ一致のみ
+                   IF      SPA-HKNCOMBINUM     =   PTBYO-HKNCOMBI
+                       CONTINUE
+                   ELSE
+                       MOVE    1                   TO  FLG-INNO
+                   END-IF
+      *            第三者行為は、公費ＩＤ一致
+                   IF      WRK-COMB-HKNNUM     =   "970"
+                       MOVE    1                   TO  FLG-INNO
+                       IF      PTBYO-KOHID         =   WRK-COMB-KOHID
+                           MOVE    ZERO                TO  FLG-INNO
+                       END-IF
+                   END-IF
+               ELSE
+      *            労災・自賠責は対象外
+                   PERFORM VARYING IDX-H   FROM    1   BY  1
+                           UNTIL   (IDX-H          >   20  )  OR
+                                   (TBL-HKNCOMBINUM (IDX-H)  =   SPACE)
+                       IF      PTBYO-HKNCOMBI      =   TBL-HKNCOMBINUM
+                                                               (IDX-H)
+                           IF      TBL-HKNNUM (IDX-H)  =   "971"
+                                                       OR  "973"
+                                                       OR  "970"
+                               MOVE    1                   TO  FLG-INNO
+                           END-IF
+                           MOVE    20                  TO  IDX-H
+                       END-IF
+                   END-PERFORM
+      *            第三者行為は対象外
+                   IF      PTBYO-KOHID     NOT =   ZERO
+                       MOVE    1                   TO  FLG-INNO
+                   END-IF
+               END-IF
+           WHEN    "2"
+      *        保険組合せ一致のみ
+               IF      SPA-HKNCOMBINUM     =   PTBYO-HKNCOMBI
+                   CONTINUE
+               ELSE
+                   MOVE    1                   TO  FLG-INNO
+               END-IF
+      *        第三者行為は、公費ＩＤ一致
+               IF      WRK-COMB-HKNNUM     =   "970"
+                   MOVE    1                   TO  FLG-INNO
+                   IF      PTBYO-KOHID         =   WRK-COMB-KOHID
+                       MOVE    ZERO                TO  FLG-INNO
+                   END-IF
+               END-IF
+           END-EVALUATE
+           .
+       20024-HKNCOMBI-CHK-EXT.
+           EXIT.
+      *
+      *****************************************************************
       *    患者公費変換処理
       *****************************************************************
        3102-PTKOHINF-HEN-SEC        SECTION.
@@ -1154,6 +1314,41 @@
            MOVE    WRK-OUT-INPUT(1:KANACHK-MAX)
                                        TO  WRK-JKYSNO
       *
+           IF  COMB-KOH1HKNNUM  =  "970"
+      *        第三者行為
+               IF  PARA-DAISANKBN  =  "1"
+      *          負担者番号へ
+                 MOVE    COMB-KOH1-TANSEIDONAME
+                                             TO  WRK-FTNSNO
+                 MOVE    SPACE               TO  WRK-JKYSNO
+                 IF      PTKOH-JKYSNUM   NOT =   SPACE
+                     STRING  "（"
+                             PTKOH-JKYSNUM
+                             "）"            DELIMITED  BY  SPACE
+                                         INTO    WRK-JKYSNO
+                     END-STRING
+                 END-IF
+               ELSE
+      *          備考へ
+                 MOVE    SPACE               TO  WRK-FTNSNO
+                 MOVE    SPACE               TO  WRK-JKYSNO
+                 MOVE    SPACE               TO  WRK-BIKO
+                 IF      PTKOH-JKYSNUM       =   SPACE
+                     MOVE    COMB-KOH1-TANSEIDONAME
+                                             TO  WRK-BIKO
+                 ELSE
+                     STRING  COMB-KOH1-TANSEIDONAME
+                             "（"
+                             PTKOH-JKYSNUM
+                             "）"            DELIMITED  BY  SPACE
+                                             INTO    WRK-BIKO
+                     END-STRING
+                 END-IF
+                 MOVE    WRK-BIKO     TO  H01KA4-BIKO
+                                          H01SA4-BIKO
+               END-IF
+           END-IF
+      *
       *    適用開始年月日
            MOVE    PTKOH-TEKSTYMD      TO  WRK-SYMD
            PERFORM 31012-SEIWA-HEN-SEC
@@ -1170,6 +1365,67 @@
            .
        3102-PTKOHINF-HEN-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    保険組合せテーブル編集処理
+      *****************************************************************
+       2009-HKNCOMBI-HEN-SEC        SECTION.
+      *
+           INITIALIZE                      TBL-HKNCOMBI-AREA
+           MOVE    ZERO                TO  IDX-H
+      *
+           INITIALIZE                      HKNCOMBI-REC
+           MOVE    SPA-HOSPNUM         TO  COMB-HOSPNUM
+           MOVE    SPA-PTID            TO  COMB-PTID
+           MOVE    SPA-SYSYMD          TO  COMB-TEKSTYMD
+           MOVE    SPA-SYSYMD          TO  COMB-TEKEDYMD
+      *
+           MOVE    HKNCOMBI-REC        TO  MCPDATA-REC
+           MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+           MOVE    "key6"              TO  MCP-PATHNAME
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING   MCPAREA
+                                               MCPDATA-REC
+                                               SPA-AREA
+      *
+           IF      MCP-RC              =   ZERO
+               MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+               MOVE    "key6"               TO  MCP-PATHNAME
+               PERFORM 909-HKNCOMBI-NEXT-SEC
+           ELSE
+               MOVE    1               TO  FLG-HKNCOMBI
+           END-IF
+           PERFORM UNTIL   (FLG-HKNCOMBI   =   1  )
+                       OR  (IDX-H          >=  20 )
+               IF      COMB-DELKBN         =   SPACE
+                   ADD     1                   TO  IDX-H
+                   MOVE    COMB-HKNCOMBINUM    TO  TBL-HKNCOMBINUM
+                                                               (IDX-H)
+                   MOVE    COMB-HKNNUM         TO  TBL-HKNNUM
+                                                               (IDX-H)
+      *ver.4.7
+      *            第三者
+                   IF      COMB-KOH1HKNNUM     =   "970"
+                       MOVE    COMB-KOH1HKNNUM TO  TBL-HKNNUM (IDX-H)
+                       MOVE    COMB-KOH1ID     TO  TBL-KOHID  (IDX-H)
+                   END-IF
+               END-IF
+               MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+               MOVE    "key6"              TO  MCP-PATHNAME
+               PERFORM 909-HKNCOMBI-NEXT-SEC
+           END-PERFORM
+      *
+           MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+           MOVE    "key6"              TO  MCP-PATHNAME
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING   MCPAREA
+                                               MCPDATA-REC
+                                               SPA-AREA
+      *
+           .
+       2009-HKNCOMBI-HEN-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    続紙印刷処理
       *****************************************************************
@@ -1206,15 +1462,26 @@
                PERFORM  310-HC01-HEN-SEC
              END-IF
       *
+             MOVE    ZERO                TO  FLG-INNO
+             IF  ( SYS-1017-KARUTE-BYOMEI   =   "1"   )  AND
+                 ( PTBYO-TENKIYMD       NOT =   SPACE )
+               MOVE    1                   TO  FLG-INNO
+             END-IF
+      *      入院分は対象外
+             IF  ( PTBYO-NYUGAIKBN          =   "1" )
+               MOVE    1                   TO  FLG-INNO
+             END-IF
+      *      保険適応病名判定
+             IF  ( FLG-INNO                 =   ZERO  )  AND
+                 ( PARA-HKNCOMBIKBN         =   "1"  OR  "2" )
+                 PERFORM 20024-HKNCOMBI-CHK-SEC
+             END-IF
+      *
       *    継続病名のみの時、転帰日のあるものを対象外とする
-             IF  (SYS-1017-KARUTE-BYOMEI  =  "1"  )
-                 AND  (PTBYO-TENKIYMD  NOT =  SPACE)
-               CONTINUE
-             ELSE
+             IF      FLG-INNO        =   ZERO
                IF     SYS-1017-KARUTE-BYOMEI   =  "2"
                  CONTINUE
                ELSE
-      *
       *    病名編集処理
                  PERFORM 3103-BYOMEI-SET-SEC
       *    カルテ病名がある時はカルテ病名
@@ -1536,6 +1803,28 @@
            .
        910-HKNCOMBI-READ-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    保険組合せマスター読み込み
+      *****************************************************************
+       909-HKNCOMBI-NEXT-SEC         SECTION.
+      *
+           MOVE    "DBFETCH"           TO  MCP-FUNC
+           CALL    "ORCDBMAIN"         USING   MCPAREA
+                                               MCPDATA-REC
+                                               SPA-AREA
+      *
+           IF      MCP-RC              =   ZERO
+               MOVE    MCPDATA-REC     TO  HKNCOMBI-REC
+               MOVE    ZERO            TO  FLG-HKNCOMBI
+           ELSE
+               MOVE    1               TO  FLG-HKNCOMBI
+               INITIALIZE                  HKNCOMBI-REC
+           END-IF
+           .
+       909-HKNCOMBI-NEXT-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    保険マスター読み込み
       *****************************************************************

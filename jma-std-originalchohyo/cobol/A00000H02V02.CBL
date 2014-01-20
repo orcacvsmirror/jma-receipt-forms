@@ -85,6 +85,7 @@
       * 01.00.04     @@@@-門間    12/05/18  処方せんの器材換算値エラー対応
       *                                     薬価基準コード１２桁対応
       * 01.00.05     @@@@-門間    12/11/29  医療機関住所、医療機関名の印字ずれ修正
+      * 01.00.06     @@@@-門間    14/01/17  第三者行為対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1284,6 +1285,14 @@
                MOVE    WRK-ZENKAKU-G(1:KANACHK-MAX)
                                             TO  WRK-JKYSNO
                MOVE    KANACHK-MAX          TO  WRK-JKYSNO-MAX
+           END-IF
+           IF      COMB-KOH1HKNNUM     =   "970"
+      *        第三者行為は備考へ
+               ADD     1               TO  IDX-K3
+               MOVE    COMB-KOH1-TANSEIDONAME
+                                           TO  WRK-HEN-KOH(IDX-K3)
+               MOVE    SPACE               TO  WRK-FTNSNO
+               MOVE    SPACE               TO  WRK-JKYSNO
            END-IF
       *@@@ 埼玉県対応
       *    負担者番号編集なし

@@ -31,6 +31,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/05/26  主保険＋マル長の請求対応
       *  01.00.03    @@@@-門間    11/09/12  複数科保険の本家区分の印字修正
+      *  01.00.04    @@@@-門間    14/01/17  第三者行為対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -41,9 +42,6 @@
       *    印刷用データ
            SELECT  PRT-FILE        ASSIGN  HC01PARA
                                    FILE    STATUS  IS  STS-PARA.
-      *    ログファイル
-           SELECT  LOG-FILE  ASSIGN  "/home/orca/log.txt"
-                             ORGANIZATION    IS  LINE SEQUENTIAL.
       *
        DATA                    DIVISION.
        FILE                        SECTION.
@@ -52,12 +50,6 @@
        FD  PRT-FILE.
            COPY    "A00000H03B.INC"  REPLACING   //HCM03V02B//
                                    BY             //HC03//.
-      *
-      *    ログファイル
-       FD  LOG-FILE.
-       01  LOG-REC.
-           03  LOG-NO     PIC  9(02).
-           03  LOG-NAME   PIC  X(150).
       *
        WORKING-STORAGE             SECTION.
       *
@@ -337,10 +329,6 @@
       *
            ACCEPT  SYS-TIME            FROM    TIME
       *
-           OPEN  OUTPUT  LOG-FILE
-           MOVE  "START"  TO  LOG-NAME
-           WRITE  LOG-REC
-      *
       *    各ＤＢ読込
            PERFORM 100-SYORI-SEC
       *
@@ -355,10 +343,6 @@
                PERFORM 202-KAKHOU-SYUNOU-SEC
              END-IF
            END-IF
-      *
-           MOVE  "END"  TO  LOG-NAME
-           WRITE  LOG-REC
-           CLOSE  LOG-FILE
       *
            .
        000-PROC-EXT.
@@ -1071,6 +1055,8 @@
       *
            IF    ( COMB-HKNNUM             =    "971"
                                            OR   "973" )
+             OR  ( COMB-KOHHKNNUM (1)      =    "970"
+              AND  SYU-PTFTNRATE       NOT =     ZERO )
       *        労災・自賠の時、点数表示なし
              IF    ( COMB-HKNNUM             =    "971"
                  AND     PTRSI-HKNKBN        NOT =    "5"
@@ -1088,6 +1074,7 @@
                                        +    SYU-RSISAISHIN-MONEY
                                        +    SYU-RSISDO-MONEY
                                        +    SYU-RSIETC-MONEY
+                                       +    SYU-KOH-FTN
                MOVE    WRK-GOKTEN      TO  WRK-Z72
                PERFORM 800-HENKAN-SEC
                MOVE    WRK-Z72-G           TO  HC03-HOKENBUN
@@ -1101,7 +1088,7 @@
                MOVE    "家族"   TO    HC03-HONKZKKBN
              WHEN  OTHER
                MOVE    SPACE    TO    HC03-HONKZKKBN
-           END-EVALUATE 
+           END-EVALUATE
       *    労災・自賠の診察料等の記載
            IF   (SYU-RSI-TOTAL     NOT =   ZERO) AND
                 (SYS-4001-RSIPRTKBN    =   "2")
@@ -1114,6 +1101,12 @@
                  MOVE  "内自賠診察等"     TO      HC03-RSIMIDASI
                  MOVE  "（"               TO      HC03-RSIMIDASI2
                  MOVE  "）"               TO      HC03-RSIMIDASI3
+               WHEN    OTHER
+                 IF    ( COMB-KOHHKNNUM (1)   =   "970" )
+                   MOVE  "内自賠文書等"     TO      HC03-RSIMIDASI
+                   MOVE  "（"               TO      HC03-RSIMIDASI2
+                   MOVE  "）"               TO      HC03-RSIMIDASI3
+                 END-IF
              END-EVALUATE
              MOVE    SYU-RSI-TOTAL        TO      WRK-Z72
              PERFORM 820-HENKAN-SEC
