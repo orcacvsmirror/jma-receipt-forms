@@ -17,6 +17,7 @@
       *  コピー句修正履歴
       * Maj/Min/Rev  修正者       日付      内容
       * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
+      * 01.00.05     @@@@-門間    14/02/07  プログラムオプション対応（訂正印字）
       ********************************************************************
         01  HCN03V02.
             02  HCN03V02-TYPE.
@@ -61,6 +62,7 @@
               03  HCN03V02-IRYOADRS   PIC X(100).
               03  HCN03V02-IRYOMEI    PIC X(100).
               03  HCN03V02-IRYOTEL    PIC X(15).
+              03  HCN03V02-MIDASHI    PIC X(10).
               03  HCN03V02-RSIBUN      PIC X(18).
               03  HCN03V02-RSIEN       PIC X(02).
               03  HCN03V02-RSIMIDASI   PIC X(16).

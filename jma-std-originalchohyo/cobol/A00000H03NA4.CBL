@@ -36,6 +36,7 @@
       *  01.00.05    @@@@-門間    12/01/30  主保険＋マル長の請求対応を削除
       *  01.00.06    @@@@-門間    13/12/13  月途中の保険組合せ変更による請求期間印字を修正
       *  01.00.07    @@@@-門間    14/01/17  第三者行為対応
+      *  01.00.08    @@@@-門間    14/02/07  プログラムオプション対応（訂正印字）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -196,6 +197,13 @@
        01  CONST-AREA.
            03  CONST-H200401      PIC X(08)    VALUE   "20080401".
       *
+      *    プログラムオプションパラメタ
+       01  TPARA-AREA.
+           03  TPARA-TEISEIKBN          PIC X(01).
+      *
+           03  WRK-PARA-NAME            PIC X(25).
+           03  WRK-PARA                 PIC X(100).
+      *
       *****************************************************************
       *    ファイルレイアウト
       *****************************************************************
@@ -279,6 +287,9 @@
       *
       *    全角チェックパラメタ
            COPY    "CPORCSKANACHK.INC".
+      *
+      *    プログラムオプション編集パラメタ
+           COPY    "CPORCSPRGOPTION.INC".
       *
       *    ファイルデイレクトリ位置指定サブ
            COPY  "CPMKPASS.INC".
@@ -517,8 +528,51 @@
            MOVE    1                   TO  HC01PARA-CNT
            OPEN    OUTPUT               PRT-FILE
       *
+           PERFORM 100-OPTION-SELECT-SEC
+      *
            .
        100-INIT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    プログラムオプション取込み処理
+      *****************************************************************
+       100-OPTION-SELECT-SEC             SECTION.
+      *
+           INITIALIZE                  TPARA-AREA
+           MOVE    "1"             TO  TPARA-TEISEIKBN
+      *
+      *    （訂正）表示
+           MOVE    "TEISEIKBN"     TO  WRK-PARA-NAME
+           PERFORM 1001-OPTION-CALL-SEC
+           IF    ( WRK-PARA        =   "0" OR "1" )
+               MOVE    WRK-PARA    TO  TPARA-TEISEIKBN
+           END-IF
+      *
+           .
+       100-OPTION-SELECT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    プログラムオプションパラメタ取得処理
+      *****************************************************************
+       1001-OPTION-CALL-SEC             SECTION.
+      *
+           MOVE    SPACE               TO  WRK-PARA
+      *
+           INITIALIZE                      ORCSPRGOPTIONAREA
+           MOVE    "A00000H03N"        TO  ORCSPRGOPTION-PRGID
+           MOVE    WRK-PARA-NAME       TO  ORCSPRGOPTION-IN-DATA
+           CALL    "ORCSPRGOPTION"     USING   SPA-AREA
+                                               ORCSPRGOPTIONAREA
+      *
+           IF      ORCSPRGOPTION-OT-TYPE   =   1
+      *        半角で１文字目を値とする
+               MOVE    ORCSPRGOPTION-OT-PARA(1:1)  TO  WRK-PARA(1:1)
+           END-IF
+      *
+           .
+       1001-OPTION-CALL-EXT.
            EXIT.
       *
       *****************************************************************
@@ -985,6 +1039,14 @@
       *
       *    見出し
            PERFORM  20011-MEISAI-HEN-SEC
+      *
+      *    発行区分
+           EVALUATE    ORCHCN03-HAKKOFLG (IDX-M)
+               WHEN    2
+                   IF    ( TPARA-TEISEIKBN =   "1" )
+                       MOVE    "（訂正）"  TO  HCN03-MIDASHI
+                   END-IF
+           END-EVALUATE
       *
            MOVE    HCN03-TYPE-A        TO  HCN03-TYPE-B
       *
