@@ -32,6 +32,7 @@
       *  01.00.02    @@@@-門間    11/02/21  処理速度の改善
       *  01.00.03    @@@@-門間    12/02/29  インデント整理
       *                           12/03/09  CSVファイル作成機能追加
+      *  01.00.04    @@@@-門間    14/02/19  CSV出力時の印字ズレを修正
       ******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2877,7 +2878,7 @@
                      IF  IDX-SRYKA  =  SUM-SRYKAMAX
                        CONTINUE
                      ELSE
-                       MOVE    SUM-YOSO(IDX-SRYKA IDX4 - 1) TO  WRK-S9
+                       MOVE    SUM-YOSO(IDX-SRYKA IDX4)     TO  WRK-S9
                        MOVE    WRK-S9                       TO  WRK-ITEM
                      END-IF
                    WHEN  37
