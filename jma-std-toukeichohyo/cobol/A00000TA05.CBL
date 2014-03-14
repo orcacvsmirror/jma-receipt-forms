@@ -24,6 +24,8 @@
       *  管理者            : 
       *  Maj/Min/Rev  修正者  日付        内容
       *   01.00.00    田中    2011/03/07  新規作成
+      *   01.00.01    門間    2014/03/12  テスト患者を対象外とする
+      *                                   処理名を修正、不要なコメントを削除
       *****************************************************************
        ENVIRONMENT                 DIVISION.
        CONFIGURATION               SECTION.
@@ -98,6 +100,7 @@
            03  FLG-END                  PIC 9(01).
            03  FLG-SYSKANRI             PIC 9(01).
            03  FLG-CSV-HEADER           PIC 9(01).
+           03  FLG-PTINF                PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -330,8 +333,9 @@
            MOVE    SPA-HOSPNUM           TO  JOB-HOSPNUM
            MOVE    WRK-PARA-JOBID        TO  JOB-JOBID
            MOVE    WRK-PARA-SHELLID      TO  JOB-SHELLID
-           MOVE    "A00000TA05"             TO  JOB-PGID
-           MOVE    "診療行為別集計表"    TO  JOB-SHELLMSG
+           MOVE    "A00000TA05"          TO  JOB-PGID
+           MOVE    "指定病名・診療行為患者一覧"
+                                         TO  JOB-SHELLMSG
            CALL    "ORCSJOB"             USING
                                          ORCSJOBKANRIAREA
                                          JOBKANRI-REC
@@ -428,25 +432,19 @@
            CLOSE  TA05-FILE
            OPEN  I-O  TA05-FILE
       *
-      *++     DISPLAY  "-------------  診療行為検索  ---------------"
       *    診療行為検索
            PERFORM  200-SRYACT-SET-SEC
-      *++     DISPLAY  "--------------------------------------------"
       *
       *    病名検索
-      *++     DISPLAY  "*****************  病名検索  ****************"
            PERFORM  200-BYOMEI-SET-SEC
-      *++     DISPLAY  "*********************************************"
       *
            CLOSE  TA05-FILE
       *
       *    合計ページ計算処理
            PERFORM  300-TOTAL-PAGE-SET-SEC
       *
-      *++     DISPLAY  "@@@@@@@@@@@@@@@@@  印刷  @@@@@@@@@@@@@@@@@@@"
       *    印刷編集処理
            PERFORM  300-PRINT-SET-SEC
-      *++     DISPLAY  "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
       *
            .
        200-MAIN-EXT.
@@ -492,12 +490,6 @@
       *
       *    診療行為名称
                      MOVE    TNS-NAME    TO  TA05TMP-SRYNAME(IDX-PARA)
-      *++     DISPLAY "---   ---   ---   ---   ---"
-      *++     DISPLAY "処理対象患者ID ： "SRY-PTID
-      *++     DISPLAY "処理対象日付 ： "IDX-DAY
-      *++     DISPLAY "IDX-PARA ： "IDX-PARA
-      *++     DISPLAY "処理対象診療行為CD ： "WRK-PARA-SRYCD(IDX-PARA)
-      *++     DISPLAY "処理対象診療行為名 ： " TNS-NAME 
       *
       *    最終来院日
                      IF  TA05TMP-LASTYMD(IDX-PARA)(7:2)  <  IDX-DAY
@@ -512,10 +504,8 @@
       *    TMPファイル書込み
                      IF  FLG-TA05TMP  =  1
                        WRITE    TA05TMP-REC
-      *++                DISPLAY "WRITE"
                      ELSE
                        REWRITE  TA05TMP-REC
-      *++                DISPLAY "REWRITE"
                      END-IF
                    END-IF
                  END-PERFORM
@@ -523,10 +513,8 @@
                  PERFORM  900-SRYACT-FETCH-SEC
                END-PERFORM
       *    診療行為CLOSE
-      *++     DISPLAY "---  SRYACT-CLOSE ---"
                PERFORM  900-SRYACT-CLOSE-SEC
              END-IF
-      *++     DISPLAY "---  NEXT WRK-PARA ---"
            END-PERFORM
       *
            .
@@ -539,7 +527,7 @@
        200-BYOMEI-SET-SEC               SECTION.
       *
       *    集計対象の診療行為を検索
-            PERFORM  VARYING  IDX-PARA  FROM  1  BY  1
+           PERFORM  VARYING  IDX-PARA  FROM  1  BY  1
                     UNTIL  IDX-PARA  >  IDX-PARAMAX
       *
       *    診療行為CD飛ばす
@@ -586,13 +574,7 @@
                      AND  WRK-PARA-TENKIKBN  NOT =  SPACE )
                      OR  WRK-PARA-TENKIKBN  =  SPACE
                      OR  WRK-PARA-TENKIKBN  =  "1" )
-      *               AND  PTBYO-NYUGAIKBN  =  WRK-PARA-NYUGAIKBN
       *
-      *++     DISPLAY "***   ***   ***   ***   ***"
-      *++     DISPLAY "処理対象患者ID ： "PTBYO-PTID
-      *++     DISPLAY "IDX-PARA ： "IDX-PARA
-      *++     DISPLAY "処理対象診療行為CD ： "WRK-PARA-SRYCD(IDX-PARA)
-      *++     DISPLAY "処理対象病名 ： "PTBYO-BYOMEI
       *    キー設定
                    INITIALIZE          TA05TMP-REC
                    MOVE    PTBYO-PTID     TO  TA05TMP-PTID
@@ -629,20 +611,16 @@
       *    TMPファイル書込み
                    IF  FLG-TA05TMP  =  1
                      WRITE    TA05TMP-REC
-      *++               DISPLAY "WRITE"
                    ELSE
                      REWRITE  TA05TMP-REC
-      *++               DISPLAY "REWRITE"
                    END-IF
                  END-IF
       *    患者病名FETCH
                  PERFORM  900-BYOMEI-FETCH-SEC
-      *++     DISPLAY "***  BYOMEI FETCH ***"
                END-PERFORM
       *    患者病名CLOSE
              PERFORM  900-BYOMEI-CLOSE-SEC
              END-IF
-      *++     DISPLAY "***  NEXT WRK-PARA ***"
            END-PERFORM
       *
            .
@@ -754,9 +732,7 @@
                PERFORM  300-PRINT-DATA-SEC
       *
                ADD  1             TO  IDX-LINE
-      *++     DISPLAY  "患者印字による改行 ： " IDX-LINE
                IF  IDX-LINE  >  22
-      *++     DISPLAY  "患者印字による改ぺージ"
       *    帳票印刷処理
                  PERFORM  300-PRINT-OUT-SEC
       *
@@ -777,12 +753,10 @@
       *
       *    TMPファイル読込み(NEXT READ)
              PERFORM  900-TMP-READ-SEC
-      *++     DISPLAY "@@@  NEXT READ @@@"
            END-PERFORM
       *
            IF  IDX-LINE  NOT =  1
       *    帳票印刷処理
-      *++     DISPLAY "最終ページ印刷" 
              PERFORM  300-PRINT-OUT-SEC
       *
              MOVE    1            TO  IDX-POINT
@@ -822,7 +796,6 @@
            ELSE
              MOVE    PTNUM-PTNUM     TO  TA05-PTNUM2(IDX-LINE)
            END-IF
-      *++     DISPLAY "患者番号 ： " TA05-PTNUM2(IDX-LINE)
       *
       *    患者情報マスタREAD
            PERFORM  900-PTINF-READ-SEC
@@ -918,10 +891,8 @@
                  OR  WRK-SRYNAME(IDX1 + 1)  NOT =  SPACE )
                  AND  IDX1  <  6
                ADD  1      TO  IDX-LINE
-      *++     DISPLAY  "病名・診療行為印字による改行 ： " IDX-LINE
       *
                IF  IDX-LINE  >  22
-      *++     DISPLAY  "病名・診療行為印字による改ページ"
       *    帳票印刷処理
                  PERFORM  300-PRINT-OUT-SEC
       *
@@ -940,9 +911,7 @@
                  PERFORM  230-TOUKEICSV-SEC
                END-IF
              END-IF
-      *++     DISPLAY "@@@  NEXT  @@@"
            END-PERFORM
-      *++     DISPLAY "@@@  @@@  @@@  @@@"
       *
            .
        300-PRINT-DATA-EXT.
@@ -1466,6 +1435,16 @@
            IF   MCP-RC  =   ZERO
              MOVE    ZERO              TO  FLG-SRYACT
              MOVE    MCPDATA-REC       TO  SRYACT-REC
+      *
+             INITIALIZE                    PTINF-REC
+             MOVE    SRY-HOSPNUM       TO  PTINF-HOSPNUM
+             MOVE    SRY-PTID          TO  PTINF-PTID
+             PERFORM  910-PTINF-READ-SEC
+             IF  FLG-PTINF  =  ZERO
+             AND PTINF-TSTPTNUMKBN  =  "1"
+                 GO  TO  900-SRYACT-FETCH-SEC
+             END-IF
+      *
            ELSE
              INITIALIZE                SRYACT-REC
              MOVE    1                 TO  FLG-SRYACT
@@ -1580,6 +1559,16 @@
            IF   MCP-RC  =   ZERO
              MOVE    ZERO              TO  FLG-PTBYOMEI
              MOVE    MCPDATA-REC       TO  PTBYOMEI-REC
+      *
+             INITIALIZE                    PTINF-REC
+             MOVE    PTBYO-HOSPNUM     TO  PTINF-HOSPNUM
+             MOVE    PTBYO-PTID        TO  PTINF-PTID
+             PERFORM  910-PTINF-READ-SEC
+             IF  FLG-PTINF  =  ZERO
+             AND PTINF-TSTPTNUMKBN  =  "1"
+                 GO  TO  900-BYOMEI-FETCH-SEC
+             END-IF
+      *
            ELSE
              INITIALIZE                PTBYOMEI-REC
              MOVE    1                 TO  FLG-PTBYOMEI
@@ -1692,6 +1681,51 @@
       *
            .
        900-PTINF-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    患者情報マスタ読込処理
+      *****************************************************************
+       910-PTINF-READ-SEC         SECTION.
+      *
+           MOVE    PTINF-REC           TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_ptinf"         TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF  MCP-RC  =  ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_ptinf"       TO  MCP-TABLE
+             MOVE    "key"             TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC     TO  PTINF-REC
+               MOVE    ZERO            TO   FLG-PTINF
+             ELSE
+               MOVE    1               TO   FLG-PTINF
+               INITIALIZE              PTINF-REC
+             END-IF
+           ELSE
+             MOVE    1                 TO   FLG-PTINF
+             INITIALIZE                PTINF-REC
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_ptinf"         TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+       910-PTINF-READ-EXT.
            EXIT.
       *
       *****************************************************************
