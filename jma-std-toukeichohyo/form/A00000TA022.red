@@ -1376,7 +1376,7 @@
       </dia:attribute>
     </dia:object>
   </dia:layer>
-  <dia:layer name="文字" visible="true">
+  <dia:layer name="文字" visible="true" active="true">
     <dia:object type="Standard - Text" version="1" id="O53">
       <dia:attribute name="obj_pos">
         <dia:point val="10.5238,1.58139"/>
@@ -1614,13 +1614,13 @@
         <dia:point val="13.4875,2.5"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="13.4875,2.2175;14.4475,2.94"/>
+        <dia:rectangle val="13.4875,2.20944;14.4556,2.95613"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
             <dia:string># 入院
-使用料#</dia:string>
+使用量#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="Takao明朝" style="0" name="Courier"/>
@@ -1876,7 +1876,7 @@
       </dia:attribute>
     </dia:object>
   </dia:layer>
-  <dia:layer name="差し込み" visible="true" active="true">
+  <dia:layer name="差し込み" visible="true">
     <dia:object type="Embed - Text" version="1" id="O68">
       <dia:attribute name="obj_pos">
         <dia:point val="0.9125,1.225"/>
@@ -2764,7 +2764,7 @@
         <dia:point val="18.675,19.8689"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="17.135,19.6143;18.6821,19.918"/>
+        <dia:rectangle val="17.135,19.6214;18.675,19.9039"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -2806,7 +2806,7 @@
         <dia:point val="20.5625,19.875"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="19.0225,19.6204;20.5696,19.9241"/>
+        <dia:rectangle val="19.0225,19.6275;20.5625,19.91"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -2848,7 +2848,7 @@
         <dia:point val="22.625,19.875"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="20.945,19.6204;22.6321,19.9241"/>
+        <dia:rectangle val="20.945,19.6275;22.625,19.91"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
