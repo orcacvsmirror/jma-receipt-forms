@@ -24,7 +24,8 @@
       *  管理者            : 
       *  Maj/Min/Rev  修正者  日付        内容
       *   01.00.00    田中    2011/01/20  新規作成
-      *   01.00.01    門間    2013/07/24  発行区分が空白の場合、在院数が集計されるように修正
+      *   01.00.02    門間    2013/07/24  発行区分が空白の場合、在院数が集計されるように修正
+      *   01.00.03    門間    2014/03/12  テスト患者を対象外とする
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -2321,6 +2322,16 @@
            IF  MCP-RC  =  ZERO
              MOVE    MCPDATA-REC       TO  PTNYUINRRK-REC
              MOVE    ZERO              TO  FLG-PTNYUINRRK
+      *
+             INITIALIZE                  PTINF-REC
+             MOVE    PTNYUINRRK-HOSPNUM  TO  PTINF-HOSPNUM
+             MOVE    PTNYUINRRK-PTID     TO  PTINF-PTID
+             PERFORM  910-PTINF-READ-SEC
+             IF  FLG-PTINF  =  ZERO
+             AND PTINF-TSTPTNUMKBN  =  "1"
+                 GO  TO  900-PTNYUINRRK-FETCH-SEC
+             END-IF
+      *
            ELSE
              MOVE    1                 TO  FLG-PTNYUINRRK
            END-IF
@@ -2449,6 +2460,16 @@
            IF  MCP-RC  =  ZERO
              MOVE    MCPDATA-REC       TO  SRYACT-REC
              MOVE    ZERO              TO  FLG-SRYACT
+      *
+             INITIALIZE                  PTINF-REC
+             MOVE    SRY-HOSPNUM       TO  PTINF-HOSPNUM
+             MOVE    SRY-PTID          TO  PTINF-PTID
+             PERFORM  910-PTINF-READ-SEC
+             IF  FLG-PTINF  =  ZERO
+             AND PTINF-TSTPTNUMKBN  =  "1"
+                 GO  TO  900-SRYACT-FETCH-SEC
+             END-IF
+      *
            ELSE
              MOVE    1                 TO  FLG-SRYACT
            END-IF
@@ -2515,6 +2536,50 @@
            .
        900-PTINF-READ-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    患者情報検索
+      *****************************************************************
+       910-PTINF-READ-SEC            SECTION.
+      *
+           MOVE    PTINF-REC           TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_ptinf"         TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_ptinf"       TO  MCP-TABLE
+             MOVE    "key"             TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC     TO  PTINF-REC
+               MOVE    ZERO            TO  FLG-PTINF
+             ELSE
+               MOVE    1               TO  FLG-PTINF
+             END-IF
+           ELSE
+             MOVE    1                 TO  FLG-PTINF
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_ptinf"         TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           .
+       910-PTINF-READ-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    受信履歴情報検索
       *****************************************************************
@@ -2672,6 +2737,16 @@
            IF  MCP-RC  =  ZERO
              MOVE    MCPDATA-REC       TO  JYURRK-REC
              MOVE    ZERO              TO  FLG-JYURRK
+      *
+             INITIALIZE                PTINF-REC
+             MOVE    JYURRK-HOSPNUM    TO  PTINF-HOSPNUM
+             MOVE    JYURRK-PTID       TO  PTINF-PTID
+             PERFORM  910-PTINF-READ-SEC
+             IF  FLG-PTINF  =  ZERO
+             AND PTINF-TSTPTNUMKBN  =  "1"
+                 GO  TO  910-JYURRK-FETCH-SEC
+             END-IF
+      *
            ELSE
              MOVE    1                 TO  FLG-JYURRK
            END-IF

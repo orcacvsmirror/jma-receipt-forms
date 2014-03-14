@@ -29,6 +29,7 @@
       *                                  正しく出力されない不具合を修正
       *                       13/07/30   CSV出力選択画面での入外印字を修正
       *   01.00.03    門間    13/08/02   未収金欄（CSV）マイナス処理時の修正
+      *   01.00.04    門間    14/03/12   テスト患者を対象外とする
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -1514,6 +1515,13 @@
            IF   MCP-RC   =   ZERO
              MOVE    ZERO              TO   FLG-SYUMEI
              MOVE    MCPDATA-REC       TO   SYUMEI-REC
+      *
+             PERFORM  900-PTINF-READ-SEC
+             IF  FLG-PTINF  =  ZERO
+             AND PTINF-TSTPTNUMKBN  =  "1"
+                 GO  TO  900-SYUMEI-FETCH-SEC
+             END-IF
+      *
            ELSE
              MOVE    1                 TO   FLG-SYUMEI
            END-IF  
@@ -1535,6 +1543,54 @@
                                        SPA-AREA
            .
        900-SYUMEI-CLOSE-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    患者マスター読込処理
+      *****************************************************************
+       900-PTINF-READ-SEC         SECTION.
+      *
+           INITIALIZE                    PTINF-REC
+           MOVE    SMEI-HOSPNUM          TO   PTINF-HOSPNUM
+           MOVE    SMEI-PTID             TO   PTINF-PTID
+           MOVE    PTINF-REC             TO   MCPDATA-REC
+           MOVE    "DBSELECT"            TO   MCP-FUNC
+           MOVE    "tbl_ptinf"           TO   MCP-TABLE
+           MOVE    "key"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"           USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    "DBFETCH"           TO   MCP-FUNC
+             MOVE    "tbl_ptinf"         TO   MCP-TABLE
+             MOVE    "key"               TO   MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                         MCPAREA
+                                         MCPDATA-REC
+                                         SPA-AREA
+             IF   MCP-RC   =   ZERO
+               MOVE    MCPDATA-REC       TO   PTINF-REC
+               MOVE    ZERO              TO   FLG-PTINF
+             ELSE
+               MOVE    1                 TO   FLG-PTINF
+               INITIALIZE                PTINF-REC
+             END-IF
+           ELSE
+             MOVE    1                   TO   FLG-PTINF
+             INITIALIZE                  PTINF-REC
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"       TO   MCP-FUNC
+           MOVE    "tbl_ptinf"           TO   MCP-TABLE
+           MOVE    "key"                 TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       900-PTINF-READ-EXT.
            EXIT.
       *
       *****************************************************************

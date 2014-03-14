@@ -24,6 +24,7 @@
       *  管理者            : 
       *  Maj/Min/Rev  修正者  日付       内容
       *   01.00.00    門間    11/03/29   新規作成
+      *   01.00.01    門間    14/03/12   テスト患者を対象外とする
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -2245,6 +2246,16 @@
            IF      MCP-RC              =   ZERO
              MOVE    ZERO                TO  FLG-SEIKYU
              MOVE    MCPDATA-REC         TO  RECE10-REC
+      *
+             INITIALIZE                PTINF-REC
+             MOVE    RECE10-HOSPNUM    TO  PTINF-HOSPNUM
+             MOVE    RECE10-PTID       TO  PTINF-PTID
+             PERFORM  910-PTINF-READ-SEC
+             IF  FLG-PTINF  =  ZERO
+             AND PTINF-TSTPTNUMKBN  =  "1"
+                 GO  TO  910-DBFETCH-SEC
+             END-IF
+      *
            ELSE
              MOVE    1                   TO  FLG-SEIKYU
            END-IF
@@ -2314,6 +2325,49 @@
       *
            .
        920-PTNUM-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    患者情報検索
+      *****************************************************************
+       910-PTINF-READ-SEC            SECTION.
+      *
+           MOVE    PTINF-REC           TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_ptinf"         TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_ptinf"       TO  MCP-TABLE
+             MOVE    "key"             TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC     TO  PTINF-REC
+               MOVE    ZERO            TO  FLG-PTINF
+             ELSE
+               MOVE    1               TO  FLG-PTINF
+             END-IF
+           ELSE
+             MOVE    1                 TO  FLG-PTINF
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_ptinf"         TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           .
+       910-PTINF-READ-EXT.
            EXIT.
       *
       *****************************************************************
