@@ -31,6 +31,10 @@
       *   01.00.03    門間    2013/10/03  食堂加算など加算手技料の修正
       *   01.00.04    門間    2013/11/07  食事療養を金額として集計するように修正
       *   01.00.05    門間    2013/11/20  病棟名、件数の修正
+      *   01.00.06    門間    2014/03/12  該当医師なしと集計される不具合
+      *                                   実際の回数より、多く集計される不具合
+      *                                   自費診療の０円設定に対応
+      *                                   包括区分「2」が処理対象となっていない不具合
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -547,7 +551,7 @@
            END-IF
       *
       *    入力パラメータ＿包括区分チェック
-           IF  WRK-PARA-HOKATUKBN  NOT =  "1"  AND SPACE
+           IF  WRK-PARA-HOKATUKBN  NOT =  "1"  AND  "2"  AND  SPACE
              MOVE    "包括区分が不正です"      TO  WRK-RECEERR
              PERFORM  800-ERR-HENSYU-SEC
            END-IF
@@ -829,6 +833,7 @@
                  MOVE    31            TO  WRK-ENDDAY
                END-IF
       *
+               MOVE   IDX-DAY          TO   WRK-STARTDAY
                PERFORM  VARYING  IDX-DAY  FROM  WRK-STARTDAY  BY  1
                         UNTIL  IDX-DAY  >   WRK-ENDDAY
       *
@@ -865,7 +870,7 @@
                        PERFORM  900-JYURRK-SELECT-SEC
                        MOVE    WRK-MAX         TO  TA02TMP-PRTKBN
                        PERFORM  UNTIL  FLG-JYURRK  =  1
-                         IF  JYURRK-SRYYMD  =  WRK-STARTYMD
+                         IF  JYURRK-SRYYMD  =  WRK-OBJYMD
                            PERFORM  VARYING  IDX2  FROM  1  BY  1
                                     UNTIL  IDX2  >  WRK-MAX
                              MOVE    IDX2      TO  TA02TMP-PRTKBN
@@ -907,13 +912,16 @@
                      COMPUTE  TNS-TEN  =  TNS-TEN  *  -1
                    END-IF
       *
-                   IF  SRY-SRYCD(IDX1)(1:3)  =  "096"
-                       OR  ( COMB-HKNNUM(1:2)  =  "98"
-                       AND  COMB-HOJOKBN  =  "1"
-                       AND  SRY-SRYCD(IDX1)(1:3)  NOT =  "095" )
+                   IF  ( (      SRY-SRYKBN  =  "95"  OR  "96" )
+                           AND  TNS-TEN     =  ZERO )
                      COMPUTE  TA02TMP-YAKKA  =  TNS-TEN  *  1.05
                      COMPUTE  TA02TMP-TANKA  =  TNS-TEN  *  1.05
                      COMPUTE  WRK-TENSU  =  TNS-TEN  *  1.05
+                     
+                     MOVE    SRY-JIHIMONEY(IDX1)  TO  TA02TMP-YAKKA
+                     MOVE    SRY-JIHIMONEY(IDX1)  TO  TA02TMP-TANKA
+                     MOVE    SRY-JIHIMONEY(IDX1)  TO  WRK-TENSU
+                     
                    ELSE
                      MOVE    TNS-TEN           TO  TA02TMP-YAKKA
                      MOVE    TNS-TEN           TO  TA02TMP-TANKA
@@ -922,6 +930,11 @@
       *
       *    TMPファイル読み込み
                    PERFORM  700-TMP-READ-SEC
+      *
+                   INITIALIZE    WRK-GAIRAI-SIYO
+                                 WRK-NYUIN-SIYO
+                                 WRK-GAIRAI-KEN
+                                 WRK-NYUIN-KEN
       *
                    IF  SRY-NYUGAIKBN  =  "2"
       *    外来使用量
@@ -973,7 +986,6 @@
                        ADD  WRK-NYUIN-KEN      TO  TA02TMP-NYUIN-KEN
                      END-IF
                    END-IF
-      *
       *
                    INITIALIZE                 WRK-GAIRAI-KIN
                                               WRK-NYUIN-KIN
