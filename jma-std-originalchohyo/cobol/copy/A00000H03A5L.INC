@@ -18,6 +18,7 @@
       *  コピー句修正履歴
       * Maj/Min/Rev  修正者       日付      内容
       * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
+      * 01.00.06     @@@@-門間    14/03/24  消費税対応
       ********************************************************************
         01  HCM03V02.
             02  HCM03V02-TYPE-A.
@@ -88,6 +89,7 @@
               03  HCM03V02-RSIMIDASI  PIC X(12).
               03  HCM03V02-RSIMIDASI2  PIC X(02).
               03  HCM03V02-RSIMIDASI3  PIC X(02).
+              03  HCM03V02-CHUI        PIC X(100).
             02  HCM03V02-TYPE-B.
               03  HCM03V02-B-NO PIC X(7).
               03  HCM03V02-B-LBLSRYYMD  PIC X(10).
@@ -138,10 +140,7 @@
               03  HCM03V02-B-JIHIMSG10  PIC X(20).
               03  HCM03V02-B-JIHI
                       PIC X(18)   OCCURS  12 TIMES.
-      *--- 20110107 CHANGE START ---------------------------------------
-      *        03  HCM03V02-YAKUZAI    PIC X(18).
               03  HCM03V02-B-YAKUZAI    PIC X(18).
-      *--- 20110107 CHANGE END   ---------------------------------------
               03  HCM03V02-B-ROUJIN PIC X(18).
               03  HCM03V02-B-KOUHI  PIC X(18).
               03  HCM03V02-B-CHOSEI PIC X(18).
@@ -159,3 +158,4 @@
               03  HCM03V02-B-RSIMIDASI   PIC X(12).
               03  HCM03V02-B-RSIMIDASI2  PIC X(02).
               03  HCM03V02-B-RSIMIDASI3  PIC X(02).
+              03  HCM03V02-B-CHUI        PIC X(100).

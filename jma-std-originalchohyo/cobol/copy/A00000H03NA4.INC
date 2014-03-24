@@ -17,7 +17,8 @@
       *  コピー句修正履歴
       * Maj/Min/Rev  修正者       日付      内容
       * 01.00.01     @@@@-門間    11/01/07  コメント履歴削除
-      * 01.00.05     @@@@-門間    14/02/07  プログラムオプション対応（訂正印字）
+      * 01.00.08     @@@@-門間    14/02/07  プログラムオプション対応（訂正印字）
+      * 01.00.09     @@@@-門間    14/03/24  消費税対応
       ********************************************************************
         01  HCN03V02.
             02  HCN03V02-TYPE-A.
@@ -66,6 +67,7 @@
               03  HCN03V02-RSIBUN     PIC X(18).
               03  HCN03V02-RSIEN      PIC X(02).
               03  HCN03V02-RSIMIDASI  PIC X(16).
+              03  HCN03V02-CHUI       PIC X(100).
             02  HCN03V02-TYPE-B.
               03  HCN03V02-B-NO PIC X(7).
               03  HCN03V02-B-NYUINSTRYMD    PIC X(22).
@@ -112,6 +114,7 @@
               03  HCN03V02-B-RSIBUN     PIC X(18).
               03  HCN03V02-B-RSIEN      PIC X(02).
               03  HCN03V02-B-RSIMIDASI  PIC X(16).
+              03  HCN03V02-B-CHUI       PIC X(100).
             02  HCN03V02-TYPE-C.
               03  HCN03V02-LBL-G-MISYU    PIC X(20).
               03  HCN03V02-LBL-G-MISYU-EN PIC X(2).

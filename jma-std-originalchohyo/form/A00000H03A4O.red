@@ -322,6 +322,11 @@
           <embed object="text" length="2"/>
         </appinfo>
       </element>
+      <element name="TEXT-1" occurs="1">
+        <appinfo>
+          <embed object="text" length="10"/>
+        </appinfo>
+      </element>
     </element>
   </dia:dictionarydata>
   <dia:diagramdata>

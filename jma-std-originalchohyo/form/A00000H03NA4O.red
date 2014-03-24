@@ -327,6 +327,11 @@
           <embed object="text" length="16"/>
         </appinfo>
       </element>
+      <element name="CHUI" occurs="1">
+        <appinfo>
+          <embed object="text" length="100"/>
+        </appinfo>
+      </element>
     </element>
     <element name="TYPE-C" occurs="1">
       <element name="G-MISYU" occurs="1">

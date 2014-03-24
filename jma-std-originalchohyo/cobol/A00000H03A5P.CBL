@@ -33,6 +33,7 @@
       *  01.00.03    @@@@-門間    11/09/12  複数科保険の本家区分の印字修正
       *  01.00.04    @@@@-門間    14/01/17  第三者行為対応
       *  01.00.05    @@@@-門間    14/02/07  プログラムオプション対応（訂正印字）
+      *  01.00.06    @@@@-門間    14/03/24  消費税対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -75,6 +76,7 @@
            03  FLG-SP              PIC 9(01).
            03  FLG-OK              PIC 9(01).
            03  FLG-CHK             PIC 9(01).
+           03  FLG-HIZUKECHK       PIC 9(01).
       *
       *    添字領域
        01  IDX-AREA.
@@ -106,6 +108,7 @@
       *    一時領域
        01  WRK-AREA.
       *
+           03  WRK-YMD             PIC X(10).
            03  WRK-SYMD.
                05  WRK-SYY         PIC 9(04).
                05  WRK-SMM         PIC 9(02).
@@ -201,6 +204,9 @@
       *    プログラムオプションパラメタ
        01  TPARA-AREA.
            03  TPARA-TEISEIKBN          PIC X(01).
+           03  TPARA-CHUI-YUKOSTYMD     PIC X(08).
+           03  TPARA-CHUI-YUKOEDYMD     PIC X(08).
+           03  TPARA-CHUI               PIC X(100).
       *
            03  WRK-PARA-NAME            PIC X(25).
            03  WRK-PARA                 PIC X(100).
@@ -287,7 +293,8 @@
       *    サブプロ用　領域
       *****************************************************************
       *
-      *   日付変換サブ
+      *    日付変換サブ
+           COPY    "CPORCSGDAY.INC".
            COPY    "CPORCSDAY.INC".
            COPY    "CPORCSLNK.INC".
       *
@@ -304,6 +311,9 @@
            COPY    "CPORCSPRTNM.INC".
       *    請求書収納パラメタ
            COPY    "CPORCHC03SUB.INC".
+      *
+      *    マシン日付取得サブ
+           COPY    "CPORCSMCNDATE.INC".
       *
       *    印刷ＤＢ制御サブ
            COPY    "CPORCSPRT.INC".
@@ -660,6 +670,8 @@
       *
            PERFORM 100-OPTION-SELECT-SEC
       *
+           PERFORM 800-MCNDATE-SEC
+      *
            .
        100-SYORI-EXT.
            EXIT.
@@ -755,6 +767,8 @@
       *
            INITIALIZE                  TPARA-AREA
            MOVE    "1"             TO  TPARA-TEISEIKBN
+           MOVE    "00000000"      TO  TPARA-CHUI-YUKOSTYMD
+           MOVE    "99999999"      TO  TPARA-CHUI-YUKOEDYMD
       *
       *    （訂正）表示
            MOVE    "TEISEIKBN"     TO  WRK-PARA-NAME
@@ -762,6 +776,29 @@
            IF    ( WRK-PARA        =   "0" OR "1" )
                MOVE    WRK-PARA    TO  TPARA-TEISEIKBN
            END-IF
+      *
+      *    注意書き有効開始日
+           MOVE    "CHUI_YUKOSTYMD" TO WRK-PARA-NAME
+           PERFORM 1001-OPTION-CALL-SEC
+           MOVE    WRK-PARA        TO  WRK-YMD
+           PERFORM 800-HIZUKE-CHK-SEC
+           IF    ( FLG-HIZUKECHK   =   ZERO )
+               MOVE    WRK-SYMD    TO  TPARA-CHUI-YUKOSTYMD
+           END-IF
+      *
+      *    注意書き有効終了日
+           MOVE    "CHUI_YUKOEDYMD" TO WRK-PARA-NAME
+           PERFORM 1001-OPTION-CALL-SEC
+           MOVE    WRK-PARA        TO  WRK-YMD
+           PERFORM 800-HIZUKE-CHK-SEC
+           IF    ( FLG-HIZUKECHK   =   ZERO )
+               MOVE    WRK-SYMD    TO  TPARA-CHUI-YUKOEDYMD
+           END-IF
+      *
+      *    注意書き
+           MOVE    "CHUI"          TO  WRK-PARA-NAME
+           PERFORM 1001-OPTION-CALL-SEC
+           MOVE    WRK-PARA        TO  TPARA-CHUI
       *
            .
        100-OPTION-SELECT-EXT.
@@ -780,10 +817,24 @@
            CALL    "ORCSPRGOPTION"     USING   SPA-AREA
                                                ORCSPRGOPTIONAREA
       *
-           IF      ORCSPRGOPTION-OT-TYPE   =   1
-      *        半角で１文字目を値とする
-               MOVE    ORCSPRGOPTION-OT-PARA(1:1)  TO  WRK-PARA(1:1)
-           END-IF
+           INITIALIZE                  ORCSKANACHKAREA
+           MOVE    "1"             TO  KANACHK-SYORI
+      *
+           EVALUATE    WRK-PARA-NAME
+           WHEN    "CHUI"
+               MOVE    ORCSPRGOPTION-OT-PARA (1:100)
+                                       TO  KANACHK-MAE-INPUT
+           WHEN    "CHUI_YUKOSTYMD"
+           WHEN    "CHUI_YUKOEDYMD"
+               MOVE    ORCSPRGOPTION-OT-PARA(1:10)
+                                       TO  KANACHK-MAE-INPUT
+           WHEN    OTHER
+               MOVE    ORCSPRGOPTION-OT-PARA
+                                       TO  KANACHK-MAE-INPUT
+           END-EVALUATE
+      *
+           CALL    "ORCSKANACHK"   USING   ORCSKANACHKAREA
+           MOVE    KANACHK-MAE-INPUT   TO  WRK-PARA
       *
            .
        1001-OPTION-CALL-EXT.
@@ -1259,6 +1310,13 @@
                        MOVE    "（訂正）"  TO  HC03-MIDASHI
                    END-IF
            END-EVALUATE
+      *
+      *    注意書き
+           IF    ( SMCNDATE-YMD        >=  TPARA-CHUI-YUKOSTYMD )
+            AND  ( SMCNDATE-YMD        <=  TPARA-CHUI-YUKOEDYMD )
+               MOVE    TPARA-CHUI      TO  HC03-CHUI
+           END-IF
+      *
            IF    ( SYU-SRYYMD              >=  CONST-H200401 )
                MOVE    "A00000H03A5PN.red"       TO  WRK-FORMID
            ELSE
@@ -1640,6 +1698,47 @@
            .
        31012-SEIWA-HEN-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    日付チェック・編集処理
+      *****************************************************************
+       800-HIZUKE-CHK-SEC             SECTION.
+      *
+           MOVE    ZERO            TO  FLG-HIZUKECHK
+      *
+           IF    ( WRK-YMD         =   "00000000" 
+                                   OR  "99999999" )
+               MOVE    WRK-YMD     TO  WRK-HENYMDG
+                                       WRK-SYMD
+           ELSE
+               INITIALIZE                  ORCSGDAYAREA
+               MOVE    WRK-YMD         TO  SGDAY-INDAY
+               CALL    "ORCSGDAY"          USING
+                                       ORCSGDAYAREA
+               IF  ( SGDAY-RC          =   ZERO )
+                   MOVE    SGDAY-OTDAY TO  WRK-HENYMDG
+                   MOVE    SGDAY-SDAY  TO  WRK-SYMD
+               ELSE
+                   MOVE    1           TO  FLG-HIZUKECHK
+               END-IF
+           END-IF
+      *
+           .
+       800-HIZUKE-CHK-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    マシン日付取得サブ
+      *****************************************************************
+       800-MCNDATE-SEC         SECTION.
+      *
+           CALL    "ORCSMCNDATE"   USING   ORCSMCNDATEAREA
+      *
+           .
+      *
+       800-MCNDATE-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    医療機関編集情報読み込み
       *****************************************************************
