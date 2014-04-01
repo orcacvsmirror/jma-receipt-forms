@@ -2158,6 +2158,8 @@
       *****************************************************************
        325-CSV-SYOKEI-SEC           SECTION.
       *
+           MOVE    1      TO  IDX-POINT
+      *
       *    ¶õÇò£´¤Ä
            MOVE    SPACE                 TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
