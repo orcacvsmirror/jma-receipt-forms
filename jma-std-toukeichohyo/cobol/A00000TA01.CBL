@@ -29,6 +29,7 @@
       *                                    集計範囲期間の計算修正
       *   01.00.02    門間    2013/10/03   CSVファイルが20kBを超える場合、
       *                                    正しく出力されない不具合を修正
+      *   01.00.03    吉川    2014/04/01   CSVの小計行のズレ修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -2237,6 +2238,8 @@
       *
       *    小計初期化
            INITIALIZE                        SUM-SYOKEI
+      *
+           PERFORM  500-CSV-OUTPUT-SEC
       *
            .
        325-CSV-SYOKEI-EXT.
