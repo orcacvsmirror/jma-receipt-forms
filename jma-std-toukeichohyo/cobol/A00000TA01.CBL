@@ -801,10 +801,9 @@
              MOVE  RECE10-PREFKBN        TO  TA01TMP-PREFKBN
            END-IF
       *
-      *    請求年月
+      *    診療年月
            IF  RECE10-SKYYM  NOT =  ZERO
              MOVE    RECE10-SKYYM        TO  TA01TMP-SRYYM
-             MOVE    RECE10-SRYYM        TO  TA01TMP-HENREIYM
            ELSE
              MOVE    RECE10-SRYYM        TO  TA01TMP-SRYYM
            END-IF
@@ -848,6 +847,11 @@
       *
       *    保険者番号
            MOVE    RECE10-HKNJANUM       TO  TA01TMP-HKNJANUM
+      *
+      *    診療月(月遅れ、返戻)
+           IF  RECE10-SRYYM  NOT =  WRK-PRTYMST
+             MOVE    RECE10-SRYYM        TO  TA01TMP-HENREIYM
+           END-IF
       *
       *    キーを元にTMPファイル読み込み
            PERFORM  800-STXTMP-READ-SEC
@@ -930,11 +934,6 @@
       *    診療科（収納から取得）
       *     PERFORM  900-SYUNOU-SET-SEC
       *     MOVE    WRK-SRYKA             TO  TA01TMP-SRYKA
-      *
-      *    診療月(返戻年月)
-           IF  RECE10-SRYYM  NOT =  WRK-PRTYMST
-             MOVE    RECE10-SRYYM        TO  TA01TMP-HENREIYM
-           END-IF
       *
            MOVE    1                     TO  FLG-UPD
       *
