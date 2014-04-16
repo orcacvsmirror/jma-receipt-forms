@@ -38,6 +38,7 @@
       *                                     開始年月を参照するように修正
       *                                     入院のみ（診療行為無し）の場合、
       *                                     帳票が出力されるように修正
+      *  01.00.07    @@@@-門間    14/04/14  室料差額設定読込時のkeyを変更
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -5526,7 +5527,7 @@
            MOVE    SYS-5113-REC        TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_syskanri"      TO  MCP-TABLE
-           MOVE    "key5"              TO  MCP-PATHNAME
+           MOVE    "key2"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
@@ -5547,7 +5548,7 @@
       *
            MOVE    "DBFETCH"            TO  MCP-FUNC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key5"               TO  MCP-PATHNAME
+           MOVE    "key2"               TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -5569,7 +5570,7 @@
       *
            MOVE  "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE  "tbl_syskanri"       TO  MCP-TABLE
-           MOVE  "key5"               TO  MCP-PATHNAME
+           MOVE  "key2"               TO  MCP-PATHNAME
            CALL  "ORCDBMAIN"          USING
                                       MCPAREA
                                       MCPDATA-REC
