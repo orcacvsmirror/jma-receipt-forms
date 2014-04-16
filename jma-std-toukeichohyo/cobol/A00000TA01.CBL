@@ -30,6 +30,8 @@
       *   01.00.02    門間    2013/10/03   CSVファイルが20kBを超える場合、
       *                                    正しく出力されない不具合を修正
       *   01.00.03    吉川    2014/04/01   CSVの小計行のズレ修正
+      *   01.00.04    吉川    2014/04/16   当月と月遅れに診療がある場合
+      *                                    月遅れ分が印字されないのを修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -802,6 +804,7 @@
       *    請求年月
            IF  RECE10-SKYYM  NOT =  ZERO
              MOVE    RECE10-SKYYM        TO  TA01TMP-SRYYM
+             MOVE    RECE10-SRYYM        TO  TA01TMP-HENREIYM
            ELSE
              MOVE    RECE10-SRYYM        TO  TA01TMP-SRYYM
            END-IF
