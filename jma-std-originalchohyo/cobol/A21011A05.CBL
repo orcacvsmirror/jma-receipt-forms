@@ -40,6 +40,8 @@
       *  01.00.07    @@@@-門間    12/05/25  公費単独の「回数、金額、標準負担額」が印字されない。
       *                                     CSVファイル作成機能追加
       *  01.00.08    @@@@-門間    12/09/26  公費併用の場合、一部負担金が印字されない。
+      *  01.00.09    @@@@-門間    14/04/14  請求管理クローズ処理が実行されるよう変更
+      *                                     公費請求読み込み時、項目を追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -835,6 +837,7 @@
              WRITE  A05TMP-REC
              PERFORM  900-SEIKYU-READ-SEC
            END-PERFORM
+           PERFORM  900-SEIKYU-CLOSE-SEC
       *
            .
        2001-HENSYU-EXT.
@@ -1914,6 +1917,8 @@
            MOVE    RECE10-HKNJANUM       TO  RECE02-HKNJANUM-KEY
            MOVE    RECE10-HOJOKBN-KEY    TO  RECE02-HOJOKBN-KEY
            MOVE    RECE10-TEKSTYMD       TO  RECE02-TEKSTYMD
+           MOVE    RECE10-KOHID-KEY      TO  RECE02-KOHID-KEY
+           MOVE    RECE10-RECEIPT-KBN    TO  RECE02-RECEIPT-KBN
            MOVE    RECE02-REC            TO  MCPDATA-REC
       *
            MOVE    "DBSELECT"            TO  MCP-FUNC
