@@ -35,6 +35,7 @@
       *                                   実際の回数より、多く集計される不具合
       *                                   自費診療の０円設定に対応
       *                                   包括区分「2」が処理対象となっていない不具合
+      *   01.00.07    門間    2014/04/16  加算減算等は点数金額等は印字しない
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -917,15 +918,26 @@
                      COMPUTE  TA02TMP-YAKKA  =  TNS-TEN  *  1.05
                      COMPUTE  TA02TMP-TANKA  =  TNS-TEN  *  1.05
                      COMPUTE  WRK-TENSU  =  TNS-TEN  *  1.05
-                     
+      *
                      MOVE    SRY-JIHIMONEY(IDX1)  TO  TA02TMP-YAKKA
                      MOVE    SRY-JIHIMONEY(IDX1)  TO  TA02TMP-TANKA
                      MOVE    SRY-JIHIMONEY(IDX1)  TO  WRK-TENSU
-                     
+      *
                    ELSE
-                     MOVE    TNS-TEN           TO  TA02TMP-YAKKA
-                     MOVE    TNS-TEN           TO  TA02TMP-TANKA
-                     MOVE    TNS-TEN           TO  WRK-TENSU
+                     EVALUATE  TNS-TENSIKIBETU
+                       WHEN  0
+                       WHEN  4
+                       WHEN  5
+                       WHEN  6
+                       WHEN  7
+                         MOVE    ZERO            TO  TA02TMP-YAKKA
+                                                     TA02TMP-TANKA
+                                                     WRK-TENSU
+                       WHEN  OTHER
+                         MOVE    TNS-TEN         TO  TA02TMP-YAKKA
+                                                     TA02TMP-TANKA
+                                                     WRK-TENSU
+                     END-EVALUATE
                    END-IF
       *
       *    TMPファイル読み込み
@@ -1206,16 +1218,38 @@
                                                         WRK-TENSU
                        END-EVALUATE
                      ELSE
-                       MOVE    TNS-TEN          TO  TA02TMP-YAKKA
-                                                    TA02TMP-TANKA
-                                                    WRK-TENSU
+                       EVALUATE  TNS-TENSIKIBETU
+                         WHEN  0
+                         WHEN  4
+                         WHEN  5
+                         WHEN  6
+                         WHEN  7
+                           MOVE    ZERO            TO  TA02TMP-YAKKA
+                                                       TA02TMP-TANKA
+                                                       WRK-TENSU
+                         WHEN  OTHER
+                           MOVE    TNS-TEN         TO  TA02TMP-YAKKA
+                                                       TA02TMP-TANKA
+                                                       WRK-TENSU
+                       END-EVALUATE
                      END-IF
       *    食事療養は自費の為点数単価＝1
                      MOVE    1                TO  WRK-TENTNK
                    WHEN  OTHER
-                     MOVE    TNS-TEN          TO  TA02TMP-YAKKA
-                                                TA02TMP-TANKA
-                                                WRK-TENSU
+                     EVALUATE  TNS-TENSIKIBETU
+                       WHEN  0
+                       WHEN  4
+                       WHEN  5
+                       WHEN  6
+                       WHEN  7
+                         MOVE    ZERO            TO  TA02TMP-YAKKA
+                                                     TA02TMP-TANKA
+                                                     WRK-TENSU
+                       WHEN  OTHER
+                         MOVE    TNS-TEN         TO  TA02TMP-YAKKA
+                                                     TA02TMP-TANKA
+                                                     WRK-TENSU
+                       END-EVALUATE
                  END-EVALUATE
       *
       *      TMPファイル読み込み
