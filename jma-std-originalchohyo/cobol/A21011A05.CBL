@@ -42,6 +42,7 @@
       *  01.00.08    @@@@-門間    12/09/26  公費併用の場合、一部負担金が印字されない。
       *  01.00.09    @@@@-門間    14/04/14  請求管理クローズ処理が実行されるよう変更
       *                                     公費請求読み込み時、項目を追加
+      *                           14/04/18  公費単独複数登録時の不具合修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -680,15 +681,15 @@
                                                      TO  A05TMP-TENSU
       *
       *                食事回数
-                       MOVE    RECE10-SHOKUJINISSU(IDX4 + 1)
+                       ADD     RECE10-SHOKUJINISSU(IDX4 + 1)
                                                      TO  A05TMP-SNISSU
       *
       *                食事療養費
-                       MOVE    RECE10-SHOKUJIRYOYOHI(IDX4 + 1)
+                       ADD     RECE10-SHOKUJIRYOYOHI(IDX4 + 1)
                                                      TO  A05TMP-SKINGK
       *
       *                標準負担額
-                       MOVE    RECE10-SHOKUJIFTN(IDX4 + 1)
+                       ADD     RECE10-SHOKUJIFTN(IDX4 + 1)
                                                      TO  A05TMP-SFTNGK
       *
                      END-IF
@@ -727,6 +728,8 @@
                      INITIALIZE   WRK-SYSYMD
                      MOVE    RECE10-SRYYM       TO     WRK-SYSYMD(1:6)
                      PERFORM  31012-LASTDAY-GET-SEC
+      *
+                     INITIALIZE                     NYUINRRK-REC
                      MOVE   RECE10-HOSPNUM     TO   PTNYUINRRK-HOSPNUM
                      MOVE   RECE10-PTID        TO   PTNYUINRRK-PTID
                      MOVE   RECE10-SRYYM
@@ -903,15 +906,15 @@
                    ADD     RECE02-TOTALTEN(IDX4 + 1)  TO  A05TMP-TENSU
       *
       *            食事回数
-                   MOVE    RECE02-SHOKUJINISSU(IDX4 + 1)
+                   ADD     RECE02-SHOKUJINISSU(IDX4 + 1)
                                                       TO  A05TMP-SNISSU
       *
       *            食事療養費
-                   MOVE    RECE02-SHOKUJIRYOYOHI(IDX4 + 1)
+                   ADD     RECE02-SHOKUJIRYOYOHI(IDX4 + 1)
                                                       TO  A05TMP-SKINGK
       *
       *            標準負担額
-                   MOVE    RECE02-SHOKUJIFTN(IDX4 + 1)
+                   ADD     RECE02-SHOKUJIFTN(IDX4 + 1)
                                                       TO  A05TMP-SFTNGK
       *
                  END-IF
@@ -951,6 +954,7 @@
                  MOVE    RECE02-SRYYM       TO     WRK-SYSYMD(1:6)
                  PERFORM  31012-LASTDAY-GET-SEC
       *
+                 INITIALIZE                    NYUINRRK-REC
                  MOVE   RECE02-HOSPNUM     TO  PTNYUINRRK-HOSPNUM
                  MOVE   RECE02-PTID        TO  PTNYUINRRK-PTID
                  MOVE   RECE02-SRYYM       TO  PTNYUINRRK-TENNYUYMD(1:6)
@@ -2154,7 +2158,6 @@
       *****************************************************************
        900-NYUINRRK-SET-SEC  SECTION.
       *
-           INITIALIZE                NYUINRRK-REC
            MOVE   NYUINRRK-REC       TO   MCPDATA-REC
            MOVE   "DBSELECT"         TO   MCP-FUNC
            MOVE   "tbl_ptnyuinrrk"   TO   MCP-TABLE
