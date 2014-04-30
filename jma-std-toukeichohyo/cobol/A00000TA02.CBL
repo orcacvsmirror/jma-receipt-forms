@@ -36,6 +36,7 @@
       *                                   自費診療の０円設定に対応
       *                                   包括区分「2」が処理対象となっていない不具合
       *   01.00.07    門間    2014/04/16  加算減算等は点数金額等は印字しない
+      *   01.00.08    門間    2014/04/30  月を跨いだ場合、正しく集計されない不具合を修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -2838,7 +2839,7 @@
       *
            INITIALIZE                   SRYACT-REC
            MOVE    WRK-PARA-HOSPNUM     TO  SRY-HOSPNUM
-           MOVE    WRK-STARTYMD(1:6)    TO  SRY-SRYYM
+           MOVE    WRK-YM               TO  SRY-SRYYM
            MOVE    SRYACT-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "st_key4"            TO  MCP-PATHNAME
@@ -2953,7 +2954,7 @@
       *
            INITIALIZE                   NYUINACT-REC
            MOVE    WRK-PARA-HOSPNUM     TO  NSRY-HOSPNUM
-           MOVE    WRK-STARTYMD(1:6)    TO  NSRY-SRYYM
+           MOVE    WRK-YM               TO  NSRY-SRYYM
            MOVE    NYUINACT-REC         TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "st_key1"            TO  MCP-PATHNAME
