@@ -39,6 +39,7 @@
       *                                     入院のみ（診療行為無し）の場合、
       *                                     帳票が出力されるように修正
       *  01.00.07    @@@@-門間    14/04/14  室料差額設定読込時のkeyを変更
+      *  01.00.08    @@@@-門間    14/05/02  シス管読込時のCLOSE処理の修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -682,15 +683,23 @@
              MOVE   5      TO    INP-STS
            END-IF
       *
-      *    開始、終了年月日チェック
-           IF   WRK-PARA-PRTSTYMD(1:6)  NOT =  WRK-PARA-PRTEDYMD(1:6)
-             MOVE    6      TO    INP-STS
-           END-IF
+           IF  WRK-PARA-SYUKEIKBN  =  "2"
       *
-           IF   WRK-PARA-PRTSTYMD  >  WRK-PARA-PRTEDYMD
-             MOVE    7      TO    INP-STS
-           END-IF
+      *      開始、終了年月日チェック
+             IF   WRK-PARA-PRTSTYMD(1:6)  NOT =  WRK-PARA-PRTEDYMD(1:6)
+               MOVE    6      TO    INP-STS
+             END-IF
       *
+             IF   WRK-PARA-PRTSTYMD  >  WRK-PARA-PRTEDYMD
+               MOVE    7      TO    INP-STS
+             END-IF
+      *
+             IF  (      WRK-PARA-PRTSTYMD  =  SPACE
+                    OR  WRK-PARA-PRTEDYMD  =  SPACE  )
+               MOVE    8      TO    INP-STS
+             END-IF
+      *
+           END-IF
       *
            INITIALIZE                SYS-5000-REC
            MOVE    "5000"            TO   SYS-5000-KANRICD
@@ -717,9 +726,9 @@
                                    WRK-SYOKUJITEN4
              END-IF
       *
-      *    食事療養費(食堂加算)の算定判定
-             PERFORM 820-SYSKANRI-DBCLOSE-SEC
            END-IF
+           PERFORM 820-SYSKANRI-DBCLOSE-SEC
+      *
       *    1:食事療養費のみ(WRK-SYOKUJITEN1)
       *    2:食事療養費＋特別食加算(WRK-SYOKUJITEN2)
       *    3:食事療養費＋複数献立加算(WRK-SYOKUJITEN3)
@@ -803,6 +812,10 @@
              WHEN 7
                MOVE
                "入力された集計対象期間の範囲指定に誤りがあります"
+                           TO   A010-JOBMSG
+             WHEN 8
+               MOVE
+               "入力された集計対象期間の範囲指定が空白です"
                            TO   A010-JOBMSG
            END-EVALUATE
       *
@@ -4652,6 +4665,7 @@
        2001-SET-PRSORTNUM-SEC      SECTION.
       *
            CLOSE           A010T-FILE
+           CLOSE           A010T3-FILE
            INITIALIZE      FLG-ATEND
            INITIALIZE      A010T
            INITIALIZE      A010T2
