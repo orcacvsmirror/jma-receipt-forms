@@ -35,6 +35,8 @@
       *   01.00.05    吉川    2014/05/22   保険が月に変更になった場合
       *                                    それぞれの一部負担金を印字する
       *                                    実日数を3桁まで印字する
+      *                                    実人数、延べ人数を9999まで
+      *                                    カウントできるように修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -357,7 +359,7 @@
       *    
       *    ソート用エリア
        01  SRT-AREA.
-           03  SORT-PTNUM                  PIC X(10)   OCCURS  1000.
+           03  SORT-PTNUM                  PIC X(10)   OCCURS  9999.
       *
            COPY    "CPSHELLTBL.INC".
       *
@@ -1204,13 +1206,13 @@
       *
       *    内部ソート
            PERFORM  VARYING  IDY1  FROM  1  BY  1
-           UNTIL    IDY1  >  1000
+           UNTIL    IDY1  >  9999
            OR       SORT-PTNUM(IDY1)  =  SPACE
       *
              COMPUTE  WRK-S  =  IDY1  +  1
       *
              PERFORM  VARYING  IDY2  FROM  WRK-S  BY  1
-             UNTIL    IDY2  >  1000
+             UNTIL    IDY2  >  9999
              OR       SORT-PTNUM(IDY2)  =  SPACE
       *
                IF  SORT-PTNUM(IDY1)  >  SORT-PTNUM(IDY2)
@@ -1225,7 +1227,7 @@
       *    実人数、延べ人数カウント
            INITIALIZE                            WRK-TAIHI
            PERFORM  VARYING  IDY1  FROM  1  BY  1
-           UNTIL    IDY1  >  1000
+           UNTIL    IDY1  >  9999
            OR       SORT-PTNUM(IDY1)  =  SPACE
       *      延べ人数
              ADD    1                        TO  WRK-NNINZU
