@@ -59,17 +59,17 @@
       </element>
       <element name="GAIRAI-KEN" occurs="1">
         <appinfo>
-          <embed object="text" length="5"/>
+          <embed object="text" length="9"/>
         </appinfo>
       </element>
       <element name="NYUIN-KEN" occurs="1">
         <appinfo>
-          <embed object="text" length="5"/>
+          <embed object="text" length="9"/>
         </appinfo>
       </element>
       <element name="TOTAL-KEN" occurs="1">
         <appinfo>
-          <embed object="text" length="6"/>
+          <embed object="text" length="10"/>
         </appinfo>
       </element>
       <element name="TANKA" occurs="1">
@@ -141,17 +141,17 @@
       </element>
       <element name="GGAIRAI-KEN" occurs="1">
         <appinfo>
-          <embed object="text" length="6"/>
+          <embed object="text" length="10"/>
         </appinfo>
       </element>
       <element name="GNYUIN-KEN" occurs="1">
         <appinfo>
-          <embed object="text" length="6"/>
+          <embed object="text" length="10"/>
         </appinfo>
       </element>
       <element name="GTOTAL-KEN" occurs="1">
         <appinfo>
-          <embed object="text" length="7"/>
+          <embed object="text" length="11"/>
         </appinfo>
       </element>
       <element name="GTANKA" occurs="1">
@@ -1614,7 +1614,7 @@
         <dia:point val="13.4875,2.5"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="13.4875,2.20944;14.4556,2.95613"/>
+        <dia:rectangle val="13.4875,2.2175;14.4475,2.94"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
