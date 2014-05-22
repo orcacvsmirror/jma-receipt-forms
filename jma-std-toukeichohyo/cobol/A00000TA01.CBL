@@ -32,6 +32,8 @@
       *   01.00.03    吉川    2014/04/01   CSVの小計行のズレ修正
       *   01.00.04    吉川    2014/04/16   当月と月遅れに診療がある場合
       *                                    月遅れ分が印字されないのを修正
+      *   01.00.05    吉川    2014/05/22   保険が月に変更になった場合
+      *                                    それぞれの一部負担金を印字する
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -2934,11 +2936,22 @@
       *
              PERFORM  UNTIL  FLG-SYUNOU  =  1
                IF  SYU-DENPJTIKBN  NOT =  "3"
-      *          室料差額集計
-                 ADD    SYU-RMSAGAKU     TO  WRK-RMSAGAKU
+                 IF    SYU-HKNCOMBINUM  =  RECE10-HKNCOMBI(1) OR
+                                           RECE10-HKNCOMBI(2) OR
+                                           RECE10-HKNCOMBI(3) OR
+                                           RECE10-HKNCOMBI(4) OR
+                                           RECE10-HKNCOMBI(5) OR
+                                           RECE10-HKNCOMBI(6) OR
+                                           RECE10-HKNCOMBI(7) OR
+                                           RECE10-HKNCOMBI(8) OR
+                                           RECE10-HKNCOMBI(9) OR
+                                           RECE10-HKNCOMBI(10) 
+      *            室料差額集計
+                   ADD    SYU-RMSAGAKU     TO  WRK-RMSAGAKU
       *
-      *          主保険負担金集計
-                 ADD    SYU-SYUCOMPFTN-ENTANI   TO  WRK-SEIKYUGK
+      *            主保険負担金集計
+                   ADD    SYU-SYUCOMPFTN-ENTANI   TO  WRK-SEIKYUGK
+                 END-IF
                END-IF
       *   
                PERFORM  910-SYUNOU-READ-SEC
