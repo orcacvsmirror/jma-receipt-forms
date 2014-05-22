@@ -37,6 +37,8 @@
       *                                   包括区分「2」が処理対象となっていない不具合
       *   01.00.07    門間    2014/04/16  加算減算等は点数金額等は印字しない
       *   01.00.08    門間    2014/04/30  月を跨いだ場合、正しく集計されない不具合を修正
+      *   01.00.09    門間    2014/05/22  自費の診療行為コードの場合、薬価／点数が０になる不具合を修正
+      *                                   薬価／点数、件数、使用量を小数点第2位まで対応
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -149,6 +151,15 @@
            03  WRK-Z10                     PIC ZZ,ZZZ,ZZ9.
            03  WRK-Z11                     PIC ZZZ,ZZZ,ZZ9.
            03  WRK-Z12                     PIC ZZZZ,ZZZ,ZZ9.
+           03  WRK-V9                      PIC Z,ZZZ,ZZ9.
+           03  WRK-V9-1                    PIC ZZZ,ZZ9.9.
+           03  WRK-V9-2                    PIC ZZ,ZZ9.99.
+           03  WRK-V10                     PIC ZZ,ZZZ,ZZ9.
+           03  WRK-V10-1                   PIC ZZZZ,ZZ9.9.
+           03  WRK-V10-2                   PIC ZZZ,ZZ9.99.
+           03  WRK-V11                     PIC ZZZ,ZZZ,ZZ9.
+           03  WRK-V11-1                   PIC Z,ZZZ,ZZ9.9.
+           03  WRK-V11-2                   PIC ZZZZ,ZZ9.99.
            03  WRK-V12                     PIC Z,ZZZ,ZZ9.99.
            03  WRK-CSV-Z4                  PIC ZZZ9.
            03  WRK-CSV-V4                  PIC Z9.99.
@@ -162,19 +173,19 @@
            03  WRK-CSV-Z11                 PIC ZZZZZZZZZZ9.
            03  WRK-CSV-V10                 PIC ZZZZZZ9.99.
            03  WRK-KINGAKU                 PIC S9(09).
-           03  WRK-TENSU                   PIC 9(09).
+           03  WRK-TENSU                   PIC 9(09)V9(02).
            03  WRK-SYMD                    PIC 9(08).
            03  WRK-HENYMDG                 PIC X(22).
            03  WRK-AMARI                   PIC 9(02).
            03  WRK-GPAGE                   PIC 9(02).
            03  WRK-NISSU                   PIC 9(02).
-           03  WRK-GAIRAI-KEN              PIC 9(05).
-           03  WRK-GAIRAI-SIYO             PIC 9(09).
+           03  WRK-GAIRAI-KEN              PIC 9(07)V9(02).
+           03  WRK-GAIRAI-SIYO             PIC 9(07)V9(02).
            03  WRK-GAIRAI-KIN              PIC 9(09).
-           03  WRK-NYUIN-KEN               PIC 9(05).
-           03  WRK-NYUIN-SIYO              PIC 9(09).
+           03  WRK-NYUIN-KEN               PIC 9(07)V9(02).
+           03  WRK-NYUIN-SIYO              PIC 9(07)V9(02).
            03  WRK-NYUIN-KIN               PIC 9(09).
-           03  WRK-KAISU                   PIC 9(05).
+           03  WRK-KAISU                   PIC 9(08)V9(02).
            03  WRK-HIRITU                  PIC 9(03)V9(02).
            03  WRK-ZENSORTKBN              PIC 9(02).
            03  WRK-ZENSRYKBN               PIC 9(02).
@@ -223,12 +234,12 @@
        01  SUM-S-AREA.
            03  WRK-SUM-SYAKKA              PIC 9(09).
            03  WRK-SUM-STANKA              PIC 9(09).
-           03  WRK-SUM-SGAIRAI-KEN         PIC 9(05).
-           03  WRK-SUM-SNYUIN-KEN          PIC 9(05).
-           03  WRK-SUM-STOTAL-KEN          PIC 9(06).
-           03  WRK-SUM-SGAIRAI-SIYO        PIC 9(09).
-           03  WRK-SUM-SNYUIN-SIYO         PIC 9(09).
-           03  WRK-SUM-STOTAL-SIYO         PIC 9(10).
+           03  WRK-SUM-SGAIRAI-KEN         PIC 9(07)V9(02).
+           03  WRK-SUM-SNYUIN-KEN          PIC 9(07)V9(02).
+           03  WRK-SUM-STOTAL-KEN          PIC 9(08)V9(02).
+           03  WRK-SUM-SGAIRAI-SIYO        PIC 9(07)V9(02).
+           03  WRK-SUM-SNYUIN-SIYO         PIC 9(07)V9(02).
+           03  WRK-SUM-STOTAL-SIYO         PIC 9(08)V9(02).
            03  WRK-SUM-SGAIRAI-KIN         PIC 9(09).
            03  WRK-SUM-SNYUIN-KIN          PIC 9(09).
            03  WRK-SUM-STOTAL-KIN          PIC 9(10).
@@ -239,12 +250,12 @@
        01  SUM-G-AREA.
            03  WRK-SUM-GYAKKA              PIC 9(10).
            03  WRK-SUM-GTANKA              PIC 9(10).
-           03  WRK-SUM-GGAIRAI-KEN         PIC 9(06).
-           03  WRK-SUM-GNYUIN-KEN          PIC 9(06).
-           03  WRK-SUM-GTOTAL-KEN          PIC 9(07).
-           03  WRK-SUM-GGAIRAI-SIYO        PIC 9(10).
-           03  WRK-SUM-GNYUIN-SIYO         PIC 9(10).
-           03  WRK-SUM-GTOTAL-SIYO         PIC 9(11).
+           03  WRK-SUM-GGAIRAI-KEN         PIC 9(08)V9(02).
+           03  WRK-SUM-GNYUIN-KEN          PIC 9(08)V9(02).
+           03  WRK-SUM-GTOTAL-KEN          PIC 9(09)V9(02).
+           03  WRK-SUM-GGAIRAI-SIYO        PIC 9(08)V9(02).
+           03  WRK-SUM-GNYUIN-SIYO         PIC 9(08)V9(02).
+           03  WRK-SUM-GTOTAL-SIYO         PIC 9(09)V9(02).
            03  WRK-SUM-GGAIRAI-KIN         PIC 9(10).
            03  WRK-SUM-GNYUIN-KIN          PIC 9(10).
            03  WRK-SUM-GTOTAL-KIN          PIC 9(11).
@@ -914,15 +925,19 @@
                      COMPUTE  TNS-TEN  =  TNS-TEN  *  -1
                    END-IF
       *
-                   IF  ( (      SRY-SRYKBN  =  "95"  OR  "96" )
-                           AND  TNS-TEN     =  ZERO )
-                     COMPUTE  TA02TMP-YAKKA  =  TNS-TEN  *  1.05
-                     COMPUTE  TA02TMP-TANKA  =  TNS-TEN  *  1.05
-                     COMPUTE  WRK-TENSU  =  TNS-TEN  *  1.05
+                   IF  ( SRY-SRYKBN  =  "95"  OR  "96" )
       *
-                     MOVE    SRY-JIHIMONEY(IDX1)  TO  TA02TMP-YAKKA
-                     MOVE    SRY-JIHIMONEY(IDX1)  TO  TA02TMP-TANKA
-                     MOVE    SRY-JIHIMONEY(IDX1)  TO  WRK-TENSU
+                     IF  ( TNS-TEN  =  ZERO )
+      *
+                       MOVE    SRY-JIHIMONEY(IDX1)  TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+      *
+                     ELSE
+                       MOVE    TNS-TEN              TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+                     END-IF
       *
                    ELSE
                      EVALUATE  TNS-TENSIKIBETU
@@ -1008,14 +1023,18 @@
                      IF  ( SRY-SRYCD(IDX1)(1:1)  =  "6"  OR  "7" )
                          OR  ( SRY-SRYCD(IDX1)(1:3)  =  "095"  OR  "096"
                                                              OR  "059" )
-                         OR  ( TNS-TENSIKIBETU  =  1 )
                        COMPUTE  WRK-GAIRAI-KIN  =  WRK-TENSU
                                                 *  WRK-GAIRAI-SIYO
                        ADD  WRK-GAIRAI-KIN     TO  TA02TMP-GAIRAI-KIN
                      ELSE
-                       COMPUTE  WRK-GAIRAI-KIN  =  WRK-TENSU
-                                                *  WRK-GAIRAI-KEN
-                                                *  WRK-TENTNK
+                       IF  TNS-TENSIKIBETU  =  1
+                         COMPUTE  WRK-GAIRAI-KIN  =  WRK-TENSU
+                                                  *  WRK-GAIRAI-KEN
+                       ELSE
+                         COMPUTE  WRK-GAIRAI-KIN  =  WRK-TENSU
+                                                  *  WRK-GAIRAI-KEN
+                                                  *  WRK-TENTNK
+                       END-IF
                        ADD  WRK-GAIRAI-KIN     TO  TA02TMP-GAIRAI-KIN
                      END-IF
                    ELSE
@@ -1023,14 +1042,18 @@
                      IF  ( SRY-SRYCD(IDX1)(1:1)  =  "6"  OR  "7" )
                          OR  ( SRY-SRYCD(IDX1)(1:3)  =  "095"  OR  "096"
                                                              OR  "059" )
-                         OR  ( TNS-TENSIKIBETU  =  1 )
                        COMPUTE  WRK-NYUIN-KIN  =  WRK-TENSU
                                                *  WRK-NYUIN-SIYO
                        ADD  WRK-NYUIN-KIN      TO  TA02TMP-NYUIN-KIN
                      ELSE
-                       COMPUTE  WRK-NYUIN-KIN  =  WRK-TENSU
-                                               *  WRK-NYUIN-KEN
-                                               *  WRK-TENTNK
+                       IF  TNS-TENSIKIBETU  =  1
+                         COMPUTE  WRK-NYUIN-KIN  =  WRK-TENSU
+                                                 *  WRK-NYUIN-KEN
+                       ELSE
+                         COMPUTE  WRK-NYUIN-KIN  =  WRK-TENSU
+                                                 *  WRK-NYUIN-KEN
+                                                 *  WRK-TENTNK
+                       END-IF
                        ADD  WRK-NYUIN-KIN      TO  TA02TMP-NYUIN-KIN
                      END-IF
                    END-IF
@@ -1415,42 +1438,102 @@
              MOVE    WRK-V12              TO  TA02-TANKA(IDX1)
       *
       *    外来件数
-             MOVE    TA02TMP-GAIRAI-KEN   TO  WRK-Z5
-             MOVE    WRK-Z5               TO  TA02-GAIRAI-KEN(IDX1)
+             IF    TA02TMP-GAIRAI-KEN(8:2)    = "00"
+               MOVE    TA02TMP-GAIRAI-KEN   TO  WRK-V9
+               MOVE    WRK-V9               TO  TA02-GAIRAI-KEN(IDX1)
+             ELSE
+               IF    TA02TMP-GAIRAI-KEN(9:1)    = "0"
+                 MOVE    TA02TMP-GAIRAI-KEN   TO  WRK-V9-1
+                 MOVE    WRK-V9-1             TO  TA02-GAIRAI-KEN(IDX1)
+               ELSE
+                 MOVE    TA02TMP-GAIRAI-KEN   TO  WRK-V9-2
+                 MOVE    WRK-V9-2             TO  TA02-GAIRAI-KEN(IDX1)
+               END-IF
+             END-IF
              ADD  TA02TMP-GAIRAI-KEN      TO  WRK-SUM-SGAIRAI-KEN
                                               WRK-SUM-GGAIRAI-KEN
       *
       *    入院件数
-             MOVE    TA02TMP-NYUIN-KEN    TO  WRK-Z5
-             MOVE    WRK-Z5               TO  TA02-NYUIN-KEN(IDX1)
+             IF    TA02TMP-NYUIN-KEN(8:2)    = "00"
+               MOVE    TA02TMP-NYUIN-KEN    TO  WRK-V9
+               MOVE    WRK-V9               TO  TA02-NYUIN-KEN(IDX1)
+             ELSE
+               IF    TA02TMP-NYUIN-KEN(9:1)    = "0"
+                 MOVE    TA02TMP-NYUIN-KEN    TO  WRK-V9-1
+                 MOVE    WRK-V9-1             TO  TA02-NYUIN-KEN(IDX1)
+               ELSE
+                 MOVE    TA02TMP-NYUIN-KEN    TO  WRK-V9-2
+                 MOVE    WRK-V9-2             TO  TA02-NYUIN-KEN(IDX1)
+               END-IF
+             END-IF
              ADD  TA02TMP-NYUIN-KEN       TO  WRK-SUM-SNYUIN-KEN
                                               WRK-SUM-GNYUIN-KEN
       *
       *    合計件数
              COMPUTE  WRK-KAISU  =  TA02TMP-GAIRAI-KEN
                                  +  TA02TMP-NYUIN-KEN
-             MOVE    WRK-KAISU            TO  WRK-Z6
-             MOVE    WRK-Z6               TO  TA02-TOTAL-KEN(IDX1)
+             IF    WRK-KAISU(9:2)    = "00"
+               MOVE    WRK-KAISU            TO  WRK-V10
+               MOVE    WRK-V10              TO  TA02-TOTAL-KEN(IDX1)
+             ELSE
+               IF    WRK-KAISU(10:1)    = "0"
+                 MOVE    WRK-KAISU            TO  WRK-V10-1
+                 MOVE    WRK-V10-1            TO  TA02-TOTAL-KEN(IDX1)
+               ELSE
+                 MOVE    WRK-KAISU            TO  WRK-V10-2
+                 MOVE    WRK-V10-2            TO  TA02-TOTAL-KEN(IDX1)
+               END-IF
+             END-IF
              ADD  WRK-KAISU               TO  WRK-SUM-STOTAL-KEN
                                               WRK-SUM-GTOTAL-KEN
       *
       *    外来使用量
-             MOVE    TA02TMP-GAIRAI-SIYO  TO  WRK-Z9
-             MOVE    WRK-Z9               TO  TA02-GAIRAI-SIYO(IDX1)
+             IF    TA02TMP-GAIRAI-SIYO(8:2)    = "00"
+               MOVE    TA02TMP-GAIRAI-SIYO  TO  WRK-V9
+               MOVE    WRK-V9               TO  TA02-GAIRAI-SIYO(IDX1)
+             ELSE
+               IF    TA02TMP-GAIRAI-SIYO(9:1)    = "0"
+                 MOVE    TA02TMP-GAIRAI-SIYO  TO  WRK-V9-1
+                 MOVE    WRK-V9-1             TO  TA02-GAIRAI-SIYO(IDX1)
+               ELSE
+                 MOVE    TA02TMP-GAIRAI-SIYO  TO  WRK-V9-2
+                 MOVE    WRK-V9-2             TO  TA02-GAIRAI-SIYO(IDX1)
+               END-IF
+             END-IF
              ADD  TA02TMP-GAIRAI-SIYO     TO  WRK-SUM-SGAIRAI-SIYO
                                               WRK-SUM-GGAIRAI-SIYO
       *
       *    入院使用量
-             MOVE    TA02TMP-NYUIN-SIYO   TO  WRK-Z9
-             MOVE    WRK-Z9               TO  TA02-NYUIN-SIYO(IDX1)
+             IF    TA02TMP-NYUIN-SIYO(8:2)    = "00"
+               MOVE    TA02TMP-NYUIN-SIYO   TO  WRK-V9
+               MOVE    WRK-V9               TO  TA02-NYUIN-SIYO(IDX1)
+             ELSE
+               IF    TA02TMP-NYUIN-SIYO(9:1)    = "0"
+                 MOVE    TA02TMP-NYUIN-SIYO   TO  WRK-V9-1
+                 MOVE    WRK-V9-1             TO  TA02-NYUIN-SIYO(IDX1)
+               ELSE
+                 MOVE    TA02TMP-NYUIN-SIYO   TO  WRK-V9-2
+                 MOVE    WRK-V9-2             TO  TA02-NYUIN-SIYO(IDX1)
+               END-IF
+             END-IF
              ADD  TA02TMP-NYUIN-SIYO      TO  WRK-SUM-SNYUIN-SIYO
                                               WRK-SUM-GNYUIN-SIYO
       *
       *    合計使用量
              COMPUTE  WRK-KAISU  =  TA02TMP-GAIRAI-SIYO
                                  +  TA02TMP-NYUIN-SIYO
-             MOVE    WRK-KAISU            TO  WRK-Z5
-             MOVE    WRK-Z5               TO  TA02-TOTAL-SIYO(IDX1)
+             IF    WRK-KAISU(9:2)    = "00"
+               MOVE    WRK-KAISU            TO  WRK-V10
+               MOVE    WRK-V10              TO  TA02-TOTAL-SIYO(IDX1)
+             ELSE
+               IF    WRK-KAISU(10:1)    = "0"
+                 MOVE    WRK-KAISU            TO  WRK-V10-1
+                 MOVE    WRK-V10-1            TO  TA02-TOTAL-SIYO(IDX1)
+               ELSE
+                 MOVE    WRK-KAISU            TO  WRK-V10-2
+                 MOVE    WRK-V10-2            TO  TA02-TOTAL-SIYO(IDX1)
+               END-IF
+             END-IF
              ADD  WRK-KAISU               TO  WRK-SUM-STOTAL-SIYO
                                               WRK-SUM-GTOTAL-SIYO
       *
@@ -1682,28 +1765,88 @@
                                          TO  TA02-SRYNAME(IDX1)
       *
       *    外来件数
-           MOVE    WRK-SUM-SGAIRAI-KEN   TO  WRK-Z5
-           MOVE    WRK-Z5                TO  TA02-GAIRAI-KEN(IDX1)
+           IF    WRK-SUM-SGAIRAI-KEN(8:2)    = "00"
+             MOVE    WRK-SUM-SGAIRAI-KEN   TO  WRK-V9
+             MOVE    WRK-V9                TO  TA02-GAIRAI-KEN(IDX1)
+           ELSE
+             IF    WRK-SUM-SGAIRAI-KEN(9:1)    = "0"
+               MOVE    WRK-SUM-SGAIRAI-KEN   TO  WRK-V9-1
+               MOVE    WRK-V9-1              TO  TA02-GAIRAI-KEN(IDX1)
+             ELSE
+               MOVE    WRK-SUM-SGAIRAI-KEN   TO  WRK-V9-2
+               MOVE    WRK-V9-2              TO  TA02-GAIRAI-KEN(IDX1)
+             END-IF
+           END-IF
       *
       *    入院件数
-           MOVE    WRK-SUM-SNYUIN-KEN    TO  WRK-Z5
-           MOVE    WRK-Z5                TO  TA02-NYUIN-KEN(IDX1)
+           IF    WRK-SUM-SNYUIN-KEN(8:2)    = "00"
+             MOVE    WRK-SUM-SNYUIN-KEN    TO  WRK-V9
+             MOVE    WRK-V9                TO  TA02-NYUIN-KEN(IDX1)
+           ELSE
+             IF    WRK-SUM-SNYUIN-KEN(9:1)    = "0"
+               MOVE    WRK-SUM-SNYUIN-KEN    TO  WRK-V9-1
+               MOVE    WRK-V9-1              TO  TA02-NYUIN-KEN(IDX1)
+             ELSE
+               MOVE    WRK-SUM-SNYUIN-KEN    TO  WRK-V9-2
+               MOVE    WRK-V9-2              TO  TA02-NYUIN-KEN(IDX1)
+             END-IF
+           END-IF
       *
       *    合計件数
-           MOVE    WRK-SUM-STOTAL-KEN    TO  WRK-Z6
-           MOVE    WRK-Z6                TO  TA02-TOTAL-KEN(IDX1)
+           IF    WRK-SUM-STOTAL-KEN(9:2)    = "00"
+             MOVE    WRK-SUM-STOTAL-KEN    TO  WRK-V10
+             MOVE    WRK-V10               TO  TA02-TOTAL-KEN(IDX1)
+           ELSE
+             IF    WRK-SUM-STOTAL-KEN(10:1)    = "0"
+               MOVE    WRK-SUM-STOTAL-KEN    TO  WRK-V10-1
+               MOVE    WRK-V10-1             TO  TA02-TOTAL-KEN(IDX1)
+             ELSE
+               MOVE    WRK-SUM-STOTAL-KEN    TO  WRK-V10-2
+               MOVE    WRK-V10-2             TO  TA02-TOTAL-KEN(IDX1)
+             END-IF
+           END-IF
       *
       *    外来使用量
-           MOVE    WRK-SUM-SGAIRAI-SIYO  TO  WRK-Z9
-           MOVE    WRK-Z9                TO  TA02-GAIRAI-SIYO(IDX1)
+           IF    WRK-SUM-SGAIRAI-SIYO(8:2)    = "00"
+             MOVE    WRK-SUM-SGAIRAI-SIYO  TO  WRK-V9
+             MOVE    WRK-V9                TO  TA02-GAIRAI-SIYO(IDX1)
+           ELSE
+             IF    WRK-SUM-SGAIRAI-SIYO(9:1)    = "0"
+               MOVE    WRK-SUM-SGAIRAI-SIYO  TO  WRK-V9-1
+               MOVE    WRK-V9-1              TO  TA02-GAIRAI-SIYO(IDX1)
+             ELSE
+               MOVE    WRK-SUM-SGAIRAI-SIYO  TO  WRK-V9-2
+               MOVE    WRK-V9-2              TO  TA02-GAIRAI-SIYO(IDX1)
+             END-IF
+           END-IF
       *
       *    入院使用量
-           MOVE    WRK-SUM-SNYUIN-SIYO   TO  WRK-Z9
-           MOVE    WRK-Z9                TO  TA02-NYUIN-SIYO(IDX1)
+           IF    WRK-SUM-SNYUIN-SIYO(8:2)    = "00"
+             MOVE    WRK-SUM-SNYUIN-SIYO   TO  WRK-V9
+             MOVE    WRK-V9                TO  TA02-NYUIN-SIYO(IDX1)
+           ELSE
+             IF    WRK-SUM-SNYUIN-SIYO(9:1)    = "0"
+               MOVE    WRK-SUM-SNYUIN-SIYO   TO  WRK-V9-1
+               MOVE    WRK-V9-1              TO  TA02-NYUIN-SIYO(IDX1)
+             ELSE
+               MOVE    WRK-SUM-SNYUIN-SIYO   TO  WRK-V9-2
+               MOVE    WRK-V9-2              TO  TA02-NYUIN-SIYO(IDX1)
+             END-IF
+           END-IF
       *
       *    合計使用量
-           MOVE    WRK-SUM-STOTAL-SIYO   TO  WRK-Z10
-           MOVE    WRK-Z10               TO  TA02-TOTAL-SIYO(IDX1)
+           IF    WRK-SUM-STOTAL-SIYO(9:2)    = "00"
+             MOVE    WRK-SUM-STOTAL-SIYO   TO  WRK-V10
+             MOVE    WRK-V10               TO  TA02-TOTAL-SIYO(IDX1)
+           ELSE
+             IF    WRK-SUM-STOTAL-SIYO(10:1)    = "0"
+               MOVE    WRK-SUM-STOTAL-SIYO   TO  WRK-V10-1
+               MOVE    WRK-V10-1             TO  TA02-TOTAL-SIYO(IDX1)
+             ELSE
+               MOVE    WRK-SUM-STOTAL-SIYO   TO  WRK-V10-2
+               MOVE    WRK-V10-2             TO  TA02-TOTAL-SIYO(IDX1)
+             END-IF
+           END-IF
       *
       *    外来金額
            MOVE    WRK-SUM-SGAIRAI-KIN   TO  WRK-Z10
@@ -1744,28 +1887,88 @@
        500-GOUKEI-HEN-SEC            SECTION.
       *
       *    外来件数
-           MOVE    WRK-SUM-GGAIRAI-KEN   TO  WRK-Z6
-           MOVE    WRK-Z6                TO  TA02-GGAIRAI-KEN
+           IF    WRK-SUM-GGAIRAI-KEN(9:2)    = "00"
+             MOVE    WRK-SUM-SGAIRAI-KEN   TO  WRK-V10
+             MOVE    WRK-V10               TO  TA02-GGAIRAI-KEN
+           ELSE
+             IF    WRK-SUM-GGAIRAI-KEN(10:1)    = "0"
+               MOVE    WRK-SUM-GGAIRAI-KEN   TO  WRK-V10-1
+               MOVE    WRK-V10-1             TO  TA02-GGAIRAI-KEN
+             ELSE
+               MOVE    WRK-SUM-GGAIRAI-KEN   TO  WRK-V10-2
+               MOVE    WRK-V10-2             TO  TA02-GGAIRAI-KEN
+             END-IF
+           END-IF
       *
       *    入院件数
-           MOVE    WRK-SUM-GNYUIN-KEN    TO  WRK-Z6
-           MOVE    WRK-Z6                TO  TA02-GNYUIN-KEN
+           IF    WRK-SUM-GNYUIN-KEN(9:2)    = "00"
+             MOVE    WRK-SUM-GNYUIN-KEN    TO  WRK-V10
+             MOVE    WRK-V10               TO  TA02-GNYUIN-KEN
+           ELSE
+             IF    WRK-SUM-GNYUIN-KEN(10:1)    = "0"
+               MOVE    WRK-SUM-GNYUIN-KEN    TO  WRK-V10-1
+               MOVE    WRK-V10-1             TO  TA02-GNYUIN-KEN
+             ELSE
+               MOVE    WRK-SUM-GNYUIN-KEN    TO  WRK-V10-2
+               MOVE    WRK-V10-2             TO  TA02-GNYUIN-KEN
+             END-IF
+           END-IF
       *
       *    合計件数
-           MOVE    WRK-SUM-GTOTAL-KEN    TO  WRK-Z7
-           MOVE    WRK-Z7                TO  TA02-GTOTAL-KEN
+           IF    WRK-SUM-GTOTAL-KEN(10:2)    = "00"
+             MOVE    WRK-SUM-GTOTAL-KEN    TO  WRK-V11
+             MOVE    WRK-V11               TO  TA02-GTOTAL-KEN
+           ELSE
+             IF    WRK-SUM-GTOTAL-KEN(11:1)    = "0"
+               MOVE    WRK-SUM-GTOTAL-KEN    TO  WRK-V11-1
+               MOVE    WRK-V11-1             TO  TA02-GTOTAL-KEN
+             ELSE
+               MOVE    WRK-SUM-GTOTAL-KEN    TO  WRK-V11-2
+               MOVE    WRK-V11-2             TO  TA02-GTOTAL-KEN
+             END-IF
+           END-IF
       *
       *    外来使用量
-           MOVE    WRK-SUM-GGAIRAI-SIYO  TO  WRK-Z10
-           MOVE    WRK-Z10               TO  TA02-GGAIRAI-SIYO
+           IF    WRK-SUM-GGAIRAI-SIYO(9:2)    = "00"
+             MOVE    WRK-SUM-GGAIRAI-SIYO   TO  WRK-V10
+             MOVE    WRK-V10                TO  TA02-GGAIRAI-SIYO
+           ELSE
+             IF    WRK-SUM-GGAIRAI-KEN(10:1)    = "0"
+               MOVE    WRK-SUM-GGAIRAI-SIYO   TO  WRK-V10-1
+               MOVE    WRK-V10-1              TO  TA02-GGAIRAI-SIYO
+             ELSE
+               MOVE    WRK-SUM-GGAIRAI-SIYO   TO  WRK-V10-2
+               MOVE    WRK-V10-2              TO  TA02-GGAIRAI-SIYO
+             END-IF
+           END-IF
       *
       *    入院使用量
-           MOVE    WRK-SUM-GNYUIN-SIYO   TO  WRK-Z10
-           MOVE    WRK-Z10               TO  TA02-GNYUIN-SIYO
+           IF    WRK-SUM-GNYUIN-SIYO(9:2)    = "00"
+             MOVE    WRK-SUM-GNYUIN-SIYO   TO  WRK-V10
+             MOVE    WRK-V10               TO  TA02-GNYUIN-SIYO
+           ELSE
+             IF    WRK-SUM-GNYUIN-KEN(10:1)    = "0"
+               MOVE    WRK-SUM-GNYUIN-SIYO   TO  WRK-V10-1
+               MOVE    WRK-V10-1             TO  TA02-GNYUIN-SIYO
+             ELSE
+               MOVE    WRK-SUM-GNYUIN-SIYO   TO  WRK-V10-2
+               MOVE    WRK-V10-2             TO  TA02-GNYUIN-SIYO
+             END-IF
+           END-IF
       *
       *    合計使用量
-           MOVE    WRK-SUM-GTOTAL-SIYO   TO  WRK-Z11
-           MOVE    WRK-Z11               TO  TA02-GTOTAL-SIYO
+           IF    WRK-SUM-GTOTAL-SIYO(10:2)    = "00"
+             MOVE    WRK-SUM-GTOTAL-SIYO   TO  WRK-V11
+             MOVE    WRK-V11               TO  TA02-GTOTAL-SIYO
+           ELSE
+             IF    WRK-SUM-GTOTAL-KEN(11:1)    = "0"
+               MOVE    WRK-SUM-GTOTAL-SIYO   TO  WRK-V11-1
+               MOVE    WRK-V11-1             TO  TA02-GTOTAL-SIYO
+             ELSE
+               MOVE    WRK-SUM-GTOTAL-SIYO   TO  WRK-V11-2
+               MOVE    WRK-V11-2             TO  TA02-GTOTAL-SIYO
+             END-IF
+           END-IF
       *
       *    外来金額
            MOVE    WRK-SUM-GGAIRAI-KIN   TO  WRK-Z11

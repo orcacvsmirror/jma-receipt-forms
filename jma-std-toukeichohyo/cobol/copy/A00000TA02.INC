@@ -21,6 +21,7 @@
       *  管理者            : 
       *  Maj/Min/Rev  修正者  日付        内容
       *   01.00.00    田中    2011/02/14  新規作成
+      *   01.00.09    門間    2014/05/22  薬価／点数、件数、使用量を小数点第2位まで対応
       *******************************************************************
        01  TA02.
       *    診療年月
@@ -48,11 +49,11 @@
       *    薬価／点数
                05  TA02-YAKKA           PIC X(12).
       *    外来件数
-               05  TA02-GAIRAI-KEN      PIC X(05).
+               05  TA02-GAIRAI-KEN      PIC X(09).
       *    入院件数
-               05  TA02-NYUIN-KEN       PIC X(05).
+               05  TA02-NYUIN-KEN       PIC X(09).
       *    合計件数
-               05  TA02-TOTAL-KEN       PIC X(06).
+               05  TA02-TOTAL-KEN       PIC X(10).
       *    単価
                05  TA02-TANKA           PIC X(12).
       *    購入価
@@ -82,11 +83,11 @@
       *    合計－薬価／点数
                05  TA02-GYAKKA          PIC X(10).
       *    合計－外来件数
-               05  TA02-GGAIRAI-KEN     PIC X(06).
+               05  TA02-GGAIRAI-KEN     PIC X(10).
       *    合計－入院件数
-               05  TA02-GNYUIN-KEN      PIC X(06).
+               05  TA02-GNYUIN-KEN      PIC X(10).
       *    合計－合計件数
-               05  TA02-GTOTAL-KEN      PIC X(07).
+               05  TA02-GTOTAL-KEN      PIC X(11).
       *    合計－単価
                05  TA02-GTANKA          PIC X(10).
       *    合計－購入価
