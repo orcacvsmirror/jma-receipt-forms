@@ -34,6 +34,7 @@
       *                                    月遅れ分が印字されないのを修正
       *   01.00.05    吉川    2014/05/22   保険が月に変更になった場合
       *                                    それぞれの一部負担金を印字する
+      *                                    実日数を3桁まで印字する
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1486,8 +1487,8 @@
              MOVE    TA01TMP-NAME        TO  TA01-NAME(IDX1)
       *
       *      実日数
-             MOVE    TA01TMP-NISSU       TO  WRK-Z2
-             MOVE    WRK-Z2              TO  TA01-NISSU(IDX1)
+             MOVE    TA01TMP-NISSU       TO  WRK-Z3-9
+             MOVE    WRK-Z3-9            TO  TA01-NISSU(IDX1)
       *
       *      点数
              MOVE    TA01TMP-TENSU       TO  WRK-Z9-9
@@ -1683,8 +1684,8 @@
            MOVE    "　　　　　　　　小計"  TO  TA01-NAME(IDX1)
       *
       *    実日数
-           MOVE    SUM-SNISSU            TO  WRK-Z2
-           MOVE    WRK-Z2                TO  TA01-NISSU(IDX1)
+           MOVE    SUM-SNISSU            TO  WRK-Z3-9
+           MOVE    WRK-Z3-9              TO  TA01-NISSU(IDX1)
       *
       *    点数
            MOVE    SUM-STENSU            TO  WRK-Z9-9
@@ -1751,8 +1752,8 @@
        330-GOKEI-PRINT-SEC          SECTION.
       *
       *    実日数
-           MOVE    SUM-GNISSU            TO  WRK-Z3-9
-           MOVE    WRK-Z3-9              TO  TA01-GNISSU
+           MOVE    SUM-GNISSU            TO  WRK-Z4-9
+           MOVE    WRK-Z4-9              TO  TA01-GNISSU
       *
       *    点数
            MOVE    SUM-GTENSU            TO  WRK-Z10-9
