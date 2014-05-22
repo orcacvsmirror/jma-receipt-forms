@@ -37,6 +37,9 @@
       *                                    実日数を3桁まで印字する
       *                                    実人数、延べ人数を9999まで
       *                                    カウントできるように修正
+      *                                    まとめ公費を使用した場合
+      *                                    負担者番号と受給者番号が
+      *                                    正しく印字されないのを修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -956,6 +959,10 @@
                     UNTIL    IDY  >     4
                     OR  RECE10-KOHNUM(IDY)  =  SPACE
       *
+      *      負担者番号、受給者番号を取得
+             MOVE    RECE10-KOHNUM(IDY)    TO  WRK-KOHNUM
+             PERFORM 900-PTKOHINF-SET-SEC
+      *
       *      特定疾患は０５１でまとめる
              IF  RECE10-KOHNUM(IDY)  =  "091"
                MOVE    "051"               TO  RECE10-KOHNUM(IDY)
@@ -983,9 +990,7 @@
       *
       *      公費番号
              MOVE    RECE10-KOHNUM(IDY)    TO  TA01TMP-KOHNUM(IDY)
-                                               WRK-KOHNUM
       *
-             PERFORM 900-PTKOHINF-SET-SEC
       *      公費負担者番号
              MOVE    WRK-FTNJANUM          TO  TA01TMP-FTNJANUM(IDY)
       *      
