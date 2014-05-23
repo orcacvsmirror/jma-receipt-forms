@@ -1933,7 +1933,7 @@
              MOVE    WRK-SUM-GGAIRAI-SIYO   TO  WRK-V10
              MOVE    WRK-V10                TO  TA02-GGAIRAI-SIYO
            ELSE
-             IF    WRK-SUM-GGAIRAI-KEN(10:1)    = "0"
+             IF    WRK-SUM-GGAIRAI-SIYO(10:1)    = "0"
                MOVE    WRK-SUM-GGAIRAI-SIYO   TO  WRK-V10-1
                MOVE    WRK-V10-1              TO  TA02-GGAIRAI-SIYO
              ELSE
@@ -1947,7 +1947,7 @@
              MOVE    WRK-SUM-GNYUIN-SIYO   TO  WRK-V10
              MOVE    WRK-V10               TO  TA02-GNYUIN-SIYO
            ELSE
-             IF    WRK-SUM-GNYUIN-KEN(10:1)    = "0"
+             IF    WRK-SUM-GNYUIN-SIYO(10:1)    = "0"
                MOVE    WRK-SUM-GNYUIN-SIYO   TO  WRK-V10-1
                MOVE    WRK-V10-1             TO  TA02-GNYUIN-SIYO
              ELSE
@@ -1961,7 +1961,7 @@
              MOVE    WRK-SUM-GTOTAL-SIYO   TO  WRK-V11
              MOVE    WRK-V11               TO  TA02-GTOTAL-SIYO
            ELSE
-             IF    WRK-SUM-GTOTAL-KEN(11:1)    = "0"
+             IF    WRK-SUM-GTOTAL-SIYO(11:1)    = "0"
                MOVE    WRK-SUM-GTOTAL-SIYO   TO  WRK-V11-1
                MOVE    WRK-V11-1             TO  TA02-GTOTAL-SIYO
              ELSE
