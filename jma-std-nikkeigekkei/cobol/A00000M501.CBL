@@ -36,6 +36,7 @@
       *  01.00.05    @@@@-Ìç´Ö    12/07/03  ½é¿Ç¡¢ºÆ¿Ç¡¢¤½¤ÎÂ¾¤ÎÈ½Äê¾ò·ï¤òºÆÅÙÊÑ¹¹
       *  01.00.06    @@@@-Ìç´Ö    12/08/24  ¿·´µ·ï¿ô¤¬½ÅÊ£¥«¥¦¥ó¥È¤µ¤ì¤ëÉÔ¶ñ¹ç¤ò½¤Àµ
       *  01.00.07    @@@@-Ìç´Ö    13/09/30  ÊÇ¿ô¤Î°õ»ú½¤Àµ¡Ê½èÍý·ë²Ì²èÌÌ¡Ë
+      *  01.00.08    @@@@-Ìç´Ö    14/06/23  ¼«Èñ¿ÇÎÅ¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *****************************************************************
       *
       *
@@ -200,6 +201,9 @@
            03  WRK-COMPFTN           PIC S9(10).
            03  WRK-SYOSINYMD         PIC 9(08).
            03  WRK-DENPNUM           PIC 9(07).
+           03  WRK-JIHI-TTL          PIC 9(07).
+           03  WRK-HASU-KBN          PIC X(01).
+           03  WRK-HASU-KBNJ         PIC X(01).
       *
       *    ¿ÇÎÅ²ÊÊÌ²Ã»»¥¨¥ê¥¢
        01  SUM-AREA                 VALUE   ZERO.
@@ -1562,6 +1566,9 @@
       *
            IF    IDX   >   ZERO
       *
+      *      ¼«Èñ¿ÇÎÅ  Ã¼¿ô½èÍý
+             PERFORM  340-JIHIHASU-HEN-SEC
+      *
              INITIALIZE WRK-JIHI
              INITIALIZE WRK-JIHI3
                IF  SYU-SRYYMD  <=  "20070331"
@@ -1577,11 +1584,9 @@
                ELSE
                  COMPUTE WRK-JIHI    =   SYU-TOTAL-TGMONEY
                                      +   SYU-TOTAL-TGMONEY-TAX
-                                     +   SYU-JIHI-TOTAL
-                                     +   SYU-JIHI-TOTAL-TAX
+                                     +   WRK-JIHI-TTL
       *
-                 COMPUTE WRK-JIHI3   =   SYU-JIHI-TOTAL
-                                     +   SYU-JIHI-TOTAL-TAX
+                 COMPUTE WRK-JIHI3   =   WRK-JIHI-TTL
                END-IF
       *
              COMPUTE WRK-MONEY       =   SYU-SKYMONEY
@@ -1679,6 +1684,96 @@
            .
        330-BODY-HEN-SUB-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    ¼«Èñ¿ÇÎÅ  Ã¼¿ô½èÍý
+      *****************************************************************
+       340-JIHIHASU-HEN-SEC          SECTION.
+      *
+           COMPUTE  WRK-JIHI-TTL  =  SYU-JIHI-TOTAL
+                                  +  SYU-JIHI-TOTAL-TAX
+      *
+           EVALUATE  SYU-SYUHKNNUM
+      *    Ï«ºÒ
+           WHEN   "971"
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN3   TO  WRK-HASU-KBN
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN3J  TO  WRK-HASU-KBNJ
+      *    ¼«ÇåÀÕ
+           WHEN   "973"
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN4   TO  WRK-HASU-KBN
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN4J  TO  WRK-HASU-KBNJ
+      *    ¸ø³²
+           WHEN   "975"
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN5J  TO  WRK-HASU-KBNJ
+      *    °åÊÝ
+           WHEN   OTHER
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN2   TO  WRK-HASU-KBN
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN2J  TO  WRK-HASU-KBNJ
+      *      Âè»°¼Ô¹Ô°Ù
+             IF  SYU-KOH1HKNNUM  =  "970"
+               MOVE    SYS-1001-DISCOUNT-HASU-KBN6   TO  WRK-HASU-KBN
+               MOVE    SYS-1001-DISCOUNT-HASU-KBN6J  TO  WRK-HASU-KBNJ
+             END-IF
+           END-EVALUATE
+      *
+      *    ¼«Èñ¿ÇÎÅ  Ã¼¿ô¥µ¥Ö½èÍý
+           PERFORM  3401-JIHIHASU-SUB-SEC
+      *
+           .
+       340-JIHIHASU-HEN-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    ¼«Èñ¿ÇÎÅ  Ã¼¿ô¥µ¥Ö½èÍý
+      *****************************************************************
+       3401-JIHIHASU-SUB-SEC          SECTION.
+      *
+      *    ÀÁµá³ÛÃ¼¿ôÀßÄê¡Ê¸ºÌÈÌµ¡¦¼«ÈñÊ¬¡Ë
+           EVALUATE  WRK-HASU-KBNJ
+      *    £±£°±ßÌ¤Ëþ»Í¼Î¸ÞÆþ
+           WHEN  "1"
+             COMPUTE  WRK-JIHI-TTL ROUNDED = WRK-JIHI-TTL / 10
+             COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL * 10
+      *    £±£°±ßÌ¤ËþÀÚ¤ê¼Î¤Æ
+           WHEN  "2"
+             COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL / 10
+             COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL * 10
+      *    £±£°±ßÌ¤ËþÀÚ¤ê¾å¤²
+           WHEN  "3"
+             IF  WRK-JIHI-TTL(7:1)  NOT =  ZERO
+               COMPUTE  WRK-JIHI-TTL       = WRK-JIHI-TTL / 10
+               COMPUTE  WRK-JIHI-TTL       = WRK-JIHI-TTL * 10 + 10
+             END-IF
+      *    ÊÝ¸±Ê¬¤Ë½à¤º¤ë
+           WHEN  "0"
+      *      ÀÁµá³ÛÃ¼¿ôÀßÄê¡Ê¸ºÌÈÌµ¡¦ÊÝ¸±Ê¬¡Ë
+             EVALUATE  WRK-HASU-KBN
+      *      £±£°±ßÌ¤Ëþ»Í¼Î¸ÞÆþ
+             WHEN  "1"
+               COMPUTE  WRK-JIHI-TTL ROUNDED = WRK-JIHI-TTL / 10
+               COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL * 10
+      *      £±£°±ßÌ¤ËþÀÚ¤ê¼Î¤Æ
+             WHEN  "2"
+               COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL / 10
+               COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL * 10
+      *      £±£°±ßÌ¤ËþÀÚ¤ê¾å¤²
+             WHEN  "3"
+               IF  WRK-JIHI-TTL(7:1)  NOT =  ZERO
+                 COMPUTE  WRK-JIHI-TTL       = WRK-JIHI-TTL / 10
+                 COMPUTE  WRK-JIHI-TTL       = WRK-JIHI-TTL * 10 + 10
+               END-IF
+             WHEN  OTHER
+               CONTINUE
+             END-EVALUATE
+      *    £±£°±ßÌ¤ËþÃ¼¿ô½èÍý¤Ê¤·
+           WHEN  OTHER
+             CONTINUE
+           END-EVALUATE
+      *
+           .
+       3401-JIHIHASU-SUB-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    ·ï¿ô½¸·×¥µ¥Ö½èÍý
       *****************************************************************

@@ -35,6 +35,7 @@
       *  01.00.04    @@@@-田中    11/12/15  外来時に療養担当手当を集計
       *  01.00.05    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.06    @@@@-門間    12/07/03  初診、再診、その他の判定条件を再度変更
+      *  01.00.07    @@@@-門間    14/06/23  自費診療の端数処理を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -196,6 +197,10 @@
            03  WRK-SYS-NYUGAIKBN      PIC 9(04).
            03  WRK-COMPFTN            PIC S9(10).
            03  WRK-DENPNUM            PIC 9(07).
+      *
+           03  WRK-JIHI-TTL           PIC 9(07).
+           03  WRK-HASU-KBN           PIC X(01).
+           03  WRK-HASU-KBNJ          PIC X(01).
       *
        01  SUM-AREA                   VALUE ZERO.
            03  SRYKAMAX               PIC 9(03).
@@ -1089,6 +1094,10 @@
            IF   IDX   =   7
              MOVE    ZERO            TO    WRK-JIHI
            ELSE
+      *
+      *      自費診療  端数処理
+             PERFORM  340-JIHIHASU-HEN-SEC
+      *
              IF  SYU-SRYYMD  <=  "20070331"
                COMPUTE  WRK-JIHI   =   SYU-TOTAL-TGMONEY
                                    +   SYU-TOTAL-TGMONEY-TAX
@@ -1098,8 +1107,7 @@
              ELSE
                COMPUTE  WRK-JIHI   =   SYU-TOTAL-TGMONEY
                                    +   SYU-TOTAL-TGMONEY-TAX
-                                   +   SYU-JIHI-TOTAL
-                                   +   SYU-JIHI-TOTAL-TAX
+                                   +   WRK-JIHI-TTL
              END-IF
            END-IF
            COMPUTE  WRK-MONEY   =   SYU-SKYMONEY
@@ -1590,6 +1598,95 @@
       *
            .
        320-SYUNOU-CNT-SUB-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    自費診療  端数処理
+      *****************************************************************
+       340-JIHIHASU-HEN-SEC          SECTION.
+      *
+           COMPUTE  WRK-JIHI-TTL  =  SYU-JIHI-TOTAL
+                                  +  SYU-JIHI-TOTAL-TAX
+      *
+           EVALUATE  SYU-SYUHKNNUM
+      *    労災
+           WHEN   "971"
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN3   TO  WRK-HASU-KBN
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN3J  TO  WRK-HASU-KBNJ
+      *    自賠責
+           WHEN   "973"
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN4   TO  WRK-HASU-KBN
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN4J  TO  WRK-HASU-KBNJ
+      *    公害
+           WHEN   "975"
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN5J  TO  WRK-HASU-KBNJ
+      *    医保
+           WHEN   OTHER
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN2   TO  WRK-HASU-KBN
+             MOVE    SYS-1001-DISCOUNT-HASU-KBN2J  TO  WRK-HASU-KBNJ
+      *      第三者行為
+             IF  SYU-KOH1HKNNUM  =  "970"
+               MOVE    SYS-1001-DISCOUNT-HASU-KBN6   TO  WRK-HASU-KBN
+               MOVE    SYS-1001-DISCOUNT-HASU-KBN6J  TO  WRK-HASU-KBNJ
+             END-IF
+           END-EVALUATE
+      *
+      *    自費診療  端数サブ処理
+           PERFORM  3401-JIHIHASU-SUB-SEC
+      *
+           .
+       340-JIHIHASU-HEN-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    自費診療  端数サブ処理
+      *****************************************************************
+       3401-JIHIHASU-SUB-SEC          SECTION.
+      *
+      *    請求額端数設定（減免無・自費分）
+           EVALUATE  WRK-HASU-KBNJ
+      *    １０円未満四捨五入
+           WHEN  "1"
+             COMPUTE  WRK-JIHI-TTL ROUNDED = WRK-JIHI-TTL / 10
+             COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL * 10
+      *    １０円未満切り捨て
+           WHEN  "2"
+             COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL / 10
+             COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL * 10
+      *    １０円未満切り上げ
+           WHEN  "3"
+             IF  WRK-JIHI-TTL(7:1)  NOT =  ZERO
+               COMPUTE  WRK-JIHI-TTL       = WRK-JIHI-TTL / 10
+               COMPUTE  WRK-JIHI-TTL       = WRK-JIHI-TTL * 10 + 10
+             END-IF
+      *    保険分に準ずる
+           WHEN  "0"
+      *      請求額端数設定（減免無・保険分）
+             EVALUATE  WRK-HASU-KBN
+      *      １０円未満四捨五入
+             WHEN  "1"
+               COMPUTE  WRK-JIHI-TTL ROUNDED = WRK-JIHI-TTL / 10
+               COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL * 10
+      *      １０円未満切り捨て
+             WHEN  "2"
+               COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL / 10
+               COMPUTE  WRK-JIHI-TTL         = WRK-JIHI-TTL * 10
+      *      １０円未満切り上げ
+             WHEN  "3"
+               IF  WRK-JIHI-TTL(7:1)  NOT =  ZERO
+                 COMPUTE  WRK-JIHI-TTL       = WRK-JIHI-TTL / 10
+                 COMPUTE  WRK-JIHI-TTL       = WRK-JIHI-TTL * 10 + 10
+               END-IF
+             WHEN  OTHER
+               CONTINUE
+             END-EVALUATE
+      *    １０円未満端数処理なし
+           WHEN  OTHER
+             CONTINUE
+           END-EVALUATE
+      *
+           .
+       3401-JIHIHASU-SUB-EXT.
            EXIT.
       *
       *****************************************************************
