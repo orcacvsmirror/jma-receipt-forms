@@ -1599,7 +1599,8 @@
                ELSE
                  COMPUTE WRK-JIHI    =   SYU-TOTAL-TGMONEY
                                      +   SYU-TOTAL-TGMONEY-TAX
-                                     +   WRK-JIHI-TTL
+                                     +   SYU-JIHI-TOTAL
+                                     +   SYU-JIHI-TOTAL-TAX
       *
                  COMPUTE WRK-JIHI3   =   WRK-JIHI-TTL
                END-IF
