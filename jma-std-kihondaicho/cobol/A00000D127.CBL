@@ -36,7 +36,6 @@
       *  01.00.04    @@@@-門間    12/02/29  インデント整理
       *                           12/03/09  CSVファイル作成機能追加
       *  01.00.05    @@@@-門間    12/06/27  初診、再診、その他の判定条件を再変更
-      *  01.00.06    @@@@-門間    14/06/04  0件印字が有効な場合、表示される医師の上限を変更
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -281,7 +280,7 @@
              05       SUM-SRYKACD       PIC  X(02).
              05       SUM-SRYKANAME     PIC  X(20).
            03         SUM-PRFLG         PIC  9(01).
-           03         SUM-DR-TBL        OCCURS  1000.
+           03         SUM-DR-TBL        OCCURS  300.
              05       SUM-DRCD          PIC  X(04).
              05       SUM-DRNAME        PIC  X(18).
              05       SUM-BF-MISYU      PIC S9(11).
@@ -1080,7 +1079,7 @@
       *
                MOVE  1  TO  I3
                PERFORM  VARYING  I8  FROM  1  BY  1
-                        UNTIL    I8  >     998
+                        UNTIL    I8  >     200
                  IF  WRK-DRFLG2(I8)  =  1
                    MOVE   WRK-DRCD2(I8)     TO   SUM-DRCD(I3)
                    MOVE   WRK-DRNAME2(I8)   TO   SUM-DRNAME(I3)
