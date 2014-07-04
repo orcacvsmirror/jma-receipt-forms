@@ -36,6 +36,8 @@
       *   01.00.06    @@@@-吉川   13/08/26  在宅の集計不具合修正
       *   01.00.07    @@@@-門間   14/01/07  療養担当手当の自動加算分を集計するように修正
       *   01.00.08    @@@@-門間   14/04/14  「その他」回数欄の不具合を修正
+      *   01.00.09    @@@@-門間   14/07/03  入院履歴読込時のkeyを変更（key19からkey42）
+      *                                     入院履歴が存在しない場合は「入院履歴なし」へ集計するよう変更
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1122,16 +1124,17 @@
            MOVE    WRK-PARA-PRTLYMD  TO   SYS-5001-EDYUKYMD
            MOVE    WRK-PARA-PRTLYMD  TO   WRK-SYSYMD
            PERFORM 830-SYSKANRI-DBSELECT-SEC
-           MOVE   1        TO     IDX1
            PERFORM  UNTIL  FLG-SYSKANRI4 = 1
+             ADD    1                    TO   IDX1
              MOVE    SYS-5001-BTU-NUM    TO   WRK-BTUNUM(IDX1)
              MOVE    SYS-5001-BTU-NAME   TO   WRK-BTUNAME(IDX1)
-             ADD    1                    TO   IDX1
       *
              PERFORM 830-SYSKANRI-DBFETCH-SEC
            END-PERFORM
       *
-           SUBTRACT  1        FROM IDX1
+           ADD     1                   TO   IDX1
+           MOVE    "ZZ"                TO   WRK-BTUNUM(IDX1)
+           MOVE    "入院履歴なし"      TO   WRK-BTUNAME(IDX1)
            MOVE      IDX1     TO   WRK-BTUMAX
            PERFORM 830-SYSKANRI-DBCLOSE-SEC
       *
@@ -1241,6 +1244,10 @@
       *
            MOVE   PTNYUINRRK-BTUNUM    TO WRK-BTU-INDEX
            PERFORM  930-PTNYUINRRK-CLOSE-SEC
+      *
+           IF  FLG-PTNYUINRRK  NOT =  ZERO
+             MOVE   "ZZ"    TO WRK-BTU-INDEX
+           END-IF
       *
            .
        220-BTU-GROUPING-EXT.
@@ -1554,7 +1561,11 @@
              IF  PTNYUINRRK-BTUNUM   NOT  =   SPACE
       *    病棟CDをセット
                MOVE    PTNYUINRRK-BTUNUM   TO   WRK-BTU-INDEX
+             ELSE
+               MOVE   "ZZ"    TO WRK-BTU-INDEX
              END-IF
+           ELSE
+             MOVE   "ZZ"    TO WRK-BTU-INDEX
            END-IF
            MOVE    WRK-NYUGAIKBN  TO   JYURRK-NYUGAIKBN
            MOVE    ZERO           TO   JYURRK-RENNUM
@@ -4668,7 +4679,7 @@
            MOVE    PTNYUINRRK-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
-           MOVE    "key19"              TO  MCP-PATHNAME
+           MOVE    "key42"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -4688,7 +4699,7 @@
       *
            MOVE    "DBFETCH"           TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
-           MOVE    "key19"             TO  MCP-PATHNAME
+           MOVE    "key42"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -4710,7 +4721,7 @@
       *
            MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
-           MOVE    "key19"              TO  MCP-PATHNAME
+           MOVE    "key42"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
