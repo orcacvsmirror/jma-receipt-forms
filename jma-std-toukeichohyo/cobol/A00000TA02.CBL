@@ -39,6 +39,7 @@
       *   01.00.08    門間    2014/04/30  月を跨いだ場合、正しく集計されない不具合を修正
       *   01.00.09    門間    2014/05/22  自費の診療行為コードの場合、薬価／点数が０になる不具合を修正
       *                                   薬価／点数、件数、使用量を小数点第2位まで対応
+      *   01.00.10    門間    2014/07/17  きざみ値処理を追加
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -213,6 +214,7 @@
                05  WRK-SYOKUJITEN4         PIC 9(08)V9(02).
            03  WRK-OBJYMD                  PIC 9(08).
            03  WRK-PTID                    PIC 9(10).
+           03  WRK-KIZAMI                  PIC S9(09).
       *
       *    診療科、医師、病棟別集計領域
        01  WRK-SYUKEI-AREA.
@@ -923,6 +925,24 @@
       *    点数・薬価
                    IF  TNS-TENSIKIBETU  =  7
                      COMPUTE  TNS-TEN  =  TNS-TEN  *  -1
+                   END-IF
+      *
+      *    きざみ値処理
+                   IF   TNS-KZMCOMPSIKIBETU   =  1
+                     IF  SRY-SRYSURYO(IDX1)  >=  TNS-KZMJGN
+                       COMPUTE  WRK-KIZAMI  =  TNS-KZMJGN
+                                            -  TNS-KZMKGN
+                     ELSE
+                       COMPUTE  WRK-KIZAMI  =  SRY-SRYSURYO(IDX1)
+                                            -  TNS-KZMKGN
+                     END-IF
+      *
+                     PERFORM    UNTIL  WRK-KIZAMI  <=  0
+                       COMPUTE  WRK-KIZAMI  =  WRK-KIZAMI
+                                            -  TNS-KZM
+                       COMPUTE  TNS-TEN     =  TNS-TEN
+                                            +  TNS-KZMTEN
+                     END-PERFORM
                    END-IF
       *
                    IF  ( SRY-SRYKBN  =  "95"  OR  "96" )
