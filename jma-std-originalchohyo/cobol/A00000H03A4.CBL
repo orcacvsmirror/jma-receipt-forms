@@ -35,6 +35,7 @@
       *  01.00.04    @@@@-門間    14/01/17  第三者行為対応
       *  01.00.05    @@@@-門間    14/02/07  プログラムオプション対応（訂正印字）
       *  01.00.06    @@@@-門間    14/03/24  消費税対応
+      *  01.00.07    @@@@-門間    14/08/13  主保険＋マル長の請求対応の不具合対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1152,12 +1153,6 @@
                MOVE    ALL "*"             TO  HC03-GOKTEN
            END-IF
       *
-      *    マル長の公費負担を保険適用金額へ
-           IF      SYU-HKNTEKKBN   =   "1"
-             MOVE    SYU-KOH-FTN         TO  SYU-HKNTEKMONEY
-             MOVE    ZERO                TO  SYU-KOH-FTN
-           END-IF
-      *
       *    保険適用分
            MOVE    SYU-HKNTEKMONEY     TO  WRK-Z72
            PERFORM 800-HENKAN-SEC
@@ -2024,6 +2019,12 @@
            ELSE
                INITIALIZE                  SYUNOU-REC
                MOVE    1               TO  FLG-SYUNOU
+           END-IF
+      *
+      *    マル長の公費負担を保険適用金額へ
+           IF    ( SYU-HKNTEKKBN       =   "1" )
+               MOVE    SYU-KOH-FTN     TO  SYU-HKNTEKMONEY
+               MOVE    ZERO            TO  SYU-KOH-FTN
            END-IF
       *
            .
