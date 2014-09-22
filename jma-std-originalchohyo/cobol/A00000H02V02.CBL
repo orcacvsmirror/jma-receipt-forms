@@ -86,6 +86,8 @@
       *                                     薬価基準コード１２桁対応
       * 01.00.05     @@@@-門間    12/11/29  医療機関住所、医療機関名の印字ずれ修正
       * 01.00.06     @@@@-門間    14/01/17  第三者行為対応
+      * 01.00.07     @@@@-萩野    14/09/22  Ｈ２６年１０月改正対応
+      *                                     外用薬（臨時投薬）対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2575,7 +2577,8 @@
                                                    "211"  OR
                                                    "221"  OR
                                                    "231"  OR
-                                                   "291" )
+                                                   "291"  OR
+                                                   "294" )
       *                院内処方種別
                        MOVE    1               TO  FLG-TAIGAI
                    END-IF
@@ -2592,7 +2595,8 @@
                    IF     (WRK-SRYSYUKBN       =   "212"  OR
                                                    "222"  OR
                                                    "232"  OR
-                                                   "292")
+                                                   "292"  OR
+                                                   "295")
                        MOVE    1               TO  FLG-TAIGAI
                    END-IF
            END-EVALUATE
@@ -2607,7 +2611,10 @@
                                            OR  "22"
                                            OR  "23" )
                AND   ((WRK-SRYSYUKBN       =   SPACE )
-                  OR  (WRK-SRYSYUKBN(3:1)  =   "0"   ))
+                  OR  (WRK-SRYSYUKBN(3:1)  =   "0"   )
+      *H26.10
+      *           外用臨時投薬
+                  OR  (WRK-SRYSYUKBN       =   "293"  ))
                    IF     (FLG-SYOHO-IN        =   2    )
       *                剤点数ゼロで院内処方印刷
                        IF     (ACCT-ZAITEN         =   ZERO )
@@ -3052,6 +3059,12 @@
            MOVE    WRK-SRY-SRYCD (IDXA)    TO  WRK-SRYCD
            MOVE    WRK-SRY-SRYCD (IDXA)    TO  TNS-SRYCD
            PERFORM 910-TENSU-READ-SEC
+      *H26.10
+      *    減点は対象外
+           IF      TNS-TENSIKIBETU     =   7
+               GO      TO    31032-TENSU-HENSYU-EXT
+           END-IF
+      *
       *    内容
            IF      WRK-SRYCD  (1:1)   =   "6"
                IF      TNSP-IPN-KISAIKBN   =   1
@@ -3165,6 +3178,7 @@
       *
       *    ＱＲデータ用
            IF      WRK-SRYCD           =   "820000047"
+                                       OR  "820000166"
       *        （減）は対象外
                CONTINUE
            ELSE
@@ -3979,14 +3993,16 @@
                IF     (WRK-SRYSYUKBN       =   "211"
                                            OR  "221"
                                            OR  "231"
-                                           OR  "291" )
+                                           OR  "291"
+                                           OR  "294" )
                    MOVE    ZERO            TO  FLG-OK2
                END-IF
       *        院外処方
                IF     (WRK-SRYSYUKBN       =   "212"
                                            OR  "222"
                                            OR  "232"
-                                           OR  "292" )
+                                           OR  "292"
+                                           OR  "295" )
                    MOVE    1               TO  FLG-OK2
                END-IF
            END-IF
@@ -4002,14 +4018,16 @@
                IF     (WRK-SRYSYUKBN       =   "211"
                                            OR  "221"
                                            OR  "231"
-                                           OR  "291" )
+                                           OR  "291"
+                                           OR  "294" )
                    MOVE    1               TO  FLG-OK2
                END-IF
       *        院外処方
                IF     (WRK-SRYSYUKBN       =   "212"
                                            OR  "222"
                                            OR  "232"
-                                           OR  "292" )
+                                           OR  "292"
+                                           OR  "295" )
                    MOVE    ZERO            TO  FLG-OK2
                END-IF
            END-IF
