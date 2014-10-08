@@ -29,6 +29,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    11/01/07  コメント履歴削除
       *                                     open-cobol1.0対応
+      *  01.00.02    @@@@-門間    14/10/07  右下枠内の消費税(再掲)を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -476,6 +477,8 @@
                   (ORCHC03-HAKKOFLG    =   2   )
                MOVE    SYU-SKYMONEY        TO  WRK-SKYMONEY
                MOVE    SYU-NYUKIN-TOTAL    TO  WRK-NYUKIN
+               MOVE    SYU-SKYMONEY-TAX-SAI
+                                           TO  WRK-SKYMONEY-TAX-SAI
            END-IF
       *
       *    帳票印刷開始処理
