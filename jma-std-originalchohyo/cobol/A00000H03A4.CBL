@@ -36,6 +36,7 @@
       *  01.00.05    @@@@-門間    14/02/07  プログラムオプション対応（訂正印字）
       *  01.00.06    @@@@-門間    14/03/24  消費税対応
       *  01.00.07    @@@@-門間    14/08/13  主保険＋マル長の請求対応の不具合対応
+      *  01.00.08    @@@@-門間    14/10/07  右下枠内の消費税(再掲)を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -523,6 +524,8 @@
                   (ORCHC03-HAKKOFLG    =   2   )
                MOVE    SYU-SKYMONEY        TO  WRK-SKYMONEY
                MOVE    SYU-NYUKIN-TOTAL    TO  WRK-NYUKIN
+               MOVE    SYU-SKYMONEY-TAX-SAI
+                                           TO  WRK-SKYMONEY-TAX-SAI
            END-IF
       *
       *    帳票印刷開始処理
