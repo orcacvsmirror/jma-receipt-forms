@@ -34,6 +34,7 @@
       *  01.00.04    @@@@-門間    12/05/25  CSVファイル作成機能追加
       *  01.00.05    @@@@-門間    13/06/26  診療区分「97」を集計処理から除外
       *  01.00.06    @@@@-門間    14/01/07  療養担当手当の自動加算分を集計するように修正
+      *  01.00.07    @@@@-門間    14/10/07  労災・自賠責保険時の医療収益集計方法の修正
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -110,6 +111,7 @@
            03  FLG-ROOM                 PIC 9(01).
            03  FLG-HKNCOMBI             PIC 9(01).
            03  FLG-HKNNUM               PIC 9(01).
+           03  FLG-SRYACCTP             PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -400,6 +402,10 @@
       *    診療会計マスタ
        01  SRYACCT-REC.
            COPY    "CPSRYACCT.INC".
+      *
+      *    診療会計付加マスタ
+       01  SRYACCTP-REC.
+           COPY    "CPSRYACCTPLUS.INC".
       *
       *    診療行為マスタ
        01  SRYACT-REC.
@@ -1394,13 +1400,15 @@
              COMPUTE  WRK-SYUEKI  =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
            ELSE
              COMPUTE  WRK-TENSU   =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
-             IF  ( WRK-HKNNUM  =  "971"  OR  "973" )
-                 AND  ( IDX1  =  2 OR 3 OR 4 OR 5 OR 6 OR 7 OR 8 OR 9
-                                    OR 10 OR 13 )
-                 AND   PTRSI-HKNKBN  NOT =  "5"
-               COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-TENSU  *  10
+             PERFORM  900-SRYACCTPLUS-READ-SEC
+             IF  ( (      WRK-HKNNUM             =  "971" OR "973" )
+                     AND  FLG-SRYACCTP           =  ZERO
+                     AND  ACCTP-RSIKINGAKU   NOT =  ZERO              )
+               COMPUTE  WRK-SYUEKI  ROUNDED  =  ACCTP-RSIKINGAKU
+                                             *  ACCT-ZAIKAISU
              ELSE
-               COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-TENSU  *  WRK-TENTNK
+               COMPUTE  WRK-SYUEKI  ROUNDED  =  WRK-TENSU
+                                             *  WRK-TENTNK
              END-IF
            END-IF
       *
@@ -2649,6 +2657,57 @@
            .
        900-SRYACCT-FETCH-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    診療会計付加
+      *****************************************************************
+       900-SRYACCTPLUS-READ-SEC         SECTION.
+      *
+           INITIALIZE                   SRYACCTP-REC
+           MOVE    ACCT-HOSPNUM         TO  ACCTP-HOSPNUM
+           MOVE    ACCT-NYUGAIKBN       TO  ACCTP-NYUGAIKBN
+           MOVE    ACCT-PTID            TO  ACCTP-PTID
+           MOVE    ACCT-SRYKA           TO  ACCTP-SRYKA
+           MOVE    ACCT-SRYYM           TO  ACCTP-SRYYM
+           MOVE    ACCT-ZAINUM          TO  ACCTP-ZAINUM
+           MOVE    SRYACCTP-REC         TO  MCPDATA-REC
+           MOVE    "DBSELECT"           TO  MCP-FUNC
+           MOVE    "tbl_sryacctplus"    TO  MCP-TABLE
+           MOVE    "key2"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             MOVE    "DBFETCH"            TO  MCP-FUNC
+             MOVE    "tbl_sryacctplus"    TO  MCP-TABLE
+             MOVE    "key2"               TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"          USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+             IF   MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC        TO  SRYACCTP-REC
+               MOVE    ZERO               TO  FLG-SRYACCTP
+             ELSE
+               MOVE    1                  TO  FLG-SRYACCTP
+             END-IF
+           ELSE
+             MOVE    1                  TO  FLG-SRYACCTP
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_sryacctplus"    TO  MCP-TABLE
+           MOVE    "key2"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           .
+       900-SRYACCTPLUS-READ-EXT.
+           EXIT.
+      *
       *******************************************************************:
       *   入院 診療会計情報SELECT
       *****************************************************************
