@@ -87,6 +87,7 @@
       * 01.00.04     @@@@-門間    14/01/17  第三者行為対応
       * 01.00.05     @@@@-萩野    14/09/22  2014年4月診療報酬改定(10月実施)
       *                                     外用薬（臨時投薬）対応
+      * 01.00.06     @@@@-門間    14/10/16  頓服薬（臨時投薬）対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1163,7 +1164,8 @@
       *        老人保険
                EVALUATE    COMB-HKNNUM
                    WHEN    "060"
-      *                国保
+                   WHEN    "068"
+      *                国保・特別療養費
                        EVALUATE    COMB-HOJOKBN
                            WHEN    "1"
                                MOVE    1           TO  FLG-RJNHKN
@@ -2571,6 +2573,7 @@
                                                    "221"  OR
                                                    "231"  OR
                                                    "291"  OR
+                                                   "297"  OR
                                                    "294" )
       *                院内処方種別
                        MOVE    1               TO  FLG-TAIGAI
@@ -2589,6 +2592,7 @@
                                                    "222"  OR
                                                    "232"  OR
                                                    "292"  OR
+                                                   "298"  OR
                                                    "295")
                        MOVE    1               TO  FLG-TAIGAI
                    END-IF
@@ -2607,7 +2611,8 @@
                   OR  (WRK-SRYSYUKBN(3:1)  =   "0"   )
       *H26.10
       *           外用臨時投薬
-                  OR  (WRK-SRYSYUKBN       =   "293"  ))
+                  OR  (WRK-SRYSYUKBN       =   "293"  )
+                  OR  (WRK-SRYSYUKBN       =   "296"  ))
                    IF     (FLG-SYOHO-IN        =   2    )
       *                剤点数ゼロで院内処方印刷
                        IF     (ACCT-ZAITEN         =   ZERO )
@@ -3987,6 +3992,7 @@
                                            OR  "221"
                                            OR  "231"
                                            OR  "291"
+                                           OR  "297"
                                            OR  "294" )
                    MOVE    ZERO            TO  FLG-OK2
                END-IF
@@ -3995,6 +4001,7 @@
                                            OR  "222"
                                            OR  "232"
                                            OR  "292"
+                                           OR  "298"
                                            OR  "295" )
                    MOVE    1               TO  FLG-OK2
                END-IF
@@ -4012,6 +4019,7 @@
                                            OR  "221"
                                            OR  "231"
                                            OR  "291"
+                                           OR  "297"
                                            OR  "294" )
                    MOVE    1               TO  FLG-OK2
                END-IF
@@ -4020,6 +4028,7 @@
                                            OR  "222"
                                            OR  "232"
                                            OR  "292"
+                                           OR  "298"
                                            OR  "295" )
                    MOVE    ZERO            TO  FLG-OK2
                END-IF
