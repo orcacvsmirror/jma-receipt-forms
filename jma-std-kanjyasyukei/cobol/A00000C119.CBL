@@ -31,6 +31,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/10/18  システム管理のDB検索処理を変更(key→key10)
       *  01.00.03    @@@@-田中    12/01/18  CSVファイル作成機能追加 
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -53,8 +54,7 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000C100N.INC".
       *
@@ -316,9 +316,9 @@
            COPY    "CPPTNYUINRRK.INC".
       *
       *    患者入院履歴情報(入院履歴全枝番号用)
-       01  PTNYUINRRK-M-REC.
+       01  PNR-M-REC.
            COPY    "CPPTNYUINRRK.INC"    REPLACING  //PTNYUINRRK-//
-                                         BY         //PTNYUINRRK-M-//.
+                                         BY         //PNR-M-//.
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -659,17 +659,17 @@
              IF  FLG-PTINF = ZERO
                  AND  PTINF-TSTPTNUMKBN  NOT =  "1"
                MOVE    LOW-VALUE           TO  WRK-ZENHKNNUM
-               INITIALIZE                  PTNYUINRRK-M-REC
-               MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-               MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM
-               MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
+               INITIALIZE                  PNR-M-REC
+               MOVE    PTNYUINRRK-PTID     TO  PNR-M-PTID
+               MOVE    C100LNK-HOSPNUM     TO  PNR-M-HOSPNUM
+               MOVE    PTNYUINRRK-RRKNUM   TO  PNR-M-RRKNUM
       *
                PERFORM  900-NYURRK-M-SELECT-SEC
       *
                PERFORM  UNTIL   FLG-PTNYUINRRK-M  =  1
       *    指定期間(開始日)−初日在院者数の集計
-                 IF  PTNYUINRRK-M-TENSTUYMD  >=  C100LNK-YMD1
-                     AND  PTNYUINRRK-M-TENNYUYMD  <  C100LNK-YMD1
+                 IF  PNR-M-TENSTUYMD  >=  C100LNK-YMD1
+                     AND  PNR-M-TENNYUYMD  <  C100LNK-YMD1
                    IF   C100LNK-YMD1  <  "20080401"
                      PERFORM  320-SRYKA-GET-IDX-SEC
                    ELSE
@@ -683,15 +683,15 @@
                    END-IF
       *    指定期間−入院者数の集計
       *    集計対象年月のデータであるかをチェックする。
-                   IF  (PTNYUINRRK-M-TENNYUYMD  >=  C100LNK-YMD1)
-                       AND (PTNYUINRRK-M-TENNYUYMD  <=  C100LNK-YMD2)
+                   IF  (PNR-M-TENNYUYMD  >=  C100LNK-YMD1)
+                       AND (PNR-M-TENNYUYMD  <=  C100LNK-YMD2)
                        AND ( COMB-HKNNUM NOT = WRK-ZENHKNNUM )
                      IF C100LNK-YMD1  <  "20080401"
                          PERFORM 320-SRYKA-GET-IDX-SEC
                      ELSE
                          PERFORM 330-SRYKA-GET-IDX-SEC
                      END-IF
-                     MOVE PTNYUINRRK-M-TENNYUYMD   TO  WRK-SRYYMD
+                     MOVE PNR-M-TENNYUYMD   TO  WRK-SRYYMD
                      PERFORM 320-SRYYMD-GET-IDX-SEC
       *    該当する保険がない場合は加算しない
                      IF   IDX1  NOT =  ZERO
@@ -708,23 +708,23 @@
                  PERFORM 900-M-DBCLOSE-SEC
       *
                  MOVE    LOW-VALUE           TO  WRK-ZENHKNNUM
-                 INITIALIZE                  PTNYUINRRK-M-REC
-                 MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-                 MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM
-                 MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
+                 INITIALIZE                  PNR-M-REC
+                 MOVE    PTNYUINRRK-PTID     TO  PNR-M-PTID
+                 MOVE    C100LNK-HOSPNUM     TO  PNR-M-HOSPNUM
+                 MOVE    PTNYUINRRK-RRKNUM   TO  PNR-M-RRKNUM
       *
                  PERFORM  900-NYURRK-M2-SELECT-SEC
       *
                  PERFORM  UNTIL   FLG-PTNYUINRRK-M2  =   1
-                   IF  (PTNYUINRRK-M-TENSTUYMD  >=  C100LNK-YMD1)
-                       AND  (PTNYUINRRK-M-TENSTUYMD  <=  C100LNK-YMD2)
+                   IF  (PNR-M-TENSTUYMD  >=  C100LNK-YMD1)
+                       AND  (PNR-M-TENSTUYMD  <=  C100LNK-YMD2)
                        AND  ( COMB-HKNNUM NOT = WRK-ZENHKNNUM )
                      IF  C100LNK-YMD1  <  "20080401"
                        PERFORM  320-SRYKA-GET-IDX-SEC
                      ELSE
                        PERFORM  330-SRYKA-GET-IDX-SEC
                      END-IF
-                     MOVE PTNYUINRRK-M-TENSTUYMD   TO  WRK-SRYYMD
+                     MOVE PNR-M-TENSTUYMD   TO  WRK-SRYYMD
                      PERFORM 320-SRYYMD-GET-IDX-SEC
       *    該当する保険がない場合は加算しない
                       IF  IDX1  NOT =  ZERO
@@ -778,17 +778,17 @@
                  AND  PTINF-TSTPTNUMKBN  NOT =  "1"
       *
                MOVE    LOW-VALUE          TO  WRK-ZENHKNNUM
-               INITIALIZE                 PTNYUINRRK-M-REC
-               MOVE    PTNYUINRRK-PTID    TO  PTNYUINRRK-M-PTID
-               MOVE    C100LNK-HOSPNUM    TO  PTNYUINRRK-M-HOSPNUM
-               MOVE    PTNYUINRRK-RRKNUM  TO  PTNYUINRRK-M-RRKNUM
+               INITIALIZE                 PNR-M-REC
+               MOVE    PTNYUINRRK-PTID    TO  PNR-M-PTID
+               MOVE    C100LNK-HOSPNUM    TO  PNR-M-HOSPNUM
+               MOVE    PTNYUINRRK-RRKNUM  TO  PNR-M-RRKNUM
       *
                PERFORM  900-NYURRK-M-SELECT-SEC
       *
                PERFORM  UNTIL   FLG-PTNYUINRRK-M  =   1
       *    指定期間(開始日)−月初在院者数の集計
-                 IF  PTNYUINRRK-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6)
-                     AND PTNYUINRRK-M-TENNYUYMD(1:6) < C100LNK-YMD1(1:6)
+                 IF  PNR-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6)
+                     AND PNR-M-TENNYUYMD(1:6) < C100LNK-YMD1(1:6)
                    IF   C100LNK-YMD1  <  "20080401"
                      PERFORM  320-SRYKA-GET-IDX-SEC
                    ELSE
@@ -803,15 +803,15 @@
       *
       *    指定期間−入院者数の集計
       *    集計対象年月のデータであるかをチェックする。
-                 IF (PTNYUINRRK-M-TENNYUYMD(1:6)  >=  C100LNK-YMD1(1:6))
-                  AND (PTNYUINRRK-M-TENNYUYMD(1:6) <= C100LNK-YMD2(1:6))
+                 IF (PNR-M-TENNYUYMD(1:6)  >=  C100LNK-YMD1(1:6))
+                  AND (PNR-M-TENNYUYMD(1:6) <= C100LNK-YMD2(1:6))
                   AND  ( COMB-HKNNUM  NOT =  WRK-ZENHKNNUM )
                    IF  C100LNK-YMD1  <  "20080401"
                      PERFORM  320-SRYKA-GET-IDX-SEC
                    ELSE
                      PERFORM  330-SRYKA-GET-IDX-SEC
                    END-IF
-                   MOVE    PTNYUINRRK-M-TENNYUYMD(1:6)  TO  WRK-SRYYM
+                   MOVE    PNR-M-TENNYUYMD(1:6)  TO  WRK-SRYYM
                    PERFORM  320-SRYYM-GET-IDX-SEC
       *    該当する保険がない場合は加算しない
                    IF  IDX1  NOT =  ZERO
@@ -832,23 +832,23 @@
       *    指定期間−退院者数の集計
       *    集計対象年月のデータであるかをチェックする。
                  MOVE    LOW-VALUE           TO  WRK-ZENHKNNUM
-                 INITIALIZE                  PTNYUINRRK-M-REC
-                 MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-                 MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM
-                 MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
+                 INITIALIZE                  PNR-M-REC
+                 MOVE    PTNYUINRRK-PTID     TO  PNR-M-PTID
+                 MOVE    C100LNK-HOSPNUM     TO  PNR-M-HOSPNUM
+                 MOVE    PTNYUINRRK-RRKNUM   TO  PNR-M-RRKNUM
       *
                  PERFORM  900-NYURRK-M2-SELECT-SEC
       *
                  PERFORM  UNTIL   FLG-PTNYUINRRK-M2  =   1
-                 IF (PTNYUINRRK-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6))
-                  AND (PTNYUINRRK-M-TENSTUYMD(1:6) <= C100LNK-YMD2(1:6))
+                 IF (PNR-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6))
+                  AND (PNR-M-TENSTUYMD(1:6) <= C100LNK-YMD2(1:6))
                   AND ( COMB-HKNNUM NOT = WRK-ZENHKNNUM )
                    IF   C100LNK-YMD1  <  "20080401"
                      PERFORM  320-SRYKA-GET-IDX-SEC
                    ELSE
                      PERFORM  330-SRYKA-GET-IDX-SEC
                    END-IF
-                   MOVE    PTNYUINRRK-M-TENSTUYMD(1:6)  TO  WRK-SRYYM
+                   MOVE    PNR-M-TENSTUYMD(1:6)  TO  WRK-SRYYM
                    PERFORM  320-SRYYM-GET-IDX-SEC
       *    該当する保険がない場合は加算しない
                    IF  IDX1    NOT  =  ZERO
@@ -1363,6 +1363,7 @@
                            "/"                       DELIMITED  BY  SIZE
                           SUM-SRYYMD(IDX-LINE)(7:2)  DELIMITED  BY  SIZE
                                                      INTO  WRK-ITEM
+                 END-STRING
                ELSE
                  MOVE    SUM-SRYYMD(IDX-LINE)(5:2)    TO  WRK-ITEM
                END-IF
@@ -1673,7 +1674,7 @@
       *****************************************************************
        900-NYURRK-M-SELECT-SEC                 SECTION.
       *
-           MOVE    PTNYUINRRK-M-REC    TO  MCPDATA-REC
+           MOVE    PNR-M-REC    TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
            MOVE    "key5"              TO  MCP-PATHNAME
@@ -1705,12 +1706,12 @@
                                       SPA-AREA
            IF   MCP-RC  =  ZERO
              MOVE    ZERO             TO  FLG-PTNYUINRRK-M
-             MOVE    MCPDATA-REC      TO  PTNYUINRRK-M-REC
+             MOVE    MCPDATA-REC      TO  PNR-M-REC
       *    保険組合せマスター検索
              INITIALIZE               HKNCOMBI-REC
-             MOVE    PTNYUINRRK-M-HOSPNUM      TO  COMB-HOSPNUM
-             MOVE    PTNYUINRRK-M-PTID         TO  COMB-PTID
-             MOVE    PTNYUINRRK-M-HKNCOMBINUM  TO  WRK-HKNCOMBI-G
+             MOVE    PNR-M-HOSPNUM      TO  COMB-HOSPNUM
+             MOVE    PNR-M-PTID         TO  COMB-PTID
+             MOVE    PNR-M-HKNCOMBINUM  TO  WRK-HKNCOMBI-G
              MOVE    WRK-HKNCOMBI              TO  COMB-HKNCOMBINUM
              PERFORM  910-HKNCOMBI-READ-SEC
            ELSE
@@ -1742,7 +1743,7 @@
       *****************************************************************
        900-NYURRK-M2-SELECT-SEC           SECTION.
       *
-           MOVE    PTNYUINRRK-M-REC   TO  MCPDATA-REC
+           MOVE    PNR-M-REC   TO  MCPDATA-REC
            MOVE    "DBSELECT"         TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"   TO  MCP-TABLE
            MOVE    "key4"             TO  MCP-PATHNAME
@@ -1774,12 +1775,12 @@
                                       SPA-AREA
            IF   MCP-RC  =  ZERO
              MOVE    ZERO             TO  FLG-PTNYUINRRK-M2
-             MOVE    MCPDATA-REC      TO  PTNYUINRRK-M-REC
+             MOVE    MCPDATA-REC      TO  PNR-M-REC
       *    保険組合せマスター検索
              INITIALIZE               HKNCOMBI-REC
-             MOVE    PTNYUINRRK-M-HOSPNUM       TO  COMB-HOSPNUM
-             MOVE    PTNYUINRRK-M-PTID          TO  COMB-PTID
-             MOVE    PTNYUINRRK-M-HKNCOMBINUM   TO  WRK-HKNCOMBI-G
+             MOVE    PNR-M-HOSPNUM       TO  COMB-HOSPNUM
+             MOVE    PNR-M-PTID          TO  COMB-PTID
+             MOVE    PNR-M-HKNCOMBINUM   TO  WRK-HKNCOMBI-G
              MOVE    WRK-HKNCOMBI               TO  COMB-HKNCOMBINUM
              PERFORM  910-HKNCOMBI-READ-SEC
            ELSE

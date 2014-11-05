@@ -33,6 +33,7 @@
       *  01.00.02    @@@@-門間    11/10/18  システム管理のDB検索処理を変更(key→key10)
       *  01.00.03    @@@@-田中    12/01/18  CSVファイル作成機能追加
       *  01.00.04    @@@@-門間    12/07/18  初診、再診、その他の判定条件を再変更
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -55,8 +56,7 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000C100.INC".
       *
@@ -1134,6 +1134,7 @@
                            "/"                       DELIMITED  BY  SIZE
                           SUM-SRYYMD(IDX-LINE)(7:2)  DELIMITED  BY  SIZE
                                                      INTO  WRK-ITEM
+                 END-STRING
                ELSE
                  MOVE    SUM-SRYYMD(IDX-LINE)(5:2)    TO  WRK-ITEM
                END-IF

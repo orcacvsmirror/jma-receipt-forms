@@ -31,6 +31,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/10/18  システム管理のDB検索処理を変更(key→key10)
       *  01.00.03    @@@@-田中    12/01/18  CSVファイル作成機能追加
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -53,8 +54,7 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000C100N.INC".
       *
@@ -315,9 +315,9 @@
            COPY    "CPPTNYUINRRK.INC".
       *
       *    患者入院履歴情報(入院履歴全枝番号用)
-       01  PTNYUINRRK-M-REC.
+       01  PNR-M-REC.
            COPY    "CPPTNYUINRRK.INC"   REPLACING  //PTNYUINRRK-//
-                                        BY         //PTNYUINRRK-M-//.
+                                        BY         //PNR-M-//.
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -651,30 +651,30 @@
                IF  FLG-PTINF  =  ZERO
                  AND  PTINF-TSTPTNUMKBN  NOT =  "1"
                  INITIALIZE                  WRK-ZENBTUNUM
-                 INITIALIZE                  PTNYUINRRK-M-REC
-                 MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-                 MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM
-                 MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
+                 INITIALIZE                  PNR-M-REC
+                 MOVE    PTNYUINRRK-PTID     TO  PNR-M-PTID
+                 MOVE    C100LNK-HOSPNUM     TO  PNR-M-HOSPNUM
+                 MOVE    PTNYUINRRK-RRKNUM   TO  PNR-M-RRKNUM
       *
                  PERFORM  900-NYURRK-M-SELECT-SEC
       *
                  PERFORM  UNTIL   FLG-PTNYUINRRK-M  =   1
       *    指定期間(開始日)−初日在院者数の集計
-                   IF  PTNYUINRRK-M-TENSTUYMD  >=  C100LNK-YMD1
-                       AND  PTNYUINRRK-M-TENNYUYMD  <  C100LNK-YMD1
-                      MOVE    PTNYUINRRK-M-BTUNUM  TO  WRK-BTUNUM
+                   IF  PNR-M-TENSTUYMD  >=  C100LNK-YMD1
+                       AND  PNR-M-TENNYUYMD  <  C100LNK-YMD1
+                      MOVE    PNR-M-BTUNUM  TO  WRK-BTUNUM
                       PERFORM  320-BTUNUM-GET-IDX-SEC
                       ADD  1       TO  SUM-BTUNUM-ZAN(IDX1)
                       ADD  1       TO  SUM-BTUNUM-ZAN(IDX3)
                    END-IF
       *    指定期間−入院者数の集計
       *    集計対象年月のデータであるかをチェックする。
-                   IF  (PTNYUINRRK-M-TENNYUYMD  >=  C100LNK-YMD1)
-                       AND (PTNYUINRRK-M-TENNYUYMD  <=  C100LNK-YMD2)
-                       AND ( PTNYUINRRK-M-BTUNUM NOT = WRK-ZENBTUNUM )
-                     MOVE    PTNYUINRRK-M-BTUNUM      TO  WRK-BTUNUM
+                   IF  (PNR-M-TENNYUYMD  >=  C100LNK-YMD1)
+                       AND (PNR-M-TENNYUYMD  <=  C100LNK-YMD2)
+                       AND ( PNR-M-BTUNUM NOT = WRK-ZENBTUNUM )
+                     MOVE    PNR-M-BTUNUM      TO  WRK-BTUNUM
                      PERFORM  320-BTUNUM-GET-IDX-SEC
-                     MOVE    PTNYUINRRK-M-TENNYUYMD   TO  WRK-SRYYMD
+                     MOVE    PNR-M-TENNYUYMD   TO  WRK-SRYYMD
                      PERFORM  320-SRYYMD-GET-IDX-SEC
                      ADD  1     TO  SUM-NYUIN(IDX1 IDX6)
                      ADD  1     TO  SUM-NYUIN(IDX1 IDX5)
@@ -682,27 +682,27 @@
                      ADD  1     TO  SUM-NYUIN(IDX3 IDX5)
                    END-IF
       *    前回、診療科コードの退避
-                   MOVE    PTNYUINRRK-M-BTUNUM    TO  WRK-ZENBTUNUM
+                   MOVE    PNR-M-BTUNUM    TO  WRK-ZENBTUNUM
                    PERFORM  900-NYURRK-M-FETCH-SEC
                  END-PERFORM
                  PERFORM 900-M-DBCLOSE-SEC
       *    指定期間−退院者数の集計
       *    集計対象年月のデータであるかをチェックする。
                  INITIALIZE                  WRK-ZENBTUNUM
-                 INITIALIZE                  PTNYUINRRK-M-REC
-                 MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-                 MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM
-                 MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
+                 INITIALIZE                  PNR-M-REC
+                 MOVE    PTNYUINRRK-PTID     TO  PNR-M-PTID
+                 MOVE    C100LNK-HOSPNUM     TO  PNR-M-HOSPNUM
+                 MOVE    PTNYUINRRK-RRKNUM   TO  PNR-M-RRKNUM
       *
                  PERFORM  900-NYURRK-M2-SELECT-SEC
       *
                  PERFORM  UNTIL  FLG-PTNYUINRRK-M2  =  1
-                   IF  (PTNYUINRRK-M-TENSTUYMD  >=  C100LNK-YMD1)
-                       AND (PTNYUINRRK-M-TENSTUYMD  <=  C100LNK-YMD2)
-                       AND ( PTNYUINRRK-M-BTUNUM NOT = WRK-ZENBTUNUM )
-                     MOVE    PTNYUINRRK-M-BTUNUM      TO  WRK-BTUNUM
+                   IF  (PNR-M-TENSTUYMD  >=  C100LNK-YMD1)
+                       AND (PNR-M-TENSTUYMD  <=  C100LNK-YMD2)
+                       AND ( PNR-M-BTUNUM NOT = WRK-ZENBTUNUM )
+                     MOVE    PNR-M-BTUNUM      TO  WRK-BTUNUM
                      PERFORM  320-BTUNUM-GET-IDX-SEC
-                     MOVE    PTNYUINRRK-M-TENSTUYMD   TO  WRK-SRYYMD
+                     MOVE    PNR-M-TENSTUYMD   TO  WRK-SRYYMD
                      PERFORM  320-SRYYMD-GET-IDX-SEC
                      ADD  1     TO  SUM-TAIIN(IDX1 IDX6)
                      ADD  1     TO  SUM-TAIIN(IDX1 IDX5)
@@ -712,7 +712,7 @@
                      ADD  1     TO  SUM-TOUZAN2(IDX3 IDX6)
                    END-IF
       *    前回、診療科コードの退避
-                   MOVE    PTNYUINRRK-M-BTUNUM  TO  WRK-ZENBTUNUM
+                   MOVE    PNR-M-BTUNUM  TO  WRK-ZENBTUNUM
                    PERFORM  900-NYURRK-M2-FETCH-SEC
                  END-PERFORM
                  PERFORM 900-M2-DBCLOSE-SEC
@@ -753,18 +753,18 @@
                  AND  PTINF-TSTPTNUMKBN  NOT =  "1"
       *
                INITIALIZE                  WRK-ZENBTUNUM
-               INITIALIZE                  PTNYUINRRK-M-REC
-               MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-               MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM
-               MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
+               INITIALIZE                  PNR-M-REC
+               MOVE    PTNYUINRRK-PTID     TO  PNR-M-PTID
+               MOVE    C100LNK-HOSPNUM     TO  PNR-M-HOSPNUM
+               MOVE    PTNYUINRRK-RRKNUM   TO  PNR-M-RRKNUM
       *
                PERFORM  900-NYURRK-M-SELECT-SEC
       *
                PERFORM  UNTIL   FLG-PTNYUINRRK-M  =   1
       *    指定期間(開始日)−月初在院者数の集計
-                 IF  PTNYUINRRK-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6)
-                     AND PTNYUINRRK-M-TENNYUYMD(1:6) < C100LNK-YMD1(1:6)
-                   MOVE    PTNYUINRRK-M-BTUNUM   TO  WRK-BTUNUM
+                 IF  PNR-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6)
+                     AND PNR-M-TENNYUYMD(1:6) < C100LNK-YMD1(1:6)
+                   MOVE    PNR-M-BTUNUM   TO  WRK-BTUNUM
                    PERFORM  320-BTUNUM-GET-IDX-SEC
                    ADD  1     TO  SUM-BTUNUM-ZAN(IDX1)
                    ADD  1     TO  SUM-BTUNUM-ZAN(IDX3)
@@ -772,12 +772,12 @@
       *
       *    指定期間−入院者数の集計
       *    集計対象年月のデータであるかをチェックする。
-                 IF (PTNYUINRRK-M-TENNYUYMD(1:6) >= C100LNK-YMD1(1:6))
-                  AND (PTNYUINRRK-M-TENNYUYMD(1:6) <= C100LNK-YMD2(1:6))
-                  AND ( PTNYUINRRK-M-BTUNUM NOT = WRK-ZENBTUNUM )
-                   MOVE    PTNYUINRRK-M-BTUNUM   TO  WRK-BTUNUM
+                 IF (PNR-M-TENNYUYMD(1:6) >= C100LNK-YMD1(1:6))
+                  AND (PNR-M-TENNYUYMD(1:6) <= C100LNK-YMD2(1:6))
+                  AND ( PNR-M-BTUNUM NOT = WRK-ZENBTUNUM )
+                   MOVE    PNR-M-BTUNUM   TO  WRK-BTUNUM
                    PERFORM  320-BTUNUM-GET-IDX-SEC
-                   MOVE    PTNYUINRRK-M-TENNYUYMD(1:6)  TO  WRK-SRYYM
+                   MOVE    PNR-M-TENNYUYMD(1:6)  TO  WRK-SRYYM
                    PERFORM  320-SRYYM-GET-IDX-SEC
                    ADD  1     TO  SUM-NYUIN(IDX1 IDX6)
                    ADD  1     TO  SUM-NYUIN(IDX1 IDX5)
@@ -785,7 +785,7 @@
                    ADD  1     TO  SUM-NYUIN(IDX3 IDX5)
                  END-IF
       *    前回、診療科コードの退避
-                 MOVE    PTNYUINRRK-M-BTUNUM     TO  WRK-ZENBTUNUM
+                 MOVE    PNR-M-BTUNUM     TO  WRK-ZENBTUNUM
                  PERFORM  900-NYURRK-M-FETCH-SEC
                END-PERFORM
                PERFORM  900-M-DBCLOSE-SEC
@@ -793,20 +793,20 @@
       *    指定期間−退院者数の集計
       *    集計対象年月のデータであるかをチェックする。
                INITIALIZE                  WRK-ZENBTUNUM
-               INITIALIZE                  PTNYUINRRK-M-REC
-               MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-               MOVE    C100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM
-               MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
+               INITIALIZE                  PNR-M-REC
+               MOVE    PTNYUINRRK-PTID     TO  PNR-M-PTID
+               MOVE    C100LNK-HOSPNUM     TO  PNR-M-HOSPNUM
+               MOVE    PTNYUINRRK-RRKNUM   TO  PNR-M-RRKNUM
       *
                PERFORM  900-NYURRK-M2-SELECT-SEC
       *
                PERFORM  UNTIL   FLG-PTNYUINRRK-M2  =  1
-                 IF  (PTNYUINRRK-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6))
-                  AND (PTNYUINRRK-M-TENSTUYMD(1:6) <= C100LNK-YMD2(1:6))
-                  AND ( PTNYUINRRK-M-BTUNUM NOT = WRK-ZENBTUNUM )
-                   MOVE    PTNYUINRRK-M-BTUNUM          TO  WRK-BTUNUM
+                 IF  (PNR-M-TENSTUYMD(1:6) >= C100LNK-YMD1(1:6))
+                  AND (PNR-M-TENSTUYMD(1:6) <= C100LNK-YMD2(1:6))
+                  AND ( PNR-M-BTUNUM NOT = WRK-ZENBTUNUM )
+                   MOVE    PNR-M-BTUNUM          TO  WRK-BTUNUM
                    PERFORM  320-BTUNUM-GET-IDX-SEC
-                   MOVE    PTNYUINRRK-M-TENSTUYMD(1:6)  TO  WRK-SRYYM
+                   MOVE    PNR-M-TENSTUYMD(1:6)  TO  WRK-SRYYM
                    PERFORM  320-SRYYM-GET-IDX-SEC
                    ADD  1     TO  SUM-TAIIN(IDX1 IDX6)
                    ADD  1     TO  SUM-TAIIN(IDX1 IDX5)
@@ -816,7 +816,7 @@
                    ADD  1     TO  SUM-TOUZAN2(IDX3 IDX6)
                  END-IF
       *    前回、診療科コードの退避
-                 MOVE    PTNYUINRRK-M-BTUNUM  TO  WRK-ZENBTUNUM
+                 MOVE    PNR-M-BTUNUM  TO  WRK-ZENBTUNUM
                  PERFORM  900-NYURRK-M2-FETCH-SEC
                END-PERFORM
                PERFORM 900-M2-DBCLOSE-SEC
@@ -1248,6 +1248,7 @@
                            "/"                       DELIMITED  BY  SIZE
                           SUM-SRYYMD(IDX-LINE)(7:2)  DELIMITED  BY  SIZE
                                                      INTO  WRK-ITEM
+                 END-STRING
                ELSE
                  MOVE    SUM-SRYYMD(IDX-LINE)(5:2)    TO  WRK-ITEM
                END-IF
@@ -1552,7 +1553,7 @@
       *****************************************************************
        900-NYURRK-M-SELECT-SEC                 SECTION.
       *
-           MOVE    PTNYUINRRK-M-REC    TO  MCPDATA-REC
+           MOVE    PNR-M-REC    TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
            MOVE    "key5"              TO  MCP-PATHNAME
@@ -1584,7 +1585,7 @@
                                        SPA-AREA
            IF  MCP-RC  =  ZERO
              MOVE    ZERO              TO  FLG-PTNYUINRRK-M
-             MOVE    MCPDATA-REC       TO  PTNYUINRRK-M-REC
+             MOVE    MCPDATA-REC       TO  PNR-M-REC
            ELSE
              MOVE    1                 TO  FLG-PTNYUINRRK-M
              MOVE    1                 TO  FLG-END
@@ -1614,7 +1615,7 @@
       *****************************************************************
        900-NYURRK-M2-SELECT-SEC                 SECTION.
       *
-           MOVE    PTNYUINRRK-M-REC    TO  MCPDATA-REC
+           MOVE    PNR-M-REC    TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
            MOVE    "key4"              TO  MCP-PATHNAME
@@ -1646,7 +1647,7 @@
                                        SPA-AREA
            IF  MCP-RC  =  ZERO
              MOVE    ZERO              TO  FLG-PTNYUINRRK-M2
-             MOVE    MCPDATA-REC       TO  PTNYUINRRK-M-REC
+             MOVE    MCPDATA-REC       TO  PNR-M-REC
            ELSE
              MOVE    1                 TO  FLG-PTNYUINRRK-M2
              MOVE    1                 TO  FLG-END
