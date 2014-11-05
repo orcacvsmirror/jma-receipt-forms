@@ -31,6 +31,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    12/03/09  コメント削除、改行コード変更
       *                                     CSVファイル作成機能追加
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -65,12 +66,12 @@
            COPY    "CPCOMMONPRT.INC".
       *
       *    エラーファイル 名称領域 
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
       *    社保一時ファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //L200TP//.
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //L200TP//.
       *
            COPY    "A00000L200V03.INC".
       *
@@ -408,6 +409,9 @@
       *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -448,6 +452,7 @@
            INITIALIZE                  IDX-AREA
            INITIALIZE                  SUM-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -491,10 +496,20 @@
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
                                    SPA-AREA
+      *+
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
       *
-           MOVE    "L200TP"         TO  L200TP-FILE-ID
-           MOVE    LNK-PRTKANRI-TERMID TO  L200TP-TERMID
-           MOVE    WRK-PARA-HOSPNUM    TO  L200TP-HOSPNUM
+           MOVE    "AL200TP"                TO  L200TP-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  L200TP-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  L200TP-HOSPNUM
+      *
+           MOVE    L200TP-BASENAME          TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  L200TP-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
            MOVE    WRK-PARA-SRYYM  TO  WRK-SRYYMD (1:6)
            MOVE    "01"                TO  WRK-SRYYMD (7:2)

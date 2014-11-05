@@ -38,6 +38,7 @@
       *  01.00.05    @@@@-門間    12/06/27  初診、再診、その他の判定条件を再変更
       *  01.00.06    @@@@-門間    14/07/17  医師情報処理時、診療日を参照するように変更
       *                                     0件印字が有効な場合、表示される医師の上限を変更
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -49,7 +50,7 @@
                                    FILE    STATUS  IS  STS-RECEERR.
       *
       *    基本台帳(外来日報)用対象患者ファイル
-           SELECT  D127PT-FILE     ASSIGN  D127PPARA
+           SELECT  D127PT-FILE     ASSIGN  AD127PT
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     D127P-KEY
@@ -73,18 +74,16 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域 
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+      *    エラーファイル 名称領域
+           COPY    "CPRECEERR.INC".
       *
        01  D100IPARA.
            03  FILLER              PIC X(256) VALUE  SPACE.
       *
       *    診療日別受信患者ファイル
-       01  D127PPARA.
-           03  FILLER   PIC  X(05) VALUE "/tmp/".
-           03  D127TPARA-FILENAME  PIC  X(12) VALUE "A00000D127PT".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AD127PT//.
       *
       *    基本台帳(外来・医師別)DIA用コピー句
            COPY    "A00000D127.INC".
@@ -566,8 +565,12 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *
       *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
+      *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -608,6 +611,7 @@
            INITIALIZE                  CNT-AREA
            INITIALIZE                  SUM-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
            MOVE    D100LNK-HOSPNUM     TO  SPA-HOSPNUM
@@ -626,6 +630,20 @@
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
                                    SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AD127TP"                TO  AD127PT-FILE-ID
+           MOVE    D100LNK-PRTKANRI-TERMID  TO  AD127PT-TERMID
+           MOVE    D100LNK-HOSPNUM          TO  AD127PT-HOSPNUM
+      *
+           MOVE    AD127PT-BASENAME         TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AD127PT-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    初診／再診判定サブ初期処理
            INITIALIZE                      SS003-AREA

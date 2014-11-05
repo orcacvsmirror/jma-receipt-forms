@@ -40,6 +40,7 @@
       *                                     帳票が出力されるように修正
       *  01.00.07    @@@@-門間    14/04/14  室料差額設定読込時のkeyを変更
       *  01.00.08    @@@@-門間    14/05/02  シス管読込時のCLOSE処理の修正
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -51,21 +52,21 @@
                                    FILE    STATUS  IS  STS-RECEERR.
       *
       *    診療行為別使用頻度一覧表ファイル
-           SELECT  A010T-FILE      ASSIGN  A010TPARA
+           SELECT  A010T-FILE      ASSIGN  A010IN
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     A010T-KEY
                                    FILE    STATUS  IS  STS-PARA.
       *
       *    診療行為別使用頻度一覧表ファイル２
-           SELECT  A010T2-FILE     ASSIGN TO A010T2PARA
+           SELECT  A010T2-FILE     ASSIGN  A010OUT
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     A010T2-KEY
                                    FILE    STATUS  IS  STS-PARA2.
       *
       *    診療行為別使用頻度一覧表ファイル３
-           SELECT  A010T3-FILE     ASSIGN TO A010T3PARA
+           SELECT  A010T3-FILE     ASSIGN  A010OUT2
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     A010T3-KEY
@@ -98,23 +99,20 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
+      *
       *    診療行為別使用頻度一覧表ファイル
-       01  A010TPARA.
-           03  FILLER   PIC  X(05) VALUE "/tmp/".
-           03  A010TPARA-FILENAME  PIC  X(13) VALUE "A00000A010-IN".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //A010IN//.
       *
-       01  A010T2PARA.
-           03  FILLER   PIC  X(05) VALUE "/tmp/".
-           03  A010T2PARA-FILENAME PIC  X(14) VALUE "A00000A010-OUT".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //A010OUT//.
       *
-       01  A010T3PARA.
-           03  FILLER   PIC  X(05) VALUE "/tmp/".
-           03  A010T3PARA-FILENAME PIC  X(14) VALUE "A00000A010-OUT".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //A010OUT2//.
       *
       *    診療行為別使用頻度一覧表 diaファイル
            COPY    "A00000A010V02.INC".
@@ -491,6 +489,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -579,6 +580,32 @@
                                    ORCSJOBKANRIAREA
                                    JOBKANRI-REC
                                    SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "A0101IN"                TO  A010IN-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  A010IN-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  A010IN-HOSPNUM
+      *
+           MOVE    "A0101O1"                TO  A010OUT-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  A010OUT-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  A010OUT-HOSPNUM
+      *
+           MOVE    "A0101O2"                TO  A010OUT2-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  A010OUT2-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  A010OUT2-HOSPNUM
+      *
+           MOVE    A010IN-BASENAME          TO  SGETTEMP-BASENAMES (1)
+           MOVE    A010OUT-BASENAME         TO  SGETTEMP-BASENAMES (2)
+           MOVE    A010OUT2-BASENAME        TO  SGETTEMP-BASENAMES (3)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (4)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  A010IN-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  A010OUT-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (3)   TO  A010OUT2-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (4)   TO  RECEERR
       *
       *    システム日付セット
            MOVE    LNK-PRTKANRI-SKYYMD   TO   WRK-SYMD

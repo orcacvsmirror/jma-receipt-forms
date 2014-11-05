@@ -33,6 +33,7 @@
       *  01.00.03    @@@@-門間    12/02/29  インデント整理
       *                           12/03/09  CSVファイル作成機能追加
       *  01.00.04    @@@@-門間    14/02/19  CSV出力時の印字ズレを修正
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       ******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -44,7 +45,7 @@
                                    FILE    STATUS  IS  STS-RECEERR.
       *
       *    基本台帳(入院・診療科)用対象患者ファイル
-           SELECT  D126PT-FILE     ASSIGN  D126PPARA
+           SELECT  D126PT-FILE     ASSIGN  AD126PT
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     D126P-KEY
@@ -69,18 +70,16 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域 
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+      *    エラーファイル 名称領域
+           COPY    "CPRECEERR.INC".
       *
        01  D100IPARA.
            03  FILLER              PIC X(256) VALUE  SPACE.
       *
       *    診療日別受信患者ファイル
-       01  D126PPARA.
-           03  FILLER   PIC  X(05) VALUE "/tmp/".
-           03  D126TPARA-FILENAME  PIC  X(12) VALUE "A00000D126PT".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AD126PT//.
       *
       *    基本台帳(入院・診療科)DIA用コピー句
            COPY    "A00000D126.INC".
@@ -550,11 +549,9 @@
            COPY    "CPRCF010.INC".
       *
       *    患者入院履歴情報(入院履歴全枝番号用)
-       01  PTNYUINRRK-M-REC.
+       01  PNR-M-REC.
            COPY    "CPPTNYUINRRK.INC"
-           REPLACING  //PTNYUINRRK-// BY //PTNYUINRRK-M-//.
-      *
-      */20040325 追加
+           REPLACING  //PTNYUINRRK-// BY //PNR-M-//.
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -586,8 +583,12 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *
       *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
+      *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -628,6 +629,7 @@
            INITIALIZE                  CNT-AREA
            INITIALIZE                  SUM-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
            MOVE    D100LNK-HOSPNUM     TO  SPA-HOSPNUM
@@ -646,6 +648,20 @@
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
                                    SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AD126TP"                TO  AD126PT-FILE-ID
+           MOVE    D100LNK-PRTKANRI-TERMID  TO  AD126PT-TERMID
+           MOVE    D100LNK-HOSPNUM          TO  AD126PT-HOSPNUM
+      *
+           MOVE    AD126PT-BASENAME         TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AD126PT-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -1194,25 +1210,25 @@
       *
       *         履歴レコード初期化
                 INITIALIZE               WRK-NYURRK-G
-                INITIALIZE               PTNYUINRRK-M-REC
-                MOVE    PTNYUINRRK-PTID     TO  PTNYUINRRK-M-PTID
-                MOVE    D100LNK-HOSPNUM     TO  PTNYUINRRK-M-HOSPNUM
-                MOVE    PTNYUINRRK-RRKNUM   TO  PTNYUINRRK-M-RRKNUM
+                INITIALIZE               PNR-M-REC
+                MOVE    PTNYUINRRK-PTID     TO  PNR-M-PTID
+                MOVE    D100LNK-HOSPNUM     TO  PNR-M-HOSPNUM
+                MOVE    PTNYUINRRK-RRKNUM   TO  PNR-M-RRKNUM
       *
                 PERFORM  900-NYURRK-M-SELECT-SEC
                 PERFORM  UNTIL   FLG-PTNYUINRRK-M  =   1
                    IF  (  WRK-NYURRK-SRYKA = SPACE 
-                     OR   WRK-NYURRK-SRYKA = PTNYUINRRK-M-NYUINKA )
+                     OR   WRK-NYURRK-SRYKA = PNR-M-NYUINKA )
                     AND ( SUM-DRCD  = "9999"
-                      OR  SUM-DRCD  = PTNYUINRRK-M-DRCD1(2:4) ) 
+                      OR  SUM-DRCD  = PNR-M-DRCD1(2:4) ) 
       **             レコード更新
                        IF 0            = WRK-NYURRK-NYUYMD
-                          MOVE PTNYUINRRK-M-TENNYUYMD 
+                          MOVE PNR-M-TENNYUYMD 
                                         TO WRK-NYURRK-NYUYMD
                        END-IF
-                       MOVE PTNYUINRRK-M-TENSTUYMD
+                       MOVE PNR-M-TENSTUYMD
                                         TO WRK-NYURRK-STUYMD
-                       MOVE PTNYUINRRK-M-NYUINKA 
+                       MOVE PNR-M-NYUINKA 
                                         TO WRK-NYURRK-SRYKA 
                   ELSE
       *              カウント処理
@@ -1222,12 +1238,12 @@
                       INITIALIZE       WRK-NYURRK-G
       **              医師が同じまたは全医師の時、レコードを更新
                       IF   SUM-DRCD  = "9999"
-                       OR  SUM-DRCD  = PTNYUINRRK-M-DRCD1(2:4)
-                          MOVE PTNYUINRRK-M-TENNYUYMD
+                       OR  SUM-DRCD  = PNR-M-DRCD1(2:4)
+                          MOVE PNR-M-TENNYUYMD
                                         TO WRK-NYURRK-NYUYMD
-                          MOVE PTNYUINRRK-M-TENSTUYMD
+                          MOVE PNR-M-TENSTUYMD
                                         TO WRK-NYURRK-STUYMD
-                          MOVE PTNYUINRRK-M-NYUINKA
+                          MOVE PNR-M-NYUINKA
                                         TO WRK-NYURRK-SRYKA
                       END-IF
                   END-IF
@@ -3854,7 +3870,7 @@
       *****************************************************************
        900-NYURRK-M-SELECT-SEC                 SECTION.
       *
-           MOVE    PTNYUINRRK-M-REC    TO  MCPDATA-REC
+           MOVE    PNR-M-REC           TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"             TO  MCP-TABLE
            MOVE    "key5"                  TO  MCP-PATHNAME
@@ -3888,7 +3904,7 @@
       *
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-PTNYUINRRK-M
-               MOVE    MCPDATA-REC  TO  PTNYUINRRK-M-REC
+               MOVE    MCPDATA-REC  TO  PNR-M-REC
            ELSE
                MOVE    1            TO  FLG-PTNYUINRRK-M
                MOVE    1            TO  FLG-END

@@ -34,6 +34,7 @@
       *  01.00.03    @@@@-門間    12/02/29  インデント整理
       *                           12/03/09  CSVファイル作成機能追加
       *  01.00.04    @@@@-門間    12/06/27  初診、再診、その他の判定条件を再変更
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -45,7 +46,7 @@
                                    FILE    STATUS  IS  STS-RECEERR.
       *
       *    基本台帳(外来日報)用対象患者ファイル
-           SELECT  D125PT-FILE     ASSIGN  D125PPARA
+           SELECT  D125PT-FILE     ASSIGN  AD125PT
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     D125P-KEY
@@ -70,18 +71,16 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-      *    エラーファイル 名称領域 
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+      *    エラーファイル 名称領域
+           COPY    "CPRECEERR.INC".
       *
        01  D100IPARA.
            03  FILLER              PIC X(256) VALUE  SPACE.
       *
       *    診療日別受信患者ファイル
-       01  D125PPARA.
-           03  FILLER   PIC  X(05) VALUE "/tmp/".
-           03  D125TPARA-FILENAME  PIC  X(12) VALUE "A00000D125PT".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AD125PT//.
       *
       *    基本台帳(外来・診療科)DIA用コピー句
            COPY    "A00000D125.INC".
@@ -558,8 +557,12 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *
       *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
+      *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -618,6 +621,20 @@
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
                                    SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AD125TP"                TO  AD125PT-FILE-ID
+           MOVE    D100LNK-PRTKANRI-TERMID  TO  AD125PT-TERMID
+           MOVE    D100LNK-HOSPNUM          TO  AD125PT-HOSPNUM
+      *
+           MOVE    AD125PT-BASENAME         TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AD125PT-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    初診／再診判定サブ初期処理
            INITIALIZE                      SS003-AREA
