@@ -29,6 +29,7 @@
       *  Maj/Min/Rev  修正者      日付      内容
       *   01.00.01    @@@@-田中   10/12/14  open-cobol1.0対応
       *   01.00.01    @@@@-田中   10/12/14  コメント履歴削除
+      *   02.00.01    @@@@-門間   14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -50,8 +51,8 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+      *    エラーファイル 名称領域
+           COPY    "CPRECEERR.INC".
       *
       *    スパ領域
        01  STS-AREA.
@@ -242,6 +243,7 @@
            INITIALIZE                  STS-AREA
            INITIALIZE                  WRK-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
            UNSTRING   COMMAND-PARAM    DELIMITED  BY  ","
                                        INTO    LNK-PRTKANRI-RENNUM

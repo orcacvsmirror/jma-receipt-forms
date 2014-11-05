@@ -36,6 +36,7 @@
       *   01.00.06    @@@@-吉川   13/08/26  在宅の集計不具合修正
       *   01.00.07    @@@@-門間   14/01/07  療養担当手当の自動加算分を集計するように修正
       *   01.00.08    @@@@-門間   14/04/14  「その他」回数欄の不具合を修正
+      *   02.00.01    @@@@-門間   14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -44,7 +45,7 @@
        FILE-CONTROL.
       *
       *    診療行為受診対象患者一時ファイル
-           SELECT  K140T-FILE      ASSIGN              K140TPARA
+           SELECT  K140T-FILE      ASSIGN              AK140T
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
                                    RECORD  KEY     IS  K140TMP-KEY
@@ -71,15 +72,12 @@
            COPY    "CPCOMMONPRT.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"   REPLACING  //ERRFLPARA//
-                                   BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
       *    診療行為受診対象患者一時ファイル(外部ファイル名称)
-       01  K140TPARA.
-           03  FILLER              PIC  X(05) VALUE "/tmp/".
-           03  K140TPARA-FILENAME  PIC  X(11) VALUE "A00000K140T".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
-      *
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AK140T//.
       *
            COPY    "A00000K100.INC".
       *
@@ -527,6 +525,9 @@
       *    保険年齢パラメタ
            COPY    "CPORCSAGECHK.INC".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
       *
@@ -573,6 +574,7 @@
            INITIALIZE                  WRK-NYUIN-AREA
            INITIALIZE                  SPA-AREA
                                        CSV-BODY-AREA
+           INITIALIZE                  RECEERR
       *
            MOVE    K100LNK-HOSPNUM    TO  SPA-HOSPNUM
       *
@@ -591,6 +593,20 @@
                                        ORCSJOBKANRIAREA
                                        JOBKANRI-REC
                                        SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AK140TP"                TO  AK140T-FILE-ID
+           MOVE    K100LNK-PRTKANRI-TERMID  TO  AK140T-TERMID
+           MOVE    K100LNK-HOSPNUM          TO  AK140T-HOSPNUM
+      *
+           MOVE    AK140T-BASENAME          TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AK140T-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
            MOVE    K100LNK-SRYYM       TO  WRK-SRYYMD (1:6)
            MOVE    "01"                TO  WRK-SRYYMD (7:2)
