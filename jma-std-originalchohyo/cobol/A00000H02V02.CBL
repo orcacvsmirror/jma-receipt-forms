@@ -91,6 +91,8 @@
       * 01.00.08     @@@@-門間    14/10/16  頓服薬（臨時投薬）対応
       * 01.00.09     @@@@-門間    14/10/28  処方せん前期高齢者対応
       *                                     公費備考編集個別対応
+      * 02.00.01     @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *                                     ver4.8.0対応（診療回数テーブル１０対応）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -99,7 +101,7 @@
        FILE-CONTROL.
       *
       *    印刷用データ
-           SELECT  PRT-FILE        ASSIGN  HC01PARA
+           SELECT  PRT-FILE        ASSIGN  ASGNPARA
                                    FILE    STATUS  IS  STS-PARA.
       *
        DATA                    DIVISION.
@@ -115,8 +117,11 @@
            COPY    "A00000H02V03.INC"   REPLACING   //H02V03//
                                         BY          //HCM19//.
       *
-      *     印刷用データ 名称領域 
+      *    印刷用データ 名称領域
            COPY    "CPCOMMONPRT.INC".
+      *
+      *    一時デイレクトリ領域 
+           COPY    "CPASGNPARA.INC".
       *
       *    フラグ領域
        01  STS-AREA.
@@ -675,6 +680,9 @@
       *
            COPY    "MCPAREA".
       *
+      *    一時ファイル名取得
+           COPY    "CPORCSGETTEMP.INC".
+      *
       *****************************************************************
       *    連絡　領域
       *****************************************************************
@@ -820,6 +828,13 @@
            ADD     1                   TO  WRK-PAGE
            MOVE    WRK-PAGE            TO  HC01PARA-CNT
       *
+      *    一時ファイル名取得
+           INITIALIZE                      SGETTEMP-AREA
+           MOVE    HC01PARA            TO  SGETTEMP-BASENAME
+           CALL    "ORCSGETTEMP"       USING
+                                           SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAME   TO  ASGNPARA
+      *
            OPEN    OUTPUT               PRT-FILE
       *
            .
@@ -845,6 +860,13 @@
                COMPUTE WRK-SYS-TIME        =   SYS-TIME
                                            +   WRK-FILE-CNT2
                MOVE    WRK-SYS-TIME        TO  HC01PARA-SYOHMS
+      *
+      *        一時ファイル名取得
+               INITIALIZE                      SGETTEMP-AREA
+               MOVE    HC01PARA            TO  SGETTEMP-BASENAME
+               CALL    "ORCSGETTEMP"       USING
+                                               SGETTEMP-AREA
+               MOVE    SGETTEMP-FULLNAME   TO  ASGNPARA
       *
                OPEN    INPUT               PRT-FILE
                IF      STS-PARA        NOT =   ZERO
@@ -877,7 +899,7 @@
            MOVE   "HC01.sh"           TO  MKPRT-ID
            MOVE   "A00000H02V03.red"  TO  MKPRT-DIA
            MOVE   SPACE               TO  MKPRT-DEF
-           MOVE   HC01PARA            TO  MKPRT-DAT
+           MOVE   ASGNPARA            TO  MKPRT-DAT
            MOVE   SYS-1031-PRTNM(2)   TO  MKPRT-PRTNM
       *---(04.03.00) LINE ADD START ------------------------------------
       *    退院時院外処方せん（入院）
@@ -2334,9 +2356,6 @@
                MOVE    JYURRK-ZAINUM (IDX-JYU) TO  WRK-ZAINUM
                COMPUTE IDX-REN         =   JYURRK-RENNUM
                                        +   1
-               IF      IDX-REN         >   4
-                   MOVE    4               TO  IDX-REN
-               END-IF
                PERFORM 2002-SRYACT-SYORI-SEC
            END-PERFORM
       *
