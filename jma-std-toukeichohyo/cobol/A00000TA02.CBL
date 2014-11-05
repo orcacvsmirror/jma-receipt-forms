@@ -40,6 +40,7 @@
       *   01.00.09    門間    2014/05/22  自費の診療行為コードの場合、薬価／点数が０になる不具合を修正
       *                                   薬価／点数、件数、使用量を小数点第2位まで対応
       *   01.00.10    門間    2014/07/17  きざみ値処理を追加
+      *   02.00.01    門間    2014/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -51,7 +52,7 @@
                                    FILE    STATUS  IS  STS-RECEERR.
       *
       *    診療行為受診対象患者一時ファイル
-           SELECT  TA02-FILE       ASSIGN          TA02TPARA
+           SELECT  TA02-FILE       ASSIGN          TA02P
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
                                    RECORD  KEY     IS  TA02TMP-KEY
@@ -74,16 +75,13 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"       REPLACING  //ERRFLPARA//
-                                       BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000TA02.INC".
       *
-      *    診療行為受診対象患者一時ファイル(外部ファイル名称)
-       01  TA02TPARA.
-           03  FILLER                    PIC X(05)  VALUE "/tmp/".
-           03  TA02TPARA-FILENAME        PIC X(04)  VALUE "TA02".
-           03  FILLER                    PIC X(04)  VALUE ".TMP".
+      *    一時ファイル 名称領域
+           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01PARA//
+                                       BY         //TA02P//.
       *
       *    スパ領域
        01  STS-AREA.
@@ -417,6 +415,9 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *+
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -460,6 +461,7 @@
            INITIALIZE                  WRK-HIRITU-AREA
            INITIALIZE                  CSV-DATA
            INITIALIZE                  WRK-OUTPUT-DATA
+           INITIALIZE                  RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -501,6 +503,18 @@
                                         ORCSJOBKANRIAREA
                                         JOBKANRI-REC
                                         SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           MOVE    "ATA02TP"                TO  TA02P-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  TA02P-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  TA02P-HOSPNUM
+      *
+           MOVE    TA02P-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  TA02P-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM  200-PARA-HENSYU-SEC

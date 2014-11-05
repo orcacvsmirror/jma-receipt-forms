@@ -26,6 +26,7 @@
       *   01.00.00    門間    2011/08/31   新規作成
       *   01.00.01    門間    2013/10/03   CSVファイルが20kBを超える場合、
       *                                    正しく出力されない不具合を修正
+      *   02.00.01    門間    2014/10/31   ver4.8.0対応（一時ディレクトリ変更）
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -37,7 +38,7 @@
                                    FILE    STATUS  IS  STS-RECEERR.
       *
       *    未収金対象患者一時ファイル
-           SELECT  TA06-FILE       ASSIGN          TA06TPARA
+           SELECT  TA06-FILE       ASSIGN          TA06P
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
                                    RECORD  KEY     IS  TA06TMP-KEY
@@ -60,14 +61,11 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
-      *    未収金対象患者一時ファイル(外部ファイル名称)
-       01  TA06TPARA.
-           03  FILLER                  PIC X(05)  VALUE "/tmp/".
-           03  TA06TPARA-FILENAME      PIC X(04)  VALUE "TA06".
-           03  FILLER                  PIC X(04)  VALUE ".TMP".
+      *    一時ファイル 名称領域
+           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01PARA//
+                                       BY         //TA06P//.
       *
            COPY    "A00000TA06.INC".
       *
@@ -224,6 +222,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE            SECTION.
        01  COMMAND-PARAM.
@@ -259,6 +260,7 @@
                                          CNT-AREA
                                          SPA-AREA
                                          IDX-AREA
+           INITIALIZE                    RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -299,6 +301,18 @@
                                              ORCSJOBKANRIAREA
                                              JOBKANRI-REC
                                              SPA-AREA
+      *+
+      *    サブプログラムより一時ファイル名編集
+           MOVE    "ATA06TP"                TO  TA06P-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  TA06P-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  TA06P-HOSPNUM
+      *
+           MOVE    TA06P-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  TA06P-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    対象年月初日
            MOVE    WRK-PARA-PRTYM            TO  WRK-SKYSTYMD(1:6)

@@ -26,6 +26,7 @@
       *   01.00.00    田中    2011/03/07  新規作成
       *   01.00.01    門間    2014/03/12  テスト患者を対象外とする
       *                                   処理名を修正、不要なコメントを削除
+      *   02.00.01    門間    2014/10/31   ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
        ENVIRONMENT                 DIVISION.
        CONFIGURATION               SECTION.
@@ -33,7 +34,7 @@
        FILE-CONTROL.
       *
       *    TMPファイル
-           SELECT  TA05-FILE     ASSIGN          TA05TPARA
+           SELECT  TA05-FILE     ASSIGN          TA05P
                                     ORGANIZATION    IS  INDEXED
                                     ACCESS  MODE    IS  DYNAMIC
                                     RECORD  KEY     IS  TA05TMP-KEY
@@ -61,16 +62,14 @@
       *
            COPY    "CPSHELLTBL.INC".
       *
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+      *    エラーファイル 名称領域
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000TA05.INC".
       *
-      *    診療行為受診対象患者一時ファイル(外部ファイル名称)
-       01  TA05TPARA.
-           03  FILLER                   PIC X(05) VALUE "/tmp/".
-           03  TA05TMPPARA-FILENAME     PIC X(04) VALUE "TA05".
-           03  FILLER                   PIC X(04) VALUE ".TMP".
+      *    一時ファイル 名称領域
+           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01PARA//
+                                       BY         //TA05P//.
       *
       *    スパ領域
        01  STS-AREA.
@@ -255,6 +254,9 @@
       *    ファイルディレクトリ位置指定サブ
            COPY    "CPMKPASS.INC".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                     SECTION.
        01  COMMAND-PARAM.
@@ -294,6 +296,7 @@
            INITIALIZE                  CNT-AREA
            INITIALIZE                  SPA-AREA
            INITIALIZE                  IDX-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -340,6 +343,18 @@
                                          ORCSJOBKANRIAREA
                                          JOBKANRI-REC
                                          SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           MOVE    "ATA05TP"                TO  TA05P-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  TA05P-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  TA05P-HOSPNUM
+      *
+           MOVE    TA05P-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  TA05P-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM  110-PARA-HENSYU-SEC

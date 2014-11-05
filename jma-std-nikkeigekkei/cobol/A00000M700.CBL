@@ -37,6 +37,7 @@
       *  01.00.06    @@@@-門間    12/12/06  公費単独の場合、項目「自費負担額」に
       *                                     公費１計算負担金を参照するように修正
       *  01.00.07    @@@@-門間    13/09/30  プレビュー画面の表示修正
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -59,8 +60,7 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000M700.INC".
            COPY    "A00000M7001.INC".
@@ -464,6 +464,7 @@
            INITIALIZE                  SUM-AREA-GK
            INITIALIZE                  WRK-SMEI-REC
            INITIALIZE                  WRK-JYUSHIN-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
       *

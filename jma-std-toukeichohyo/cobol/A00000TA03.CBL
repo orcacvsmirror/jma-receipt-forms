@@ -30,6 +30,7 @@
       *                       13/07/30   CSV出力選択画面での入外印字を修正
       *   01.00.03    門間    13/08/02   未収金欄（CSV）マイナス処理時の修正
       *   01.00.04    門間    14/03/12   テスト患者を対象外とする
+      *   02.00.01    門間    14/10/31   ver4.8.0対応（一時ディレクトリ変更）
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -41,7 +42,7 @@
                                    FILE    STATUS  IS  STS-RECEERR.
       *
       *    未収金対象患者一時ファイル
-           SELECT  TA03-FILE   ASSIGN          TA03TPARA
+           SELECT  TA03-FILE   ASSIGN          TA03P
                                      ORGANIZATION    IS  INDEXED
                                      ACCESS  MODE    IS  DYNAMIC
                                      RECORD  KEY     IS  TA03TMP-KEY
@@ -64,14 +65,11 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
-      *    未収金対象患者一時ファイル(外部ファイル名称)
-       01  TA03TPARA.
-           03  FILLER                    PIC X(05)  VALUE "/tmp/".
-           03  TA03TPARA-FILENAME        PIC X(04)  VALUE "TA03".
-           03  FILLER                    PIC X(04)  VALUE ".TMP".
+      *    一時ファイル 名称領域
+           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01PARA//
+                                       BY         //TA03P//.
       *
            COPY    "A00000TA03.INC".
       *
@@ -328,6 +326,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE            SECTION.
        01  COMMAND-PARAM.
@@ -365,6 +366,7 @@
                                          IDX-AREA
                                          WRK-SYUKEI-AREA
                                          WRK-GOKEI-AREA
+           INITIALIZE                    RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -404,6 +406,18 @@
                                              ORCSJOBKANRIAREA
                                              JOBKANRI-REC
                                              SPA-AREA
+      *+
+      *    サブプログラムより一時ファイル名編集
+           MOVE    "ATA03TP"                TO  TA03P-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  TA03P-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  TA03P-HOSPNUM
+      *
+           MOVE    TA03P-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  TA03P-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
            MOVE    SPACE               TO  WRK-ITEM
            INSPECT WRK-ITEM  TALLYING  WRK-ITEM-SIZE   FOR ALL " "

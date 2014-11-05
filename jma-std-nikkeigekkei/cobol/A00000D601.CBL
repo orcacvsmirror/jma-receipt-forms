@@ -36,6 +36,7 @@
       *  01.00.05    @@@@-門間    12/07/03  初診、再診、その他の判定条件を再度変更
       *  01.00.06    @@@@-門間    12/12/06  公費単独の場合、項目「自費負担額」に
       *                                     公費１計算負担金を参照するように修正
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -58,8 +59,7 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000D601.INC".
       *
@@ -449,6 +449,7 @@
            INITIALIZE                  WRK-SMEI-REC
            INITIALIZE                  WRK-JYUSHIN-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
       *

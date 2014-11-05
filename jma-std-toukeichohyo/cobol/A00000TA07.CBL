@@ -25,6 +25,7 @@
       *  Maj/Min/Rev  修正者  日付       内容
       *   01.00.00    門間    11/03/29   新規作成
       *   01.00.01    門間    14/03/12   テスト患者を対象外とする
+      *   02.00.01    門間    14/10/31   ver4.8.0対応（一時ディレクトリ変更）
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -36,7 +37,7 @@
                                    FILE    STATUS  IS  STS-RECEERR.
       *
       *    自賠責労災  一時ファイル
-           SELECT  TA07-FILE       ASSIGN          TA07PARA
+           SELECT  TA07-FILE       ASSIGN          TA07P
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
                                    RECORD  KEY     IS  TA07TMP-KEY
@@ -59,14 +60,11 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
-      *    自賠責労災  一時ファイル(外部ファイル名称)
-       01  TA07PARA.
-           03  FILLER                  PIC X(05)  VALUE "/tmp/".
-           03  TA07PARA-FILENAME       PIC X(06)  VALUE "TA07DT".
-           03  FILLER                  PIC X(04)  VALUE ".TMP".
+      *    一時ファイル 名称領域
+           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01PARA//
+                                       BY         //TA07P//.
       *
       *    自賠責
            COPY    "A00000TA07J.INC".
@@ -266,6 +264,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE            SECTION.
        01  COMMAND-PARAM.
@@ -301,6 +302,7 @@
                                          CNT-AREA
                                          SPA-AREA
                                          IDX-AREA
+           INITIALIZE                    RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -340,6 +342,18 @@
                                                ORCSJOBKANRIAREA
                                                JOBKANRI-REC
                                                SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           MOVE    "ATA07TP"                TO  TA07P-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  TA07P-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  TA07P-HOSPNUM
+      *
+           MOVE    TA07P-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  TA07P-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM  200-PARA-HENSYU-SEC

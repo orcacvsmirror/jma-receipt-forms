@@ -35,6 +35,7 @@
       *  01.00.04    @@@@-田中    11/12/15  外来時に療養担当手当を集計
       *  01.00.05    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.06    @@@@-門間    12/07/03  初診、再診、その他の判定条件を再度変更
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -56,8 +57,9 @@
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+      *    エラーファイル 名称領域
+           COPY    "CPRECEERR.INC".
+      *
            COPY    "A00000M500.INC".
            COPY    "A00000M5001.INC".
       *
@@ -450,6 +452,7 @@
            INITIALIZE                  CNT-AREA
            INITIALIZE                  SUM-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
       *

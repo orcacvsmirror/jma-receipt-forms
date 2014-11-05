@@ -37,6 +37,7 @@
       *  01.00.06    @@@@-門間    12/08/24  新患件数が重複カウントされる不具合を修正
       *  01.00.07    @@@@-門間    13/09/30  頁数の印字修正（処理結果画面）
       *  01.00.08    @@@@-門間    14/06/23  自費診療の端数処理を修正
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -59,8 +60,8 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
+      *
            COPY    "A00000D501.INC".
       *
       *    スパ領域
@@ -507,6 +508,7 @@
            INITIALIZE                  WRK-SMEI-REC
            INITIALIZE                  WRK-JYUSHIN-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -1341,17 +1343,17 @@
       *
       *    保険点数
            MOVE    ZERO      TO   SYU-TOTAL-HKNTEN
-           EVALUATE      SYU-SYUHKNNUM
-             WHEN    OTHER
-               PERFORM  VARYING IDZ   FROM  1   BY  1
-                        UNTIL   IDZ   >  16
-                 ADD     SYU-HKNTEN (IDZ)
-                                               TO   SYU-TOTAL-HKNTEN
-               END-PERFORM
-               MOVE    SYU-TOTAL-HKNTEN      TO   WRK-Z9
-               ADD     SYU-TOTAL-HKNTEN      TO   SUM-HKNTEN
-               MOVE  1                       TO   FLG-HKN
-           END-EVALUATE
+      *
+           PERFORM  VARYING IDZ   FROM  1   BY  1
+                    UNTIL   IDZ   >  16
+             ADD     SYU-HKNTEN (IDZ)
+                                           TO   SYU-TOTAL-HKNTEN
+           END-PERFORM
+      *
+           MOVE    SYU-TOTAL-HKNTEN      TO   WRK-Z9
+           ADD     SYU-TOTAL-HKNTEN      TO   SUM-HKNTEN
+           MOVE  1                       TO   FLG-HKN
+      *
       *    保険別金額（社保本人〜自賠責）
            MOVE    ZERO                    TO   IDX
            EVALUATE  SYU-SYUHKNNUM
@@ -1525,16 +1527,16 @@
       *
       *    保険点数
            MOVE    ZERO  TO  SYU-TOTAL-HKNTEN
-           EVALUATE    SYU-SYUHKNNUM
-             WHEN    OTHER
-               PERFORM VARYING IDZ FROM  1   BY  1
-                       UNTIL   IDZ  >  16
-                 ADD   SYU-HKNTEN (IDZ)     TO   SYU-TOTAL-HKNTEN
-               END-PERFORM
-               MOVE   SYU-TOTAL-HKNTEN      TO   WRK-Z9
-               ADD    SYU-TOTAL-HKNTEN      TO   SUM-HKNTEN
-               MOVE  1                      TO   FLG-HKN
-           END-EVALUATE
+      *
+           PERFORM VARYING IDZ FROM  1   BY  1
+                   UNTIL   IDZ  >  16
+             ADD   SYU-HKNTEN (IDZ)     TO   SYU-TOTAL-HKNTEN
+           END-PERFORM
+      *
+           MOVE   SYU-TOTAL-HKNTEN      TO   WRK-Z9
+           ADD    SYU-TOTAL-HKNTEN      TO   SUM-HKNTEN
+           MOVE  1                      TO   FLG-HKN
+      *
       *    保険別金額（社保本人〜自賠責）
            MOVE    ZERO                TO  IDX
            EVALUATE    SYU-SYUHKNNUM

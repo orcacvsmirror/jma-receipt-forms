@@ -32,14 +32,7 @@
       *   01.00.03    吉川    2014/04/01   CSVの小計行のズレ修正
       *   01.00.04    吉川    2014/04/16   当月と月遅れに診療がある場合
       *                                    月遅れ分が印字されないのを修正
-      *   01.00.05    吉川    2014/05/22   保険が月に変更になった場合
-      *                                    それぞれの一部負担金を印字する
-      *                                    実日数を3桁まで印字する
-      *                                    実人数、延べ人数を9999まで
-      *                                    カウントできるように修正
-      *                                    まとめ公費を使用した場合
-      *                                    負担者番号と受給者番号が
-      *                                    正しく印字されないのを修正
+      *   02.00.01    門間    2014/10/31   ver4.8.0対応（一時ディレクトリ変更）
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -47,7 +40,7 @@
        FILE-CONTROL.
       *
       *    一時ファイル
-           SELECT  TA01-FILE    ASSIGN          TA01PARA
+           SELECT  TA01-FILE       ASSIGN          TA01P
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
                                    RECORD  KEY     IS  TA01TMP-KEY
@@ -74,12 +67,11 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    一時ファイル 名称領域
-           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01//
-                                       BY         //TA01//.
+           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01PARA//
+                                       BY         //TA01P//.
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"       REPLACING  //ERRFLPARA//
-                                       BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
       *    帳票コピー句
            COPY    "A00000TA01.INC".
@@ -362,7 +354,7 @@
       *    
       *    ソート用エリア
        01  SRT-AREA.
-           03  SORT-PTNUM                  PIC X(10)   OCCURS  9999.
+           03  SORT-PTNUM                  PIC X(10)   OCCURS  1000.
       *
            COPY    "CPSHELLTBL.INC".
       *
@@ -449,6 +441,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -488,6 +483,7 @@
            INITIALIZE                    KEY-AREA
            INITIALIZE                    IDX-AREA
            INITIALIZE                    SRT-AREA
+           INITIALIZE                    RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -532,9 +528,17 @@
                                          JOBKANRI-REC
                                          SPA-AREA
       *
-           MOVE    "STX017"              TO  TA01PARA-FILE-ID
-           MOVE    LNK-PRTKANRI-TERMID   TO  TA01PARA-TERMID
-           MOVE    WRK-PARA-HOSPNUM      TO  TA01PARA-HOSPNUM
+      *    サブプログラムより一時ファイル名編集
+           MOVE    "ATA01TP"                TO  TA01P-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  TA01P-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  TA01P-HOSPNUM
+      *
+           MOVE    TA01P-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  TA01P-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
            MOVE    WRK-PARA-PRTYMST      TO  WRK-SRYYMD (1:6)
            MOVE    "01"                  TO  WRK-SRYYMD (7:2)
@@ -959,10 +963,6 @@
                     UNTIL    IDY  >     4
                     OR  RECE10-KOHNUM(IDY)  =  SPACE
       *
-      *      負担者番号、受給者番号を取得
-             MOVE    RECE10-KOHNUM(IDY)    TO  WRK-KOHNUM
-             PERFORM 900-PTKOHINF-SET-SEC
-      *
       *      特定疾患は０５１でまとめる
              IF  RECE10-KOHNUM(IDY)  =  "091"
                MOVE    "051"               TO  RECE10-KOHNUM(IDY)
@@ -990,7 +990,9 @@
       *
       *      公費番号
              MOVE    RECE10-KOHNUM(IDY)    TO  TA01TMP-KOHNUM(IDY)
+                                               WRK-KOHNUM
       *
+             PERFORM 900-PTKOHINF-SET-SEC
       *      公費負担者番号
              MOVE    WRK-FTNJANUM          TO  TA01TMP-FTNJANUM(IDY)
       *      
@@ -1211,13 +1213,13 @@
       *
       *    内部ソート
            PERFORM  VARYING  IDY1  FROM  1  BY  1
-           UNTIL    IDY1  >  9999
+           UNTIL    IDY1  >  1000
            OR       SORT-PTNUM(IDY1)  =  SPACE
       *
              COMPUTE  WRK-S  =  IDY1  +  1
       *
              PERFORM  VARYING  IDY2  FROM  WRK-S  BY  1
-             UNTIL    IDY2  >  9999
+             UNTIL    IDY2  >  1000
              OR       SORT-PTNUM(IDY2)  =  SPACE
       *
                IF  SORT-PTNUM(IDY1)  >  SORT-PTNUM(IDY2)
@@ -1232,7 +1234,7 @@
       *    実人数、延べ人数カウント
            INITIALIZE                            WRK-TAIHI
            PERFORM  VARYING  IDY1  FROM  1  BY  1
-           UNTIL    IDY1  >  9999
+           UNTIL    IDY1  >  1000
            OR       SORT-PTNUM(IDY1)  =  SPACE
       *      延べ人数
              ADD    1                        TO  WRK-NNINZU
@@ -1494,8 +1496,8 @@
              MOVE    TA01TMP-NAME        TO  TA01-NAME(IDX1)
       *
       *      実日数
-             MOVE    TA01TMP-NISSU       TO  WRK-Z3-9
-             MOVE    WRK-Z3-9            TO  TA01-NISSU(IDX1)
+             MOVE    TA01TMP-NISSU       TO  WRK-Z2
+             MOVE    WRK-Z2              TO  TA01-NISSU(IDX1)
       *
       *      点数
              MOVE    TA01TMP-TENSU       TO  WRK-Z9-9
@@ -1691,8 +1693,8 @@
            MOVE    "　　　　　　　　小計"  TO  TA01-NAME(IDX1)
       *
       *    実日数
-           MOVE    SUM-SNISSU            TO  WRK-Z3-9
-           MOVE    WRK-Z3-9              TO  TA01-NISSU(IDX1)
+           MOVE    SUM-SNISSU            TO  WRK-Z2
+           MOVE    WRK-Z2                TO  TA01-NISSU(IDX1)
       *
       *    点数
            MOVE    SUM-STENSU            TO  WRK-Z9-9
@@ -1759,8 +1761,8 @@
        330-GOKEI-PRINT-SEC          SECTION.
       *
       *    実日数
-           MOVE    SUM-GNISSU            TO  WRK-Z4-9
-           MOVE    WRK-Z4-9              TO  TA01-GNISSU
+           MOVE    SUM-GNISSU            TO  WRK-Z3-9
+           MOVE    WRK-Z3-9              TO  TA01-GNISSU
       *
       *    点数
            MOVE    SUM-GTENSU            TO  WRK-Z10-9
@@ -2944,22 +2946,11 @@
       *
              PERFORM  UNTIL  FLG-SYUNOU  =  1
                IF  SYU-DENPJTIKBN  NOT =  "3"
-                 IF    SYU-HKNCOMBINUM  =  RECE10-HKNCOMBI(1) OR
-                                           RECE10-HKNCOMBI(2) OR
-                                           RECE10-HKNCOMBI(3) OR
-                                           RECE10-HKNCOMBI(4) OR
-                                           RECE10-HKNCOMBI(5) OR
-                                           RECE10-HKNCOMBI(6) OR
-                                           RECE10-HKNCOMBI(7) OR
-                                           RECE10-HKNCOMBI(8) OR
-                                           RECE10-HKNCOMBI(9) OR
-                                           RECE10-HKNCOMBI(10) 
-      *            室料差額集計
-                   ADD    SYU-RMSAGAKU     TO  WRK-RMSAGAKU
+      *          室料差額集計
+                 ADD    SYU-RMSAGAKU     TO  WRK-RMSAGAKU
       *
-      *            主保険負担金集計
-                   ADD    SYU-SYUCOMPFTN-ENTANI   TO  WRK-SEIKYUGK
-                 END-IF
+      *          主保険負担金集計
+                 ADD    SYU-SYUCOMPFTN-ENTANI   TO  WRK-SEIKYUGK
                END-IF
       *   
                PERFORM  910-SYUNOU-READ-SEC

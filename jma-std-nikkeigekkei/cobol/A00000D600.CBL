@@ -39,6 +39,7 @@
       *  01.00.09    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.10    @@@@-門間    12/12/06  公費単独の場合、項目「自費負担額」に
       *                                     公費１計算負担金を参照するように修正
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       ******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -61,8 +62,7 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       **    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000D600V02.INC".
       *
@@ -430,6 +430,7 @@
            INITIALIZE                  SUM-G-AREA
            INITIALIZE                  SPA-AREA
            INITIALIZE                  CSV-G-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
       *

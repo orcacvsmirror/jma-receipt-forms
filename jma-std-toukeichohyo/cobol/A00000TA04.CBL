@@ -26,6 +26,7 @@
       *   01.00.00    田中    2011/01/20  新規作成
       *   01.00.02    門間    2013/07/24  発行区分が空白の場合、在院数が集計されるように修正
       *   01.00.03    門間    2014/03/12  テスト患者を対象外とする
+      *   02.00.01    門間    2014/10/31   ver4.8.0対応（一時ディレクトリ変更）
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -49,8 +50,7 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000TA041.INC".
            COPY    "A00000TA042.INC".
@@ -310,6 +310,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE            SECTION.
        01  COMMAND-PARAM.
@@ -351,6 +354,7 @@
            INITIALIZE                  IDX-AREA
            INITIALIZE                  WRK-SYUKEI-AREA
            INITIALIZE                  WRK-JNISSU-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
