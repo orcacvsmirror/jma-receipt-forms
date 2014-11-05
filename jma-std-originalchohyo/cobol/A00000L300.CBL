@@ -32,6 +32,7 @@
       *  01.00.02    @@@@-門間     11/05/26  処理速度の改善
       *  01.00.03    @@@@-門間     11/08/04  預り金が正しく集計されるように修正
       *  01.00.04    @@@@-門間     12/05/25  CSVファイル作成機能追加
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -44,7 +45,7 @@
                                    FILE    STATUS  IS  STS-RECEERR.
       *
       *    未収金／預り金対象者抽出ファイル
-           SELECT  L300T-FILE      ASSIGN  L300TPARA
+           SELECT  L300T-FILE      ASSIGN  L300TP
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     L300T-KEY
@@ -66,16 +67,15 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
        01  L300IPARA.
            03  FILLER              PIC X(256) VALUE  SPACE.
       *
-       01  L300TPARA.
-           03  FILLER   PIC  X(05) VALUE "/tmp/".
-           03  L300TPARA-FILENAME  PIC  X(10) VALUE "A00000L300".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+      *    一時ファイル
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //L300TP//.
       *
            COPY    "A00000L300.INC".
       *
@@ -393,6 +393,9 @@
       *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -430,9 +433,8 @@
            INITIALIZE                  CNT-AREA
            INITIALIZE                  WRK-SRYKA-AERA
            INITIALIZE                  SPA-AREA
-      *
            INITIALIZE                  WRK-AZU-AREA
-      *
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -473,6 +475,20 @@
                                    ORCSJOBKANRIAREA
                                    JOBKANRI-REC
                                    SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AL300TP"                TO  L300TP-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  L300TP-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  L300TP-HOSPNUM
+      *
+           MOVE    L300TP-BASENAME          TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  L300TP-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC

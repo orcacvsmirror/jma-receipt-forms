@@ -38,6 +38,7 @@
       *  01.00.07    @@@@-門間    14/01/17  第三者行為対応
       *  01.00.08    @@@@-門間    14/02/07  プログラムオプション対応（訂正印字）
       *  01.00.09    @@@@-門間    14/03/24  消費税対応
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -46,7 +47,7 @@
        FILE-CONTROL.
       *
       *    印刷用データ
-           SELECT  PRT-FILE        ASSIGN  HC01PARA
+           SELECT  PRT-FILE        ASSIGN  ASGNPARA
                                    ORGANIZATION    IS  LINE
                                                        SEQUENTIAL 
                                    FILE    STATUS  IS  STS-PARA.
@@ -65,6 +66,9 @@
            03  PRT-PRTNM               PIC X(20).
            03  PRT-SITEKBN             PIC X(01).
            03  PRT-PRTDATA             PIC X(10000).
+      *
+      *    一時デイレクトリ領域 
+           COPY    "CPASGNPARA.INC".
       *
        WORKING-STORAGE             SECTION.
       *
@@ -318,6 +322,9 @@
       *    マシン日付取得サブ
            COPY    "CPORCSMCNDATE.INC".
       *
+      *    一時ファイル名取得
+           COPY    "CPORCSGETTEMP.INC".
+      *
       *****************************************************************
       *    連絡　領域
       *****************************************************************
@@ -535,6 +542,14 @@
            MOVE    ORCHCN03-TERMID     TO  HC01PARA-TERMID
            MOVE    SYS-TIME            TO  HC01PARA-SYOHMS
            MOVE    1                   TO  HC01PARA-CNT
+      *
+      *    一時ファイル名取得
+           INITIALIZE                      SGETTEMP-AREA
+           MOVE    HC01PARA            TO  SGETTEMP-BASENAME
+           CALL    "ORCSGETTEMP"       USING
+                                       SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAME   TO  ASGNPARA
+      *
            OPEN    OUTPUT               PRT-FILE
       *
            PERFORM 100-OPTION-SELECT-SEC
@@ -1607,7 +1622,7 @@
            CLOSE   PRT-FILE
       *
            CALL    "ORCHCN03S01"   USING   ORCHCN03AREA
-                                           HC01PARA
+                                           ASGNPARA
                                            SPA-AREA
       *
            .

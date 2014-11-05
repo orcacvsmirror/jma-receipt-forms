@@ -36,6 +36,7 @@
       *  01.00.05    @@@@-萩野    13/01/09  カルテ発行(病名無)を選択した場合、
       *                                     病名を印字しないように修正
       *  01.00.06    @@@@-門間    14/01/16  第三者行為対応
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -44,12 +45,14 @@
        FILE-CONTROL.
       *
       *    国保印刷用データ
-           SELECT  PRT-FILE     ASSIGN  HC01PARA
+           SELECT  PRT-FILE     ASSIGN  ASGNPARA
                                 FILE    STATUS  IS  STS-PARA.
+      *
       *    健保印刷用データ
-           SELECT  PRT-FILE2    ASSIGN  HC01PARA2
+           SELECT  PRT-FILE2    ASSIGN  ASGNPARA2
                                 FILE    STATUS  IS  STS-PARA2.
-           SELECT  PRTX-FILE    ASSIGN  HC011PARA
+      *
+           SELECT  PRTX-FILE    ASSIGN  ASGNPARA3
                                 FILE    STATUS  IS  STSX-PARA.
       *
        DATA                    DIVISION.
@@ -61,21 +64,33 @@
       *
       *    健保印刷用データ
        FD  PRT-FILE2.
-      *
            COPY    "A21000H01SA4.INC".
+      *
       *    印刷用データ続紙
        FD  PRTX-FILE.
            COPY    "HC011.INC".
       *
        WORKING-STORAGE             SECTION.
-      *     国保印刷用データ 名称領域
+      *    国保印刷用データ 名称領域
            COPY    "CPCOMMONPRT.INC".
       *
-      *     健保印刷用データ 名称領域
+      *    一時デイレクトリ領域
+           COPY    "CPASGNPARA.INC".
+      *
+      *    健保印刷用データ 名称領域
            COPY    "CPCOMMONPRT.INC"   REPLACING  //HC01PARA//
                                        BY         //HC01PARA2//.
-      *     印刷用データ 名称領域
+      *
+      *    一時デイレクトリ領域
+           COPY    "CPASGNPARA.INC"    REPLACING  //ASGNPARA//
+                                       BY         //ASGNPARA2//.
+      *
+      *    印刷用データ 名称領域
            COPY    "CPCOMMONPRT1.INC".
+      *
+      *    一時デイレクトリ領域
+           COPY    "CPASGNPARA.INC"    REPLACING  //ASGNPARA//
+                                       BY         //ASGNPARA3//.
       *
       *    フラグ領域
        01  STS-AREA.
@@ -337,6 +352,9 @@
       *    保険年齢パラメタ
            COPY    "CPORCSAGECHK.INC".
       *
+      *    一時ファイル名取得
+           COPY    "CPORCSGETTEMP.INC".
+      *
       *****************************************************************
       *    連絡　領域
       *****************************************************************
@@ -392,6 +410,16 @@
            ADD     1                   TO  WRK-PAGE
            MOVE    WRK-PAGE            TO  HC01PARA-CNT
                                            HC01PARA2-CNT
+      *
+      *    一時ファイル名取得
+           INITIALIZE                      SGETTEMP-AREA
+           MOVE    HC01PARA            TO  SGETTEMP-BASENAMES(1)
+           MOVE    HC01PARA2           TO  SGETTEMP-BASENAMES(2)
+           CALL    "ORCSGETTEMP"       USING
+                                       SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAMES(1)   TO  ASGNPARA
+           MOVE    SGETTEMP-FULLNAMES(2)   TO  ASGNPARA2
+      *
            OPEN    OUTPUT               PRT-FILE
                                         PRT-FILE2
       *
@@ -526,7 +554,7 @@
                  MOVE   "HC01.sh"            TO  MKPRT-ID
                  MOVE   "A21000H01KA4.red"   TO  MKPRT-DIA
                  MOVE   SPACE                TO  MKPRT-DEF
-                 MOVE   HC01PARA             TO  MKPRT-DAT
+                 MOVE   ASGNPARA             TO  MKPRT-DAT
                  MOVE   SYS-1031-PRTNM(1)    TO  MKPRT-PRTNM
                  CALL   "ORCSMKPRTSITE"      USING
                                              ORCSMKPRTAREA
@@ -536,7 +564,7 @@
                  MOVE   "HC01.sh"            TO  MKPRT-ID
                  MOVE   "A21000H01SA4.red"   TO  MKPRT-DIA
                  MOVE   SPACE                TO  MKPRT-DEF
-                 MOVE   HC01PARA2            TO  MKPRT-DAT
+                 MOVE   ASGNPARA2            TO  MKPRT-DAT
                  MOVE   SYS-1031-PRTNM(1)    TO  MKPRT-PRTNM
                  CALL   "ORCSMKPRTSITE"      USING
                                              ORCSMKPRTAREA
@@ -1443,6 +1471,16 @@
            ADD     1                   TO  WRK-PAGE
            MOVE    WRK-PAGE            TO  HC01PARA-CNT
                                            HC01PARA2-CNT
+      *
+      *    一時ファイル名取得
+           INITIALIZE                      SGETTEMP-AREA
+           MOVE    HC01PARA            TO  SGETTEMP-BASENAMES(1)
+           MOVE    HC01PARA2           TO  SGETTEMP-BASENAMES(2)
+           CALL    "ORCSGETTEMP"       USING
+                                       SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAMES(1)   TO  ASGNPARA
+           MOVE    SGETTEMP-FULLNAMES(2)   TO  ASGNPARA2
+      *
            OPEN    OUTPUT              PRT-FILE
                                        PRT-FILE2
       *

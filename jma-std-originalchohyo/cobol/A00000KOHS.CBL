@@ -47,6 +47,7 @@
       *  01.00.10    @@@@-門間    12/07/12  複数科保険(保険組合せ)でまとめ入力を行った時の不具合を修正
       *  01.00.11    @@@@-門間    12/08/10  保険者番号が不明な場合、患者名が正しく印字されない不具合を修正
       *  01.00.12    @@@@-門間    13/01/23  テーブルのprimary key変更対応
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -55,7 +56,7 @@
        FILE-CONTROL.
       *
       *    請求書用ファイル
-           SELECT  MF100-FILE    ASSIGN    MF100PARA
+           SELECT  MF100-FILE    ASSIGN    MF100T
                                  ORGANIZATION    IS  INDEXED
                                  ACCESS  MODE    IS  DYNAMIC
                                  RECORD  KEY     IS  MF100-KEY
@@ -88,16 +89,15 @@
       *
        WORKING-STORAGE  SECTION.
       *
-      *     レセプト明細ファイル 名称領域
+      *    レセプト明細ファイル 名称領域
            COPY    "CPCOMMONDAT2.INC"
-                   REPLACING  //RECE01//
-                   BY         //MF100//.
+                                   REPLACING  //RECE01PARA//
+                                   BY         //MF100T//.
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
-      *帳票コピー句
+      *    帳票コピー句
            COPY    "A00000KOHSV02.INC".
       *
       *    ＣＳＶファイル出力用
@@ -352,6 +352,9 @@
            COPY    "COMMON-SPA".
            COPY    "CPORCSPRGOPTION.INC".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       *****************************************************************
        LINKAGE  SECTION.
       *
@@ -387,6 +390,7 @@
            INITIALIZE  IDX-AREA
            INITIALIZE  KEY-AREA
            INITIALIZE  SPA-AREA
+           INITIALIZE  RECEERR
       *
            ACCEPT    SYS-YMD       FROM    DATE
            ACCEPT    SYS-TIME      FROM    TIME
@@ -429,10 +433,19 @@
                                       JOBKANRI-REC
                                       SPA-AREA
       *
-           MOVE  WRK-PARA-HOSPNUM     TO   MF100PARA-HOSPNUM
-           MOVE  "MF100ZZ"            TO   MF100PARA-FILE-ID
-           MOVE  LNK-PRTKANRI-TERMID(1:16)
-                                      TO   MF100PARA-TERMID
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "MF100TP"                TO  MF100T-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  MF100T-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  MF100T-HOSPNUM
+      *
+           MOVE    MF100T-BASENAME          TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  MF100T-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    請求年月の和暦を取得
            MOVE    WRK-PARA-SRYYM     TO   WRK-SYMD (1:6)

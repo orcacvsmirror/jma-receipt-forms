@@ -25,6 +25,7 @@
       *  Maj/Min/Rev  修正者   日付       内容
       *   01.00.01    門間     12/05/01   新規作成
       *   01.00.02    門間     12/05/18   薬価基準コード１２桁対応
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -36,7 +37,7 @@
                                     FILE    STATUS  IS  STS-RECEERR.
       *
       *    一時ファイル
-           SELECT  A00000YL01-FILE  ASSIGN          YL01PARA
+           SELECT  A00000YL01-FILE  ASSIGN          AYL01T
                                     ORGANIZATION    IS  INDEXED
                                     ACCESS  MODE    IS  DYNAMIC
                                     RECORD  KEY     IS  YL01TMP-KEY
@@ -59,14 +60,12 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
-      *    一時ファイル(外部ファイル名称)
-       01  YL01PARA.
-           03  FILLER                  PIC X(05)  VALUE  "/tmp/".
-           03  A00000YL01-FILENAME     PIC X(10)  VALUE  "A00000YL01".
-           03  FILLER                  PIC X(04)  VALUE  ".TMP".
+      *    一時ファイル
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AYL01T//.
       *
            COPY    "A00000YL01.INC".
       *
@@ -245,6 +244,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -280,6 +282,7 @@
                                          SPA-AREA
                                          IDX-AREA
                                          WRK-HEAD-AREA
+                                         RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -325,6 +328,20 @@
                                              ORCSJOBKANRIAREA
                                              JOBKANRI-REC
                                              SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AYL01TP"                TO  AYL01T-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  AYL01T-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  AYL01T-HOSPNUM
+      *
+           MOVE    AYL01T-BASENAME          TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AYL01T-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM  200-PARA-HENSYU-SEC

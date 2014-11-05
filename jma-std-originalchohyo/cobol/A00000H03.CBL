@@ -36,6 +36,7 @@
       *  01.00.06    @@@@-門間    14/03/24  消費税対応
       *  01.00.07    @@@@-門間    14/08/13  主保険＋マル長の請求対応の不具合対応
       *  01.00.08    @@@@-門間    14/10/07  右下枠内の消費税(再掲)を修正
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -44,7 +45,7 @@
        FILE-CONTROL.
       *
       *    印刷用データ
-           SELECT  PRT-FILE        ASSIGN  HC01PARA
+           SELECT  PRT-FILE        ASSIGN  ASGNPARA
                                    FILE    STATUS  IS  STS-PARA.
       *
        DATA                    DIVISION.
@@ -53,11 +54,14 @@
       *    印刷用データ
        FD  PRT-FILE.
            COPY    "A00000H03B.INC"  REPLACING   //HCM03V02B//
-                                   BY             //HC03//.
+                                     BY          //HC03//.
+      *
+      *    一時デイレクトリ領域 
+           COPY    "CPASGNPARA.INC".
       *
        WORKING-STORAGE             SECTION.
       *
-      *     印刷用データ 名称領域 
+      *    印刷用データ 名称領域 
            COPY    "CPCOMMONPRT.INC".
       *
       *    フラグ領域
@@ -324,6 +328,9 @@
       *
            COPY    "MCPAREA".
       *
+      *    一時ファイル名取得
+           COPY    "CPORCSGETTEMP.INC".
+      *
       *****************************************************************
       *    連絡　領域
       *****************************************************************
@@ -385,6 +392,14 @@
       *    変更
            ADD     1                   TO  WRK-PAGE
            MOVE    WRK-PAGE            TO  HC01PARA-CNT
+      *
+      *    一時ファイル名取得
+           INITIALIZE                      SGETTEMP-AREA
+           MOVE    HC01PARA            TO  SGETTEMP-BASENAME
+           CALL    "ORCSGETTEMP"       USING
+                                       SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAME   TO  ASGNPARA
+      *
            OPEN    OUTPUT               PRT-FILE
       *
            .
@@ -404,10 +419,10 @@
            CLOSE                       PRT-FILE
       *
            INITIALIZE                 ORCSMKPRTAREA
-           MOVE   "HC01.sh"           TO   MKPRT-ID
+           MOVE   "HC01.sh"           TO  MKPRT-ID
            MOVE   WRK-FORMID          TO  MKPRT-DIA
            MOVE   SPACE               TO  MKPRT-DEF
-           MOVE   HC01PARA            TO  MKPRT-DAT
+           MOVE   ASGNPARA            TO  MKPRT-DAT
            MOVE   SYS-1031-PRTNM(3)   TO  MKPRT-PRTNM
            MOVE  "請求書兼領収書"     TO MKPRT-INFO
            CALL   "ORCSMKPRTSITE1"     USING

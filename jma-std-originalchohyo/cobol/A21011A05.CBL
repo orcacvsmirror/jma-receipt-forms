@@ -43,6 +43,7 @@
       *  01.00.09    @@@@-門間    14/04/14  請求管理クローズ処理が実行されるよう変更
       *                                     公費請求読み込み時、項目を追加
       *                           14/04/18  公費単独複数登録時の不具合修正
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -50,7 +51,7 @@
        INPUT-OUTPUT                SECTION.
        FILE-CONTROL.
       *    レセプト集計表一時ファイル
-           SELECT  A05TMP-FILE   ASSIGN    A05TMP
+           SELECT  A05TMP-FILE   ASSIGN    A05TP
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
                                    RECORD  KEY     IS  A05TMP-KEY
@@ -85,14 +86,13 @@
       *    印刷用データ 名称領域
            COPY    "CPCOMMONPRT.INC".
       *
-      *    総括表一時ファイル 名称領域
+      *    一時ファイル 名称領域
            COPY    "CPCOMMONDAT2.INC"
                                    REPLACING  //RECE01PARA//
-                                   BY         //A05TMP//.
+                                   BY         //A05TP//.
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A21011A05V02.INC".
       *
@@ -374,6 +374,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -413,6 +416,8 @@
            INITIALIZE                  SUM-AREA
            INITIALIZE                  KEY-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
+      *
            ACCEPT    SYS-YMD       FROM    DATE
            ACCEPT    SYS-TIME      FROM    TIME
       *
@@ -455,9 +460,20 @@
                                    JOBKANRI-REC
                                    SPA-AREA
       *
-           MOVE    WRK-PARA-HOSPNUM TO  A05TMP-HOSPNUM
-           MOVE    "A05TMP"         TO  A05TMP-FILE-ID
-           MOVE    LNK-PRTKANRI-TERMID     TO  A05TMP-TERMID
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "A2A05TP"                TO  A05TP-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  A05TP-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  A05TP-HOSPNUM
+      *
+           MOVE    A05TP-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  A05TP-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
+      *
       *
            MOVE    WRK-PARA-SKYYM  TO  WRK-SRYYMD (1:6)
            MOVE    "01"                TO  WRK-SRYYMD (7:2)

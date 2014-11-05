@@ -33,6 +33,7 @@
       *  01.00.02    @@@@-田中    11/03/10  用法コードコメント対応
       *  01.00.03    @@@@-門間    12/03/23  Ｈ２４年４月改正対応
       *  01.00.04    @@@@-門間    12/11/29  医療機関住所、医療機関名の印字ずれ修正
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -41,7 +42,7 @@
        FILE-CONTROL.
       *
       *    印刷用データ
-           SELECT  PRT-FILE        ASSIGN  HC01PARA
+           SELECT  PRT-FILE        ASSIGN  ASGNPARA
                                    FILE    STATUS  IS  STS-PARA.
       *
        DATA                    DIVISION.
@@ -50,6 +51,9 @@
       *    印刷用データ
        FD  PRT-FILE.
            COPY    "A00000H02V02.INC".
+      *
+      *    一時デイレクトリ領域 
+           COPY    "CPASGNPARA.INC".
       *
        WORKING-STORAGE             SECTION.
       *
@@ -461,6 +465,9 @@
       *
            COPY    "MCPAREA".
       *
+      *    一時ファイル名取得
+           COPY    "CPORCSGETTEMP.INC".
+      *
       *****************************************************************
       *    連絡　領域
       *****************************************************************
@@ -525,6 +532,13 @@
            MOVE    WRK-PAGE            TO  HC01PARA-CNT
            OPEN    OUTPUT               PRT-FILE
       *
+      *    一時ファイル名取得
+           INITIALIZE                      SGETTEMP-AREA
+           MOVE    HC01PARA            TO  SGETTEMP-BASENAME
+           CALL    "ORCSGETTEMP"       USING
+                                           SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAME   TO  ASGNPARA
+      *
            .
        400-SYOKI-PRINT-EXT.
            EXIT.
@@ -548,6 +562,13 @@
                COMPUTE WRK-SYS-TIME        =   SYS-TIME
                                            +   WRK-FILE-CNT2
                MOVE    WRK-SYS-TIME        TO  HC01PARA-SYOHMS
+      *
+      *        一時ファイル名取得
+               INITIALIZE                      SGETTEMP-AREA
+               MOVE    HC01PARA            TO  SGETTEMP-BASENAME
+               CALL    "ORCSGETTEMP"       USING
+                                           SGETTEMP-AREA
+               MOVE    SGETTEMP-FULLNAME   TO  ASGNPARA
       *
                OPEN    INPUT               PRT-FILE
                IF      STS-PARA        NOT =   ZERO
@@ -581,7 +602,7 @@
            END-IF
       *
             MOVE   SPACE               TO  MKPRT-DEF
-            MOVE   HC01PARA            TO  MKPRT-DAT
+            MOVE   ASGNPARA            TO  MKPRT-DAT
             MOVE   SYS-1031-PRTNM(2)   TO  MKPRT-PRTNM
       *    退院時院外処方せん（入院）
             IF    (ORCHC19-KBN         =   "N"       )  AND
