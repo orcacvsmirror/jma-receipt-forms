@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/11/08  CSVファイル作成機能追加
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -40,7 +41,7 @@
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
       *    初診患者抽出一時ファイル
-           SELECT  L107T-FILE      ASSIGN  L107TPARA
+           SELECT  L107T-FILE      ASSIGN  AL107
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     L107T-KEY
@@ -64,23 +65,14 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000L107.INC".
       *
-       01  L107TPARA.
-           03  FILLER              PIC  X(05)    VALUE "/tmp/".
-           03  L107TPARA-FILENAME  PIC  X(10) VALUE "A00000L107".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
-      *
-       01  L107INAME.
-           03  FILLER              PIC  X(05) VALUE  "data/".
-           03  FILLER              PIC  X(10) VALUE  "A00000L107".
-           03  FILLER              PIC  X(04) VALUE  ".INI".
-      *
-       01  L107IPARA.
-           03  FILLER              PIC X(256) VALUE  SPACE.
+      *    一時ファイル(外部ファイル名称)
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AL107//.
       *
       *    ステータス領域
        01  STS-AREA.
@@ -450,6 +442,9 @@
       *    プログラムオプション編集パラメタ
            COPY    "CPORCSPRGOPTION.INC".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
       *
@@ -502,6 +497,20 @@
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
                                    SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AL107TP"                TO  AL107-FILE-ID
+           MOVE    L100LNK-PRTKANRI-TERMID  TO  AL107-TERMID
+           MOVE    L100LNK-HOSPNUM          TO  AL107-HOSPNUM
+      *
+           MOVE    AL107-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AL107-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -605,7 +614,7 @@
            END-IF
       *
       *    明細出力順序
-              IF      L100LNK-PRSORT    =   ""
+              IF      L100LNK-PRSORT    =   SPACE
                 OR    L100LNK-PRSORT    =   "0"
                 OR    L100LNK-PRSORT    =   "1"
                 OR    L100LNK-PRSORT    =   "2"
@@ -881,7 +890,7 @@
            END-IF
       *    サブキー値の設定
            EVALUATE  FLG-PRSORT
-               WHEN  ""
+               WHEN  SPACE
                  MOVE  SPACE           TO  L107T-SUBKEY1
                WHEN  "0"
                  MOVE  PTINF-KANANAME  TO  L107T-SUBKEY1

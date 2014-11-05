@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/11/02  CSVファイル作成機能追加
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -40,7 +41,7 @@
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
       *    受診患者抽出一時ファイル
-           SELECT  L103T-FILE      ASSIGN  L103TPARA
+           SELECT  L103T-FILE      ASSIGN  AL103
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     L103T-KEY
@@ -63,15 +64,14 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000L103.INC".
       *
-       01  L103TPARA.
-           03  FILLER              PIC  X(05)    VALUE "/tmp/".
-           03  L103TPARA-FILENAME  PIC  X(10) VALUE "A00000L103".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+      *    一時ファイル(外部ファイル名称)
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AL103//.
       *
       *    ステータス領域
        01  STS-AREA.
@@ -393,9 +393,9 @@
            COPY    "CPPTNYUINRRK.INC".
       *
       *    患者入院履歴情報(入院履歴全枝番号用)
-       01  PTNYUINRRK-M-REC.
+       01  PNR-M-REC.
            COPY    "CPPTNYUINRRK.INC"
-           REPLACING  //PTNYUINRRK-// BY //PTNYUINRRK-M-//.
+           REPLACING  //PTNYUINRRK-// BY //PNR-M-//.
       *
       *****************************************************************
       *    サブプロ用　領域
@@ -427,6 +427,9 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -466,6 +469,7 @@
            INITIALIZE                  L103T
            INITIALIZE                  L103
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
       *    ステップ管理開始処理
            MOVE    "STS"               TO  SJOBKANRI-MODE
@@ -480,6 +484,20 @@
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
                                    SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AL103TP"                TO  AL103-FILE-ID
+           MOVE    L100LNK-PRTKANRI-TERMID  TO  AL103-TERMID
+           MOVE    L100LNK-HOSPNUM          TO  AL103-HOSPNUM
+      *
+           MOVE    AL103-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AL103-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -671,35 +689,35 @@
                 PERFORM  900-PTINF-READ-SEC
                 IF  FLG-PTINF = ZERO
                  AND  PTINF-TSTPTNUMKBN  NOT  =  "1"
-                     INITIALIZE                PTNYUINRRK-M-REC
-                     MOVE PTNYUINRRK-HOSPNUM TO PTNYUINRRK-M-HOSPNUM
-                     MOVE PTNYUINRRK-PTID   TO PTNYUINRRK-M-PTID 
-                     MOVE PTNYUINRRK-RRKNUM TO PTNYUINRRK-M-RRKNUM 
+                     INITIALIZE                PNR-M-REC
+                     MOVE PTNYUINRRK-HOSPNUM TO PNR-M-HOSPNUM
+                     MOVE PTNYUINRRK-PTID   TO PNR-M-PTID 
+                     MOVE PTNYUINRRK-RRKNUM TO PNR-M-RRKNUM 
                      MOVE "00"              TO WRK-NYUINKA
                      MOVE  0                TO FLG-DATAREAD
                      PERFORM  900-NYURRK-M-SELECT-SEC
                      PERFORM  900-NYURRK-M-FETCH-SEC
                      PERFORM  UNTIL   FLG-PTNYUINRRK-M  =   1
-                        IF   WRK-NYUINKA    NOT =  PTNYUINRRK-M-NYUINKA
+                        IF   WRK-NYUINKA    NOT =  PNR-M-NYUINKA
                          AND FLG-DATAREAD       =  "1"
                          AND FLG-SRYKA-ALL  NOT  =  "1"
                              WRITE L103T
                              MOVE  0           TO  FLG-DATAREAD
                         END-IF
-                        MOVE  PTNYUINRRK-M-NYUINKA    TO  WRK-NYUINKA
-                        IF    PTNYUINRRK-M-TENSTUYMD   >=   L100LNK-YMD1
-                          AND PTNYUINRRK-M-TENNYUYMD   <=   L100LNK-YMD2
+                        MOVE  PNR-M-NYUINKA    TO  WRK-NYUINKA
+                        IF    PNR-M-TENSTUYMD   >=   L100LNK-YMD1
+                          AND PNR-M-TENNYUYMD   <=   L100LNK-YMD2
                           AND  (( FLG-SRYKA-ALL  NOT  =  "1"
-                            AND  PTNYUINRRK-M-NYUINKA =  L100LNK-SRYKA )
+                            AND  PNR-M-NYUINKA =  L100LNK-SRYKA )
                            OR    FLG-SRYKA-ALL        =  "1" )
                           AND (( FLG-DRCD-ALL     NOT =  "1"
-                            AND  PTNYUINRRK-M-DRCD1   =  L100LNK-DRCD )
+                            AND  PNR-M-DRCD1   =  L100LNK-DRCD )
                            OR    FLG-DRCD-ALL   =  "1" )
                             IF   FLG-DATAREAD         =  "0"
                                PERFORM  320-WRITE-TEMP-SEC
                                MOVE   1               TO FLG-DATAREAD
                             ELSE
-                               MOVE  PTNYUINRRK-M-TENSTUYMD
+                               MOVE  PNR-M-TENSTUYMD
                                                       TO  L103T-TAIINYMD
                             END-IF
                         END-IF
@@ -727,7 +745,7 @@
       *    患者情報抽出
            INITIALIZE                      PTINF-REC
            MOVE     L100LNK-HOSPNUM        TO  PTINF-HOSPNUM
-           MOVE     PTNYUINRRK-M-PTID      TO  PTINF-PTID
+           MOVE     PNR-M-PTID      TO  PTINF-PTID
            PERFORM  900-PTINF-READ-SEC
       *    患者番号情報抽出
            INITIALIZE                      PTNUM-REC
@@ -738,7 +756,7 @@
            INITIALIZE                        HKNCOMBI-REC
            MOVE    L100LNK-HOSPNUM       TO  COMB-HOSPNUM
            MOVE    PTINF-PTID            TO  COMB-PTID
-           MOVE    PTNYUINRRK-M-HKNCOMBINUM  TO  COMB-HKNCOMBINUM
+           MOVE    PNR-M-HKNCOMBINUM  TO  COMB-HKNCOMBINUM
            PERFORM 930-HKNCOMBI-READ-SEC
       *    患者保険情報情報抽出
            INITIALIZE                      PTHKNINF-REC
@@ -771,12 +789,12 @@
            IF    FLG-SRYKA-ALL  =      "1"
                 MOVE  SPACE                 TO  L103T-SRYKA
            ELSE
-                MOVE  PTNYUINRRK-M-NYUINKA  TO  L103T-SRYKA
+                MOVE  PNR-M-NYUINKA  TO  L103T-SRYKA
            END-IF
            IF    FLG-DRCD-ALL   =      "1"
                 MOVE  SPACE                 TO  L103T-DRCD
            ELSE
-                MOVE  PTNYUINRRK-M-DRCD1    TO  L103T-DRCD
+                MOVE  PNR-M-DRCD1    TO  L103T-DRCD
            END-IF
            MOVE  PTNUM-PTNUM           TO  L103T-PTNUM
            MOVE  PTINF-PTID            TO  L103T-PTID
@@ -824,8 +842,8 @@
            MOVE  WRK-KOH2FTNNUM       TO  L103T-KOH2FTNNUM
            MOVE  WRK-KOH3FTNNUM       TO  L103T-KOH3FTNNUM
       *    転科日
-           MOVE  PTNYUINRRK-M-TENNYUYMD  TO  L103T-NYUINYMD
-           MOVE  PTNYUINRRK-M-TENSTUYMD  TO  L103T-TAIINYMD
+           MOVE  PNR-M-TENNYUYMD  TO  L103T-NYUINYMD
+           MOVE  PNR-M-TENSTUYMD  TO  L103T-TAIINYMD
       *
            PERFORM 320-F-JYURRK-CHK-SEC
            MOVE    WRK-F-SRYYMD    TO  L103T-ATAMAGAKI
@@ -833,7 +851,7 @@
       *    サブキー値の設定
       *
            EVALUATE  FLG-PRSORT
-               WHEN  ""
+               WHEN  SPACE
                  MOVE  SPACE           TO  L103T-SUBKEY1
                WHEN  "0"
                  MOVE  PTINF-KANANAME  TO  L103T-SUBKEY1
@@ -1986,7 +2004,7 @@
       *****************************************************************
        900-NYURRK-M-SELECT-SEC                 SECTION.
       *
-           MOVE    PTNYUINRRK-M-REC    TO  MCPDATA-REC
+           MOVE    PNR-M-REC    TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
            MOVE    "key4"              TO  MCP-PATHNAME
@@ -1996,7 +2014,7 @@
                                        SPA-AREA
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-PTNYUINRRK-M
-               MOVE    MCPDATA-REC  TO  PTNYUINRRK-M-REC
+               MOVE    MCPDATA-REC  TO  PNR-M-REC
            ELSE
                MOVE    1           TO    FLG-PTNYUINRRK-M
                MOVE    1           TO    FLG-END
@@ -2019,7 +2037,7 @@
                                       SPA-AREA
            IF      MCP-RC           =   ZERO
                MOVE    ZERO         TO  FLG-PTNYUINRRK-M
-               MOVE    MCPDATA-REC  TO  PTNYUINRRK-M-REC
+               MOVE    MCPDATA-REC  TO  PNR-M-REC
            ELSE
                MOVE    1            TO  FLG-PTNYUINRRK-M
                MOVE    1            TO  FLG-END

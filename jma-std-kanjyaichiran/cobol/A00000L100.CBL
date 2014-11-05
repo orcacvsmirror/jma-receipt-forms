@@ -30,6 +30,7 @@
       *  Maj/Min/Rev 修正者       日付      内容
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     open-cobol1.0対応
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -52,8 +53,7 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
       *    スパ領域
        01  STS-AREA.
@@ -320,6 +320,7 @@
            INITIALIZE                  WRK-SRYKA-AERA
            INITIALIZE                  CNT-AREA
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -395,7 +396,7 @@
       *    帳票別サブプログラムCALL
            EVALUATE  WRK-PARA-PRTYPE
       *    (受診)
-               WHEN  ""
+               WHEN  SPACE
                      CALL  "A00000L101" USING  A00000L100-LNK
       *    (初診)
                WHEN  "0"

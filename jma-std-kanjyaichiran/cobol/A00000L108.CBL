@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/11/07  CSVファイル作成機能追加
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -40,7 +41,7 @@
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
       *    初診患者抽出一時ファイル
-           SELECT  L108T-FILE      ASSIGN  L108TPARA
+           SELECT  L108T-FILE      ASSIGN  AL108
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     L108T-KEY
@@ -63,15 +64,14 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000L108.INC".
       *
-       01  L108TPARA.
-           03  FILLER              PIC  X(05)    VALUE "/tmp/".
-           03  L108TPARA-FILENAME  PIC  X(10) VALUE "A00000L108".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+      *    一時ファイル(外部ファイル名称)
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AL108//.
       *
       *    ステータス領域
        01  STS-AREA.
@@ -431,6 +431,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
       *
@@ -483,6 +486,20 @@
                                    ORCSJOBKANRIAREA  
                                    JOBKANRI-REC
                                    SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AL108TP"                TO  AL108-FILE-ID
+           MOVE    L100LNK-PRTKANRI-TERMID  TO  AL108-TERMID
+           MOVE    L100LNK-HOSPNUM          TO  AL108-HOSPNUM
+      *
+           MOVE    AL108-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AL108-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -594,7 +611,7 @@
            END-IF
       *
       *    明細出力順序
-              IF      L100LNK-PRSORT    =   ""
+              IF      L100LNK-PRSORT    =   SPACE
                 OR    L100LNK-PRSORT    =   "0"
                 OR    L100LNK-PRSORT    =   "1"
                 OR    L100LNK-PRSORT    =   "2"
@@ -757,8 +774,8 @@
                      PERFORM  UNTIL   FLG-PTBYO  =   1
                           IF      PTBYO-HOSPNUM      =  L100LNK-HOSPNUM
                            AND (( PTBYO-TENKIYMD    >=  JYURRK-SRYYMD 
-                             AND  PTBYO-TENKIKBN     NOT =   "" )
-                            OR    PTBYO-TENKIKBN     =   "" )
+                             AND  PTBYO-TENKIKBN     NOT =   SPACE )
+                            OR    PTBYO-TENKIKBN     =   SPACE )
                            AND    PTBYO-SRYYMD      <=  JYURRK-SRYYMD
                            AND    PTBYO-SRYKA        =  JYURRK-SRYKA 
                                     MOVE  JYURRK-PTID     TO  WRK-JPTID
@@ -876,7 +893,7 @@
       *
       *    サブキー値の設定
            EVALUATE  FLG-PRSORT
-               WHEN  ""
+               WHEN  SPACE
                  MOVE  SPACE           TO  L108T-SUBKEY1
                WHEN  "0"
                  MOVE  PTINF-KANANAME  TO  L108T-SUBKEY1

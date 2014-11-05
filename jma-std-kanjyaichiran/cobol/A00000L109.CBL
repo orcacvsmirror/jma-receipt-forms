@@ -33,6 +33,7 @@
       *  01.00.03    @@@-門間   2011/11/07  CSVファイル作成機能追加
       *  01.00.04    @@@-門間   2013/04/08  同患者、同科で医師が異なる場合、
       *                                     先に受診した医師にまとまる不具合の修正
+      *  02.00.01    @@@@-門間  2014/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -43,7 +44,7 @@
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
       *    初診患者抽出一時ファイル
-           SELECT  L109T-FILE      ASSIGN  L109TPARA
+           SELECT  L109T-FILE      ASSIGN  AL109
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     L109T-KEY
@@ -66,15 +67,14 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"     REPLACING  //ERRFLPARA//
-                                     BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000L109.INC".
       *
-       01  L109TPARA.
-           03  FILLER                  PIC X(05)  VALUE "/tmp/".
-           03  L109TPARA-FILENAME      PIC X(10)  VALUE "A00000L109".
-           03  FILLER                  PIC X(04)  VALUE ".TMP".
+      *    一時ファイル(外部ファイル名称)
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AL109//.
       *
       *    ステータス領域
        01  STS-AREA.
@@ -467,6 +467,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
       *
@@ -518,6 +521,20 @@
                                        ORCSJOBKANRIAREA
                                        JOBKANRI-REC
                                        SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AL109TP"                TO  AL109-FILE-ID
+           MOVE    L100LNK-PRTKANRI-TERMID  TO  AL109-TERMID
+           MOVE    L100LNK-HOSPNUM          TO  AL109-HOSPNUM
+      *
+           MOVE    AL109-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AL109-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -824,8 +841,6 @@
       *****************************************************************
        320-WRITE-TEMP-SEC      SECTION.
       *
-           INITIALIZE  L109T
-      *
       *    診療科・医師・保険組合せ情報
            IF   FLG-DRCD-ALL  =  "1"
              MOVE    SPACE             TO  L109T-DRCD
@@ -953,7 +968,7 @@
       *
       *    サブキー値の設定
            EVALUATE  FLG-PRSORT
-             WHEN  ""
+             WHEN  SPACE
                MOVE    SPACE           TO  L109T-SUBKEY1
              WHEN  "0"
                MOVE    PTINF-KANANAME  TO  L109T-SUBKEY1
@@ -1711,8 +1726,7 @@
                                         SPA-AREA
       *
            IF  MCP-RC  =  ZERO
-             MOVE    ZERO             TO  FLG-JYURRK
-             PERFORM  900-JYURRK-FETCH-SEC
+               MOVE    ZERO             TO  FLG-JYURRK
            ELSE
              MOVE    1                  TO  FLG-JYURRK
            END-IF

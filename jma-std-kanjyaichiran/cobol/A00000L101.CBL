@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/11/02  CSVファイル作成機能追加
+      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -40,7 +41,7 @@
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
       *    受診患者抽出一時ファイル
-           SELECT  L101T-FILE      ASSIGN  L101TPARA
+           SELECT  L101T-FILE      ASSIGN  AL101
                                    ORGANIZATION    INDEXED
                                    ACCESS  MODE    DYNAMIC
                                    RECORD  KEY     L101T-KEY
@@ -57,21 +58,19 @@
        FD  L101T-FILE.
            COPY    "A00000L101TMP.INC".
       *
-      *
        WORKING-STORAGE             SECTION.
       *    シェル用領域
            COPY    "CPCOMMONSHELL.INC".
       *
       *    エラーファイル 名称領域 
-           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
-                                    BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
            COPY    "A00000L101.INC".
       *
-       01  L101TPARA.
-           03  FILLER              PIC  X(05)    VALUE "/tmp/".
-           03  L101TPARA-FILENAME  PIC  X(10) VALUE "A00000L101".
-           03  FILLER              PIC  X(04) VALUE ".TMP".
+      *    一時ファイル(外部ファイル名称)
+           COPY    "CPCOMMONDAT2.INC"
+                                   REPLACING  //RECE01PARA//
+                                   BY         //AL101//.
       *
       *    ステータス領域
        01  STS-AREA.
@@ -384,6 +383,7 @@
       *    患者入院履歴情報
        01  PTNYUINRRK-REC.
            COPY    "CPPTNYUINRRK.INC".
+      *
       *    患者病名情報
        01  PTBYOMEI-REC.
            COPY    "CPPTBYOMEI.INC".
@@ -418,6 +418,9 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
+      *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
       *
       ****************************************************************
        LINKAGE                 SECTION.
@@ -457,6 +460,7 @@
            INITIALIZE                  L101T
            INITIALIZE                  L101
            INITIALIZE                  SPA-AREA
+           INITIALIZE                  RECEERR
       *
       *    ステップ管理開始処理
            MOVE    "STS"               TO  SJOBKANRI-MODE
@@ -471,6 +475,20 @@
                                        ORCSJOBKANRIAREA  
                                        JOBKANRI-REC
                                        SPA-AREA
+      *
+      *    サブプログラムより一時ファイル名編集
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "AL101TP"                TO  AL101-FILE-ID
+           MOVE    L100LNK-PRTKANRI-TERMID  TO  AL101-TERMID
+           MOVE    L100LNK-HOSPNUM          TO  AL101-HOSPNUM
+      *
+           MOVE    AL101-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  AL101-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
@@ -838,7 +856,7 @@
       *
       *    サブキー値の設定
            EVALUATE  FLG-PRSORT
-             WHEN  ""
+             WHEN  SPACE
                MOVE  SPACE           TO  L101T-SUBKEY1
              WHEN  "0"
                MOVE  PTINF-KANANAME  TO  L101T-SUBKEY1
@@ -1204,8 +1222,8 @@
            PERFORM  UNTIL   FLG-PTBYO  =   1
              IF      PTBYO-HOSPNUM      =  L100LNK-HOSPNUM
                  AND (( PTBYO-TENKIYMD    >=  L100LNK-YMD1 
-                 AND  PTBYO-TENKIKBN     NOT =   "" )
-                 OR    PTBYO-TENKIKBN     =   "" )
+                 AND  PTBYO-TENKIKBN     NOT =   SPACE )
+                 OR    PTBYO-TENKIKBN     =   SPACE )
                  AND    PTBYO-SRYYMD      <=  L100LNK-YMD2
                MOVE   PTBYO-BYOMEI  TO  L101-BYOMEI(IDX2)
                MOVE   1           TO  FLG-PTBYO
