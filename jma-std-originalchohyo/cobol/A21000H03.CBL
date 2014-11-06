@@ -49,13 +49,13 @@
        FD  PRT-FILE.
            COPY    "A21000H03.INC".
       *
-      *    一時デイレクトリ領域 
-           COPY    "CPASGNPARA.INC".
-      *
        WORKING-STORAGE             SECTION.
       *
       *     印刷用データ 名称領域 
            COPY    "CPCOMMONPRT.INC".
+      *
+      *    一時デイレクトリ領域 
+           COPY    "CPASGNPARA.INC".
       *
       *    フラグ領域
        01  STS-AREA.
