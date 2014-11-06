@@ -40,6 +40,7 @@
       *                                    まとめ公費を使用した場合
       *                                    負担者番号と受給者番号が
       *                                    正しく印字されないのを修正
+      *   02.00.01    門間    2014/10/31   ver4.8.0対応（一時ディレクトリ変更）
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -47,7 +48,7 @@
        FILE-CONTROL.
       *
       *    一時ファイル
-           SELECT  TA01-FILE    ASSIGN          TA01PARA
+           SELECT  TA01-FILE       ASSIGN          TA01P
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
                                    RECORD  KEY     IS  TA01TMP-KEY
@@ -74,12 +75,11 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    一時ファイル 名称領域
-           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01//
-                                       BY         //TA01//.
+           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01PARA//
+                                       BY         //TA01P//.
       *
       *    エラーファイル 名称領域
-           COPY    "CPERRFL.INC"       REPLACING  //ERRFLPARA//
-                                       BY         //RECEERR//.
+           COPY    "CPRECEERR.INC".
       *
       *    帳票コピー句
            COPY    "A00000TA01.INC".
@@ -449,6 +449,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -488,6 +491,7 @@
            INITIALIZE                    KEY-AREA
            INITIALIZE                    IDX-AREA
            INITIALIZE                    SRT-AREA
+           INITIALIZE                    RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -532,9 +536,17 @@
                                          JOBKANRI-REC
                                          SPA-AREA
       *
-           MOVE    "STX017"              TO  TA01PARA-FILE-ID
-           MOVE    LNK-PRTKANRI-TERMID   TO  TA01PARA-TERMID
-           MOVE    WRK-PARA-HOSPNUM      TO  TA01PARA-HOSPNUM
+      *    サブプログラムより一時ファイル名編集
+           MOVE    "ATA01TP"                TO  TA01P-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  TA01P-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  TA01P-HOSPNUM
+      *
+           MOVE    TA01P-BASENAME           TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  TA01P-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
       *
            MOVE    WRK-PARA-PRTYMST      TO  WRK-SRYYMD (1:6)
            MOVE    "01"                  TO  WRK-SRYYMD (7:2)
