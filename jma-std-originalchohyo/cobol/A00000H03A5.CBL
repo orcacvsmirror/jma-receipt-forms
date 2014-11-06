@@ -56,13 +56,13 @@
            COPY    "A00000H03A5.INC"  REPLACING   //HCM03V02//
                                       BY          //HC03//.
       *
-      *    一時デイレクトリ領域 
-           COPY    "CPASGNPARA.INC".
-      *
        WORKING-STORAGE             SECTION.
       *
       *     印刷用データ 名称領域 
            COPY    "CPCOMMONPRT.INC".
+      *
+      *    一時デイレクトリ領域 
+           COPY    "CPASGNPARA.INC".
       *
       *    フラグ領域
        01  STS-AREA.

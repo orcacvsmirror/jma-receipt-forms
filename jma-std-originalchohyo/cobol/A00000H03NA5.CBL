@@ -66,9 +66,6 @@
            03  PRT-SITEKBN             PIC X(01).
            03  PRT-PRTDATA             PIC X(10000).
       *
-      *    一時デイレクトリ領域 
-           COPY    "CPASGNPARA.INC".
-      *
        WORKING-STORAGE             SECTION.
       *
       *     印刷用データ 名称領域 
@@ -76,6 +73,9 @@
       *
       *    シェル用領域
            COPY    "CPSHELLTBL.INC".
+      *
+      *    一時デイレクトリ領域 
+           COPY    "CPASGNPARA.INC".
       *
       *    ステータス領域
        01  STS-AREA.
