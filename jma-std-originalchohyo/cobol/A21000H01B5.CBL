@@ -50,9 +50,6 @@
            SELECT  PRT-FILE2      ASSIGN  ASGNPARA2
                                   FILE    STATUS  IS  STS-PARA2.
       *
-           SELECT  PRTX-FILE      ASSIGN  ASGNPARA3
-                                  FILE    STATUS  IS  STSX-PARA.
-      *
        DATA                    DIVISION.
        FILE                        SECTION.
       *
@@ -63,10 +60,6 @@
       *    健保印刷用データ
        FD  PRT-FILE2.
            COPY    "A21000H01SB5.INC".
-      *
-      *    印刷用データ続紙
-       FD  PRTX-FILE.
-           COPY    "HC011.INC".
       *
        WORKING-STORAGE             SECTION.
       *    国保印刷用データ 名称領域
@@ -82,13 +75,6 @@
       *    一時デイレクトリ領域
            COPY    "CPASGNPARA.INC"    REPLACING  //ASGNPARA//
                                        BY         //ASGNPARA2//.
-      *
-      *    印刷用データ 名称領域
-           COPY    "CPCOMMONPRT1.INC".
-      *
-      *    一時デイレクトリ領域
-           COPY    "CPASGNPARA.INC"    REPLACING  //ASGNPARA//
-                                       BY         //ASGNPARA3//.
       *
       *    フラグ領域
        01  STS-AREA.
@@ -1621,6 +1607,7 @@
                                              SPA-AREA
              END-EVALUATE
            END-IF
+      *
       *    ファイルＯＰＥＮ
            MOVE    SPA-HOSPNUM         TO  HC01PARA-HOSPNUM
            MOVE    SPA-HOSPNUM         TO  HC01PARA2-HOSPNUM
@@ -1633,6 +1620,16 @@
            ADD     1                   TO  WRK-PAGE
            MOVE    WRK-PAGE            TO  HC01PARA-CNT
                                            HC01PARA2-CNT
+      *
+      *    一時ファイル名取得
+           INITIALIZE                      SGETTEMP-AREA
+           MOVE    HC01PARA            TO  SGETTEMP-BASENAMES(1)
+           MOVE    HC01PARA2           TO  SGETTEMP-BASENAMES(2)
+           CALL    "ORCSGETTEMP"       USING
+                                       SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAMES(1)   TO  ASGNPARA
+           MOVE    SGETTEMP-FULLNAMES(2)   TO  ASGNPARA2
+      *
            OPEN    OUTPUT              PRT-FILE
                                        PRT-FILE2
       *
