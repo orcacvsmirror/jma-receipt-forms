@@ -1604,7 +1604,7 @@
                  MOVE    "HC01.sh"           TO  MKPRT-ID
                  MOVE    "A21000H01KB5.red"  TO  MKPRT-DIA
                  MOVE    SPACE               TO  MKPRT-DEF
-                 MOVE    HC01PARA            TO  MKPRT-DAT
+                 MOVE    ASGNPARA            TO  MKPRT-DAT
                  MOVE    SYS-1031-PRTNM(1)   TO  MKPRT-PRTNM
                  CALL    "ORCSMKPRTSITE"     USING
                                              ORCSMKPRTAREA
@@ -1614,7 +1614,7 @@
                  MOVE   "HC01.sh"            TO  MKPRT-ID
                  MOVE   "A21000H01SB5.red"   TO  MKPRT-DIA
                  MOVE   SPACE                TO  MKPRT-DEF
-                 MOVE   HC01PARA2            TO  MKPRT-DAT
+                 MOVE   ASGNPARA2            TO  MKPRT-DAT
                  MOVE   SYS-1031-PRTNM(1)    TO  MKPRT-PRTNM
                  CALL   "ORCSMKPRTSITE"      USING
                                              ORCSMKPRTAREA
