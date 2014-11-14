@@ -26,6 +26,7 @@
       *   01.00.00    田中    2011/01/20  新規作成
       *   01.00.02    門間    2013/07/24  発行区分が空白の場合、在院数が集計されるように修正
       *   01.00.03    門間    2014/03/12  テスト患者を対象外とする
+      *   01.00.04    門間    2014/11/14  在院延べ日数算出処理の修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -687,6 +688,8 @@
              END-IF
            END-IF
       *
+           INITIALIZE  FLG-NZAIIN
+      *
       *    在院数
            IF  PTNYUINRRK-NYUINYMD  <=  WRK-PARA-PRTEDYMD
                AND  PTNYUINRRK-TAIINYMD  >=  WRK-PARA-PRTSTYMD
@@ -710,11 +713,6 @@
                        AND  WRK-KEYKBN(IDX5)(1:2)  =  PTNYUINRRK-NYUINKA
                        AND  WRK-NYUINYMD(IDX5)  =  PTNYUINRRK-NYUINYMD )
                      MOVE    1           TO  FLG-LOOPEND
-                     IF  PTNYUINRRK-JTIKBN  =  "2"
-                         OR  PTNYUINRRK-JTIKBN  =  "3"
-                         OR  PTNYUINRRK-JTIKBN  =  "4"
-                       MOVE    1         TO  FLG-NZAIIN
-                     END-IF
                    END-IF
       *
                    IF  ( WRK-PTID(IDX5)  =  SPACE
@@ -765,6 +763,13 @@
                    END-IF
                END-EVALUATE
              END-PERFORM
+      *
+             IF  PTNYUINRRK-JTIKBN  =  "2"
+                 OR  PTNYUINRRK-JTIKBN  =  "3"
+                 OR  PTNYUINRRK-JTIKBN  =  "4"
+               MOVE    1         TO  FLG-NZAIIN
+             END-IF
+      *
            END-IF
       *
       *    在院延べ日数
