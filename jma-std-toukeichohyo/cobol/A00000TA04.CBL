@@ -27,6 +27,7 @@
       *   01.00.02    門間    2013/07/24  発行区分が空白の場合、在院数が集計されるように修正
       *   01.00.03    門間    2014/03/12  テスト患者を対象外とする
       *   01.00.04    門間    2014/11/14  在院延べ日数算出処理の修正
+      *                                   入退院数のカウント処理修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -659,8 +660,9 @@
            END-IF
       *
       *    入院数
-           IF  PTNYUINRRK-NYUINYMD(1:6)  =  WRK-PARA-PRTYM(1:6)
-               AND  PTNYUINRRK-NYUINYMD  =  PTNYUINRRK-TENNYUYMD
+           IF  PTNYUINRRK-NYUINYMD(1:6)   =  WRK-PARA-PRTYM(1:6)
+               AND  PTNYUINRRK-NYUINYMD   =  PTNYUINRRK-TENNYUYMD
+               AND  PTNYUINRRK-RRKEDANUM  =  1
       *
       *    診療科、医師セット
              MOVE     PTNYUINRRK-NYUINYMD    TO  WRK-SRYYMD
@@ -672,7 +674,8 @@
       *
       *    退院数
            IF   PTNYUINRRK-TAIINYMD(1:6)  =  WRK-PARA-PRTYM(1:6)
-               AND  PTNYUINRRK-TAIINYMD  =  PTNYUINRRK-TENSTUYMD
+               AND  PTNYUINRRK-TAIINYMD   =  PTNYUINRRK-TENSTUYMD
+               AND  PTNYUINRRK-RRKEDANUM  =  PTNYUINRRK-MAXEDANUM
       *
       *    診療科、医師セット
              MOVE     PTNYUINRRK-TAIINYMD    TO  WRK-SRYYMD
