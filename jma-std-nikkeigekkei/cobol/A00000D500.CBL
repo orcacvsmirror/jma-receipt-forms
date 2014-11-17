@@ -38,7 +38,6 @@
       *  01.00.08    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.09    @@@@-門間    14/06/23  自費診療の端数処理を修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
-      *                           14/11/13  CSV出力時、改頁処理を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -947,15 +946,6 @@
       *    ＣＳＶ出力処理
                    PERFORM  230-TOUKEICSV-SEC
                END-EVALUATE
-      *
-      *        CSVヘッダ編集処理
-               IF (    WRK-SMEI-NYUGAIKBN(IDX-S)  NOT =  WRK-NYUGAIKBN
-                    OR WRK-SMEI-SRYKA(IDX-S)      NOT =  WRK-SRYKA     )
-                 MOVE    WRK-SMEI-NYUGAIKBN(IDX-S)   TO   WRK-NYUGAIKBN
-                 MOVE    WRK-SMEI-SRYKA(IDX-S)       TO   WRK-SRYKA
-                 PERFORM  800-CSV-HEAD-SEC
-               END-IF
-      *
              END-IF
            END-PERFORM
       *

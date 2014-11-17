@@ -26,9 +26,7 @@
       *   01.00.00    田中    2011/01/20  新規作成
       *   01.00.02    門間    2013/07/24  発行区分が空白の場合、在院数が集計されるように修正
       *   01.00.03    門間    2014/03/12  テスト患者を対象外とする
-      *   02.00.01    門間    2014/10/31  ver4.8.0対応（一時ディレクトリ変更）
-      *                       2014/11/14  在院延べ日数算出処理の修正
-      *                                   入退院数のカウント処理修正
+      *   02.00.01    門間    2014/10/31   ver4.8.0対応（一時ディレクトリ変更）
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -664,9 +662,8 @@
            END-IF
       *
       *    入院数
-           IF  PTNYUINRRK-NYUINYMD(1:6)   =  WRK-PARA-PRTYM(1:6)
-               AND  PTNYUINRRK-NYUINYMD   =  PTNYUINRRK-TENNYUYMD
-               AND  PTNYUINRRK-RRKEDANUM  =  1
+           IF  PTNYUINRRK-NYUINYMD(1:6)  =  WRK-PARA-PRTYM(1:6)
+               AND  PTNYUINRRK-NYUINYMD  =  PTNYUINRRK-TENNYUYMD
       *
       *    診療科、医師セット
              MOVE     PTNYUINRRK-NYUINYMD    TO  WRK-SRYYMD
@@ -678,8 +675,7 @@
       *
       *    退院数
            IF   PTNYUINRRK-TAIINYMD(1:6)  =  WRK-PARA-PRTYM(1:6)
-               AND  PTNYUINRRK-TAIINYMD   =  PTNYUINRRK-TENSTUYMD
-               AND  PTNYUINRRK-RRKEDANUM  =  PTNYUINRRK-MAXEDANUM
+               AND  PTNYUINRRK-TAIINYMD  =  PTNYUINRRK-TENSTUYMD
       *
       *    診療科、医師セット
              MOVE     PTNYUINRRK-TAIINYMD    TO  WRK-SRYYMD
@@ -694,8 +690,6 @@
                ADD  1       TO  WRK-SIBOU(IDX-KBN)
              END-IF
            END-IF
-      *
-           INITIALIZE  FLG-NZAIIN
       *
       *    在院数
            IF  PTNYUINRRK-NYUINYMD  <=  WRK-PARA-PRTEDYMD
@@ -720,6 +714,11 @@
                        AND  WRK-KEYKBN(IDX5)(1:2)  =  PTNYUINRRK-NYUINKA
                        AND  WRK-NYUINYMD(IDX5)  =  PTNYUINRRK-NYUINYMD )
                      MOVE    1           TO  FLG-LOOPEND
+                     IF  PTNYUINRRK-JTIKBN  =  "2"
+                         OR  PTNYUINRRK-JTIKBN  =  "3"
+                         OR  PTNYUINRRK-JTIKBN  =  "4"
+                       MOVE    1         TO  FLG-NZAIIN
+                     END-IF
                    END-IF
       *
                    IF  ( WRK-PTID(IDX5)  =  SPACE
@@ -770,13 +769,6 @@
                    END-IF
                END-EVALUATE
              END-PERFORM
-      *
-             IF  PTNYUINRRK-JTIKBN  =  "2"
-                 OR  PTNYUINRRK-JTIKBN  =  "3"
-                 OR  PTNYUINRRK-JTIKBN  =  "4"
-               MOVE    1         TO  FLG-NZAIIN
-             END-IF
-      *
            END-IF
       *
       *    在院延べ日数
