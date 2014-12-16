@@ -39,6 +39,7 @@
       *  01.00.06    @@@@-門間    14/07/17  医師情報処理時、診療日を参照するように変更
       *                                     0件印字が有効な場合、表示される医師の上限を変更
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    14/12/16  医師コード空白時の修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1061,6 +1062,15 @@
              PERFORM  820-SYSKANRI-DBCLOSE-SEC
       *
              IF  D100LNK-ZERO  =  1
+               MOVE    SPACE            TO   WRK-DRCD2(I3)
+               MOVE    "該当医師なし"   TO   WRK-DRNAME2(I3)
+             ELSE
+               MOVE    SPACE            TO   SUM-DRCD(I3)
+               MOVE    "該当医師なし"   TO   SUM-DRNAME(I3)
+             END-IF
+             ADD     1                TO   I3
+      *
+             IF  D100LNK-ZERO  =  1
                PERFORM  910-DBSELECT-SEC
                PERFORM  UNTIL      FLG-SYUNOU  = 1
       *
@@ -1130,6 +1140,7 @@
                     UNTIL    I9  >     998
              IF  SYU-DRCD  =  WRK-DRCD2(I9)
                MOVE  1  TO  WRK-DRFLG2(I9)
+               MOVE  999  TO  I9
              END-IF
            END-PERFORM
            .
