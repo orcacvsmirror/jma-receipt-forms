@@ -29,6 +29,7 @@
       *   02.00.01    門間    2014/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *   02.00.02    門間    2014/11/14  在院延べ日数算出処理の修正
       *                                   入退院数のカウント処理修正
+      *   02.00.03    門間    2014/12/16  在院延べ日数(過去異動分)の修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -771,9 +772,10 @@
                END-EVALUATE
              END-PERFORM
       *
-             IF  PTNYUINRRK-JTIKBN  =  "2"
-                 OR  PTNYUINRRK-JTIKBN  =  "3"
-                 OR  PTNYUINRRK-JTIKBN  =  "4"
+             IF  (     PTNYUINRRK-TENNYUYMD(1:6)  =  WRK-PARA-PRTYM
+                   AND  (      PTNYUINRRK-JTIKBN  =  "2"
+                           OR  PTNYUINRRK-JTIKBN  =  "3"
+                           OR  PTNYUINRRK-JTIKBN  =  "4"  ) )
                MOVE    1         TO  FLG-NZAIIN
              END-IF
       *
@@ -801,7 +803,6 @@
       *    外泊
            PERFORM  900-NYUINACCT-SELECT-SEC
            PERFORM  UNTIL  FLG-NYUINACCT  =  1
-             DISPLAY  "NACCT-ZAIKAISU "NACCT-ZAIKAISU
       *
              IF  NACCT-ZAIKAISU  >  ZERO
                IF  PTNYUINRRK-TENNYUYMD(1:6)  =  WRK-PARA-PRTYM
@@ -818,15 +819,11 @@
                    MOVE    WRK-PARA-PRTEDYMD(7:2)     TO  WRK-STARTDAY
                  END-IF
                END-IF
-             DISPLAY  "WRK-STARTDAY "WRK-STARTDAY
-             DISPLAY  "WRK-ENDDAY "WRK-ENDDAY
                PERFORM  VARYING  IDX3  FROM  WRK-STARTDAY  BY  1
                         UNTIL  IDX3  >  WRK-ENDDAY
                         OR  IDX3  >  31
                  IF  NACCT-DAY(IDX3)  >  ZERO
                    ADD  1            TO  WRK-NGAIHAKU(IDX-KBN)
-             DISPLAY  "IDX3 "IDX3
-             DISPLAY  "NACCT-DAY "NACCT-DAY(IDX3)
                    MOVE    1         TO  FLG-KENSU
                    MOVE    99        TO  IDX3
                  END-IF
