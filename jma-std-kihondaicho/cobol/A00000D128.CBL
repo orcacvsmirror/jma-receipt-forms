@@ -32,6 +32,7 @@
       *  01.00.03    @@@@-門間    12/02/29  インデント整理
       *                           12/03/09  CSVファイル作成機能追加
       *  01.00.04    @@@@-門間    14/02/19  CSV出力時の印字ズレを修正
+      *  01.00.05    @@@@-門間    14/12/16  医師コード空白時の修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1060,6 +1061,11 @@
                    PERFORM  820-SYSKANRI-DBFETCH-SEC
                 END-PERFORM
                 PERFORM  820-SYSKANRI-DBCLOSE-SEC
+      *
+                MOVE    SPACE            TO   SUM-DRCD(I3)
+                MOVE    "該当医師なし"   TO   SUM-DRNAME(I3)
+                ADD     1                TO   I3
+      *
            ELSE
                 MOVE WRK-SEL-DRCD        TO   SUM-DRCD(1)  
                 MOVE WRK-SEL-DRNAME      TO   SUM-DRNAME(1)
