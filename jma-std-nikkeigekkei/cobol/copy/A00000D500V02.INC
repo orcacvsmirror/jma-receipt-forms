@@ -98,3 +98,10 @@
            03  HC17-G-RYOSYU            PIC X(08).
       *    窓口領収額―小計（９桁）
            03  HC17-GG-RYOSYU           PIC X(09).
+      *    自費―小計
+           03  HC17-JIHIKEI-TBL         OCCURS 21 TIMES.
+               05  HC17-JIHI-KEI          PIC X(07).
+      *    自費―小計（８桁）
+           03  HC17-G-JIHIKEI           PIC X(08).
+      *    自費―小計（９桁）
+           03  HC17-GG-JIHIKEI          PIC X(09).
