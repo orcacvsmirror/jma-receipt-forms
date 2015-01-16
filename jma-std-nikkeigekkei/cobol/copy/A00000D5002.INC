@@ -35,3 +35,4 @@
                05  D5002-MONEY     PIC X(08).
            03  D5002-SEIKYU      PIC X(10).
            03  D5002-RYOSYU      PIC X(10).
+           03  D5002-JIHIKEI     PIC X(10).

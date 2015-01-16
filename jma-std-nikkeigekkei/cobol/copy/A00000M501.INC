@@ -65,3 +65,8 @@
               03  HC17B-SARYOSYUKEN  PIC X(10).
               03  HC17B-SASYUEKIKEN  PIC X(10).
               03  HC17B-JYUSHINCNT   PIC X(10).
+              03  HC17B-JIHI-GMONEY  PIC X(10).
+              03  HC17B-JIHI-OKENSU  PIC X(10).
+              03  HC17B-JIHI-RKENSU  PIC X(10).
+              03  HC17B-JIHI-SKENSU  PIC X(10).
+              03  HC17B-JIHI-SAKENSU  PIC X(10).

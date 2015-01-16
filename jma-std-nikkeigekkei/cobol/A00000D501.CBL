@@ -37,6 +37,7 @@
       *  01.00.06    @@@@-門間    12/08/24  新患件数が重複カウントされる不具合を修正
       *  01.00.07    @@@@-門間    13/09/30  頁数の印字修正（処理結果画面）
       *  01.00.08    @@@@-門間    14/06/23  自費診療の端数処理を修正
+      *  01.00.11    @@@@-門間    15/01/14  自費診療に小計を追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -237,6 +238,11 @@
            03  SUM-SASEIKYUKEN      PIC 9(09).
            03  SUM-SARYOSYUKEN      PIC 9(09).
            03  SUM-JYUSHINKEN       PIC 9(09).
+           03  SUM-JIHI-MONEY       PIC S9(09).
+           03  SUM-JIHI-OKEN        PIC 9(09).
+           03  SUM-JIHI-RKEN        PIC 9(09).
+           03  SUM-JIHI-SKEN        PIC 9(09).
+           03  SUM-JIHI-SAKEN       PIC 9(09).
       *
       *    入外区分別加算エリア
        01  SUM-AREA-GK              VALUE   ZERO.
@@ -267,6 +273,11 @@
            03  SUM-SASEIKYUKEN-GK   PIC 9(09).
            03  SUM-SARYOSYUKEN-GK   PIC 9(09).
            03  SUM-JYUSHINKEN-GK    PIC 9(09).
+           03  SUM-JIHI-MONEY-GK    PIC S9(09).
+           03  SUM-JIHI-OKEN-GK     PIC 9(09).
+           03  SUM-JIHI-RKEN-GK     PIC 9(09).
+           03  SUM-JIHI-SKEN-GK     PIC 9(09).
+           03  SUM-JIHI-SAKEN-GK    PIC 9(09).
       *
        01  WRK-SMEI-REC.
            03  WRK-SMEI-TBL      OCCURS  10000.
@@ -336,6 +347,8 @@
                07  CSV-HEAD-JIHI-R        REDEFINES CSV-HEAD-JIHI-G.
                  09  CSV-HEAD-JIHI-OCC    OCCURS  10.
                    11  CSV-HEAD-JIHI-NAME PIC X(50).
+               07  CSV-HEAD-SKY-JIHIKEI   PIC X(50)
+                                          VALUE "自費小計".
                07  CSV-HEAD-SKY-JIHI      PIC X(50)
                      VALUE "自費".
                07  CSV-HEAD-SKY-ROSAI     PIC X(50)
@@ -349,8 +362,8 @@
                07  CSV-HEAD-RSYMONEY      PIC X(50)
                      VALUE "窓口領収金額".
              05  CSV-HEAD-R               REDEFINES CSV-HEAD-VAL.
-               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 24.
-             05  CSV-HEAD-MAX             PIC 9(05) VALUE 24.
+               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 25.
+             05  CSV-HEAD-MAX             PIC 9(05) VALUE 25.
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -1170,6 +1183,11 @@
                  ADD   SUM-SASYUEKIKEN     TO   SUM-SASYUEKIKEN-GK
                  ADD   SUM-SASEIKYUKEN     TO   SUM-SASEIKYUKEN-GK
                  ADD   SUM-SARYOSYUKEN     TO   SUM-SARYOSYUKEN-GK
+                 ADD   SUM-JIHI-MONEY      TO  SUM-JIHI-MONEY-GK
+                 ADD   SUM-JIHI-OKEN       TO  SUM-JIHI-OKEN-GK
+                 ADD   SUM-JIHI-RKEN       TO  SUM-JIHI-RKEN-GK
+                 ADD   SUM-JIHI-SKEN       TO  SUM-JIHI-SKEN-GK
+                 ADD   SUM-JIHI-SAKEN      TO  SUM-JIHI-SAKEN-GK
                  IF   WRK-NYUGAIKBN   =  "1"
                      AND WRK-PRNSRKA-CNT   >  1
                    PERFORM 330-TERM-KA-PRINT-SEC
@@ -1228,6 +1246,11 @@
                  ADD   SUM-SASYUEKIKEN       TO   SUM-SASYUEKIKEN-GK
                  ADD   SUM-SASEIKYUKEN       TO   SUM-SASEIKYUKEN-GK
                  ADD   SUM-SARYOSYUKEN       TO   SUM-SARYOSYUKEN-GK
+                 ADD   SUM-JIHI-MONEY        TO  SUM-JIHI-MONEY-GK
+                 ADD   SUM-JIHI-OKEN         TO  SUM-JIHI-OKEN-GK
+                 ADD   SUM-JIHI-RKEN         TO  SUM-JIHI-RKEN-GK
+                 ADD   SUM-JIHI-SKEN         TO  SUM-JIHI-SKEN-GK
+                 ADD   SUM-JIHI-SAKEN        TO  SUM-JIHI-SAKEN-GK
                  INITIALIZE                  SUM-AREA
       *
       *    ブレイクキー項目設定
@@ -1323,6 +1346,11 @@
            ADD   SUM-SASYUEKIKEN       TO   SUM-SASYUEKIKEN-GK
            ADD   SUM-SASEIKYUKEN       TO   SUM-SASEIKYUKEN-GK
            ADD   SUM-SARYOSYUKEN       TO   SUM-SARYOSYUKEN-GK
+           ADD   SUM-JIHI-MONEY        TO  SUM-JIHI-MONEY-GK
+           ADD   SUM-JIHI-OKEN         TO  SUM-JIHI-OKEN-GK
+           ADD   SUM-JIHI-RKEN         TO  SUM-JIHI-RKEN-GK
+           ADD   SUM-JIHI-SKEN         TO  SUM-JIHI-SKEN-GK
+           ADD   SUM-JIHI-SAKEN        TO  SUM-JIHI-SAKEN-GK
       *
            .
        320-BODY-HEN-EXT.
@@ -1622,6 +1650,7 @@
                      MOVE    1           TO   FLG-JIHI(IDX2)
                    END-IF
                  END-PERFORM
+                 ADD    WRK-JIHI-TTL   TO  SUM-JIHI-MONEY
                END-IF
            END-IF
            EVALUATE  IDX
@@ -1798,6 +1827,7 @@
              IF  FLG-JIHI(IDX2)  = 1
                COMPUTE  JIHIIDX  =  IDX2  +  6
                ADD     1       TO   SUM-RKEN(JIHIIDX)
+               ADD     1       TO   SUM-JIHI-RKEN
              END-IF
            END-PERFORM
       *    保険点数件数カウント
@@ -1861,6 +1891,7 @@
                  IF  FLG-JIHI(IDX2)  =  1
                    COMPUTE  JIHIIDX  =  IDX2  +  6
                    ADD   1       TO  SUM-SKEN(JIHIIDX)
+                   ADD   1       TO  SUM-JIHI-SKEN
                  END-IF
                END-PERFORM
       *        保険点数件数カウント
@@ -1905,6 +1936,7 @@
                IF  FLG-JIHI(IDX2)  =  1
                   COMPUTE  JIHIIDX  =  IDX2  +  6
                   ADD    1       TO   SUM-SAKEN(JIHIIDX)
+                  ADD    1       TO   SUM-JIHI-SAKEN
                END-IF
              END-PERFORM
       *      保険点数件数カウント
@@ -1935,6 +1967,7 @@
                IF   FLG-JIHI(IDX2)  =  1
                  COMPUTE  JIHIIDX  =  IDX2  +  6
                  ADD    1      TO   SUM-RKEN(JIHIIDX)
+                 ADD    1      TO   SUM-JIHI-RKEN
                END-IF
              END-PERFORM
       *      保険点数件数カウント
@@ -1965,6 +1998,7 @@
                IF  FLG-JIHI(IDX2)  = 1
                  COMPUTE  JIHIIDX  =  IDX2  +  6
                  ADD     1    TO   SUM-OKEN(JIHIIDX)
+                 ADD     1    TO   SUM-JIHI-OKEN
                END-IF
              END-PERFORM
       *      保険点数件数カウント
@@ -2285,6 +2319,25 @@
              END-IF
            END-PERFORM
       *
+      *    自費小計
+           MOVE    SUM-JIHI-MONEY  TO  WRK-S9
+           MOVE    WRK-S9          TO  HC17B-JIHI-GMONEY
+           MOVE    SUM-JIHI-OKEN   TO  WRK-S9
+           MOVE    WRK-S9          TO  HC17B-JIHI-OKENSU
+           MOVE    SUM-JIHI-RKEN   TO  WRK-S9
+           MOVE    WRK-S9          TO  HC17B-JIHI-RKENSU
+           MOVE    SUM-JIHI-SKEN   TO  WRK-S9
+           MOVE    WRK-S9          TO  HC17B-JIHI-SKENSU
+           MOVE    SUM-JIHI-SAKEN  TO  WRK-Z9
+           MOVE    WRK-Z9(2:7)     TO  WRK-TMP-K
+           MOVE    1               TO  WRK-COUNTS
+           INSPECT  WRK-TMP-K   TALLYING
+                    WRK-COUNTS  FOR  LEADING  SPACE
+           MOVE    WRK-TMP-K       TO  HC17B-JIHI-SAKENSU(2:7)
+           MOVE    "("             TO
+                                   HC17B-JIHI-SAKENSU(WRK-COUNTS:1)
+           MOVE    ")"             TO  HC17B-JIHI-SAKENSU(9:1)
+      *
       *    医療収益計、窓口請求金額合計、窓口領収金額合計
       *    金額合計
            MOVE    SUM-SYUEKI      TO   WRK-S9
@@ -2543,6 +2596,25 @@
              END-IF
            END-PERFORM
       *
+      *    自費小計
+           MOVE    SUM-JIHI-MONEY-GK  TO  WRK-S9
+           MOVE    WRK-S9             TO  HC17B-JIHI-GMONEY
+           MOVE    SUM-JIHI-OKEN-GK   TO  WRK-S9
+           MOVE    WRK-S9             TO  HC17B-JIHI-OKENSU
+           MOVE    SUM-JIHI-RKEN-GK   TO  WRK-S9
+           MOVE    WRK-S9             TO  HC17B-JIHI-RKENSU
+           MOVE    SUM-JIHI-SKEN-GK   TO  WRK-S9
+           MOVE    WRK-S9             TO  HC17B-JIHI-SKENSU
+           MOVE    SUM-JIHI-SAKEN-GK  TO  WRK-Z9
+           MOVE    WRK-Z9(2:7)        TO  WRK-TMP-K
+           MOVE    1                  TO  WRK-COUNTS
+           INSPECT  WRK-TMP-K   TALLYING
+                    WRK-COUNTS  FOR  LEADING  SPACE
+           MOVE    WRK-TMP-K          TO  HC17B-JIHI-SAKENSU(2:7)
+           MOVE    "("                TO
+                                      HC17B-JIHI-SAKENSU(WRK-COUNTS:1)
+           MOVE    ")"                TO  HC17B-JIHI-SAKENSU(9:1)
+      *
       *    医療収益計、窓口請求金額合計、窓口領収金額合計
       *    金額合計
            MOVE  SUM-SYUEKI-GK  TO   WRK-S9
@@ -2707,6 +2779,10 @@
                MOVE    HC17B-GMONEY(IDX9)   TO  WRK-ITEM
                PERFORM  800-CSVDATA-EDIT-SEC
              END-IF
+             IF  IDX9  =  16
+               MOVE    HC17B-JIHI-GMONEY  TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
            END-PERFORM
       *
       *    総件数＿請求件数＿窓口請求金額
@@ -2741,6 +2817,10 @@
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
                END-IF
+               IF  IDX9  =  16
+                 MOVE    HC17B-JIHI-RKENSU  TO  WRK-ITEM
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
              END-PERFORM
       *
            ELSE
@@ -2767,6 +2847,10 @@
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
                END-IF
+               IF  IDX9  =  16
+                 MOVE    HC17B-JIHI-OKENSU  TO  WRK-ITEM
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
              END-PERFORM
       *
       *    総件数＿再診件数
@@ -2791,6 +2875,10 @@
                  ELSE
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
+               END-IF
+               IF  IDX9  =  16
+                 MOVE    HC17B-JIHI-RKENSU  TO  WRK-ITEM
+                 PERFORM  800-CSVDATA-EDIT-SEC
                END-IF
              END-PERFORM
       *
@@ -2817,6 +2905,10 @@
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
                END-IF
+               IF  IDX9  =  16
+                 MOVE    HC17B-JIHI-SKENSU  TO  WRK-ITEM
+                 PERFORM  800-CSVDATA-EDIT-SEC
+               END-IF
              END-PERFORM
       *
       *    総件数＿新患数
@@ -2841,6 +2933,10 @@
                  ELSE
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
+               END-IF
+               IF  IDX9  =  16
+                 MOVE    HC17B-JIHI-SAKENSU  TO  WRK-ITEM
+                 PERFORM  800-CSVDATA-EDIT-SEC
                END-IF
              END-PERFORM
       *
