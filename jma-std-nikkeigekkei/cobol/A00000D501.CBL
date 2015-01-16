@@ -2607,23 +2607,31 @@
            END-PERFORM
       *
       *    ¼«Èñ¾®·×
-           MOVE    SUM-JIHI-MONEY-GK  TO  WRK-S9
-           MOVE    WRK-S9             TO  HC17B-JIHI-GMONEY
-           MOVE    SUM-JIHI-OKEN-GK   TO  WRK-Z9
-           MOVE    WRK-Z9             TO  HC17B-JIHI-OKENSU
-           MOVE    SUM-JIHI-RKEN-GK   TO  WRK-Z9
-           MOVE    WRK-Z9             TO  HC17B-JIHI-RKENSU
-           MOVE    SUM-JIHI-SKEN-GK   TO  WRK-Z9
-           MOVE    WRK-Z9             TO  HC17B-JIHI-SKENSU
-           MOVE    SUM-JIHI-SAKEN-GK  TO  WRK-Z9
-           MOVE    WRK-Z9(2:7)        TO  WRK-TMP-K
-           MOVE    1                  TO  WRK-COUNTS
-           INSPECT  WRK-TMP-K   TALLYING
-                    WRK-COUNTS  FOR  LEADING  SPACE
-           MOVE    WRK-TMP-K          TO  HC17B-JIHI-SAKENSU(2:7)
-           MOVE    "("                TO
-                                      HC17B-JIHI-SAKENSU(WRK-COUNTS:1)
-           MOVE    ")"                TO  HC17B-JIHI-SAKENSU(9:1)
+           EVALUATE WRK-NYUGAIKBN
+             WHEN "1"
+               MOVE    SUM-JIHI-MONEY-GK  TO  WRK-S9
+               MOVE    WRK-S9             TO  HC17B-JIHI-GMONEY
+               MOVE    SUM-JIHI-RKEN-GK   TO  WRK-Z9
+               MOVE    WRK-Z9             TO  HC17B-JIHI-RKENSU
+             WHEN "2"
+               MOVE    SUM-JIHI-MONEY-GK  TO  WRK-S9
+               MOVE    WRK-S9             TO  HC17B-JIHI-GMONEY
+               MOVE    SUM-JIHI-OKEN-GK   TO  WRK-Z9
+               MOVE    WRK-Z9             TO  HC17B-JIHI-OKENSU
+               MOVE    SUM-JIHI-RKEN-GK   TO  WRK-Z9
+               MOVE    WRK-Z9             TO  HC17B-JIHI-RKENSU
+               MOVE    SUM-JIHI-SKEN-GK   TO  WRK-Z9
+               MOVE    WRK-Z9             TO  HC17B-JIHI-SKENSU
+               MOVE    SUM-JIHI-SAKEN-GK  TO  WRK-Z9
+               MOVE    WRK-Z9(2:7)        TO  WRK-TMP-K
+               MOVE    1                  TO  WRK-COUNTS
+               INSPECT  WRK-TMP-K   TALLYING
+                        WRK-COUNTS  FOR  LEADING  SPACE
+               MOVE    WRK-TMP-K          TO  HC17B-JIHI-SAKENSU(2:7)
+               MOVE    "("                TO
+                                          HC17B-JIHI-SAKENSU(WRK-COUNTS:1)
+               MOVE    ")"                TO  HC17B-JIHI-SAKENSU(9:1)
+           END-EVALUATE
       *
       *    °åÎÅ¼ý±×·×¡¢Áë¸ýÀÁµá¶â³Û¹ç·×¡¢Áë¸ýÎÎ¼ý¶â³Û¹ç·×
       *    ¶â³Û¹ç·×
