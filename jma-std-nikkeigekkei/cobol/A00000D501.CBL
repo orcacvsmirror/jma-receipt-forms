@@ -2629,7 +2629,7 @@
                         WRK-COUNTS  FOR  LEADING  SPACE
                MOVE    WRK-TMP-K          TO  HC17B-JIHI-SAKENSU(2:7)
                MOVE    "("                TO
-                                          HC17B-JIHI-SAKENSU(WRK-COUNTS:1)
+                                        HC17B-JIHI-SAKENSU(WRK-COUNTS:1)
                MOVE    ")"                TO  HC17B-JIHI-SAKENSU(9:1)
            END-EVALUATE
       *
