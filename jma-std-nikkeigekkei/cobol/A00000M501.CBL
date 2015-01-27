@@ -37,7 +37,6 @@
       *  01.00.06    @@@@-Ìç´Ö    12/08/24  ¿·´µ·ï¿ô¤¬½ÅÊ£¥«¥¦¥ó¥È¤µ¤ì¤ëÉÔ¶ñ¹ç¤ò½¤Àµ
       *  01.00.07    @@@@-Ìç´Ö    13/09/30  ÊÇ¿ô¤Î°õ»ú½¤Àµ¡Ê½èÍý·ë²Ì²èÌÌ¡Ë
       *  01.00.08    @@@@-Ìç´Ö    14/06/23  ¼«Èñ¿ÇÎÅ¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
-      *  01.00.09    @@@@-Ìç´Ö    15/01/14  ¼«Èñ¿ÇÎÅ¤Ë¾®·×¤òÄÉ²Ã
       *****************************************************************
       *
       *
@@ -235,11 +234,6 @@
            03  SUM-SASYUEKIKEN      PIC 9(10).
            03  SUM-SASEIKYUKEN      PIC 9(10).
            03  SUM-SARYOSYUKEN      PIC 9(10).
-           03  SUM-JIHI-MONEY       PIC S9(10).
-           03  SUM-JIHI-OKEN        PIC 9(10).
-           03  SUM-JIHI-RKEN        PIC 9(10).
-           03  SUM-JIHI-SKEN        PIC 9(10).
-           03  SUM-JIHI-SAKEN       PIC 9(10).
       *
       *    Æþ³°¶èÊ¬ÊÌ²Ã»»¥¨¥ê¥¢
        01  SUM-AREA-GK              VALUE   ZERO.
@@ -270,11 +264,6 @@
            03  SUM-SASYUEKIKEN-GK   PIC 9(10).
            03  SUM-SASEIKYUKEN-GK   PIC 9(10).
            03  SUM-SARYOSYUKEN-GK   PIC 9(10).
-           03  SUM-JIHI-MONEY-GK    PIC S9(10).
-           03  SUM-JIHI-OKEN-GK     PIC 9(10).
-           03  SUM-JIHI-RKEN-GK     PIC 9(10).
-           03  SUM-JIHI-SKEN-GK     PIC 9(10).
-           03  SUM-JIHI-SAKEN-GK    PIC 9(10).
       *
        01  WRK-SMEI-REC.
            03  WRK-SMEI-TBL      OCCURS  300000.
@@ -317,7 +306,6 @@
            03  CSV-SAKENSU             OCCURS 20 TIMES PIC X(09).
            03  CSV-SAHKNKEN            PIC X(09).
            03  CSV-SASYUEKIKEN         PIC X(09).
-           03  CSV-JIHI-SAKENSU        PIC X(09).
       *
        01  CSV-HEAD-AREA.
            03  CSV-HEAD-G.
@@ -346,8 +334,6 @@
                07  CSV-HEAD-JIHI-R        REDEFINES CSV-HEAD-JIHI-G.
                  09  CSV-HEAD-JIHI-OCC    OCCURS  10.
                    11  CSV-HEAD-JIHI-NAME PIC X(50).
-               07  CSV-HEAD-SKY-JIHIKEI   PIC X(50)
-                                          VALUE "¼«Èñ¾®·×".
                07  CSV-HEAD-SKY-JIHI      PIC X(50)
                      VALUE "¼«Èñ".
                07  CSV-HEAD-SKY-ROSAI     PIC X(50)
@@ -361,8 +347,8 @@
                07  CSV-HEAD-RSYMONEY      PIC X(50)
                      VALUE "Áë¸ýÎÎ¼ý¶â³Û".
              05  CSV-HEAD-R               REDEFINES CSV-HEAD-VAL.
-               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 25.
-             05  CSV-HEAD-MAX             PIC 9(05) VALUE 25.
+               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 24.
+             05  CSV-HEAD-MAX             PIC 9(05) VALUE 24.
       *
       *****************************************************************
       *    ¥Õ¥¡¥¤¥ë¥ì¥¤¥¢¥¦¥È
@@ -1169,11 +1155,6 @@
                ADD    SUM-SASYUEKIKEN    TO   SUM-SASYUEKIKEN-GK
                ADD    SUM-SASEIKYUKEN    TO   SUM-SASEIKYUKEN-GK
                ADD    SUM-SARYOSYUKEN    TO   SUM-SARYOSYUKEN-GK
-               ADD   SUM-JIHI-MONEY      TO  SUM-JIHI-MONEY-GK
-               ADD   SUM-JIHI-OKEN       TO  SUM-JIHI-OKEN-GK
-               ADD   SUM-JIHI-RKEN       TO  SUM-JIHI-RKEN-GK
-               ADD   SUM-JIHI-SKEN       TO  SUM-JIHI-SKEN-GK
-               ADD   SUM-JIHI-SAKEN      TO  SUM-JIHI-SAKEN-GK
                IF   WRK-NYUGAIKBN   =      "1"
                 AND WRK-PRNSRKA-CNT >      1
                     PERFORM 330-TERM-KA-PRINT-SEC
@@ -1232,11 +1213,6 @@
                ADD   SUM-SASYUEKIKEN     TO   SUM-SASYUEKIKEN-GK
                ADD   SUM-SASEIKYUKEN     TO   SUM-SASEIKYUKEN-GK
                ADD   SUM-SARYOSYUKEN     TO   SUM-SARYOSYUKEN-GK
-               ADD   SUM-JIHI-MONEY      TO  SUM-JIHI-MONEY-GK
-               ADD   SUM-JIHI-OKEN       TO  SUM-JIHI-OKEN-GK
-               ADD   SUM-JIHI-RKEN       TO  SUM-JIHI-RKEN-GK
-               ADD   SUM-JIHI-SKEN       TO  SUM-JIHI-SKEN-GK
-               ADD   SUM-JIHI-SAKEN      TO  SUM-JIHI-SAKEN-GK
                INITIALIZE                SUM-AREA
       *
       *    ¥Ö¥ì¥¤¥¯¥­¡¼¹àÌÜÀßÄê
@@ -1332,11 +1308,6 @@
            ADD    SUM-SASYUEKIKEN       TO   SUM-SASYUEKIKEN-GK
            ADD    SUM-SASEIKYUKEN       TO   SUM-SASEIKYUKEN-GK
            ADD    SUM-SARYOSYUKEN       TO   SUM-SARYOSYUKEN-GK
-           ADD    SUM-JIHI-MONEY        TO  SUM-JIHI-MONEY-GK
-           ADD    SUM-JIHI-OKEN         TO  SUM-JIHI-OKEN-GK
-           ADD    SUM-JIHI-RKEN         TO  SUM-JIHI-RKEN-GK
-           ADD    SUM-JIHI-SKEN         TO  SUM-JIHI-SKEN-GK
-           ADD    SUM-JIHI-SAKEN        TO  SUM-JIHI-SAKEN-GK
       *
            .
        320-BODY-HEN-EXT.
@@ -1638,7 +1609,6 @@
                      MOVE    1  TO   FLG-JIHI(IDX2)
                    END-IF
                  END-PERFORM
-                 ADD    WRK-JIHI-TTL   TO  SUM-JIHI-MONEY
                END-IF
            END-IF
       *
@@ -1818,7 +1788,6 @@
              IF  FLG-JIHI(IDX2)  =  1
                COMPUTE  JIHIIDX  =  IDX2  +  6
                ADD    1   TO  SUM-RKEN(JIHIIDX)
-               ADD    1   TO  SUM-JIHI-RKEN
              END-IF
            END-PERFORM
       *    ÊÝ¸±ÅÀ¿ô·ï¿ô¥«¥¦¥ó¥È
@@ -1882,7 +1851,6 @@
                  IF  FLG-JIHI(IDX2)  = 1
                    COMPUTE  JIHIIDX  =  IDX2  +  6
                    ADD   1   TO  SUM-SKEN(JIHIIDX)
-                   ADD   1   TO  SUM-JIHI-SKEN
                  END-IF
                END-PERFORM
       *    ÊÝ¸±ÅÀ¿ô·ï¿ô¥«¥¦¥ó¥È
@@ -1927,7 +1895,6 @@
                IF  FLG-JIHI(IDX2)  =  1
                  COMPUTE  JIHIIDX  =  IDX2  +  6
                  ADD   1   TO  SUM-SAKEN(JIHIIDX)
-                 ADD   1   TO  SUM-JIHI-SAKEN
                END-IF
              END-PERFORM
       *      ÊÝ¸±ÅÀ¿ô·ï¿ô¥«¥¦¥ó¥È
@@ -1958,7 +1925,6 @@
                IF  FLG-JIHI(IDX2)  = 1
                  COMPUTE   JIHIIDX  =  IDX2  +  6
                  ADD     1      TO    SUM-RKEN(JIHIIDX)
-                 ADD     1      TO    SUM-JIHI-RKEN
                END-IF
              END-PERFORM
       *      ÊÝ¸±ÅÀ¿ô·ï¿ô¥«¥¦¥ó¥È
@@ -1988,7 +1954,6 @@
                IF  FLG-JIHI(IDX2)  = 1
                  COMPUTE  JIHIIDX  =  IDX2  +  6
                  ADD   1   TO  SUM-OKEN(JIHIIDX)
-                 ADD   1   TO  SUM-JIHI-OKEN
                END-IF
              END-PERFORM
       *      ÊÝ¸±ÅÀ¿ô·ï¿ô¥«¥¦¥ó¥È
@@ -2310,33 +2275,6 @@
                END-IF
              END-PERFORM
       *
-      *      ¼«Èñ¾®·×
-             EVALUATE WRK-NYUGAIKBN
-               WHEN "1"
-                 MOVE    SUM-JIHI-MONEY  TO  WRK-S9
-                 MOVE    WRK-S9          TO  HC17B-JIHI-GMONEY
-                 MOVE    SUM-JIHI-RKEN   TO  WRK-S9
-                 MOVE    WRK-S9          TO  HC17B-JIHI-RKENSU
-               WHEN "2"
-                 MOVE    SUM-JIHI-MONEY  TO  WRK-S9
-                 MOVE    WRK-S9          TO  HC17B-JIHI-GMONEY
-                 MOVE    SUM-JIHI-OKEN   TO  WRK-S9
-                 MOVE    WRK-S9          TO  HC17B-JIHI-OKENSU
-                 MOVE    SUM-JIHI-RKEN   TO  WRK-S9
-                 MOVE    WRK-S9          TO  HC17B-JIHI-RKENSU
-                 MOVE    SUM-JIHI-SKEN   TO  WRK-S9
-                 MOVE    WRK-S9          TO  HC17B-JIHI-SKENSU
-                 MOVE    SUM-JIHI-SAKEN  TO  WRK-Z9
-                 MOVE    WRK-Z9(3:8)     TO  WRK-TMP-K
-                 MOVE    1               TO  WRK-COUNTS
-                 INSPECT  WRK-TMP-K   TALLYING
-                          WRK-COUNTS  FOR  LEADING  SPACE
-                 MOVE    WRK-TMP-K       TO  HC17B-JIHI-SAKENSU(2:8)
-                 MOVE    WRK-TMP-K       TO  CSV-JIHI-SAKENSU
-                 MOVE    "("       TO  HC17B-JIHI-SAKENSU(WRK-COUNTS:1)
-                 MOVE    ")"       TO  HC17B-JIHI-SAKENSU(10:1)
-             END-EVALUATE
-      *
       *    °åÎÅ¼ý±×·×¡¢Áë¸ýÀÁµá¶â³Û¹ç·×¡¢Áë¸ýÎÎ¼ý¶â³Û¹ç·×
       *    ¶â³Û¹ç·×
              MOVE   SUM-SYUEKI     TO   WRK-S9
@@ -2596,33 +2534,6 @@
                END-IF
              END-PERFORM
       *
-      *      ¼«Èñ¾®·×
-             EVALUATE WRK-NYUGAIKBN
-               WHEN "1"
-                 MOVE    SUM-JIHI-MONEY-GK  TO  WRK-S9
-                 MOVE    WRK-S9             TO  HC17B-JIHI-GMONEY
-                 MOVE    SUM-JIHI-RKEN-GK   TO  WRK-S9
-                 MOVE    WRK-S9             TO  HC17B-JIHI-RKENSU
-               WHEN "2"
-                 MOVE    SUM-JIHI-MONEY-GK  TO  WRK-S9
-                 MOVE    WRK-S9             TO  HC17B-JIHI-GMONEY
-                 MOVE    SUM-JIHI-OKEN-GK   TO  WRK-S9
-                 MOVE    WRK-S9             TO  HC17B-JIHI-OKENSU
-                 MOVE    SUM-JIHI-RKEN-GK   TO  WRK-S9
-                 MOVE    WRK-S9             TO  HC17B-JIHI-RKENSU
-                 MOVE    SUM-JIHI-SKEN-GK   TO  WRK-S9
-                 MOVE    WRK-S9             TO  HC17B-JIHI-SKENSU
-                 MOVE    SUM-JIHI-SAKEN-GK  TO  WRK-Z9
-                 MOVE    WRK-Z9(3:8)        TO  WRK-TMP-K
-                 MOVE    1                  TO  WRK-COUNTS
-                 INSPECT  WRK-TMP-K   TALLYING
-                          WRK-COUNTS  FOR  LEADING  SPACE
-                 MOVE    WRK-TMP-K          TO  HC17B-JIHI-SAKENSU(2:8)
-                 MOVE    WRK-TMP-K          TO  CSV-JIHI-SAKENSU
-                 MOVE    "("        TO  HC17B-JIHI-SAKENSU(WRK-COUNTS:1)
-                 MOVE    ")"        TO  HC17B-JIHI-SAKENSU(10:1)
-           END-EVALUATE
-      *
       *    °åÎÅ¼ý±×·×¡¢Áë¸ýÀÁµá¶â³Û¹ç·×¡¢Áë¸ýÎÎ¼ý¶â³Û¹ç·×
       *    ¶â³Û¹ç·×
              MOVE  SUM-SYUEKI-GK      TO   WRK-S9
@@ -2797,10 +2708,6 @@
                MOVE    HC17B-GMONEY(IDX9)   TO  WRK-ITEM
                PERFORM  800-CSVDATA-EDIT-SEC
              END-IF
-             IF  IDX9  =  16
-               MOVE    HC17B-JIHI-GMONEY    TO  WRK-ITEM
-               PERFORM  800-CSVDATA-EDIT-SEC
-             END-IF
            END-PERFORM
       *
       *    Áí·ï¿ô¡²ÀÁµá·ï¿ô¡²Áë¸ýÀÁµá¶â³Û
@@ -2835,10 +2742,6 @@
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
                END-IF
-               IF  IDX9  =  16
-                 MOVE    HC17B-JIHI-RKENSU  TO  WRK-ITEM
-                 PERFORM  800-CSVDATA-EDIT-SEC
-               END-IF
              END-PERFORM
       *
       *    Áí·ï¿ô¡²½é¿Ç·ï¿ô
@@ -2866,10 +2769,6 @@
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
                END-IF
-               IF  IDX9  =  16
-                 MOVE    HC17B-JIHI-OKENSU  TO  WRK-ITEM
-                 PERFORM  800-CSVDATA-EDIT-SEC
-               END-IF
              END-PERFORM
       *
       *    Áí·ï¿ô¡²ºÆ¿Ç·ï¿ô
@@ -2894,10 +2793,6 @@
                  ELSE
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
-               END-IF
-               IF  IDX9  =  16
-                 MOVE    HC17B-JIHI-RKENSU  TO  WRK-ITEM
-                 PERFORM  800-CSVDATA-EDIT-SEC
                END-IF
              END-PERFORM
       *
@@ -2924,10 +2819,6 @@
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
                END-IF
-               IF  IDX9  =  16
-                 MOVE    HC17B-JIHI-SKENSU  TO  WRK-ITEM
-                 PERFORM  800-CSVDATA-EDIT-SEC
-               END-IF
              END-PERFORM
       *
       *    Áí·ï¿ô¡²¿·´µ¿ô
@@ -2952,10 +2843,6 @@
                  ELSE
                    PERFORM  800-CSVDATA-EDIT-SEC
                  END-IF
-               END-IF
-               IF  IDX9  =  16
-                 MOVE    CSV-JIHI-SAKENSU     TO  WRK-ITEM
-                 PERFORM  800-CSVDATA-EDIT-SEC
                END-IF
              END-PERFORM
       *

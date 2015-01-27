@@ -63,15 +63,13 @@
             03  HC17B-RSEIKYUKEN  PIC X(9).
             03  HC17B-RRYOSYUKEN  PIC X(9).
             03  HC17B-RSYUEKIKEN  PIC X(9).
+      *--- 2010/12/07 CHANGE START -------------------------------------
+      *      02  HC17B-SSEIKYUKEN  PIC X(9).
             03  HC17B-SSEIKYUKEN  PIC X(9).
+      *--- 2010/12/07 CHANGE END   -------------------------------------
             03  HC17B-SRYOSYUKEN  PIC X(9).
             03  HC17B-SSYUEKIKEN  PIC X(9).
             03  HC17B-SASEIKYUKEN PIC X(9).
             03  HC17B-SARYOSYUKEN PIC X(9).
             03  HC17B-SASYUEKIKEN PIC X(9).
             03  HC17B-JYUSHINCNT  PIC X(9).
-            03  HC17B-JIHI-GMONEY  PIC X(9).
-            03  HC17B-JIHI-OKENSU  PIC X(9).
-            03  HC17B-JIHI-RKENSU  PIC X(9).
-            03  HC17B-JIHI-SKENSU  PIC X(9).
-            03  HC17B-JIHI-SAKENSU  PIC X(9).
