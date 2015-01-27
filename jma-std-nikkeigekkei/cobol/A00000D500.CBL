@@ -1331,8 +1331,8 @@
       *
                ADD     1             TO  CNT-LINE
       *    ≈¡…º»÷πÊ
-               MOVE   WRK-SMEI-DENPNUM(IDX-S)
-                             TO  HC17-RENNUM (CNT-LINE)
+               MOVE   WRK-SMEI-DENPNUM(IDX-S)  TO  HC17-RENNUM(CNT-LINE)
+                                               HC17V03-RENNUM (CNT-LINE)
       *    ¥µº‘»÷πÊ
                INITIALIZE   ORCSPTIDAREA
                MOVE   WRK-PARA-HOSPNUM        TO   SPTID-HOSPNUM
