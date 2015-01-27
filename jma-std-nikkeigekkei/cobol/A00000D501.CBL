@@ -2369,17 +2369,17 @@
              WHEN "1"
                MOVE    SUM-JIHI-MONEY  TO  WRK-S9
                MOVE    WRK-S9          TO  HC17BV02-JIHI-GMONEY
-               MOVE    SUM-JIHI-RKEN   TO  WRK-S9
-               MOVE    WRK-S9          TO  HC17BV02-JIHI-RKENSU
+               MOVE    SUM-JIHI-RKEN   TO  WRK-Z9
+               MOVE    WRK-Z9          TO  HC17BV02-JIHI-RKENSU
              WHEN "2"
                MOVE    SUM-JIHI-MONEY  TO  WRK-S9
                MOVE    WRK-S9          TO  HC17BV02-JIHI-GMONEY
-               MOVE    SUM-JIHI-OKEN   TO  WRK-S9
-               MOVE    WRK-S9          TO  HC17BV02-JIHI-OKENSU
-               MOVE    SUM-JIHI-RKEN   TO  WRK-S9
-               MOVE    WRK-S9          TO  HC17BV02-JIHI-RKENSU
-               MOVE    SUM-JIHI-SKEN   TO  WRK-S9
-               MOVE    WRK-S9          TO  HC17BV02-JIHI-SKENSU
+               MOVE    SUM-JIHI-OKEN   TO  WRK-Z9
+               MOVE    WRK-Z9          TO  HC17BV02-JIHI-OKENSU
+               MOVE    SUM-JIHI-RKEN   TO  WRK-Z9
+               MOVE    WRK-Z9          TO  HC17BV02-JIHI-RKENSU
+               MOVE    SUM-JIHI-SKEN   TO  WRK-Z9
+               MOVE    WRK-Z9          TO  HC17BV02-JIHI-SKENSU
                MOVE    SUM-JIHI-SAKEN  TO  WRK-Z9
                MOVE    WRK-Z9(2:7)     TO  WRK-TMP-K
                MOVE    1               TO  WRK-COUNTS
@@ -2718,17 +2718,17 @@
              WHEN "1"
                MOVE    SUM-JIHI-MONEY-GK  TO  WRK-S9
                MOVE    WRK-S9             TO  HC17BV02-JIHI-GMONEY
-               MOVE    SUM-JIHI-RKEN-GK   TO  WRK-S9
-               MOVE    WRK-S9             TO  HC17BV02-JIHI-RKENSU
+               MOVE    SUM-JIHI-RKEN-GK   TO  WRK-Z9
+               MOVE    WRK-Z9             TO  HC17BV02-JIHI-RKENSU
              WHEN "2"
                MOVE    SUM-JIHI-MONEY-GK  TO  WRK-S9
                MOVE    WRK-S9             TO  HC17BV02-JIHI-GMONEY
-               MOVE    SUM-JIHI-OKEN-GK   TO  WRK-S9
-               MOVE    WRK-S9             TO  HC17BV02-JIHI-OKENSU
-               MOVE    SUM-JIHI-RKEN-GK   TO  WRK-S9
-               MOVE    WRK-S9             TO  HC17BV02-JIHI-RKENSU
-               MOVE    SUM-JIHI-SKEN-GK   TO  WRK-S9
-               MOVE    WRK-S9             TO  HC17BV02-JIHI-SKENSU
+               MOVE    SUM-JIHI-OKEN-GK   TO  WRK-Z9
+               MOVE    WRK-Z9             TO  HC17BV02-JIHI-OKENSU
+               MOVE    SUM-JIHI-RKEN-GK   TO  WRK-Z9
+               MOVE    WRK-Z9             TO  HC17BV02-JIHI-RKENSU
+               MOVE    SUM-JIHI-SKEN-GK   TO  WRK-Z9
+               MOVE    WRK-Z9             TO  HC17BV02-JIHI-SKENSU
                MOVE    SUM-JIHI-SAKEN-GK  TO  WRK-Z9
                MOVE    WRK-Z9(2:7)        TO  WRK-TMP-K
                MOVE    1                  TO  WRK-COUNTS
