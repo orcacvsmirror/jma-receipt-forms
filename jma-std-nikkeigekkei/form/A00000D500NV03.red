@@ -3318,7 +3318,7 @@
         <dia:enum val="3"/>
       </dia:attribute>
       <dia:attribute name="embed_id">
-        <dia:string>#MONEY-TBL[2].MONEY#</dia:string>
+        <dia:string>#MONEY-TBL[9].MONEY#</dia:string>
       </dia:attribute>
       <dia:attribute name="embed_column_size">
         <dia:int val="0"/>

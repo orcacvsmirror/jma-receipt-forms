@@ -8537,7 +8537,7 @@
         <dia:enum val="3"/>
       </dia:attribute>
       <dia:attribute name="embed_id">
-        <dia:string>#OKENSU-G[4].OKENSU#</dia:string>
+        <dia:string>#OKENSU-G[7].OKENSU#</dia:string>
       </dia:attribute>
       <dia:attribute name="embed_column_size">
         <dia:int val="0"/>
