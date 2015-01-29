@@ -38,6 +38,7 @@
       *  01.00.08    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.09    @@@@-門間    14/06/23  自費診療の端数処理を修正
       *  01.00.10    @@@@-門間    14/11/13  CSV出力時、改頁処理を修正
+      *  01.00.11    @@@@-門間    15/01/14  自費診療に小計を追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -63,8 +64,10 @@
            COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
                                     BY         //RECEERR//.
       *
-           COPY    "A00000D500V02.INC".
-           COPY    "A00000D5002.INC".
+           COPY    "A00000D500V03.INC"   REPLACING  //HC17V03//
+                                         BY         //HC17//.
+           COPY    "A00000D5002V03.INC"  REPLACING  //D5002V03//
+                                         BY         //D5002//.
       *
       *    スパ領域
        01  STS-AREA.
@@ -206,6 +209,7 @@
            03  SUM-G-SYUEKI         PIC S9(09).
            03  SUM-G-SEIKYU         PIC S9(09).
            03  SUM-G-RYOSYU         PIC S9(09).
+           03  SUM-G-JIHIKEI        PIC S9(09).
       *
        01  SUM-GG-AREA              VALUE   ZERO.
            03  SUM-GG-HKNTEN        PIC 9(09).
@@ -214,6 +218,8 @@
                05  SUM-GG-MONEY     PIC S9(08).
            03  SUM-GG-SEIKYU        PIC S9(10).
            03  SUM-GG-RYOSYU        PIC S9(10).
+           03  SUM-GG-JIHIKEI       PIC S9(10).
+      *
        01  WRK-SMEI-REC.
            03  WRK-SMEI-TBL         OCCURS  10000.
                05  WRK-SMEI-HOSPNUM         PIC 9(02).
@@ -279,6 +285,8 @@
                07  CSV-HEAD-JIHI-R        REDEFINES CSV-HEAD-JIHI-G.
                  09  CSV-HEAD-JIHI-OCC    OCCURS  10.
                    11  CSV-HEAD-JIHI-NAME PIC X(50).
+               07  CSV-HEAD-SKY-JIHIKEI   PIC X(50)
+                                          VALUE "自費小計".
                07  CSV-HEAD-SKY-JIHI      PIC X(50)
                                           VALUE "自費".
                07  CSV-HEAD-SKY-ROSAI     PIC X(50)
@@ -292,8 +300,8 @@
                07  CSV-HEAD-RSYMONEY      PIC X(50)
                                           VALUE "窓口領収金額".
              05  CSV-HEAD-R               REDEFINES CSV-HEAD-VAL.
-               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 27.
-             05  CSV-HEAD-MAX             PIC 9(05) VALUE 27.
+               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 28.
+             05  CSV-HEAD-MAX             PIC 9(05) VALUE 28.
       *
       *****************************************************************
       *    ファイルレイアウト
@@ -1722,6 +1730,10 @@
       *
                  END-IF
                END-PERFORM
+               MOVE   WRK-JIHI-TTL   TO  WRK-ZZ
+               MOVE   WRK-ZZ         TO  HC17-JIHI-KEI(CNT-LINE)
+               ADD    WRK-JIHI-TTL   TO  SUM-G-JIHIKEI
+                                         SUM-GG-JIHIKEI
              END-IF
            END-IF
       *
@@ -1961,6 +1973,18 @@
              MOVE    SUM-G-RYOSYU     TO   WRK-SZ
              MOVE    WRK-SZ           TO   HC17-G-RYOSYU
            END-IF
+      *    自費小計
+           IF  SUM-G-JIHIKEI  >  9999999
+      *    8桁の場合
+             INITIALIZE               WRK-SZ
+             MOVE    SUM-G-JIHIKEI    TO   WRK-SZ
+             MOVE    WRK-SZ           TO   HC17-GG-JIHIKEI
+           ELSE
+      *    7桁以下の場合
+             INITIALIZE               WRK-Z9-2
+             MOVE    SUM-G-JIHIKEI    TO   WRK-Z9-2
+             MOVE    WRK-Z9-2         TO   HC17-G-JIHIKEI
+           END-IF
            .
        3001-SYOUKEI-SET-EXT.
            EXIT.
@@ -1997,6 +2021,12 @@
            INITIALIZE   WRK-SZ10
            MOVE    SUM-GG-RYOSYU    TO   WRK-SZ10
            MOVE    WRK-SZ10         TO   D5002-RYOSYU
+      *
+      *    自費小計
+           INITIALIZE   WRK-SZ
+           MOVE    SUM-GG-JIHIKEI   TO   WRK-SZ
+           MOVE    WRK-SZ           TO   D5002-JIHIKEI
+      *
            .
        3000-GOUKEI-SET-EXT.
            EXIT.
@@ -2047,7 +2077,7 @@
            IF   WRK-PARA-DENPPRTYMD  <  "20080401"
              MOVE   "A00000D500O.red"      TO   SPRT-PRTID
            ELSE
-             MOVE   "A00000D500V02.red"    TO   SPRT-PRTID
+             MOVE   "A00000D500V03.red"    TO   SPRT-PRTID
            END-IF
       *
            MOVE    "日計表明細（窓口領収金）"   TO   SPRT-TITLE
@@ -2091,7 +2121,7 @@
            IF   WRK-PARA-DENPPRTYMD  <  "20080401"
              MOVE   "A00000D500O2.red"         TO   SPRT-PRTID
            ELSE
-             MOVE   "A00000D500N2.red"         TO   SPRT-PRTID
+             MOVE   "A00000D500NV03.red"       TO   SPRT-PRTID
            END-IF
            MOVE    "日計表明細（窓口領収金）"  TO   SPRT-TITLE
            MOVE    D5002                       TO   SPRT-PRTDATA
@@ -2229,6 +2259,10 @@
                MOVE    HC17-MONEY(IDX5 CNT-LINE)    TO  WRK-ITEM
                PERFORM  800-CSVDATA-EDIT-SEC
              END-IF
+             IF  IDX5  =  16
+               MOVE    HC17-JIHI-KEI(CNT-LINE)      TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
            END-PERFORM
       *    窓口請求額
            MOVE    HC17-SEIKYU(CNT-LINE)    TO  WRK-ITEM
@@ -2275,6 +2309,12 @@
                INITIALIZE           WRK-SZ
                MOVE    SUM-GG-MONEY(IDX-SUM)   TO  WRK-SZ
                MOVE    WRK-SZ       TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+             IF  IDX-SUM  =  16
+               INITIALIZE           WRK-SZ
+               MOVE    SUM-GG-JIHIKEI  TO  WRK-SZ
+               MOVE    WRK-SZ          TO  WRK-ITEM
                PERFORM  800-CSVDATA-EDIT-SEC
              END-IF
            END-PERFORM
