@@ -38,7 +38,6 @@
       *  01.00.08    @@@@-ÅÄÃæ    12/02/02  ¸øÌ³ºÒ³²¡Ê·òÊÝ½àµò¡Ë»þ¤ÎÅÀ¿ôÃ±²ÁÉÔ¶ñ¹ç¤ò½¤Àµ
       *  01.00.09    @@@@-Ìç´Ö    14/06/23  ¼«Èñ¿ÇÎÅ¤ÎÃ¼¿ô½èÍý¤ò½¤Àµ
       *  01.00.10    @@@@-Ìç´Ö    14/11/13  CSV½ÐÎÏ»þ¡¢²þÊÇ½èÍý¤ò½¤Àµ
-      *  01.00.11    @@@@-Ìç´Ö    15/01/14  ¼«Èñ¿ÇÎÅ¤Ë¾®·×¤òÄÉ²Ã
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -65,9 +64,7 @@
                                     BY         //RECEERR//.
       *
            COPY    "A00000D500V02.INC".
-           COPY    "A00000D500V03.INC".
            COPY    "A00000D5002.INC".
-           COPY    "A00000D5002V03.INC".
       *
       *    ¥¹¥ÑÎÎ°è
        01  STS-AREA.
@@ -209,7 +206,6 @@
            03  SUM-G-SYUEKI         PIC S9(09).
            03  SUM-G-SEIKYU         PIC S9(09).
            03  SUM-G-RYOSYU         PIC S9(09).
-           03  SUM-G-JIHIKEI        PIC S9(09).
       *
        01  SUM-GG-AREA              VALUE   ZERO.
            03  SUM-GG-HKNTEN        PIC 9(09).
@@ -218,8 +214,6 @@
                05  SUM-GG-MONEY     PIC S9(08).
            03  SUM-GG-SEIKYU        PIC S9(10).
            03  SUM-GG-RYOSYU        PIC S9(10).
-           03  SUM-GG-JIHIKEI       PIC S9(10).
-      *
        01  WRK-SMEI-REC.
            03  WRK-SMEI-TBL         OCCURS  10000.
                05  WRK-SMEI-HOSPNUM         PIC 9(02).
@@ -285,8 +279,6 @@
                07  CSV-HEAD-JIHI-R        REDEFINES CSV-HEAD-JIHI-G.
                  09  CSV-HEAD-JIHI-OCC    OCCURS  10.
                    11  CSV-HEAD-JIHI-NAME PIC X(50).
-               07  CSV-HEAD-SKY-JIHIKEI   PIC X(50)
-                                          VALUE "¼«Èñ¾®·×".
                07  CSV-HEAD-SKY-JIHI      PIC X(50)
                                           VALUE "¼«Èñ".
                07  CSV-HEAD-SKY-ROSAI     PIC X(50)
@@ -300,8 +292,8 @@
                07  CSV-HEAD-RSYMONEY      PIC X(50)
                                           VALUE "Áë¸ýÎÎ¼ý¶â³Û".
              05  CSV-HEAD-R               REDEFINES CSV-HEAD-VAL.
-               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 28.
-             05  CSV-HEAD-MAX             PIC 9(05) VALUE 28.
+               07  CSV-HEAD-ITEM          PIC X(50) OCCURS 27.
+             05  CSV-HEAD-MAX             PIC 9(05) VALUE 27.
       *
       *****************************************************************
       *    ¥Õ¥¡¥¤¥ë¥ì¥¤¥¢¥¦¥È
@@ -971,7 +963,6 @@
              PERFORM 310-HEAD-HEN-SEC
              MOVE  "¡ö¡ö¡ö  ÂÐ¾Ý¥Ç¡¼¥¿¤¬£±·ï¤âÂ¸ºß¤·¤Þ¤»¤ó¡£  ¡ö¡ö¡ö"
                                                TO   HC17-JOBMSG
-                                                    HC17V03-JOBMSG
              PERFORM 390-PRINT-OUT-SEC
            END-IF
       *
@@ -1075,29 +1066,23 @@
            MOVE    ZERO                TO  CNT-LINE
       *
            INITIALIZE                  D5002
-                                       D5002V03
            MOVE    WRK-PARA-DENPPRTYMDWH   TO   D5002-SYSYMD
-                                                D5002V03-SYSYMD
       *
       *    Æþ³°¶èÊ¬Ì¾¾ÎÀßÄê
            EVALUATE WRK-NYUGAIKBN
              WHEN  "1"
                MOVE   "Æþ±¡"         TO   D5002-NYUGAIKBN
-                                          D5002V03-NYUGAIKBN
       *    Æþ±¡¼«ÈñÌ¾¾ÎÀßÄê
                PERFORM  VARYING  IDX2   FROM 1  BY  1
                         UNTIL  IDX2   >  10
                  MOVE   WRK-TJIHIN(IDX2)   TO   D5002-TJIHI(IDX2)
-                                                D5002V03-TJIHI(IDX2)
                END-PERFORM
              WHEN  "2"
                MOVE   "³°Íè"         TO   D5002-NYUGAIKBN
-                                          D5002V03-NYUGAIKBN
       *    ¼«ÈñÌ¾¾ÎÀßÄê
                PERFORM  VARYING  IDX2   FROM 1  BY  1
                         UNTIL    IDX2   >  10
                  MOVE   WRK-TJIHI(IDX2)   TO   D5002-TJIHI(IDX2)
-                                               D5002V03-TJIHI(IDX2)
                END-PERFORM
            END-EVALUATE
       *
@@ -1114,10 +1099,8 @@
            IF   FLG-SYSKANRI2   =   ZERO
              MOVE   MCPDATA-REC         TO   SYS-1005-REC
              MOVE   SYS-1005-SRYKANAME  TO   D5002-SRYKA
-                                             D5002V03-SRYKA
            ELSE
              MOVE   SPACE               TO   D5002-SRYKA
-                                             D5002V03-SRYKA
            END-IF
       *
            .
@@ -1132,29 +1115,23 @@
            MOVE    ZERO                TO  CNT-LINE
       *
            INITIALIZE                  HC17
-                                       HC17V03
       *
            MOVE    WRK-PARA-DENPPRTYMDWH   TO   HC17-SYSYMD
-                                                HC17V03-SYSYMD
       *
            EVALUATE WRK-NYUGAIKBN
              WHEN  "1"
                MOVE   "Æþ±¡"         TO   HC17-NYUGAIKBN
-                                          HC17V03-NYUGAIKBN
       *    Æþ±¡¼«ÈñÌ¾¾ÎÀßÄê
                PERFORM  VARYING  IDX2   FROM 1  BY  1
                         UNTIL  IDX2   >  10
                  MOVE   WRK-TJIHIN(IDX2)   TO   HC17-TJIHI(IDX2)
-                                                HC17V03-TJIHI(IDX2)
                END-PERFORM
              WHEN  "2"
                MOVE   "³°Íè"         TO   HC17-NYUGAIKBN
-                                          HC17V03-NYUGAIKBN
       *    ³°Íè¼«ÈñÌ¾¾ÎÀßÄê
                PERFORM  VARYING  IDX2   FROM 1  BY  1
                         UNTIL    IDX2   >  10
                  MOVE   WRK-TJIHI(IDX2)   TO   HC17-TJIHI(IDX2)
-                                               HC17V03-TJIHI(IDX2)
                END-PERFORM
            END-EVALUATE
       *
@@ -1171,10 +1148,8 @@
            IF   FLG-SYSKANRI2   =   ZERO
              MOVE   MCPDATA-REC          TO   SYS-1005-REC
              MOVE   SYS-1005-SRYKANAME   TO   HC17-SRYKA
-                                              HC17V03-SRYKA
            ELSE
              MOVE   SPACE               TO   HC17-SRYKA
-                                             HC17V03-SRYKA
            END-IF
       *
            .
@@ -1331,8 +1306,8 @@
       *
                ADD     1             TO  CNT-LINE
       *    ÅÁÉ¼ÈÖ¹æ
-               MOVE   WRK-SMEI-DENPNUM(IDX-S)  TO  HC17-RENNUM(CNT-LINE)
-                                               HC17V03-RENNUM (CNT-LINE)
+               MOVE   WRK-SMEI-DENPNUM(IDX-S)
+                             TO  HC17-RENNUM (CNT-LINE)
       *    ´µ¼ÔÈÖ¹æ
                INITIALIZE   ORCSPTIDAREA
                MOVE   WRK-PARA-HOSPNUM        TO   SPTID-HOSPNUM
@@ -1343,18 +1318,14 @@
                IF    SPTID-RC  =  ZERO
                  IF   SPTID-PTNUM(11:)  =  SPACE
                    MOVE    SPTID-PTNUM        TO   HC17-PTNUM(CNT-LINE)
-                                                HC17V03-PTNUM(CNT-LINE)
                  ELSE
                    MOVE    SPTID-PTNUM        TO   HC17-PTNUM2(CNT-LINE)
-                                                HC17V03-PTNUM2(CNT-LINE)
                  END-IF
                ELSE
                  MOVE    SPACE         TO   HC17-PTNUM(CNT-LINE)
-                                            HC17V03-PTNUM(CNT-LINE)
                END-IF
       *    »áÌ¾
                MOVE    PTINF-NAME      TO   HC17-NAME(CNT-LINE)
-                                            HC17V03-NAME(CNT-LINE)
       *
       *    ÅÁÉ¼ÈÖ¹æ»ÞÈÖ¤¬£±¤Î¾ì¹ç¤ÏÊÝ¸±ÅÀ¿ô¡¢ÊÝ¸±ÊÌÀÁµá³Û¤ÎÌÀºÙ¤ò°õ»ú(³«»Ï)
                IF  WRK-SMEI-DENPEDANUM(IDX-S)  =  1
@@ -1371,7 +1342,6 @@
                INITIALIZE  WRK-SZ
                MOVE    WRK-SMEI-SKYMONEY(IDX-S)   TO  WRK-SZ
                MOVE    WRK-SZ      TO  HC17-SEIKYU-G(CNT-LINE)
-                                       HC17V03-SEIKYU-G(CNT-LINE)
                IF  WRK-SMEI-SKYMONEY(IDX-S)  NOT =  0
                  ADD  WRK-SMEI-SKYMONEY(IDX-S)   TO  SUM-SEIKYU
                  ADD  1            TO  SUM-SEIKYUKEN
@@ -1385,7 +1355,6 @@
                INITIALIZE  WRK-SZ
                MOVE    WRK-SMEI-NYUHEN-MONEY(IDX-S)  TO   WRK-SZ
                MOVE    WRK-SZ         TO  HC17-RYOSYU-G(CNT-LINE)
-                                          HC17V03-RYOSYU-G(CNT-LINE)
                IF   WRK-SMEI-NYUHEN-MONEY(IDX-S)  NOT =  0
                  ADD  WRK-SMEI-NYUHEN-MONEY(IDX-S)   TO   SUM-RYOSYU
                  ADD    1             TO  SUM-RYOSYUKEN
@@ -1444,7 +1413,6 @@
                END-PERFORM
                MOVE    SYU-TOTAL-HKNTEN    TO   WRK-Z9
                MOVE    WRK-Z9              TO   HC17-HKNTEN (CNT-LINE)
-                                              HC17V03-HKNTEN (CNT-LINE)
                ADD     SYU-TOTAL-HKNTEN    TO   SUM-HKNTEN
                ADD     1                   TO   SUM-HKNKEN
       *
@@ -1524,7 +1492,6 @@
       *
              MOVE   WRK-MONEY     TO   WRK-S9-2
              MOVE   WRK-S9-2      TO   HC17-MONEY(IDX CNT-LINE)
-                                       HC17V03-MONEY(IDX CNT-LINE)
              ADD   WRK-MONEY     TO   SUM-MONEY(IDX)
              ADD   1             TO   SUM-KEN(IDX)
       *
@@ -1541,7 +1508,6 @@
                      MOVE   WRK-JIHI2      TO   WRK-ZZ
                      COMPUTE JIHIIDX = IDX2 + 6
                      MOVE   WRK-ZZ    TO   HC17-MONEY(JIHIIDX CNT-LINE)
-                                         HC17V03-MONEY(JIHIIDX CNT-LINE)
                      ADD   WRK-JIHI2  TO   SUM-MONEY(JIHIIDX)
                      ADD   1          TO   SUM-KEN(JIHIIDX)
       *
@@ -1620,7 +1586,6 @@
            END-EVALUATE
            MOVE   WRK-SYUEKI   TO   WRK-SZ
            MOVE   WRK-SZ       TO   HC17-SYUEKI (CNT-LINE)
-                                    HC17V03-SYUEKI (CNT-LINE)
       *
            IF   WRK-SYUEKI  NOT =  0
              ADD  WRK-SYUEKI   TO   SUM-G-SYUEKI
@@ -1651,7 +1616,6 @@
                END-PERFORM
                MOVE   SYU-TOTAL-HKNTEN      TO   WRK-Z9
                MOVE   WRK-Z9                TO   HC17-HKNTEN (CNT-LINE)
-                                               HC17V03-HKNTEN (CNT-LINE)
                ADD    SYU-TOTAL-HKNTEN      TO   SUM-HKNTEN
                ADD    1                     TO   SUM-HKNKEN
       *
@@ -1734,7 +1698,6 @@
       *
              MOVE    WRK-MONEY     TO   WRK-S9-2
              MOVE    WRK-S9-2      TO   HC17-MONEY(IDX CNT-LINE)
-                                        HC17V03-MONEY(IDX CNT-LINE)
              ADD     WRK-MONEY     TO   SUM-MONEY(IDX)
              ADD     1             TO   SUM-KEN(IDX)
       *
@@ -1751,7 +1714,6 @@
                    MOVE WRK-JIHI2  TO  WRK-ZZ
                    COMPUTE  JIHIIDX  =  IDX2  +  6
                    MOVE   WRK-ZZ     TO   HC17-MONEY(JIHIIDX CNT-LINE)
-                                        HC17V03-MONEY(JIHIIDX CNT-LINE)
                    ADD    WRK-JIHI2  TO   SUM-MONEY(JIHIIDX)
                    ADD    1          TO   SUM-KEN(JIHIIDX)
       *
@@ -1760,10 +1722,6 @@
       *
                  END-IF
                END-PERFORM
-               MOVE   WRK-JIHI-TTL   TO  WRK-ZZ
-               MOVE   WRK-ZZ         TO  HC17V03-JIHI-KEI(CNT-LINE)
-               ADD    WRK-JIHI-TTL   TO  SUM-G-JIHIKEI
-                                         SUM-GG-JIHIKEI
              END-IF
            END-IF
       *
@@ -1836,7 +1794,6 @@
            END-EVALUATE
            MOVE  WRK-SYUEKI   TO   WRK-SZ
            MOVE  WRK-SZ       TO   HC17-SYUEKI(CNT-LINE)
-                                   HC17V03-SYUEKI(CNT-LINE)
       *
            IF   WRK-SYUEKI  NOT =  0
                ADD  WRK-SYUEKI   TO   SUM-G-SYUEKI
@@ -1947,13 +1904,11 @@
              INITIALIZE  WRK-SZ
              MOVE    SUM-G-HKNTEN       TO   WRK-SZ
              MOVE    WRK-SZ             TO   HC17-GG-HKNTEN
-                                             HC17V03-GG-HKNTEN
            ELSE
       *    7·å°Ê²¼¤Î¾ì¹ç
              INITIALIZE  WRK-Z9-2
              MOVE    SUM-G-HKNTEN       TO   WRK-Z9-2
              MOVE    WRK-Z9-2           TO   HC17-G-HKNTEN
-                                             HC17V03-G-HKNTEN
            END-IF
       *    ÊÝ¸±ÊÌ¶â³Û¡Ê¼ÒÊÝËÜ¿Í¡Á¼«ÇåÀÕ¡Ë
            PERFORM  VARYING  IDX-SUM   FROM 1  BY  1
@@ -1963,13 +1918,11 @@
                INITIALIZE  WRK-SZ
                MOVE     SUM-G-MONEY(IDX-SUM)   TO   WRK-SZ
                MOVE     WRK-SZ   TO   HC17-GG-MONEY(IDX-SUM)
-                                      HC17V03-GG-MONEY(IDX-SUM)
              ELSE
       *    7·å°Ê²¼¤Î¾ì¹ç
                INITIALIZE  WRK-Z9-2
                MOVE     SUM-G-MONEY (IDX-SUM)   TO   WRK-Z9-2
                MOVE     WRK-Z9-2   TO   HC17-G-MONEY(IDX-SUM)
-                                        HC17V03-G-MONEY(IDX-SUM)
              END-IF
            END-PERFORM
       *    °åÎÅ¼ý±×
@@ -1978,13 +1931,11 @@
                INITIALIZE  WRK-SZZ
              MOVE    SUM-G-SYUEKI     TO   WRK-SZZ
              MOVE    WRK-SZZ          TO   HC17-GG-SYUEKI
-                                           HC17V03-GG-SYUEKI
            ELSE
       *    7·å°Ê²¼¤Î¾ì¹ç
                INITIALIZE  WRK-SZ
              MOVE    SUM-G-SYUEKI     TO   WRK-SZ
              MOVE    WRK-SZ           TO   HC17-G-SYUEKI
-                                           HC17V03-G-SYUEKI
            END-IF
       *    ÀÁµá¶â³Û
            IF  SUM-G-SEIKYU  >  9999999
@@ -1992,13 +1943,11 @@
              INITIALIZE               WRK-SZZ
              MOVE    SUM-G-SEIKYU     TO   WRK-SZZ
              MOVE    WRK-SZZ          TO   HC17-GG-SEIKYU
-                                           HC17V03-GG-SEIKYU
            ELSE
       *    7·å°Ê²¼¤Î¾ì¹ç
              INITIALIZE               WRK-SZ
              MOVE    SUM-G-SEIKYU     TO   WRK-SZ
              MOVE    WRK-SZ           TO   HC17-G-SEIKYU
-                                           HC17V03-G-SEIKYU
            END-IF
       *    ÎÎ¼ý¶â³Û
            IF  SUM-G-RYOSYU  >  9999999
@@ -2006,25 +1955,11 @@
              INITIALIZE               WRK-SZZ
              MOVE    SUM-G-RYOSYU     TO   WRK-SZZ
              MOVE    WRK-SZZ          TO   HC17-GG-RYOSYU
-                                           HC17V03-GG-RYOSYU
            ELSE
       *    7·å°Ê²¼¤Î¾ì¹ç
              INITIALIZE               WRK-SZ
              MOVE    SUM-G-RYOSYU     TO   WRK-SZ
              MOVE    WRK-SZ           TO   HC17-G-RYOSYU
-                                           HC17V03-G-RYOSYU
-           END-IF
-      *    ¼«Èñ¾®·×
-           IF  SUM-G-JIHIKEI  >  9999999
-      *    8·å¤Î¾ì¹ç
-             INITIALIZE               WRK-SZ
-             MOVE    SUM-G-JIHIKEI    TO   WRK-SZ
-             MOVE    WRK-SZ           TO   HC17V03-GG-JIHIKEI
-           ELSE
-      *    7·å°Ê²¼¤Î¾ì¹ç
-             INITIALIZE               WRK-Z9-2
-             MOVE    SUM-G-JIHIKEI    TO   WRK-Z9-2
-             MOVE    WRK-Z9-2         TO   HC17V03-G-JIHIKEI
            END-IF
            .
        3001-SYOUKEI-SET-EXT.
@@ -2039,7 +1974,6 @@
            INITIALIZE   WRK-SZZ
            MOVE    SUM-GG-HKNTEN    TO   WRK-SZZ
            MOVE    WRK-SZZ          TO   D5002-HKNTEN
-                                         D5002V03-HKNTEN
       *
       *    ÊÝ¸±ÊÌ¶â³Û¡Ê¼ÒÊÝËÜ¿Í¡Á¼«ÇåÀÕ¡Ë
            PERFORM  VARYING  IDX-SUM   FROM 1  BY  1
@@ -2047,32 +1981,22 @@
              INITIALIZE  WRK-SZ
              MOVE    SUM-GG-MONEY(IDX-SUM)   TO   WRK-SZ
              MOVE    WRK-SZ         TO   D5002-MONEY(IDX-SUM)
-                                         D5002V03-MONEY(IDX-SUM)
            END-PERFORM
       *
       *    °åÎÅ¼ý±×
            INITIALIZE   WRK-SZ10
            MOVE    SUM-GG-SYUEKI    TO   WRK-SZ10
            MOVE    WRK-SZ10         TO   D5002-SYUEKI
-                                         D5002V03-SYUEKI
       *
       *    ÀÁµá¶â³Û
            INITIALIZE   WRK-SZ10
            MOVE    SUM-GG-SEIKYU    TO   WRK-SZ10
            MOVE    WRK-SZ10         TO   D5002-SEIKYU
-                                         D5002V03-SEIKYU
       *
       *    ÎÎ¼ý¶â³Û
            INITIALIZE   WRK-SZ10
            MOVE    SUM-GG-RYOSYU    TO   WRK-SZ10
            MOVE    WRK-SZ10         TO   D5002-RYOSYU
-                                         D5002V03-RYOSYU
-      *
-      *    ¼«Èñ¾®·×
-           INITIALIZE   WRK-SZ
-           MOVE    SUM-GG-JIHIKEI   TO   WRK-SZ
-           MOVE    WRK-SZ           TO   D5002V03-JIHIKEI
-      *
            .
        3000-GOUKEI-SET-EXT.
            EXIT.
@@ -2108,7 +2032,6 @@
            ADD     1                       TO   CNT-PAGE
            MOVE    CNT-PAGE                TO   WRK-PAGE
            MOVE    WRK-PAGE                TO   HC17-PAGE
-                                                HC17V03-PAGE
       *
            INITIALIZE                      ORCSPRTAREA
            MOVE    "INS"                   TO   SPRT-MODE
@@ -2121,20 +2044,14 @@
            MOVE    LNK-PRTKANRI-SHORI-RENNUM   TO   SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY   TO   SPRT-PRIORITY
       *
-           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
-             MOVE   "A00000D500V03.red"          TO   SPRT-PRTID
-             MOVE    "Æü·×É½ÌÀºÙ¡ÊÁë¸ýÎÎ¼ý¶â¡Ë"  TO   SPRT-TITLE
-             MOVE    HC17V03                     TO   SPRT-PRTDATA
+           IF   WRK-PARA-DENPPRTYMD  <  "20080401"
+             MOVE   "A00000D500O.red"      TO   SPRT-PRTID
            ELSE
-             IF   WRK-PARA-DENPPRTYMD  <  "20080401"
-               MOVE   "A00000D500O.red"      TO   SPRT-PRTID
-             ELSE
-               MOVE   "A00000D500V02.red"    TO   SPRT-PRTID
-             END-IF
-             MOVE    "Æü·×É½ÌÀºÙ¡ÊÁë¸ýÎÎ¼ý¶â¡Ë"   TO   SPRT-TITLE
-             MOVE    HC17                  TO   SPRT-PRTDATA
+             MOVE   "A00000D500V02.red"    TO   SPRT-PRTID
            END-IF
       *
+           MOVE    "Æü·×É½ÌÀºÙ¡ÊÁë¸ýÎÎ¼ý¶â¡Ë"   TO   SPRT-TITLE
+           MOVE    HC17                  TO   SPRT-PRTDATA
            MOVE    LNK-PRTKANRI-TERMID   TO   SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID     TO   SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM    TO   SPRT-PRTNM
@@ -2160,7 +2077,6 @@
            ADD     1                           TO   CNT-PAGE
            MOVE    CNT-PAGE                    TO   WRK-PAGE
            MOVE    WRK-PAGE                    TO   D5002-PAGE
-                                                    D5002V03-PAGE
       *
            INITIALIZE                          ORCSPRTAREA
            MOVE    "INS"                       TO   SPRT-MODE
@@ -2172,21 +2088,13 @@
            MOVE    LNK-PRTKANRI-SHELLID        TO   SPRT-SHELLID
            MOVE    LNK-PRTKANRI-SHORI-RENNUM   TO   SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY       TO   SPRT-PRIORITY
-      *
-           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
-             MOVE   "A00000D500NV03.red"         TO   SPRT-PRTID
-             MOVE    "Æü·×É½ÌÀºÙ¡ÊÁë¸ýÎÎ¼ý¶â¡Ë"  TO   SPRT-TITLE
-             MOVE    D5002V03                    TO   SPRT-PRTDATA
+           IF   WRK-PARA-DENPPRTYMD  <  "20080401"
+             MOVE   "A00000D500O2.red"         TO   SPRT-PRTID
            ELSE
-             IF   WRK-PARA-DENPPRTYMD  <  "20080401"
-               MOVE   "A00000D500O2.red"         TO   SPRT-PRTID
-             ELSE
-               MOVE   "A00000D500N2.red"         TO   SPRT-PRTID
-             END-IF
-             MOVE    "Æü·×É½ÌÀºÙ¡ÊÁë¸ýÎÎ¼ý¶â¡Ë"  TO   SPRT-TITLE
-             MOVE    D5002                       TO   SPRT-PRTDATA
+             MOVE   "A00000D500N2.red"         TO   SPRT-PRTID
            END-IF
-      *
+           MOVE    "Æü·×É½ÌÀºÙ¡ÊÁë¸ýÎÎ¼ý¶â¡Ë"  TO   SPRT-TITLE
+           MOVE    D5002                       TO   SPRT-PRTDATA
            MOVE    LNK-PRTKANRI-TERMID         TO   SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID           TO   SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM          TO   SPRT-PRTNM
@@ -2274,34 +2182,17 @@
            END-PERFORM
       *
       *    ¹àÌÜÌ¾¾Î¥»¥Ã¥È
-           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
-             PERFORM  VARYING  IDX4  FROM  1  BY  1
-                      UNTIL  IDX4  >  CSV-HEAD-MAX
-               IF  IDX4  NOT =  10
-                 MOVE    CSV-HEAD-ITEM(IDX4)     TO  WRK-ITEM
-                 IF   IDX4  >=  CSV-HEAD-MAX
-                   PERFORM  810-CSVDATA-EDIT-SEC
-                 ELSE
-                   PERFORM  800-CSVDATA-EDIT-SEC
-                 END-IF
+           PERFORM  VARYING  IDX4  FROM  1  BY  1
+                    UNTIL  IDX4  >  CSV-HEAD-MAX
+             IF  IDX4  NOT =  10
+               MOVE    CSV-HEAD-ITEM(IDX4)     TO  WRK-ITEM
+               IF   IDX4  >=  CSV-HEAD-MAX
+                 PERFORM  810-CSVDATA-EDIT-SEC
+               ELSE
+                 PERFORM  800-CSVDATA-EDIT-SEC
                END-IF
-             END-PERFORM
-           ELSE
-             PERFORM  VARYING  IDX4  FROM  1  BY  1
-                      UNTIL  IDX4  >  CSV-HEAD-MAX
-               IF  IDX4  NOT =  22
-                 IF  IDX4  NOT =  10
-                   MOVE    CSV-HEAD-ITEM(IDX4)     TO  WRK-ITEM
-                   IF   IDX4  >=  CSV-HEAD-MAX
-                     PERFORM  810-CSVDATA-EDIT-SEC
-                   ELSE
-                     PERFORM  800-CSVDATA-EDIT-SEC
-                   END-IF
-                 END-IF
-               END-IF
-             END-PERFORM
-           END-IF
-      *
+             END-IF
+           END-PERFORM
            .
       *
        800-CSV-HEAD-EXT.
@@ -2311,20 +2202,7 @@
       *****************************************************************
        400-CSV-DATA-SEC            SECTION.
       *
-           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
-             PERFORM  400-CSV-DATA-V03-SEC
-           ELSE
-             PERFORM  400-CSV-DATA-V02-SEC
-           END-IF
-      *
-           .
-       400-CSV-DATA-EXT.
-           EXIT.
-      *****************************************************************
-      *    CSVÊÔ½¸½èÍý(201502°ÊÁ°)
-      *****************************************************************
-       400-CSV-DATA-V02-SEC            SECTION.
-      *
+      *    ÅÁÉ¼ÈÖ¹æ
            MOVE    HC17-RENNUM(CNT-LINE)    TO  WRK-ITEM
            PERFORM  800-CSVDATA-EDIT-SEC
       *
@@ -2360,185 +2238,62 @@
            PERFORM  810-CSVDATA-EDIT-SEC
       *
            .
-       400-CSV-DATA-V02-EXT.
-           EXIT.
-      *****************************************************************
-      *    CSVÊÔ½¸½èÍý(201502°Ê¹ß)
-      *****************************************************************
-       400-CSV-DATA-V03-SEC            SECTION.
-      *
-      *    ÅÁÉ¼ÈÖ¹æ
-           MOVE    HC17V03-RENNUM(CNT-LINE)    TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ´µ¼ÔÈÖ¹æ
-           MOVE    SPTID-PTNUM              TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    »áÌ¾
-           MOVE    HC17V03-NAME(CNT-LINE)      TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ÊÝ¸±ÅÀ¿ô
-           MOVE    HC17V03-HKNTEN(CNT-LINE)    TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    °åÎÅ¼ý±×
-           MOVE    HC17V03-SYUEKI(CNT-LINE)    TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    Áë¸ýÀÁµá³Û¡Ê½¸·×¶èÊ¬ÊÌ¡Ë
-           PERFORM  VARYING  IDX5  FROM  1  BY  1
-                    UNTIL  IDX5  >  20
-             IF  IDX5  NOT =  3
-               MOVE    HC17V03-MONEY(IDX5 CNT-LINE)    TO  WRK-ITEM
-               PERFORM  800-CSVDATA-EDIT-SEC
-             END-IF
-             IF  IDX5  =  16
-               MOVE    HC17V03-JIHI-KEI(CNT-LINE)      TO  WRK-ITEM
-               PERFORM  800-CSVDATA-EDIT-SEC
-             END-IF
-           END-PERFORM
-      *    Áë¸ýÀÁµá³Û
-           MOVE    HC17V03-SEIKYU(CNT-LINE)    TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *    Áë¸ýÎÎ¼ý³Û
-           MOVE    HC17V03-RYOSYU(CNT-LINE)    TO  WRK-ITEM
-           PERFORM  810-CSVDATA-EDIT-SEC
-      *
-           .
-       400-CSV-DATA-V03-EXT.
+       400-CSV-DATA-EXT.
            EXIT.
       *****************************************************************
       *    CSV¹ç·×ÊÔ½¸½èÍý
       *****************************************************************
        400-CSV-GOUKEI-SEC            SECTION.
       *
-           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
-             PERFORM  400-CSV-GOUKEI-V03-SEC
-           ELSE
-             PERFORM  400-CSV-GOUKEI-V02-SEC
-           END-IF
+      *    ÅÁÉ¼ÈÖ¹æ
+           MOVE    SPACE            TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ´µ¼ÔÈÖ¹æ
+           MOVE    SPACE            TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    »áÌ¾¡ÊÁí¹ç·×¡Ë
+           MOVE    "Áí¹ç·×"         TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ÊÝ¸±ÅÀ¿ô
+           INITIALIZE               WRK-SZZ
+           MOVE    SUM-GG-HKNTEN    TO  WRK-SZZ
+           MOVE    WRK-SZZ          TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    °åÎÅ¼ý±×
+           MOVE    SUM-GG-SYUEKI    TO  WRK-SZ10
+           MOVE    WRK-SZ10         TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ÊÝ¸±ÊÌ¶â³Û¡Ê¼ÒÊÝËÜ¿Í¡Á¼«ÇåÀÕ¡Ë
+           PERFORM  VARYING  IDX-SUM  FROM  1  BY  1
+                    UNTIL  IDX-SUM  >  20
+             IF  IDX-SUM  NOT =  3
+               INITIALIZE           WRK-SZ
+               MOVE    SUM-GG-MONEY(IDX-SUM)   TO  WRK-SZ
+               MOVE    WRK-SZ       TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+           END-PERFORM
+      *
+      *    ÀÁµá¶â³Û
+           INITIALIZE               WRK-SZ10
+           MOVE    SUM-GG-SEIKYU    TO  WRK-SZ10
+           MOVE    WRK-SZ10         TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    ÎÎ¼ý¶â³Û
+           INITIALIZE               WRK-SZ10
+           MOVE    SUM-GG-RYOSYU    TO  WRK-SZ10
+           MOVE    WRK-SZ10         TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
       *
            .
        400-CSV-GOUKEI-EXT.
            EXIT.
-      *****************************************************************
-      *    CSV¹ç·×ÊÔ½¸½èÍý(201502°ÊÁ°)
-      *****************************************************************
-       400-CSV-GOUKEI-V02-SEC            SECTION.
-      *
-      *    ÅÁÉ¼ÈÖ¹æ
-           MOVE    SPACE            TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ´µ¼ÔÈÖ¹æ
-           MOVE    SPACE            TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    »áÌ¾¡ÊÁí¹ç·×¡Ë
-           MOVE    "Áí¹ç·×"         TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ÊÝ¸±ÅÀ¿ô
-           INITIALIZE               WRK-SZZ
-           MOVE    SUM-GG-HKNTEN    TO  WRK-SZZ
-           MOVE    WRK-SZZ          TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    °åÎÅ¼ý±×
-           MOVE    SUM-GG-SYUEKI    TO  WRK-SZ10
-           MOVE    WRK-SZ10         TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ÊÝ¸±ÊÌ¶â³Û¡Ê¼ÒÊÝËÜ¿Í¡Á¼«ÇåÀÕ¡Ë
-           PERFORM  VARYING  IDX-SUM  FROM  1  BY  1
-                    UNTIL  IDX-SUM  >  20
-             IF  IDX-SUM  NOT =  3
-               INITIALIZE           WRK-SZ
-               MOVE    SUM-GG-MONEY(IDX-SUM)   TO  WRK-SZ
-               MOVE    WRK-SZ       TO  WRK-ITEM
-               PERFORM  800-CSVDATA-EDIT-SEC
-             END-IF
-           END-PERFORM
-      *
-      *    ÀÁµá¶â³Û
-           INITIALIZE               WRK-SZ10
-           MOVE    SUM-GG-SEIKYU    TO  WRK-SZ10
-           MOVE    WRK-SZ10         TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ÎÎ¼ý¶â³Û
-           INITIALIZE               WRK-SZ10
-           MOVE    SUM-GG-RYOSYU    TO  WRK-SZ10
-           MOVE    WRK-SZ10         TO  WRK-ITEM
-           PERFORM  810-CSVDATA-EDIT-SEC
-      *
-           .
-       400-CSV-GOUKEI-V02-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    CSV¹ç·×ÊÔ½¸½èÍý(201502°Ê¹ß)
-      *****************************************************************
-       400-CSV-GOUKEI-V03-SEC            SECTION.
-      *
-      *    ÅÁÉ¼ÈÖ¹æ
-           MOVE    SPACE            TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ´µ¼ÔÈÖ¹æ
-           MOVE    SPACE            TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    »áÌ¾¡ÊÁí¹ç·×¡Ë
-           MOVE    "Áí¹ç·×"         TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ÊÝ¸±ÅÀ¿ô
-           INITIALIZE               WRK-SZZ
-           MOVE    SUM-GG-HKNTEN    TO  WRK-SZZ
-           MOVE    WRK-SZZ          TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    °åÎÅ¼ý±×
-           MOVE    SUM-GG-SYUEKI    TO  WRK-SZ10
-           MOVE    WRK-SZ10         TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ÊÝ¸±ÊÌ¶â³Û¡Ê¼ÒÊÝËÜ¿Í¡Á¼«ÇåÀÕ¡Ë
-           PERFORM  VARYING  IDX-SUM  FROM  1  BY  1
-                    UNTIL  IDX-SUM  >  20
-             IF  IDX-SUM  NOT =  3
-               INITIALIZE           WRK-SZ
-               MOVE    SUM-GG-MONEY(IDX-SUM)   TO  WRK-SZ
-               MOVE    WRK-SZ       TO  WRK-ITEM
-               PERFORM  800-CSVDATA-EDIT-SEC
-             END-IF
-             IF  IDX-SUM  =  16
-               INITIALIZE           WRK-SZ
-               MOVE    SUM-GG-JIHIKEI  TO  WRK-SZ
-               MOVE    WRK-SZ          TO  WRK-ITEM
-               PERFORM  800-CSVDATA-EDIT-SEC
-             END-IF
-           END-PERFORM
-      *
-      *    ÀÁµá¶â³Û
-           INITIALIZE               WRK-SZ10
-           MOVE    SUM-GG-SEIKYU    TO  WRK-SZ10
-           MOVE    WRK-SZ10         TO  WRK-ITEM
-           PERFORM  800-CSVDATA-EDIT-SEC
-      *
-      *    ÎÎ¼ý¶â³Û
-           INITIALIZE               WRK-SZ10
-           MOVE    SUM-GG-RYOSYU    TO  WRK-SZ10
-           MOVE    WRK-SZ10         TO  WRK-ITEM
-           PERFORM  810-CSVDATA-EDIT-SEC
-      *
-           .
-       400-CSV-GOUKEI-V03-EXT.
-           EXIT.
-      *
       *****************************************************************
       *    CSV¥Ç¡¼¥¿ÊÔ½¸½èÍý
       *****************************************************************
