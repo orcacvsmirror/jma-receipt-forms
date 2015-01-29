@@ -318,6 +318,7 @@
            03  CSV-SAKENSU             OCCURS 20 TIMES PIC X(09).
            03  CSV-SAHKNKEN            PIC X(09).
            03  CSV-SASYUEKIKEN         PIC X(09).
+           03  CSV-JIHI-SAKENSU        PIC X(09).
       *
        01  CSV-HEAD-AREA.
            03  CSV-HEAD-G.
@@ -2379,6 +2380,7 @@
                  INSPECT  WRK-TMP-K   TALLYING
                           WRK-COUNTS  FOR  LEADING  SPACE
                  MOVE    WRK-TMP-K       TO  HC17BV02-JIHI-SAKENSU(2:8)
+                 MOVE    WRK-TMP-K       TO  CSV-JIHI-SAKENSU
                  MOVE    "("     TO  HC17BV02-JIHI-SAKENSU(WRK-COUNTS:1)
                  MOVE    ")"     TO  HC17BV02-JIHI-SAKENSU(10:1)
              END-EVALUATE
@@ -2732,6 +2734,7 @@
                  INSPECT  WRK-TMP-K   TALLYING
                           WRK-COUNTS  FOR  LEADING  SPACE
                  MOVE    WRK-TMP-K        TO  HC17BV02-JIHI-SAKENSU(2:8)
+                 MOVE    WRK-TMP-K        TO  CSV-JIHI-SAKENSU
                  MOVE    "("    TO  HC17BV02-JIHI-SAKENSU(WRK-COUNTS:1)
                  MOVE    ")"    TO  HC17BV02-JIHI-SAKENSU(10:1)
              END-EVALUATE
@@ -3361,7 +3364,7 @@
                  END-IF
                END-IF
                IF  IDX9  =  16
-                 MOVE    HC17BV02-JIHI-SAKENSU  TO  WRK-ITEM
+                 MOVE    CSV-JIHI-SAKENSU     TO  WRK-ITEM
                  PERFORM  800-CSVDATA-EDIT-SEC
                END-IF
              END-PERFORM
