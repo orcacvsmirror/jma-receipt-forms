@@ -37,7 +37,7 @@
       *  01.00.06    @@@@-門間    12/08/24  新患件数が重複カウントされる不具合を修正
       *  01.00.07    @@@@-門間    13/09/30  頁数の印字修正（処理結果画面）
       *  01.00.08    @@@@-門間    14/06/23  自費診療の端数処理を修正
-      *  01.00.11    @@@@-門間    15/01/14  自費診療に小計を追加
+      *  01.00.09    @@@@-門間    15/01/14  自費診療に小計を追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -320,6 +320,7 @@
            03  CSV-SAKENSU             OCCURS 20 TIMES PIC X(09).
            03  CSV-SAHKNKEN            PIC X(09).
            03  CSV-SASYUEKIKEN         PIC X(09).
+           03  CSV-JIHI-SAKENSU        PIC X(09).
       *
        01  CSV-HEAD-AREA.
            03  CSV-HEAD-G.
@@ -2386,6 +2387,7 @@
                INSPECT  WRK-TMP-K   TALLYING
                         WRK-COUNTS  FOR  LEADING  SPACE
                MOVE    WRK-TMP-K       TO  HC17BV02-JIHI-SAKENSU(2:7)
+               MOVE    WRK-TMP-K       TO  CSV-JIHI-SAKENSU
                MOVE    "("      TO  HC17BV02-JIHI-SAKENSU(WRK-COUNTS:1)
                MOVE    ")"      TO  HC17BV02-JIHI-SAKENSU(9:1)
            END-EVALUATE
@@ -2735,6 +2737,7 @@
                INSPECT  WRK-TMP-K   TALLYING
                         WRK-COUNTS  FOR  LEADING  SPACE
                MOVE    WRK-TMP-K          TO  HC17BV02-JIHI-SAKENSU(2:7)
+               MOVE    WRK-TMP-K          TO  CSV-JIHI-SAKENSU
                MOVE    "("       TO  HC17BV02-JIHI-SAKENSU(WRK-COUNTS:1)
                MOVE    ")"       TO  HC17BV02-JIHI-SAKENSU(9:1)
            END-EVALUATE
@@ -3344,7 +3347,7 @@
                  END-IF
                END-IF
                IF  IDX9  =  16
-                 MOVE    HC17BV02-JIHI-SAKENSU  TO  WRK-ITEM
+                 MOVE    CSV-JIHI-SAKENSU   TO  WRK-ITEM
                  PERFORM  800-CSVDATA-EDIT-SEC
                END-IF
              END-PERFORM
