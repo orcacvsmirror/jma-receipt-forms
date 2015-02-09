@@ -30,6 +30,7 @@
       *  01.00.01    @@@@-門間    10/12/07  コメント履歴削除
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/11/07  CSVファイル作成機能追加
+      *  01.00.03    @@@@-門間    15/02/05  改頁修正
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -825,7 +826,7 @@
                 MOVE  JYURRK-DRCD           TO  L108T-DRCD
            END-IF
            MOVE    PTBYO-SRYKA         TO  L108T-SRYKA
-           MOVE    PTBYO-BYOMEICD(1)   TO  L108T-BYOCD
+           MOVE    PTBYO-KHNBYOMEICD   TO  L108T-BYOCD
            MOVE    PTNUM-PTNUM         TO  L108T-PTNUM
            MOVE    PTINF-KANANAME      TO  L108T-KANANAME
            MOVE    PTINF-NAME          TO  L108T-NAME
