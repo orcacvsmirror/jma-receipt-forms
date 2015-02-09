@@ -35,6 +35,7 @@
       *  01.00.05    @@@@-門間    13/06/26  診療区分「97」を集計処理から除外
       *  01.00.06    @@@@-門間    14/01/07  療養担当手当の自動加算分を集計するように修正
       *  01.00.07    @@@@-門間    14/10/07  労災・自賠責保険時の医療収益集計方法の修正
+      *  01.00.08    @@@@-門間    15/02/05  剤点数の正負（点数区分）判定を追加
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1401,6 +1402,11 @@
            ELSE
              COMPUTE  WRK-TENSU   =   ACCT-ZAITEN  *  ACCT-ZAIKAISU
              PERFORM  900-SRYACCTPLUS-READ-SEC
+      *
+             IF  ACCTP-PLUSKBN  =  "1"
+               COMPUTE  WRK-TENSU   =   WRK-TENSU  *  -1
+             END-IF
+      *
              IF  ( (      WRK-HKNNUM             =  "971" OR "973" )
                      AND  FLG-SRYACCTP           =  ZERO
                      AND  ACCTP-RSIKINGAKU   NOT =  ZERO              )
