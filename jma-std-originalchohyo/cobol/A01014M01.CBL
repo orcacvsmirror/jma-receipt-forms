@@ -224,10 +224,10 @@
                05  WRK-HENKAN-2      PIC X(02).
            03  WRK-KAISU             PIC 9(09).
            03  WRK-NISSU             PIC 9(03).
-           03  WRK-TENSU             PIC 9(09).
+           03  WRK-TENSU             PIC S9(09).
            03  WRK-TENSU2            PIC 9(09).
-           03  WRK-SYUEKI            PIC 9(09).
-           03  WRK-SYUEKI2           PIC 9(09).
+           03  WRK-SYUEKI            PIC S9(09).
+           03  WRK-SYUEKI2           PIC S9(09).
            03  WRK-SYUEKI3           PIC 9(09).
            03  WRK-HKNNUM            PIC X(03).
            03  WRK-TENTNK            PIC 9(03)V9(02).
