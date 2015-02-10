@@ -35,8 +35,7 @@
       *  01.00.05    @@@@-門間    13/06/26  診療区分「97」を集計処理から除外
       *  01.00.06    @@@@-門間    14/01/07  療養担当手当の自動加算分を集計するように修正
       *  01.00.07    @@@@-門間    14/10/07  労災・自賠責保険時の医療収益集計方法の修正
-      *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
-      *  02.00.02    @@@@-門間    15/02/05  剤点数の正負（点数区分）判定を追加
+      *  01.00.08    @@@@-門間    15/02/05  剤点数の正負（点数区分）判定を追加
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -44,7 +43,7 @@
        FILE-CONTROL.
       *
       *    患者一時ファイル
-           SELECT  M01TMP-FILE    ASSIGN    AM01TP
+           SELECT  M01TMP-FILE    ASSIGN    M01TP
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
                                    RECORD  KEY     IS  M01TMP-KEY
@@ -70,12 +69,13 @@
            COPY    "CPCOMMONPRT.INC".
       *
       *    エラーファイル 名称領域
-           COPY    "CPRECEERR.INC".
+           COPY    "CPERRFL.INC"    REPLACING  //ERRFLPARA//
+                                    BY         //RECEERR//.
       *
-      *    一時ファイル 名称領域
+      *    請求書一時ファイル 名称領域
            COPY    "CPCOMMONDAT2.INC"
                                    REPLACING  //RECE01PARA//
-                                   BY         //AM01TP//.
+                                   BY         //M01TP//.
       *
            COPY    "A01014M01V02.INC".
       *
@@ -224,10 +224,10 @@
                05  WRK-HENKAN-2      PIC X(02).
            03  WRK-KAISU             PIC 9(09).
            03  WRK-NISSU             PIC 9(03).
-           03  WRK-TENSU             PIC S9(09).
+           03  WRK-TENSU             PIC 9(09).
            03  WRK-TENSU2            PIC 9(09).
-           03  WRK-SYUEKI            PIC S9(09).
-           03  WRK-SYUEKI2           PIC S9(09).
+           03  WRK-SYUEKI            PIC 9(09).
+           03  WRK-SYUEKI2           PIC 9(09).
            03  WRK-SYUEKI3           PIC 9(09).
            03  WRK-HKNNUM            PIC X(03).
            03  WRK-TENTNK            PIC 9(03)V9(02).
@@ -500,9 +500,6 @@
       *    保険年齢パラメタ
            COPY    "CPORCSAGECHK.INC".
       *
-      *    一時ファイル名編集
-           COPY    "CPORCSGETTEMP.INC".
-      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -545,7 +542,6 @@
            INITIALIZE                  WRK-ROOM-SAGAKU-TBL
            INITIALIZE                  WRK-NYUIN-AREA
            INITIALIZE                  SPA-AREA
-           INITIALIZE                  RECEERR
       *
            PERFORM 100-DBOPEN-SEC
       *
@@ -586,20 +582,9 @@
                                    JOBKANRI-REC
                                    SPA-AREA
       *
-      *    サブプログラムより一時ファイル名編集
-           INITIALIZE                       SGETTEMP-AREA
-      *
-           MOVE    "A0M01TP"                TO  AM01TP-FILE-ID
-           MOVE    LNK-PRTKANRI-TERMID      TO  AM01TP-TERMID
-           MOVE    WRK-PARA-HOSPNUM         TO  AM01TP-HOSPNUM
-      *
-           MOVE    AM01TP-BASENAME          TO  SGETTEMP-BASENAMES (1)
-           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
-           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
-      *
-           MOVE    SGETTEMP-FULLNAMES (1)   TO  AM01TP-FULLNAME
-           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
-      *
+           MOVE    WRK-PARA-HOSPNUM    TO  M01TP-HOSPNUM
+           MOVE    "M01TP"             TO  M01TP-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID TO  M01TP-TERMID
       *
            MOVE    WRK-PARA-SRYYM  TO  WRK-SRYYMD (1:6)
            MOVE    "01"                TO  WRK-SRYYMD (7:2)
