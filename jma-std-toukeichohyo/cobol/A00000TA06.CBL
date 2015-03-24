@@ -27,6 +27,8 @@
       *   01.00.01    門間    2013/10/03   CSVファイルが20kBを超える場合、
       *                                    正しく出力されない不具合を修正
       *   02.00.01    門間    2014/10/31   ver4.8.0対応（一時ディレクトリ変更）
+      *   02.00.02    吉川    2015/03/24   医療機関情報の適用期間を区切った場合
+      *                                    帳票が出力されない不具合を修正
       ******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION           SECTION.
@@ -340,7 +342,7 @@
            MOVE    "1001"                TO  SYS-1001-KANRICD
            MOVE    "*"                   TO  SYS-1001-KBNCD
            MOVE    SPA-HOSPNUM           TO  SYS-1001-HOSPNUM
-           MOVE    WRK-PARA-PRTYM        TO  SYS-1001-EDYUKYMD
+           MOVE    LNK-PRTKANRI-SKYYMD   TO  SYS-1001-EDYUKYMD
                                              SYS-1001-STYUKYMD
            MOVE    SYS-1001-REC          TO  MCPDATA-REC
            PERFORM   900-SYSKANRI-READ-SEC
