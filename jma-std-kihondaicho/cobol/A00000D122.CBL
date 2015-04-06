@@ -34,6 +34,7 @@
       *                           12/03/09  CSVファイル作成機能追加
       *  01.00.04    @@@@-門間    12/11/29  病床数修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    15/04/02  保険点数が「０」の場合、平均点の計算から除く
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -276,6 +277,9 @@
            03  WRK-OUT-INPUT         PIC X(200).
            03  WRK-HKNNAI            PIC 9(11).
            03  WRK-JOSEI             PIC 9(11).
+      *
+           03  WRK-HN-TBL               OCCURS  32.
+             05  WRK-HNINZU               PIC 9(05).
       *
        01  SUM-AREA.
            03         SUM-SRYKAMAX      PIC  9(03).
@@ -1513,7 +1517,7 @@
                     INITIALIZE                WRK-TEN
                     COMPUTE  WRK-TEN  ROUNDED      =
                              SUM-YOSO (I3 7) / 
-                             SUM-YOSO (I3 8)
+                             WRK-HNINZU(I3)
                     MOVE     WRK-TEN  TO  SUM-YOSO (I3 9)
       *
       *    過日未収金残額
@@ -1568,7 +1572,7 @@
       *    平均点(計)
            INITIALIZE        WRK-TEN
            COMPUTE  WRK-TEN  ROUNDED      =  SUM-YOSO (SUM-DAYMAX 7) / 
-                                             SUM-YOSO (SUM-DAYMAX 8)
+                                             WRK-HNINZU(SUM-DAYMAX)
            MOVE     WRK-TEN  TO  SUM-YOSO (SUM-DAYMAX 9)
       *
       *    過日未収金残額(計)
@@ -2286,6 +2290,11 @@
                             SYU-JIHI-10              -
                             SYU-JIHI-10-TAX
                    END-EVALUATE
+      *
+           IF  SYU-TOTAL-HKNTEN  NOT =  ZERO
+             ADD    1                    TO  WRK-HNINZU(I3)
+             ADD    1                    TO  WRK-HNINZU(SUM-DAYMAX)
+           END-IF
       *
            .
        320-SYUNOU-CNT-SUB-EXT.

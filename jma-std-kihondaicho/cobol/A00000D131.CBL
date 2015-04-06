@@ -35,6 +35,7 @@
       *                           12/03/09  CSVファイル作成機能追加
       *  01.00.04    @@@@-門間    12/06/27  初診、再診、その他の判定条件を再変更
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    15/04/02  保険点数が「０」の場合、平均点の計算から除く
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -280,6 +281,9 @@
            03  WRK-HKNNAI            PIC 9(11).
            03  WRK-JOSEI             PIC 9(11).
       *
+           03  WRK-HN-TBL              OCCURS  100.
+             05  WRK-HNINZU              PIC 9(05).
+      *
        01  SUM-AREA.
            03  SUM-TIKUMAX             PIC 9(03).
            03  SUM-SRYKA-G.
@@ -348,7 +352,7 @@
                07  CSV-HEAD-D008  PIC X(50)
                             VALUE  "（キ）保険内点数".
                07  CSV-HEAD-D009  PIC X(50)
-                            VALUE  "（ク）平均点/人".
+                            VALUE  "（ク）平均点".
                07  CSV-HEAD-D010  PIC X(50)
                             VALUE  "（ケ）保険内負担金".
                07  CSV-HEAD-D011  PIC X(50)
@@ -1509,11 +1513,11 @@
              MOVE     WRK-RATE2    TO  WRK-RATE-Z9
              MOVE     WRK-RATE-Z9  TO  SUM-YOSO(I3 7)
       *
-      *    平均点／人
+      *    平均点
              INITIALIZE                WRK-TEN
              COMPUTE  WRK-TEN  ROUNDED      =
                       SUM-YOSO (I3 8) /
-                      SUM-YOSO (I3 5)
+                      WRK-HNINZU(I3)
              MOVE     WRK-TEN  TO  SUM-YOSO (I3 9)
       *
       *    過日未収金残額
@@ -1617,12 +1621,12 @@
            MOVE     WRK-RATE2    TO  WRK-RATE-Z9
            MOVE     WRK-RATE-Z9  TO  SUM-YOSO(SUM-TIKUMAX 7)
       *
-      * 平均点／人(計)
+      * 平均点(計)
       *
            INITIALIZE        WRK-TEN
            COMPUTE  WRK-TEN  ROUNDED      =
                     SUM-YOSO (SUM-TIKUMAX 8) /
-                    SUM-YOSO (SUM-TIKUMAX 5)
+                    WRK-HNINZU(SUM-TIKUMAX)
            MOVE     WRK-TEN
                     TO  SUM-YOSO (SUM-TIKUMAX 9)
       *
@@ -2256,11 +2260,15 @@
            ADD    WRK-MONEY
                   TO  SUM-YOSO(SUM-TIKUMAX 19)
       *
+           IF  SYU-TOTAL-HKNTEN  NOT =  ZERO
+             ADD    1                    TO  WRK-HNINZU(I3)
+             ADD    1                    TO  WRK-HNINZU(SUM-TIKUMAX)
+           END-IF
+      *
            .
        320-SYUNOU-CNT-SUB-EXT.
            EXIT.
       *
-      ****2005/12/30  @@@@-BRAND START
       *****************************************************************
       *    入金集計処理
       *****************************************************************

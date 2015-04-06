@@ -40,6 +40,7 @@
       *                                     0件印字が有効な場合、表示される医師の上限を変更
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    14/12/16  医師コード空白時の修正
+      *  02.00.03    @@@@-門間    15/04/02  保険点数が「０」の場合、平均点の計算から除く
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -276,6 +277,9 @@
              05  WRK-DRCD2       PIC X(04).
              05  WRK-DRNAME2     PIC X(18).
       *
+           03  WRK-HN-TBL               OCCURS  1000.
+             05  WRK-HNINZU               PIC 9(05).
+      *
        01  SUM-AREA.
            03         SUM-DRMAX         PIC  9(03).
            03         SUM-SRYKA-G.    
@@ -330,7 +334,7 @@
                07  CSV-HEAD-D008  PIC X(50)
                             VALUE  "（キ）保険内点数".
                07  CSV-HEAD-D009  PIC X(50)
-                            VALUE  "（ク）平均点/人".
+                            VALUE  "（ク）平均点".
                07  CSV-HEAD-D010  PIC X(50)
                             VALUE  "（ケ）保険内負担金".
                07  CSV-HEAD-D011  PIC X(50)
@@ -1380,11 +1384,11 @@
                     MOVE     WRK-RATE2    TO  WRK-RATE-Z9
                     MOVE     WRK-RATE-Z9  TO  SUM-YOSO(I3 7)
       *
-      *    平均点／人
+      *    平均点
                     INITIALIZE                WRK-TEN
                     COMPUTE  WRK-TEN  ROUNDED      =
                              SUM-YOSO (I3 8) / 
-                             SUM-YOSO (I3 5)
+                             WRK-HNINZU(I3)
                     MOVE     WRK-TEN  TO  SUM-YOSO (I3 9)
       *
       *    過日未収金残額
@@ -1490,12 +1494,12 @@
            MOVE     WRK-RATE2    TO  WRK-RATE-Z9
            MOVE     WRK-RATE-Z9  TO  SUM-YOSO(SUM-DRMAX 7)
       *
-      *    平均点／人(計)
+      *    平均点(計)
       *
            INITIALIZE        WRK-TEN
            COMPUTE  WRK-TEN  ROUNDED      =
                     SUM-YOSO (SUM-DRMAX 8) / 
-                    SUM-YOSO (SUM-DRMAX 5)
+                    WRK-HNINZU(SUM-DRMAX)
            MOVE     WRK-TEN
                     TO  SUM-YOSO (SUM-DRMAX 9)
       *
@@ -2121,6 +2125,11 @@
                           TO  SUM-YOSO(I3 19)
                    ADD    WRK-MONEY
                           TO  SUM-YOSO(SUM-DRMAX 19)
+      *
+           IF  SYU-TOTAL-HKNTEN  NOT =  ZERO
+             ADD    1                    TO  WRK-HNINZU(I3)
+             ADD    1                    TO  WRK-HNINZU(SUM-DRMAX)
+           END-IF
       *
            .
        320-SYUNOU-CNT-SUB-EXT.
