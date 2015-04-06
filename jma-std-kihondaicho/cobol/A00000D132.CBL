@@ -32,6 +32,7 @@
       *  01.00.02    @@@@-門間    11/02/21  処理速度の改善
       *  01.00.03    @@@@-門間    12/02/29  インデント整理
       *                           12/03/09  CSVファイル作成機能追加
+      *  01.00.04    @@@@-門間    15/03/30  保険点数が「０」の場合、平均点の計算から除く
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -295,6 +296,9 @@
            03  WRK-OPT-SIZE           PIC 9(05).
            03  WRK-LINE               PIC X(44000).
            03  WRK-DATA               PIC X(430).
+      *
+           03  WRK-HN-TBL             OCCURS  100.
+             05  WRK-HNINZU             PIC 9(05).
       *
        01  SUM-AREA.
            03  SUM-TIKUMAX            PIC 9(03).
@@ -1696,7 +1700,7 @@
              INITIALIZE                WRK-TEN
              COMPUTE  WRK-TEN  ROUNDED      =
                       SUM-YOSO (I3 7) /
-                      SUM-YOSO (I3 8)
+                      WRK-HNINZU(I3)
              MOVE     WRK-TEN  TO  SUM-YOSO (I3 9)
       *
       *    過日未収金残額
@@ -1742,7 +1746,7 @@
            INITIALIZE        WRK-TEN
            COMPUTE  WRK-TEN  ROUNDED      =
                     SUM-YOSO (SUM-TIKUMAX 7) /
-                    SUM-YOSO (SUM-TIKUMAX 8)
+                    WRK-HNINZU(SUM-TIKUMAX)
            MOVE     WRK-TEN
                     TO  SUM-YOSO (SUM-TIKUMAX 9)
       *
@@ -2425,6 +2429,11 @@
                     SYU-JIHI-5  -
                     SYU-JIHI-5-TAX
            END-EVALUATE
+      *
+           IF  SYU-TOTAL-HKNTEN  NOT =  ZERO
+             ADD    1                    TO  WRK-HNINZU(I3)
+             ADD    1                    TO  WRK-HNINZU(SUM-TIKUMAX)
+           END-IF
       *
            .
        320-SYUNOU-CNT-SUB-EXT.
