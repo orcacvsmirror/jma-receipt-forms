@@ -3559,7 +3559,7 @@
         <dia:point val="1.6,6.8"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="1.6,6.52744;2.50756,6.85263"/>
+        <dia:rectangle val="1.6,6.535;2.5,6.8375"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -4229,12 +4229,12 @@
         <dia:point val="1.12875,18.3944"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="1.12875,18.1758;10.9748,18.4365"/>
+        <dia:rectangle val="1.12875,18.1758;10.4948,18.4365"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#※１　「ク　平均点」について、保険点数がゼロの場合、分母の人数へカウントしません。#</dia:string>
+            <dia:string>#※１ 「ク 平均点」について、保険内点数が「０」の場合は分母へカウントしません。#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="Takao明朝" style="0" name="Courier"/>
