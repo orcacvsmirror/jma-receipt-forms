@@ -4476,12 +4476,12 @@
         <dia:point val="1.1275,19.175"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="1.1275,18.9625;10.9675,19.205"/>
+        <dia:rectangle val="1.1275,18.9564;10.4936,19.2171"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#※１　「ク　平均点」について、保険点数がゼロの場合、分母の人数へカウントしません。#</dia:string>
+            <dia:string>#※１ 「ク 平均点」について、保険内点数が「０」の場合は分母へカウントしません。#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="Takao明朝" style="0" name="Courier"/>
