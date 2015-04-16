@@ -28,7 +28,8 @@
       *****************************************************************
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
-      *  01.00.01    門間         15/02/05  END-IF漏れを修正
+      *  02.00.01    門間         15/02/05  END-IF漏れを修正
+      *  02.00.02    門間         15/04/15  グループ診療対応
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -668,6 +669,7 @@
       *
            IF   ( FLG-IN            =     ZERO )
                MOVE  IN-REC               TO  PRGOPTIONWK-REC
+               MOVE  SPA-HOSPNUM          TO  PRGOPTIONWK-HOSPNUM
            END-IF
           .
        900-IN-KENSAKU-EXT.
