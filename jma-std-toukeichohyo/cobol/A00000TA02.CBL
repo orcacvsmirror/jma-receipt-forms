@@ -849,7 +849,6 @@
                  AND  SRY-SRYCD(IDX1)(1:4)  NOT =  "0083"
                  AND  SRY-SRYCD(IDX1)(1:4)  NOT =  "0084"
                  AND  SRY-SRYCD(IDX1)(1:4)  NOT =  "0085"
-               INITIALIZE                TA02TMP-REC
       *
       *    対象日設定
                IF   WRK-PARA-PRTSTYMD(1:6)  =  WRK-YM
@@ -866,6 +865,8 @@
                MOVE   IDX-DAY          TO   WRK-STARTDAY
                PERFORM  VARYING  IDX-DAY  FROM  WRK-STARTDAY  BY  1
                         UNTIL  IDX-DAY  >   WRK-ENDDAY
+      *
+                 INITIALIZE                TA02TMP-REC
       *
       *    処理を行う年月日を格納
                  MOVE    WRK-YM        TO  WRK-OBJYMD(1:6)
@@ -1143,8 +1144,6 @@
                     UNTIL  IDX1  >  5
                     OR  NSRY-SRYCD(IDX1)  =  SPACE
       *
-             INITIALIZE                TA02TMP-REC
-      *
       *    対象日設定
              IF   WRK-PARA-PRTSTYMD(1:6)  =  WRK-YM
                MOVE    WRK-STARTD    TO  IDX-DAY
@@ -1160,6 +1159,8 @@
              MOVE   IDX-DAY          TO   WRK-STARTDAY
              PERFORM  VARYING  IDX-DAY  FROM  WRK-STARTDAY  BY  1
                       UNTIL  IDX-DAY  >   WRK-ENDDAY
+      *
+               INITIALIZE                TA02TMP-REC
       *
       *    処理を行う年月日を格納
                MOVE    WRK-YM        TO  WRK-OBJYMD(1:6)
