@@ -40,6 +40,7 @@
       *   01.00.09    門間    2014/05/22  自費の診療行為コードの場合、薬価／点数が０になる不具合を修正
       *                                   薬価／点数、件数、使用量を小数点第2位まで対応
       *   01.00.10    門間    2014/07/17  きざみ値処理を追加
+      *   01.00.11    門間    2015/04/16  在院時の病棟に集計されるよう修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -3530,13 +3531,13 @@
       *
            INITIALIZE                   PTNYUINRRK-REC
            MOVE    WRK-PARA-HOSPNUM     TO  PTNYUINRRK-HOSPNUM
-           MOVE    WRK-OBJYMD           TO  PTNYUINRRK-NYUINYMD
-           MOVE    WRK-OBJYMD           TO  PTNYUINRRK-TAIINYMD
            MOVE    WRK-PTID             TO  PTNYUINRRK-PTID
+           MOVE    WRK-OBJYMD           TO  PTNYUINRRK-TENNYUYMD
+           MOVE    WRK-OBJYMD           TO  PTNYUINRRK-TENSTUYMD
            MOVE    PTNYUINRRK-REC       TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
-           MOVE    "key11"              TO  MCP-PATHNAME
+           MOVE    "key42"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -3544,7 +3545,7 @@
            IF  MCP-RC  =  ZERO
              MOVE    "DBFETCH"          TO  MCP-FUNC
              MOVE    "tbl_ptnyuinrrk"   TO  MCP-TABLE
-             MOVE    "key11"            TO  MCP-PATHNAME
+             MOVE    "key42"            TO  MCP-PATHNAME
              CALL    "ORCDBMAIN"        USING
                                         MCPAREA
                                         MCPDATA-REC
@@ -3561,7 +3562,7 @@
       *
            MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"     TO  MCP-TABLE
-           MOVE    "key11"              TO  MCP-PATHNAME
+           MOVE    "key42"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"          USING
                                         MCPAREA
                                         MCPDATA-REC
