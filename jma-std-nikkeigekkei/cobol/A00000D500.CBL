@@ -40,6 +40,8 @@
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.01    @@@@-門間    14/11/13  CSV出力時、改頁処理を修正
       *  02.00.02    @@@@-門間    15/01/14  自費診療に小計を追加
+      *  02.00.03    @@@@-門間    15/06/09  桁数判別方法の変更
+      *                                     自費小計欄の印字桁数修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -64,10 +66,10 @@
       *    エラーファイル 名称領域
            COPY    "CPRECEERR.INC".
       *
-           COPY    "A00000D500V03.INC"   REPLACING  //HC17V03//
-                                         BY         //HC17//.
-           COPY    "A00000D5002V03.INC"  REPLACING  //D5002V03//
-                                         BY         //D5002//.
+           COPY    "A00000D500V02.INC".
+           COPY    "A00000D500V03.INC".
+           COPY    "A00000D5002.INC".
+           COPY    "A00000D5002V03.INC".
       *
       *    スパ領域
        01  STS-AREA.
@@ -972,6 +974,7 @@
              PERFORM 310-HEAD-HEN-SEC
              MOVE  "＊＊＊  対象データが１件も存在しません。  ＊＊＊"
                                                TO   HC17-JOBMSG
+                                                    HC17V03-JOBMSG
              PERFORM 390-PRINT-OUT-SEC
            END-IF
       *
@@ -1075,23 +1078,29 @@
            MOVE    ZERO                TO  CNT-LINE
       *
            INITIALIZE                  D5002
+                                       D5002V03
            MOVE    WRK-PARA-DENPPRTYMDWH   TO   D5002-SYSYMD
+                                                D5002V03-SYSYMD
       *
       *    入外区分名称設定
            EVALUATE WRK-NYUGAIKBN
              WHEN  "1"
                MOVE   "入院"         TO   D5002-NYUGAIKBN
+                                          D5002V03-NYUGAIKBN
       *    入院自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
                         UNTIL  IDX2   >  10
                  MOVE   WRK-TJIHIN(IDX2)   TO   D5002-TJIHI(IDX2)
+                                                D5002V03-TJIHI(IDX2)
                END-PERFORM
              WHEN  "2"
                MOVE   "外来"         TO   D5002-NYUGAIKBN
+                                          D5002V03-NYUGAIKBN
       *    自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
                         UNTIL    IDX2   >  10
                  MOVE   WRK-TJIHI(IDX2)   TO   D5002-TJIHI(IDX2)
+                                               D5002V03-TJIHI(IDX2)
                END-PERFORM
            END-EVALUATE
       *
@@ -1108,8 +1117,10 @@
            IF   FLG-SYSKANRI2   =   ZERO
              MOVE   MCPDATA-REC         TO   SYS-1005-REC
              MOVE   SYS-1005-SRYKANAME  TO   D5002-SRYKA
+                                             D5002V03-SRYKA
            ELSE
              MOVE   SPACE               TO   D5002-SRYKA
+                                             D5002V03-SRYKA
            END-IF
       *
            .
@@ -1124,23 +1135,29 @@
            MOVE    ZERO                TO  CNT-LINE
       *
            INITIALIZE                  HC17
+                                       HC17V03
       *
            MOVE    WRK-PARA-DENPPRTYMDWH   TO   HC17-SYSYMD
+                                                HC17V03-SYSYMD
       *
            EVALUATE WRK-NYUGAIKBN
              WHEN  "1"
                MOVE   "入院"         TO   HC17-NYUGAIKBN
+                                          HC17V03-NYUGAIKBN
       *    入院自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
                         UNTIL  IDX2   >  10
                  MOVE   WRK-TJIHIN(IDX2)   TO   HC17-TJIHI(IDX2)
+                                                HC17V03-TJIHI(IDX2)
                END-PERFORM
              WHEN  "2"
                MOVE   "外来"         TO   HC17-NYUGAIKBN
+                                          HC17V03-NYUGAIKBN
       *    外来自費名称設定
                PERFORM  VARYING  IDX2   FROM 1  BY  1
                         UNTIL    IDX2   >  10
                  MOVE   WRK-TJIHI(IDX2)   TO   HC17-TJIHI(IDX2)
+                                               HC17V03-TJIHI(IDX2)
                END-PERFORM
            END-EVALUATE
       *
@@ -1157,8 +1174,10 @@
            IF   FLG-SYSKANRI2   =   ZERO
              MOVE   MCPDATA-REC          TO   SYS-1005-REC
              MOVE   SYS-1005-SRYKANAME   TO   HC17-SRYKA
+                                              HC17V03-SRYKA
            ELSE
-             MOVE   SPACE               TO   HC17-SRYKA
+             MOVE   SPACE                TO   HC17-SRYKA
+                                              HC17V03-SRYKA
            END-IF
       *
            .
@@ -1315,8 +1334,8 @@
       *
                ADD     1             TO  CNT-LINE
       *    伝票番号
-               MOVE   WRK-SMEI-DENPNUM(IDX-S)
-                             TO  HC17-RENNUM (CNT-LINE)
+               MOVE   WRK-SMEI-DENPNUM(IDX-S)  TO  HC17-RENNUM(CNT-LINE)
+                                               HC17V03-RENNUM (CNT-LINE)
       *    患者番号
                INITIALIZE   ORCSPTIDAREA
                MOVE   WRK-PARA-HOSPNUM        TO   SPTID-HOSPNUM
@@ -1327,14 +1346,18 @@
                IF    SPTID-RC  =  ZERO
                  IF   SPTID-PTNUM(11:)  =  SPACE
                    MOVE    SPTID-PTNUM        TO   HC17-PTNUM(CNT-LINE)
+                                                HC17V03-PTNUM(CNT-LINE)
                  ELSE
                    MOVE    SPTID-PTNUM        TO   HC17-PTNUM2(CNT-LINE)
+                                                HC17V03-PTNUM2(CNT-LINE)
                  END-IF
                ELSE
                  MOVE    SPACE         TO   HC17-PTNUM(CNT-LINE)
+                                            HC17V03-PTNUM(CNT-LINE)
                END-IF
       *    氏名
                MOVE    PTINF-NAME      TO   HC17-NAME(CNT-LINE)
+                                            HC17V03-NAME(CNT-LINE)
       *
       *    伝票番号枝番が１の場合は保険点数、保険別請求額の明細を印字(開始)
                IF  WRK-SMEI-DENPEDANUM(IDX-S)  =  1
@@ -1351,6 +1374,7 @@
                INITIALIZE  WRK-SZ
                MOVE    WRK-SMEI-SKYMONEY(IDX-S)   TO  WRK-SZ
                MOVE    WRK-SZ      TO  HC17-SEIKYU-G(CNT-LINE)
+                                       HC17V03-SEIKYU-G(CNT-LINE)
                IF  WRK-SMEI-SKYMONEY(IDX-S)  NOT =  0
                  ADD  WRK-SMEI-SKYMONEY(IDX-S)   TO  SUM-SEIKYU
                  ADD  1            TO  SUM-SEIKYUKEN
@@ -1364,6 +1388,7 @@
                INITIALIZE  WRK-SZ
                MOVE    WRK-SMEI-NYUHEN-MONEY(IDX-S)  TO   WRK-SZ
                MOVE    WRK-SZ         TO  HC17-RYOSYU-G(CNT-LINE)
+                                          HC17V03-RYOSYU-G(CNT-LINE)
                IF   WRK-SMEI-NYUHEN-MONEY(IDX-S)  NOT =  0
                  ADD  WRK-SMEI-NYUHEN-MONEY(IDX-S)   TO   SUM-RYOSYU
                  ADD    1             TO  SUM-RYOSYUKEN
@@ -1422,6 +1447,7 @@
       *
            MOVE    SYU-TOTAL-HKNTEN    TO   WRK-Z9
            MOVE    WRK-Z9              TO   HC17-HKNTEN (CNT-LINE)
+                                            HC17V03-HKNTEN (CNT-LINE)
            ADD     SYU-TOTAL-HKNTEN    TO   SUM-HKNTEN
            ADD     1                   TO   SUM-HKNKEN
       *
@@ -1500,6 +1526,7 @@
       *
              MOVE   WRK-MONEY     TO   WRK-S9-2
              MOVE   WRK-S9-2      TO   HC17-MONEY(IDX CNT-LINE)
+                                       HC17V03-MONEY(IDX CNT-LINE)
              ADD   WRK-MONEY     TO   SUM-MONEY(IDX)
              ADD   1             TO   SUM-KEN(IDX)
       *
@@ -1516,6 +1543,7 @@
                      MOVE   WRK-JIHI2      TO   WRK-ZZ
                      COMPUTE JIHIIDX = IDX2 + 6
                      MOVE   WRK-ZZ    TO   HC17-MONEY(JIHIIDX CNT-LINE)
+                                        HC17V03-MONEY(JIHIIDX CNT-LINE)
                      ADD   WRK-JIHI2  TO   SUM-MONEY(JIHIIDX)
                      ADD   1          TO   SUM-KEN(JIHIIDX)
       *
@@ -1594,6 +1622,7 @@
            END-EVALUATE
            MOVE   WRK-SYUEKI   TO   WRK-SZ
            MOVE   WRK-SZ       TO   HC17-SYUEKI (CNT-LINE)
+                                    HC17V03-SYUEKI (CNT-LINE)
       *
            IF   WRK-SYUEKI  NOT =  0
              ADD  WRK-SYUEKI   TO   SUM-G-SYUEKI
@@ -1624,6 +1653,7 @@
       *
            MOVE   SYU-TOTAL-HKNTEN      TO   WRK-Z9
            MOVE   WRK-Z9                TO   HC17-HKNTEN (CNT-LINE)
+                                             HC17V03-HKNTEN (CNT-LINE)
            ADD    SYU-TOTAL-HKNTEN      TO   SUM-HKNTEN
            ADD    1                     TO   SUM-HKNKEN
       *
@@ -1705,6 +1735,7 @@
       *
              MOVE    WRK-MONEY     TO   WRK-S9-2
              MOVE    WRK-S9-2      TO   HC17-MONEY(IDX CNT-LINE)
+                                        HC17V03-MONEY(IDX CNT-LINE)
              ADD     WRK-MONEY     TO   SUM-MONEY(IDX)
              ADD     1             TO   SUM-KEN(IDX)
       *
@@ -1721,6 +1752,7 @@
                    MOVE WRK-JIHI2  TO  WRK-ZZ
                    COMPUTE  JIHIIDX  =  IDX2  +  6
                    MOVE   WRK-ZZ     TO   HC17-MONEY(JIHIIDX CNT-LINE)
+                                        HC17V03-MONEY(JIHIIDX CNT-LINE)
                    ADD    WRK-JIHI2  TO   SUM-MONEY(JIHIIDX)
                    ADD    1          TO   SUM-KEN(JIHIIDX)
       *
@@ -1730,7 +1762,7 @@
                  END-IF
                END-PERFORM
                MOVE   WRK-JIHI-TTL   TO  WRK-ZZ
-               MOVE   WRK-ZZ         TO  HC17-JIHI-KEI(CNT-LINE)
+               MOVE   WRK-ZZ         TO  HC17V03-JIHI-KEI(CNT-LINE)
                ADD    WRK-JIHI-TTL   TO  SUM-G-JIHIKEI
                                          SUM-GG-JIHIKEI
              END-IF
@@ -1805,6 +1837,7 @@
            END-EVALUATE
            MOVE  WRK-SYUEKI   TO   WRK-SZ
            MOVE  WRK-SZ       TO   HC17-SYUEKI(CNT-LINE)
+                                   HC17V03-SYUEKI(CNT-LINE)
       *
            IF   WRK-SYUEKI  NOT =  0
                ADD  WRK-SYUEKI   TO   SUM-G-SYUEKI
@@ -1910,82 +1943,96 @@
        3001-SYOUKEI-SET-SEC          SECTION.
       *
       *    保険点数
-           IF  SUM-G-HKNTEN  >  9999999
+           IF  (      SUM-G-HKNTEN  >   999999
+                  OR  SUM-G-HKNTEN  <  -999999  )
       *    8桁の場合
              INITIALIZE  WRK-SZ
              MOVE    SUM-G-HKNTEN       TO   WRK-SZ
              MOVE    WRK-SZ             TO   HC17-GG-HKNTEN
+                                             HC17V03-GG-HKNTEN
            ELSE
       *    7桁以下の場合
              INITIALIZE  WRK-Z9-2
              MOVE    SUM-G-HKNTEN       TO   WRK-Z9-2
              MOVE    WRK-Z9-2           TO   HC17-G-HKNTEN
+                                             HC17V03-G-HKNTEN
            END-IF
       *    保険別金額（社保本人〜自賠責）
            PERFORM  VARYING  IDX-SUM   FROM 1  BY  1
                     UNTIL    IDX-SUM   >    20
-             IF  SUM-G-MONEY (IDX-SUM)  >  9999999
+             IF  (      SUM-G-MONEY (IDX-SUM)  >   999999
+                    OR  SUM-G-MONEY (IDX-SUM)  <  -999999  )
       *    8桁の場合
                INITIALIZE  WRK-SZ
                MOVE     SUM-G-MONEY(IDX-SUM)   TO   WRK-SZ
                MOVE     WRK-SZ   TO   HC17-GG-MONEY(IDX-SUM)
+                                      HC17V03-GG-MONEY(IDX-SUM)
              ELSE
       *    7桁以下の場合
                INITIALIZE  WRK-Z9-2
                MOVE     SUM-G-MONEY (IDX-SUM)   TO   WRK-Z9-2
                MOVE     WRK-Z9-2   TO   HC17-G-MONEY(IDX-SUM)
+                                        HC17V03-G-MONEY(IDX-SUM)
              END-IF
            END-PERFORM
       *    医療収益
-           IF  SUM-G-SYUEKI  >  9999999
+           IF  (      SUM-G-SYUEKI  >   9999999
+                  OR  SUM-G-SYUEKI  <  -9999999  )
       *    8桁の場合
                INITIALIZE  WRK-SZZ
              MOVE    SUM-G-SYUEKI     TO   WRK-SZZ
              MOVE    WRK-SZZ          TO   HC17-GG-SYUEKI
+                                           HC17V03-GG-SYUEKI
            ELSE
       *    7桁以下の場合
                INITIALIZE  WRK-SZ
              MOVE    SUM-G-SYUEKI     TO   WRK-SZ
              MOVE    WRK-SZ           TO   HC17-G-SYUEKI
+                                           HC17V03-G-SYUEKI
            END-IF
       *    請求金額
-           IF  SUM-G-SEIKYU  >  9999999
+           IF  (      SUM-G-SEIKYU  >   9999999
+                  OR  SUM-G-SEIKYU  <  -9999999  )
       *    8桁の場合
              INITIALIZE               WRK-SZZ
              MOVE    SUM-G-SEIKYU     TO   WRK-SZZ
              MOVE    WRK-SZZ          TO   HC17-GG-SEIKYU
+                                           HC17V03-GG-SEIKYU
            ELSE
       *    7桁以下の場合
              INITIALIZE               WRK-SZ
              MOVE    SUM-G-SEIKYU     TO   WRK-SZ
              MOVE    WRK-SZ           TO   HC17-G-SEIKYU
+                                           HC17V03-G-SEIKYU
            END-IF
       *    領収金額
-           IF  SUM-G-RYOSYU  >  9999999
+           IF  (      SUM-G-RYOSYU  >   9999999
+                  OR  SUM-G-RYOSYU  <  -9999999  )
       *    8桁の場合
              INITIALIZE               WRK-SZZ
              MOVE    SUM-G-RYOSYU     TO   WRK-SZZ
              MOVE    WRK-SZZ          TO   HC17-GG-RYOSYU
+                                           HC17V03-GG-RYOSYU
            ELSE
       *    7桁以下の場合
              INITIALIZE               WRK-SZ
              MOVE    SUM-G-RYOSYU     TO   WRK-SZ
              MOVE    WRK-SZ           TO   HC17-G-RYOSYU
+                                           HC17V03-G-RYOSYU
            END-IF
-      *
       *    自費小計
-           IF  SUM-G-JIHIKEI  >  9999999
+           IF  (      SUM-G-JIHIKEI  >   999999
+                  OR  SUM-G-JIHIKEI  <  -999999  )
       *    8桁の場合
              INITIALIZE               WRK-SZ
              MOVE    SUM-G-JIHIKEI    TO   WRK-SZ
-             MOVE    WRK-SZ           TO   HC17-GG-JIHIKEI
+             MOVE    WRK-SZ           TO   HC17V03-GG-JIHIKEI
            ELSE
       *    7桁以下の場合
              INITIALIZE               WRK-Z9-2
              MOVE    SUM-G-JIHIKEI    TO   WRK-Z9-2
-             MOVE    WRK-Z9-2         TO   HC17-G-JIHIKEI
+             MOVE    WRK-Z9-2         TO   HC17V03-G-JIHIKEI
            END-IF
-      *
            .
        3001-SYOUKEI-SET-EXT.
            EXIT.
@@ -1999,6 +2046,7 @@
            INITIALIZE   WRK-SZZ
            MOVE    SUM-GG-HKNTEN    TO   WRK-SZZ
            MOVE    WRK-SZZ          TO   D5002-HKNTEN
+                                         D5002V03-HKNTEN
       *
       *    保険別金額（社保本人〜自賠責）
            PERFORM  VARYING  IDX-SUM   FROM 1  BY  1
@@ -2006,27 +2054,31 @@
              INITIALIZE  WRK-SZ
              MOVE    SUM-GG-MONEY(IDX-SUM)   TO   WRK-SZ
              MOVE    WRK-SZ         TO   D5002-MONEY(IDX-SUM)
+                                         D5002V03-MONEY(IDX-SUM)
            END-PERFORM
       *
       *    医療収益
            INITIALIZE   WRK-SZ10
            MOVE    SUM-GG-SYUEKI    TO   WRK-SZ10
            MOVE    WRK-SZ10         TO   D5002-SYUEKI
+                                         D5002V03-SYUEKI
       *
       *    請求金額
            INITIALIZE   WRK-SZ10
            MOVE    SUM-GG-SEIKYU    TO   WRK-SZ10
            MOVE    WRK-SZ10         TO   D5002-SEIKYU
+                                         D5002V03-SEIKYU
       *
       *    領収金額
            INITIALIZE   WRK-SZ10
            MOVE    SUM-GG-RYOSYU    TO   WRK-SZ10
            MOVE    WRK-SZ10         TO   D5002-RYOSYU
+                                         D5002V03-RYOSYU
       *
       *    自費小計
            INITIALIZE   WRK-SZ
            MOVE    SUM-GG-JIHIKEI   TO   WRK-SZ
-           MOVE    WRK-SZ           TO   D5002-JIHIKEI
+           MOVE    WRK-SZ           TO   D5002V03-JIHIKEI
       *
            .
        3000-GOUKEI-SET-EXT.
@@ -2063,6 +2115,7 @@
            ADD     1                       TO   CNT-PAGE
            MOVE    CNT-PAGE                TO   WRK-PAGE
            MOVE    WRK-PAGE                TO   HC17-PAGE
+                                                HC17V03-PAGE
       *
            INITIALIZE                      ORCSPRTAREA
            MOVE    "INS"                   TO   SPRT-MODE
@@ -2075,14 +2128,20 @@
            MOVE    LNK-PRTKANRI-SHORI-RENNUM   TO   SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY   TO   SPRT-PRIORITY
       *
-           IF   WRK-PARA-DENPPRTYMD  <  "20080401"
-             MOVE   "A00000D500O.red"      TO   SPRT-PRTID
+           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
+             MOVE   "A00000D500V03.red"          TO   SPRT-PRTID
+             MOVE    "日計表明細（窓口領収金）"  TO   SPRT-TITLE
+             MOVE    HC17V03                     TO   SPRT-PRTDATA
            ELSE
-             MOVE   "A00000D500V03.red"    TO   SPRT-PRTID
+             IF   WRK-PARA-DENPPRTYMD  <  "20080401"
+               MOVE   "A00000D500O.red"      TO   SPRT-PRTID
+             ELSE
+               MOVE   "A00000D500V02.red"    TO   SPRT-PRTID
+             END-IF
+             MOVE    "日計表明細（窓口領収金）"   TO   SPRT-TITLE
+             MOVE    HC17                  TO   SPRT-PRTDATA
            END-IF
       *
-           MOVE    "日計表明細（窓口領収金）"   TO   SPRT-TITLE
-           MOVE    HC17                  TO   SPRT-PRTDATA
            MOVE    LNK-PRTKANRI-TERMID   TO   SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID     TO   SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM    TO   SPRT-PRTNM
@@ -2108,6 +2167,7 @@
            ADD     1                           TO   CNT-PAGE
            MOVE    CNT-PAGE                    TO   WRK-PAGE
            MOVE    WRK-PAGE                    TO   D5002-PAGE
+                                                    D5002V03-PAGE
       *
            INITIALIZE                          ORCSPRTAREA
            MOVE    "INS"                       TO   SPRT-MODE
@@ -2119,13 +2179,21 @@
            MOVE    LNK-PRTKANRI-SHELLID        TO   SPRT-SHELLID
            MOVE    LNK-PRTKANRI-SHORI-RENNUM   TO   SPRT-SHORI-RENNUM
            MOVE    LNK-PRTKANRI-PRIORITY       TO   SPRT-PRIORITY
-           IF   WRK-PARA-DENPPRTYMD  <  "20080401"
-             MOVE   "A00000D500O2.red"         TO   SPRT-PRTID
+      *
+           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
+             MOVE   "A00000D500NV03.red"         TO   SPRT-PRTID
+             MOVE    "日計表明細（窓口領収金）"  TO   SPRT-TITLE
+             MOVE    D5002V03                    TO   SPRT-PRTDATA
            ELSE
-             MOVE   "A00000D500NV03.red"       TO   SPRT-PRTID
+             IF   WRK-PARA-DENPPRTYMD  <  "20080401"
+               MOVE   "A00000D500O2.red"         TO   SPRT-PRTID
+             ELSE
+               MOVE   "A00000D500N2.red"         TO   SPRT-PRTID
+             END-IF
+             MOVE    "日計表明細（窓口領収金）"  TO   SPRT-TITLE
+             MOVE    D5002                       TO   SPRT-PRTDATA
            END-IF
-           MOVE    "日計表明細（窓口領収金）"  TO   SPRT-TITLE
-           MOVE    D5002                       TO   SPRT-PRTDATA
+      *
            MOVE    LNK-PRTKANRI-TERMID         TO   SPRT-TERMID
            MOVE    LNK-PRTKANRI-OPID           TO   SPRT-OPID
            MOVE    LNK-PRTKANRI-PRTNM          TO   SPRT-PRTNM
@@ -2213,17 +2281,34 @@
            END-PERFORM
       *
       *    項目名称セット
-           PERFORM  VARYING  IDX4  FROM  1  BY  1
-                    UNTIL  IDX4  >  CSV-HEAD-MAX
-             IF  IDX4  NOT =  10
-               MOVE    CSV-HEAD-ITEM(IDX4)     TO  WRK-ITEM
-               IF   IDX4  >=  CSV-HEAD-MAX
-                 PERFORM  810-CSVDATA-EDIT-SEC
-               ELSE
-                 PERFORM  800-CSVDATA-EDIT-SEC
+           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
+             PERFORM  VARYING  IDX4  FROM  1  BY  1
+                      UNTIL  IDX4  >  CSV-HEAD-MAX
+               IF  IDX4  NOT =  10
+                 MOVE    CSV-HEAD-ITEM(IDX4)     TO  WRK-ITEM
+                 IF   IDX4  >=  CSV-HEAD-MAX
+                   PERFORM  810-CSVDATA-EDIT-SEC
+                 ELSE
+                   PERFORM  800-CSVDATA-EDIT-SEC
+                 END-IF
                END-IF
-             END-IF
-           END-PERFORM
+             END-PERFORM
+           ELSE
+             PERFORM  VARYING  IDX4  FROM  1  BY  1
+                      UNTIL  IDX4  >  CSV-HEAD-MAX
+               IF  IDX4  NOT =  22
+                 IF  IDX4  NOT =  10
+                   MOVE    CSV-HEAD-ITEM(IDX4)     TO  WRK-ITEM
+                   IF   IDX4  >=  CSV-HEAD-MAX
+                     PERFORM  810-CSVDATA-EDIT-SEC
+                   ELSE
+                     PERFORM  800-CSVDATA-EDIT-SEC
+                   END-IF
+                 END-IF
+               END-IF
+             END-PERFORM
+           END-IF
+      *
            .
       *
        800-CSV-HEAD-EXT.
@@ -2233,7 +2318,20 @@
       *****************************************************************
        400-CSV-DATA-SEC            SECTION.
       *
-      *    伝票番号
+           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
+             PERFORM  400-CSV-DATA-V03-SEC
+           ELSE
+             PERFORM  400-CSV-DATA-V02-SEC
+           END-IF
+      *
+           .
+       400-CSV-DATA-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV編集処理(201502以前)
+      *****************************************************************
+       400-CSV-DATA-V02-SEC            SECTION.
+      *
            MOVE    HC17-RENNUM(CNT-LINE)    TO  WRK-ITEM
            PERFORM  800-CSVDATA-EDIT-SEC
       *
@@ -2260,10 +2358,6 @@
                MOVE    HC17-MONEY(IDX5 CNT-LINE)    TO  WRK-ITEM
                PERFORM  800-CSVDATA-EDIT-SEC
              END-IF
-             IF  IDX5  =  16
-               MOVE    HC17-JIHI-KEI(CNT-LINE)      TO  WRK-ITEM
-               PERFORM  800-CSVDATA-EDIT-SEC
-             END-IF
            END-PERFORM
       *    窓口請求額
            MOVE    HC17-SEIKYU(CNT-LINE)    TO  WRK-ITEM
@@ -2273,12 +2367,128 @@
            PERFORM  810-CSVDATA-EDIT-SEC
       *
            .
-       400-CSV-DATA-EXT.
+       400-CSV-DATA-V02-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV編集処理(201502以降)
+      *****************************************************************
+       400-CSV-DATA-V03-SEC            SECTION.
+      *
+      *    伝票番号
+           MOVE    HC17V03-RENNUM(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    患者番号
+           MOVE    SPTID-PTNUM              TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    氏名
+           MOVE    HC17V03-NAME(CNT-LINE)      TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    保険点数
+           MOVE    HC17V03-HKNTEN(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    医療収益
+           MOVE    HC17V03-SYUEKI(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    窓口請求額（集計区分別）
+           PERFORM  VARYING  IDX5  FROM  1  BY  1
+                    UNTIL  IDX5  >  20
+             IF  IDX5  NOT =  3
+               MOVE    HC17V03-MONEY(IDX5 CNT-LINE)    TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+             IF  IDX5  =  16
+               MOVE    HC17V03-JIHI-KEI(CNT-LINE)      TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+           END-PERFORM
+      *    窓口請求額
+           MOVE    HC17V03-SEIKYU(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *    窓口領収額
+           MOVE    HC17V03-RYOSYU(CNT-LINE)    TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           .
+       400-CSV-DATA-V03-EXT.
            EXIT.
       *****************************************************************
       *    CSV合計編集処理
       *****************************************************************
        400-CSV-GOUKEI-SEC            SECTION.
+      *
+           IF   WRK-PARA-DENPPRTYMD  >=  "20150201"
+             PERFORM  400-CSV-GOUKEI-V03-SEC
+           ELSE
+             PERFORM  400-CSV-GOUKEI-V02-SEC
+           END-IF
+      *
+           .
+       400-CSV-GOUKEI-EXT.
+           EXIT.
+      *****************************************************************
+      *    CSV合計編集処理(201502以前)
+      *****************************************************************
+       400-CSV-GOUKEI-V02-SEC            SECTION.
+      *
+      *    伝票番号
+           MOVE    SPACE            TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    患者番号
+           MOVE    SPACE            TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    氏名（総合計）
+           MOVE    "総合計"         TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    保険点数
+           INITIALIZE               WRK-SZZ
+           MOVE    SUM-GG-HKNTEN    TO  WRK-SZZ
+           MOVE    WRK-SZZ          TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    医療収益
+           MOVE    SUM-GG-SYUEKI    TO  WRK-SZ10
+           MOVE    WRK-SZ10         TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    保険別金額（社保本人〜自賠責）
+           PERFORM  VARYING  IDX-SUM  FROM  1  BY  1
+                    UNTIL  IDX-SUM  >  20
+             IF  IDX-SUM  NOT =  3
+               INITIALIZE           WRK-SZ
+               MOVE    SUM-GG-MONEY(IDX-SUM)   TO  WRK-SZ
+               MOVE    WRK-SZ       TO  WRK-ITEM
+               PERFORM  800-CSVDATA-EDIT-SEC
+             END-IF
+           END-PERFORM
+      *
+      *    請求金額
+           INITIALIZE               WRK-SZ10
+           MOVE    SUM-GG-SEIKYU    TO  WRK-SZ10
+           MOVE    WRK-SZ10         TO  WRK-ITEM
+           PERFORM  800-CSVDATA-EDIT-SEC
+      *
+      *    領収金額
+           INITIALIZE               WRK-SZ10
+           MOVE    SUM-GG-RYOSYU    TO  WRK-SZ10
+           MOVE    WRK-SZ10         TO  WRK-ITEM
+           PERFORM  810-CSVDATA-EDIT-SEC
+      *
+           .
+       400-CSV-GOUKEI-V02-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    CSV合計編集処理(201502以降)
+      *****************************************************************
+       400-CSV-GOUKEI-V03-SEC            SECTION.
       *
       *    伝票番号
            MOVE    SPACE            TO  WRK-ITEM
@@ -2333,8 +2543,9 @@
            PERFORM  810-CSVDATA-EDIT-SEC
       *
            .
-       400-CSV-GOUKEI-EXT.
+       400-CSV-GOUKEI-V03-EXT.
            EXIT.
+      *
       *****************************************************************
       *    CSVデータ編集処理
       *****************************************************************
