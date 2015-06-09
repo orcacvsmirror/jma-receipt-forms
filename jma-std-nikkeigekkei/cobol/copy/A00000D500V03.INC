@@ -102,7 +102,7 @@
       *    自費―小計
            03  HC17V03-JIHIKEI-TBL         OCCURS 21 TIMES.
                05  HC17V03-JIHI-KEI          PIC X(07).
-      *    自費―小計（８桁）
+      *    自費―小計（７桁）
            03  HC17V03-G-JIHIKEI           PIC X(07).
-      *    自費―小計（９桁）
+      *    自費―小計（８桁）
            03  HC17V03-GG-JIHIKEI          PIC X(08).
