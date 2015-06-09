@@ -2054,7 +2054,7 @@
       </dia:attribute>
     </dia:object>
   </dia:layer>
-  <dia:layer name="文字" visible="true" active="true">
+  <dia:layer name="文字" visible="true">
     <dia:object type="Standard - Text" version="1" id="O92">
       <dia:attribute name="obj_pos">
         <dia:point val="11.0958,1.69964"/>
@@ -2955,7 +2955,7 @@
       </dia:attribute>
     </dia:object>
   </dia:layer>
-  <dia:layer name="差し込み" visible="true">
+  <dia:layer name="差し込み" visible="true" active="true">
     <dia:object type="Embed - Text" version="1" id="O119">
       <dia:attribute name="obj_pos">
         <dia:point val="25.25,2.85"/>
