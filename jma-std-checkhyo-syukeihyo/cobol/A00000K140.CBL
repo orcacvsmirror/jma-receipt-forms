@@ -36,6 +36,7 @@
       *   01.00.06    @@@@-吉川   13/08/26  在宅の集計不具合修正
       *   01.00.07    @@@@-門間   14/01/07  療養担当手当の自動加算分を集計するように修正
       *   01.00.08    @@@@-門間   14/04/14  「その他」回数欄の不具合を修正
+      *   01.00.09    @@@@-門間   15/06/12  初診及び再診の振分け処理を修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1777,7 +1778,6 @@
                      MOVE      4    TO    IDX1
                    ELSE
                      IF   WRK-NENREI   >= 70
-                         AND WRK-NENREI  < 75
                        MOVE    3    TO    IDX1
                      ELSE
                        IF   K100LNK-SRYYM < "200804"
@@ -1807,7 +1807,7 @@
                        OR   COMB-HKNNUM  =  "040"
                      MOVE      8    TO    IDX1
                    ELSE
-                     IF  WRK-NENREI   >= 70 AND WRK-NENREI  < 75
+                     IF  WRK-NENREI   >= 70
                        MOVE    7    TO    IDX1
                      ELSE
                        IF   K100LNK-SRYYM  <  "200804"
@@ -1945,7 +1945,7 @@
                    OR   COMB-HKNNUM  =  "040"
                  MOVE    8      TO    IDX1
                ELSE
-                 IF  WRK-NENREI   >= 70 AND WRK-NENREI   < 75
+                 IF  WRK-NENREI   >= 70
                    MOVE    7      TO    IDX1
                  ELSE
                    IF K100LNK-SRYYM < "200804"
@@ -2052,7 +2052,7 @@
                        OR   COMB-HKNNUM  =  "040"
                      MOVE      4    TO    IDX1
                    ELSE
-                     IF  WRK-NENREI   >= 70 AND WRK-NENREI   < 75
+                     IF  WRK-NENREI   >= 70
                          MOVE    3    TO    IDX1
                      ELSE
                      IF K100LNK-SRYYM < "200804"
@@ -2082,7 +2082,7 @@
                      OR   COMB-HKNNUM  =  "040"
                    MOVE      8    TO    IDX1
                  ELSE
-                   IF  WRK-NENREI   >= 70 AND WRK-NENREI   < 75
+                   IF  WRK-NENREI   >= 70
                      MOVE    7    TO    IDX1
                    ELSE
                      IF K100LNK-SRYYM < "200804"
@@ -2217,7 +2217,7 @@
                      OR   COMB-HKNNUM  =  "040"
                    MOVE    8      TO    IDX1
                  ELSE
-                   IF  WRK-NENREI   >= 70 AND WRK-NENREI   < 75
+                   IF  WRK-NENREI   >= 70
                      MOVE    7      TO    IDX1
                    ELSE
                      IF  K100LNK-SRYYM < "200804"
