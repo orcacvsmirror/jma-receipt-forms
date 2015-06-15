@@ -37,6 +37,7 @@
       *  01.00.07    @@@@-門間    14/10/07  労災・自賠責保険時の医療収益集計方法の修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    15/02/05  剤点数の正負（点数区分）判定を追加
+      *  02.00.03    @@@@-門間    15/06/12  初診及び再診の振分け処理を修正
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1494,6 +1495,7 @@
                            END-IF
                            IF  COMB-KOH1HKNNUM    =  "027"
                              OR   COMB-HKNNUM  =  "039"
+                             OR   COMB-HKNNUM  =  "040"
                                MOVE      5      TO    IDX1
                            ELSE
                                IF  WRK-NENREI   >= 70
@@ -1515,6 +1517,7 @@
                            END-IF
                            IF  COMB-KOH1HKNNUM    =  "027"
                              OR   COMB-HKNNUM  =  "039"
+                             OR   COMB-HKNNUM  =  "040"
                                MOVE      9      TO    IDX1
                            ELSE
                                IF  WRK-NENREI   >= 70
@@ -1619,6 +1622,7 @@
                        END-IF
                        IF  COMB-KOH1HKNNUM    =  "027"
                          OR   COMB-HKNNUM  =  "039"
+                         OR   COMB-HKNNUM  =  "040"
                            MOVE      5      TO    IDX1
                        ELSE
                            IF  WRK-NENREI   >= 70
@@ -1640,6 +1644,7 @@
                        END-IF
                        IF  COMB-KOH1HKNNUM    =  "027"
                          OR   COMB-HKNNUM  =  "039"
+                         OR   COMB-HKNNUM  =  "040"
                            MOVE      9      TO    IDX1
                        ELSE
                            IF  WRK-NENREI   >= 70
