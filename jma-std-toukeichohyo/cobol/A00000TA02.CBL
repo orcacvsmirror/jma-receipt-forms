@@ -40,8 +40,9 @@
       *   01.00.09    門間    2014/05/22  自費の診療行為コードの場合、薬価／点数が０になる不具合を修正
       *                                   薬価／点数、件数、使用量を小数点第2位まで対応
       *   01.00.10    門間    2014/07/17  きざみ値処理を追加
-      *   02.00.01    門間    2014/10/31  ver4.8.0対応（一時ディレクトリ変更）
-      *   02.00.02    門間    2015/04/16  在院時の病棟に集計されるよう修正
+      *   01.00.11    門間    2014/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *   01.00.12    門間    2015/04/16  在院時の病棟に集計されるよう修正
+      *   01.00.13    門間    2015/07/24  CSV出力時、発行区分の印字不具合修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1378,6 +1379,10 @@
            INITIALIZE          TA02TMP-REC
            INITIALIZE          TA02
       *
+                               WRK-ZENSORTKBN
+                               WRK-ZENSRYKBN
+                               WRK-ZENPRTKBN
+      *
       *    一時ファイル読込
            PERFORM  710-TMP-READ-SEC
            PERFORM  UNTIL  FLG-PRINT  =  1
@@ -1443,6 +1448,10 @@
       *
            INITIALIZE          TA02TMP-REC
            INITIALIZE          TA02
+      *
+                               WRK-ZENSORTKBN
+                               WRK-ZENSRYKBN
+                               WRK-ZENPRTKBN
       *
       *    一時ファイル読込
            PERFORM  710-TMP-READ-SEC
@@ -2620,12 +2629,12 @@
              WHEN  "2"
                MOVE    "［医師別］"         TO  CSV-DATA
                PERFORM  500-CSV-DATAHEN-SEC
-               MOVE    WRK-NAME(WRK-ZENPRTKBN)   TO  CSV-DATA
+               MOVE    WRK-NAME(TA02TMP-PRTKBN)   TO  CSV-DATA
                PERFORM  510-CSV-DATAHEN-SEC
              WHEN  "3"
                MOVE    "［病棟別］"         TO  CSV-DATA
                PERFORM  500-CSV-DATAHEN-SEC
-               MOVE    WRK-NAME(WRK-ZENPRTKBN)   TO  CSV-DATA
+               MOVE    WRK-NAME(TA02TMP-PRTKBN)   TO  CSV-DATA
                PERFORM  510-CSV-DATAHEN-SEC
            END-EVALUATE
       *
