@@ -37,6 +37,7 @@
       *   01.00.07    @@@@-門間   14/01/07  療養担当手当の自動加算分を集計するように修正
       *   01.00.08    @@@@-門間   14/04/14  「その他」回数欄の不具合を修正
       *   01.00.09    @@@@-門間   15/06/12  初診及び再診の振分け処理を修正
+      *   01.00.10    @@@@-門間   15/08/25  剤点数の正負（点数区分）判定を変更
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -124,6 +125,7 @@
            03  GET-OFF             PIC 9(01).
            03  GET-TENSU           PIC 9(01).
            03  FLG-NKENSU          PIC 9(01).
+           03  FLG-SRYACCTP        PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -468,6 +470,10 @@
       *    点数マスタ
       * 01  TNS-TENSU-REC.
            COPY    "CPTENSU.INC".
+      *
+      *    診療会計付加マスタ
+       01  SRYACCTP-REC.
+           COPY    "CPSRYACCTPLUS.INC".
       *
       *    検査ソートマスタ
        01  KENSASORT-REC.
@@ -1423,6 +1429,9 @@
            PERFORM  800-SKTTMP-READ-SEC
            PERFORM  930-HKNCOMBI-SET-SEC
       *
+      *    診療会計付加情報  読込
+           PERFORM  900-SRYACCTPLUS-READ-SEC
+      *
            IF   K100LNK-HOUKATU  NOT =  "0"
              IF   ACCT-HKNCOMBI NOT = "9999"
                  AND  ACCT-JIHOKBN  NOT =  "1"
@@ -1513,8 +1522,9 @@
                AND   ACCT-PTID  NOT =  WRK-PTID2 )
       *
              COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
-             IF   TNS-TENSIKIBETU  =  7  OR  8
-               COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
+      *
+             IF  ACCTP-PLUSKBN  =  "1"
+               COMPUTE  WRK-TENSU   =   WRK-TENSU  *  -1
              END-IF
       *
              ADD    WRK-TENSU        TO   K140TMP-TENSU(IDX1)
@@ -1558,13 +1568,15 @@
       *
       *    点数取得
            PERFORM  900-TENSU-READ-SEC
+      *
            IF   ACCT-ZAINUM  NOT =  WRK-ZAINUM
                OR  ( ACCT-ZAINUM  =  WRK-ZAINUM
                AND  ACCT-PTID  NOT =  WRK-PTID2 )
       *
              COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
-             IF   TNS-TENSIKIBETU  =  7  OR  8
-               COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
+      *
+             IF  ACCTP-PLUSKBN  =  "1"
+               COMPUTE  WRK-TENSU   =   WRK-TENSU  *  -1
              END-IF
       *
              ADD    WRK-TENSU        TO   K140TMP-TENSU(IDX1)
@@ -1727,14 +1739,16 @@
            PERFORM  20013-IDXSET-SEC
       *
            IF  IDX1  NOT =  42
+      *
       *    点数加算
              PERFORM  900-TENSU-READ-SEC
       *
              COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
-             IF   SRY-SRYCD(1)  =  "630010002"
-                 OR  TNS-TENSIKIBETU  =  7  OR  8
-               COMPUTE  WRK-TENSU  =  WRK-TENSU  *  -1
+      *
+             IF  ACCTP-PLUSKBN  =  "1"
+               COMPUTE  WRK-TENSU   =   WRK-TENSU  *  -1
              END-IF
+      *
              ADD    WRK-TENSU       TO   K140TMP-TENSU(IDX1)
       *
       *    回数加算
@@ -3338,6 +3352,56 @@
       *
            .
        900-TENSU-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療会計付加
+      *****************************************************************
+       900-SRYACCTPLUS-READ-SEC         SECTION.
+      *
+           INITIALIZE                   SRYACCTP-REC
+           MOVE    ACCT-HOSPNUM         TO  ACCTP-HOSPNUM
+           MOVE    ACCT-NYUGAIKBN       TO  ACCTP-NYUGAIKBN
+           MOVE    ACCT-PTID            TO  ACCTP-PTID
+           MOVE    ACCT-SRYKA           TO  ACCTP-SRYKA
+           MOVE    ACCT-SRYYM           TO  ACCTP-SRYYM
+           MOVE    ACCT-ZAINUM          TO  ACCTP-ZAINUM
+           MOVE    SRYACCTP-REC         TO  MCPDATA-REC
+           MOVE    "DBSELECT"           TO  MCP-FUNC
+           MOVE    "tbl_sryacctplus"    TO  MCP-TABLE
+           MOVE    "key2"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             MOVE    "DBFETCH"            TO  MCP-FUNC
+             MOVE    "tbl_sryacctplus"    TO  MCP-TABLE
+             MOVE    "key2"               TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"          USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+             IF   MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC        TO  SRYACCTP-REC
+               MOVE    ZERO               TO  FLG-SRYACCTP
+             ELSE
+               MOVE    1                  TO  FLG-SRYACCTP
+             END-IF
+           ELSE
+             MOVE    1                  TO  FLG-SRYACCTP
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_sryacctplus"    TO  MCP-TABLE
+           MOVE    "key2"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           .
+       900-SRYACCTPLUS-READ-EXT.
            EXIT.
       *
       *****************************************************************
