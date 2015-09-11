@@ -43,6 +43,7 @@
       *   01.00.11    門間    2014/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *   01.00.12    門間    2015/04/16  在院時の病棟に集計されるよう修正
       *   01.00.13    門間    2015/07/24  CSV出力時、発行区分の印字不具合修正
+      *   01.00.14    門間    2015/09/11  ＣＳＶ出力が正常に出力されない不具合を修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -173,6 +174,7 @@
            03  WRK-CSV-Z10                 PIC ZZZZZZZZZ9.
            03  WRK-CSV-Z11                 PIC ZZZZZZZZZZ9.
            03  WRK-CSV-V10                 PIC ZZZZZZ9.99.
+           03  WRK-CSV-V11                 PIC ZZZZZZZ9.99.
            03  WRK-KINGAKU                 PIC S9(09).
            03  WRK-TENSU                   PIC 9(09)V9(02).
            03  WRK-SYMD                    PIC 9(08).
@@ -1629,8 +1631,8 @@
                MOVE    WRK-V5             TO  TA02-GRPHI(IDX1)
              END-IF
       *
-      *    CVS集計処理
-             PERFORM  400-CSV-HEN-SEC
+      *    CSV明細処理
+             PERFORM  500-CSV-MEI-SEC
       *
       *    前回情報を保持
              MOVE    TA02TMP-SORTKBN      TO  WRK-ZENSORTKBN
@@ -1673,13 +1675,9 @@
                END-IF
       *
                IF  TA02TMP-SORTKBN  =  12  OR  13  OR  14
-      *    CSV出力処理
-                 PERFORM  500-CSV-OUTPUT-SEC
       *    CSVヘッダー処理
                  PERFORM  510-CSV-HEAD-SEC
                ELSE
-      *    CSV出力処理
-                 PERFORM  500-CSV-OUTPUT-SEC
       *    CSVヘッダー処理
                  PERFORM  500-CSV-HEAD-SEC
                END-IF
@@ -1694,13 +1692,9 @@
                  END-IF
       *
                  IF  TA02TMP-SORTKBN  =  12  OR  13  OR  14
-      *    CSV出力処理
-                   PERFORM  500-CSV-OUTPUT-SEC
       *    CSVヘッダー処理
                    PERFORM  510-CSV-HEAD-SEC
                  ELSE
-      *    CSV出力処理
-                   PERFORM  500-CSV-OUTPUT-SEC
       *    CSVヘッダー処理
                    PERFORM  500-CSV-HEAD-SEC
                  END-IF
@@ -1721,9 +1715,6 @@
            ELSE
              PERFORM  500-PRINT-OUT-SEC
            END-IF
-      *
-      *    CSV出力処理
-           PERFORM  500-CSV-OUTPUT-SEC
       *
            MOVE    1          TO  FLG-END
       *
@@ -1804,6 +1795,8 @@
       *    小計集計
       *****************************************************************
        500-SYOKEI-HEN-SEC            SECTION.
+      *
+           MOVE    1      TO  IDX-POINT
       *
       *    名称
            MOVE    "　　　　　　　診区別　小計"
@@ -1920,6 +1913,9 @@
       *    CSV小計集計
            PERFORM  600-CSV-SYOKEI-HEN-SEC
       *
+      *    CSV出力処理
+           PERFORM  500-CSV-OUTPUT-SEC
+      *
            INITIALIZE         SUM-S-AREA
            ADD  1             TO   IDX1
       *
@@ -1930,6 +1926,8 @@
       *    合計集計
       *****************************************************************
        500-GOUKEI-HEN-SEC            SECTION.
+      *
+           MOVE    1      TO  IDX-POINT
       *
       *    外来件数
            IF    WRK-SUM-GGAIRAI-KEN(9:2)    = "00"
@@ -2035,6 +2033,9 @@
       *
       *    CSV合計集計
            PERFORM  600-CSV-GOUKEI-HEN-SEC
+      *
+      *    CSV出力処理
+           PERFORM  500-CSV-OUTPUT-SEC
       *
            INITIALIZE                    SUM-G-AREA
       *
@@ -2204,35 +2205,11 @@
            EXIT.
       *
       *****************************************************************
-      *    CSVファイル編集
-      *****************************************************************
-       400-CSV-HEN-SEC               SECTION.
-      *
-           INITIALIZE                     CSV-DIR
-                                          CSV-NAME
-           MOVE    "/var/tmp/"            TO  CSV-DIR
-      *
-           MOVE    SPACE                  TO  CSV-NAME
-           STRING  SPA-HOSPNUM            DELIMITED  BY  SIZE
-                   "sryactlist"           DELIMITED  BY  SIZE
-                   WRK-PARA-PRTSTYMD      DELIMITED  BY  SIZE
-                   "-"                    DELIMITED  BY  SIZE
-                   WRK-PARA-PRTEDYMD      DELIMITED  BY  SIZE
-                   ".csv"                 DELIMITED  BY  SIZE
-                                          INTO  CSV-NAME
-           END-STRING
-      *
-      *    CSV明細処理
-           PERFORM  500-CSV-MEI-SEC
-      *
-           .
-       400-CSV-HEN-EXT.
-           EXIT.
-      *
-      *****************************************************************
       *    CSV明細編集
       *****************************************************************
        500-CSV-MEI-SEC               SECTION.
+      *
+           MOVE    1      TO  IDX-POINT
       *
       *    診療区分
            MOVE    TA02TMP-SRYKBN           TO  CSV-DATA
@@ -2253,20 +2230,20 @@
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    外来使用量
-             MOVE    TA02TMP-GAIRAI-SIYO    TO  WRK-CSV-Z9
-             MOVE    WRK-CSV-Z9             TO  CSV-DATA
+             MOVE    TA02TMP-GAIRAI-SIYO    TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10            TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院使用量
-             MOVE    TA02TMP-NYUIN-SIYO     TO  WRK-CSV-Z9
-             MOVE    WRK-CSV-Z9             TO  CSV-DATA
+             MOVE    TA02TMP-NYUIN-SIYO     TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10            TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計使用量
              COMPUTE  WRK-KAISU  =  TA02TMP-GAIRAI-SIYO
                                  +  TA02TMP-NYUIN-SIYO
-             MOVE    WRK-KAISU              TO  WRK-CSV-Z5
-             MOVE    WRK-CSV-Z5             TO  CSV-DATA
+             MOVE    WRK-KAISU              TO  WRK-CSV-V11
+             MOVE    WRK-CSV-V11            TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
            ELSE
       *    薬価
@@ -2275,38 +2252,38 @@
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    外来件数
-             MOVE    TA02TMP-GAIRAI-KEN     TO  WRK-CSV-Z5
-             MOVE    WRK-CSV-Z5             TO  CSV-DATA
+             MOVE    TA02TMP-GAIRAI-KEN     TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10            TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院件数
-             MOVE    TA02TMP-NYUIN-KEN      TO  WRK-CSV-Z5
-             MOVE    WRK-CSV-Z5             TO  CSV-DATA
+             MOVE    TA02TMP-NYUIN-KEN      TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10            TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計件数
              COMPUTE  WRK-KAISU  =  TA02TMP-GAIRAI-KEN
                                  +  TA02TMP-NYUIN-KEN
-             MOVE    WRK-KAISU              TO  WRK-CSV-Z6
-             MOVE    WRK-CSV-Z6             TO  CSV-DATA
+             MOVE    WRK-KAISU              TO  WRK-CSV-V11
+             MOVE    WRK-CSV-V11            TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
            END-IF
       *
       *    外来金額
-           MOVE    TA02TMP-GAIRAI-KIN       TO  WRK-CSV-Z8
-           MOVE    WRK-CSV-Z8               TO  CSV-DATA
+           MOVE    TA02TMP-GAIRAI-KIN       TO  WRK-CSV-Z10
+           MOVE    WRK-CSV-Z10              TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院金額
-           MOVE    TA02TMP-NYUIN-KIN        TO  WRK-CSV-Z8
-           MOVE    WRK-CSV-Z8               TO  CSV-DATA
+           MOVE    TA02TMP-NYUIN-KIN        TO  WRK-CSV-Z10
+           MOVE    WRK-CSV-Z10              TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計金額
            COMPUTE  WRK-KINGAKU  =  TA02TMP-GAIRAI-KIN
                                  +  TA02TMP-NYUIN-KIN
-           MOVE    WRK-KINGAKU              TO  WRK-CSV-Z9
-           MOVE    WRK-CSV-Z9               TO  CSV-DATA
+           MOVE    WRK-KINGAKU              TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11              TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    全体比率
@@ -2335,6 +2312,9 @@
              PERFORM  510-CSV-DATAHEN-SEC
            END-IF
       *
+      *    CSV出力処理
+           PERFORM  500-CSV-OUTPUT-SEC
+      *
            .
        500-CSV-MEI-EXT.
            EXIT.
@@ -2362,49 +2342,49 @@
            IF  TA02TMP-SORTKBN  =  12  OR  13  OR  14
       *
       *    外来使用量
-             MOVE    WRK-SUM-SGAIRAI-SIYO  TO  WRK-CSV-Z9
-             MOVE    WRK-CSV-Z9            TO  CSV-DATA
+             MOVE    WRK-SUM-SGAIRAI-SIYO  TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院使用量
-             MOVE    WRK-SUM-SNYUIN-SIYO   TO  WRK-CSV-Z9
-             MOVE    WRK-CSV-Z9            TO  CSV-DATA
+             MOVE    WRK-SUM-SNYUIN-SIYO   TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計使用量
-             MOVE    WRK-SUM-STOTAL-SIYO   TO  WRK-CSV-Z10
-             MOVE    WRK-CSV-Z10            TO  CSV-DATA
+             MOVE    WRK-SUM-STOTAL-SIYO   TO  WRK-CSV-V11
+             MOVE    WRK-CSV-V11           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
            ELSE
       *    外来件数
-             MOVE    WRK-SUM-SGAIRAI-KEN   TO  WRK-CSV-Z4
-             MOVE    WRK-CSV-Z4            TO  CSV-DATA
+             MOVE    WRK-SUM-SGAIRAI-KEN   TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院件数
-             MOVE    WRK-SUM-SNYUIN-KEN    TO  WRK-CSV-Z4
-             MOVE    WRK-CSV-Z4            TO  CSV-DATA
+             MOVE    WRK-SUM-SNYUIN-KEN    TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計件数
-             MOVE    WRK-SUM-STOTAL-KEN    TO  WRK-CSV-Z5
-             MOVE    WRK-CSV-Z5            TO  CSV-DATA
+             MOVE    WRK-SUM-STOTAL-KEN    TO  WRK-CSV-V11
+             MOVE    WRK-CSV-V11           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
            END-IF
       *
       *    外来金額
-           MOVE    WRK-SUM-SGAIRAI-KIN     TO  WRK-CSV-Z7
-           MOVE    WRK-CSV-Z7              TO  CSV-DATA
+           MOVE    WRK-SUM-SGAIRAI-KIN     TO  WRK-CSV-Z10
+           MOVE    WRK-CSV-Z10             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院金額
-           MOVE    WRK-SUM-SNYUIN-KIN      TO  WRK-CSV-Z7
-           MOVE    WRK-CSV-Z7              TO  CSV-DATA
+           MOVE    WRK-SUM-SNYUIN-KIN      TO  WRK-CSV-Z10
+           MOVE    WRK-CSV-Z10             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計金額
-           MOVE    WRK-SUM-STOTAL-KIN      TO  WRK-CSV-Z8
-           MOVE    WRK-CSV-Z8              TO  CSV-DATA
+           MOVE    WRK-SUM-STOTAL-KIN      TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    全体比率
@@ -2452,49 +2432,49 @@
       *
            IF  TA02TMP-SORTKBN  =  12  OR  13  OR  14
       *    外来使用量
-             MOVE    WRK-SUM-GGAIRAI-SIYO  TO  WRK-CSV-Z10
-             MOVE    WRK-CSV-Z10           TO  CSV-DATA
+             MOVE    WRK-SUM-GGAIRAI-SIYO  TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院使用量
-             MOVE    WRK-SUM-GNYUIN-SIYO   TO  WRK-CSV-Z10
-             MOVE    WRK-CSV-Z10           TO  CSV-DATA
+             MOVE    WRK-SUM-GNYUIN-SIYO   TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計使用量
-             MOVE    WRK-SUM-GTOTAL-SIYO   TO  WRK-CSV-Z11
-             MOVE    WRK-CSV-Z11           TO  CSV-DATA
+             MOVE    WRK-SUM-GTOTAL-SIYO   TO  WRK-CSV-V11
+             MOVE    WRK-CSV-V11           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
            ELSE
       *    外来件数
-             MOVE    WRK-SUM-GGAIRAI-KEN   TO  WRK-CSV-Z5
-             MOVE    WRK-CSV-Z5            TO  CSV-DATA
+             MOVE    WRK-SUM-GGAIRAI-KEN   TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院件数
-             MOVE    WRK-SUM-GNYUIN-KEN    TO  WRK-CSV-Z5
-             MOVE    WRK-CSV-Z5            TO  CSV-DATA
+             MOVE    WRK-SUM-GNYUIN-KEN    TO  WRK-CSV-V10
+             MOVE    WRK-CSV-V10           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計件数
-             MOVE    WRK-SUM-GTOTAL-KEN    TO  WRK-CSV-Z6
-             MOVE    WRK-CSV-Z6            TO  CSV-DATA
+             MOVE    WRK-SUM-GTOTAL-KEN    TO  WRK-CSV-V11
+             MOVE    WRK-CSV-V11           TO  CSV-DATA
              PERFORM  500-CSV-DATAHEN-SEC
            END-IF
       *
       *    外来金額
-           MOVE    WRK-SUM-GGAIRAI-KIN     TO  WRK-CSV-Z8
-           MOVE    WRK-CSV-Z8              TO  CSV-DATA
+           MOVE    WRK-SUM-GGAIRAI-KIN     TO  WRK-CSV-Z10
+           MOVE    WRK-CSV-Z10             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院金額
-           MOVE    WRK-SUM-GNYUIN-KIN      TO  WRK-CSV-Z8
-           MOVE    WRK-CSV-Z8              TO  CSV-DATA
+           MOVE    WRK-SUM-GNYUIN-KIN      TO  WRK-CSV-Z10
+           MOVE    WRK-CSV-Z10             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計金額
-           MOVE    WRK-SUM-GTOTAL-KIN      TO  WRK-CSV-Z9
-           MOVE    WRK-CSV-Z9              TO  CSV-DATA
+           MOVE    WRK-SUM-GTOTAL-KIN      TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    全体比率
@@ -2536,6 +2516,9 @@
       *
            END-PERFORM
       *
+      *    CSV出力処理
+           PERFORM  500-CSV-OUTPUT-SEC
+      *
            .
        500-CSV-HEAD-EXT.
            EXIT.
@@ -2561,6 +2544,9 @@
              END-IF
       *
            END-PERFORM
+      *
+      *    CSV出力処理
+           PERFORM  500-CSV-OUTPUT-SEC
       *
            .
        510-CSV-HEAD-EXT.
@@ -2747,8 +2733,15 @@
            MOVE    LNK-PRTKANRI-SRYYM        TO  STOUKEICSV-SRYYM
            MOVE    WRK-PARA-NYUGAIKBN        TO  STOUKEICSV-NYUGAIKBN
            MOVE    ZERO                      TO  STOUKEICSV-PTID
-           MOVE    CSV-DIR                   TO  STOUKEICSV-TO-FOLDER
-           MOVE    CSV-NAME                  TO  STOUKEICSV-TO-DATA
+           MOVE    "/var/tmp/"               TO  STOUKEICSV-TO-FOLDER
+           STRING  SPA-HOSPNUM               DELIMITED  BY  SIZE
+                   "sryactlist"              DELIMITED  BY  SIZE
+                   WRK-PARA-PRTSTYMD         DELIMITED  BY  SIZE
+                   "-"                       DELIMITED  BY  SIZE
+                   WRK-PARA-PRTEDYMD         DELIMITED  BY  SIZE
+                   ".csv"                    DELIMITED  BY  SIZE
+                                             INTO  STOUKEICSV-TO-DATA
+           END-STRING
            MOVE    "2"                       TO  STOUKEICSV-CODE-TYPE
            MOVE    WRK-OUTPUT-DATA           TO  STOUKEICSV-CSVDATA
            MOVE    "診療行為別集計表ＣＳＶ作成"  TO  STOUKEICSV-TITLE
