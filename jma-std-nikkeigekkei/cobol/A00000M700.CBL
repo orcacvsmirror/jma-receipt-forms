@@ -38,6 +38,7 @@
       *                                     公費１計算負担金を参照するように修正
       *  01.00.07    @@@@-門間    13/09/30  プレビュー画面の表示修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    15/09/30  ソート処理を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -243,7 +244,7 @@
            05  SUM-RYOSYU-GK        PIC S9(10) OCCURS  32.
       *
        01  WRK-SMEI-REC.
-           03  WRK-SMEI-TBL      OCCURS  10000.
+           03  WRK-SMEI-TBL      OCCURS  50000.
                05  WRK-SMEI-HOSPNUM       PIC 9(02).
                05  WRK-SMEI-SORT-KEY.
                  07  WRK-SMEI-NYUGAIKBN   PIC X(01).
