@@ -33,7 +33,8 @@
       *  01.00.03    @@@-門間   2011/11/07  CSVファイル作成機能追加
       *  01.00.04    @@@-門間   2013/04/08  同患者、同科で医師が異なる場合、
       *                                     先に受診した医師にまとまる不具合の修正
-      *  02.00.01    @@@@-門間  2014/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.01    @@@-門間   2014/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@-門間   2015/10/09  指定医師以外のレコードが抽出されないように修正
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -841,6 +842,8 @@
       *****************************************************************
        320-WRITE-TEMP-SEC      SECTION.
       *
+           INITIALIZE   L109T
+      *
       *    診療科・医師・保険組合せ情報
            IF   FLG-DRCD-ALL  =  "1"
              MOVE    SPACE             TO  L109T-DRCD
@@ -858,7 +861,7 @@
       *
                  COMPUTE  IDX-R  =  JYURRK-RENNUM + 1
       *
-                 IF  (     JYURRK-SRYYMD(7:2)       =  IDX-DAY
+                 IF  (     JYURRK-SRYYMD            =  WRK-OBJYMD
                        AND ACCT-DAY(IDX-R IDX-DAY)  >  ZERO
                        AND JYURRK-DRCD              =  L100LNK-DRCD )
                    MOVE    JYURRK-DRCD        TO  L109T-DRCD
