@@ -41,6 +41,7 @@
       *  01.00.07    @@@@-門間    14/04/14  室料差額設定読込時のkeyを変更
       *  01.00.08    @@@@-門間    14/05/02  シス管読込時のCLOSE処理の修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    16/01/12  都道府県購入価格の回数が集計されるように修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1230,6 +1231,7 @@
                ELSE
                  EVALUATE  TNS-TENSIKIBETU
                    WHEN  1
+                   WHEN  2
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
                      COMPUTE  WRK-ZAIKAISU  =  SRY-SRYSURYO(IDX1)
                                             *  ACCT-DAY(1 IDX8)
@@ -1272,6 +1274,7 @@
                ELSE
                  EVALUATE  TNS-TENSIKIBETU
                    WHEN  1
+                   WHEN  2
       *      金額項目の場合は数量×回数の値を総数量としてデータ化する。
                      COMPUTE  WRK-ZAIKAISU =
                              SRY-SRYSURYO(IDX1)  *  ACCT-DAY(1 WRK-DAY)
@@ -1313,6 +1316,7 @@
                ELSE
                  EVALUATE  TNS-TENSIKIBETU
                    WHEN  1
+                   WHEN  2
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
                      COMPUTE  WRK-ZAIKAISU =
                              SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
@@ -1448,6 +1452,7 @@
              ELSE
                EVALUATE  TNS-TENSIKIBETU
                  WHEN  1
+                 WHEN  2
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
                    COMPUTE  WRK-ZAIKAISU =
                           NSRY-SRYSURYO(IDX1)  *  NACCT-DAY(IDX8)
@@ -1977,6 +1982,7 @@
              ELSE
                EVALUATE  TNS-TENSIKIBETU
                  WHEN  1
+                 WHEN  2
       *    金額の場合
                    MOVE 1          TO    A010T-TANI
                  WHEN  3
