@@ -37,6 +37,7 @@
       *  01.00.06    @@@@-門間    12/12/06  公費単独の場合、項目「自費負担額」に
       *                                     公費１計算負担金を参照するように修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    門間         16/02/01  一時ディレクトリ対応(エラーファイル)
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -412,6 +413,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -493,6 +497,11 @@
            MOVE    ZERO            TO      SS003-SYORIKBN
            CALL    "ORCSS003"      USING   SS003-AREA
                                            SPA-AREA
+      *
+           INITIALIZE                     SGETTEMP-AREA
+           MOVE    RECEERR                TO  SGETTEMP-BASENAMES (1)
+           CALL    "ORCSGETTEMP"          USING  SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAMES(1)  TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC

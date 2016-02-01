@@ -42,6 +42,7 @@
       *  02.00.02    @@@@-門間    15/01/14  自費診療に小計を追加
       *  02.00.03    @@@@-門間    15/06/09  桁数判別方法の変更
       *                                     自費小計欄の印字桁数修正
+      *  02.00.04    門間         16/02/01  一時ディレクトリ対応(エラーファイル)
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -401,6 +402,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -476,6 +480,11 @@
                                       ORCSJOBKANRIAREA
                                       JOBKANRI-REC
                                       SPA-AREA
+      *
+           INITIALIZE                     SGETTEMP-AREA
+           MOVE    RECEERR                TO  SGETTEMP-BASENAMES (1)
+           CALL    "ORCSGETTEMP"          USING  SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAMES(1)  TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC

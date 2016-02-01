@@ -39,6 +39,7 @@
       *  01.00.07    @@@@-門間    13/09/30  プレビュー画面の表示修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    15/09/30  ソート処理を修正
+      *  02.00.03    門間         16/02/01  一時ディレクトリ対応(エラーファイル)
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -426,6 +427,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -440,15 +444,12 @@
       *****************************************************************
        000-PROC-SEC                SECTION.
       *
-           DISPLAY  "start"
            PERFORM 100-INIT-SEC
       *
            PERFORM 200-MAIN-SEC
                    UNTIL       FLG-END     =   1
       *
-           DISPLAY  "end"
            PERFORM 300-END-SEC
-           DISPLAY  "end2"
       *
            STOP    RUN
            .
@@ -509,6 +510,11 @@
            MOVE    ZERO            TO      SS003-SYORIKBN
            CALL    "ORCSS003"      USING   SS003-AREA
                                            SPA-AREA
+      *
+           INITIALIZE                     SGETTEMP-AREA
+           MOVE    RECEERR                TO  SGETTEMP-BASENAMES (1)
+           CALL    "ORCSGETTEMP"          USING  SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAMES(1)  TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC

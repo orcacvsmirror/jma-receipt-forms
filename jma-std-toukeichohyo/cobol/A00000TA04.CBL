@@ -30,6 +30,7 @@
       *   02.00.02    門間    2014/11/14  在院延べ日数算出処理の修正
       *                                   入退院数のカウント処理修正
       *   02.00.03    門間    2014/12/16  在院延べ日数(過去異動分)の修正
+      *   02.00.04    門間    2016/02/01  一時ディレクトリ対応(エラーファイル)
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -396,6 +397,11 @@
                                        ORCSJOBKANRIAREA
                                        JOBKANRI-REC
                                        SPA-AREA
+      *
+           INITIALIZE                     SGETTEMP-AREA
+           MOVE    RECEERR                TO  SGETTEMP-BASENAMES (1)
+           CALL    "ORCSGETTEMP"          USING  SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAMES(1)  TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM  200-PARA-HENSYU-SEC

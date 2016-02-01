@@ -36,6 +36,7 @@
       *  01.00.05    @@@@-田中    12/02/02  公務災害（健保準拠）時の点数単価不具合を修正
       *  01.00.06    @@@@-門間    12/07/03  初診、再診、その他の判定条件を再度変更
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    門間         16/02/01  一時ディレクトリ対応(エラーファイル)
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -418,6 +419,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -496,6 +500,11 @@
            MOVE    ZERO            TO      SS003-SYORIKBN
            CALL    "ORCSS003"      USING   SS003-AREA
                                            SPA-AREA
+      *
+           INITIALIZE                     SGETTEMP-AREA
+           MOVE    RECEERR                TO  SGETTEMP-BASENAMES (1)
+           CALL    "ORCSGETTEMP"          USING  SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAMES(1)  TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC

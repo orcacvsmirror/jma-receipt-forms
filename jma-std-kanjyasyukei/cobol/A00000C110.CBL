@@ -35,6 +35,7 @@
       *  01.00.04    @@@@-門間    12/07/18  初診、再診、その他の判定条件を再変更
       *                                     その他件数を修正(CSVデータ)
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    門間         16/02/01  一時ディレクトリ対応(エラーファイル)
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -341,6 +342,9 @@
       *
            COPY    "COMMON-SPA".
       *
+      *    一時ファイル名編集
+           COPY    "CPORCSGETTEMP.INC".
+      *
       ****************************************************************
        LINKAGE                 SECTION.
       *
@@ -402,6 +406,11 @@
            MOVE    ZERO            TO      SS003-SYORIKBN
            CALL    "ORCSS003"      USING   SS003-AREA
                                            SPA-AREA
+      *
+           INITIALIZE                     SGETTEMP-AREA
+           MOVE    RECEERR                TO  SGETTEMP-BASENAMES (1)
+           CALL    "ORCSGETTEMP"          USING  SGETTEMP-AREA
+           MOVE    SGETTEMP-FULLNAMES(1)  TO  RECEERR
       *
       *    パラメタ編集処理
            PERFORM 110-PARA-HENSYU-SEC
