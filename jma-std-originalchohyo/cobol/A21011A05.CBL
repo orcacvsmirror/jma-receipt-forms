@@ -44,6 +44,7 @@
       *                                     公費請求読み込み時、項目を追加
       *                           14/04/18  公費単独複数登録時の不具合修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    16/03/11  一時ファイルに特記事項を追加（07老併、08老健）
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -677,6 +678,14 @@
                  END-IF
                END-PERFORM
       *
+      *        特記事項（07老併、08老健）
+               PERFORM  VARYING  IDS  FROM  1  BY  1
+                        UNTIL    IDS  >     5
+                 IF  RECE10-TOKKI(IDS)  =  "07"  OR  "08"
+                   MOVE    RECE10-TOKKI(IDS)   TO  A05TMP-TOKKI
+                 END-IF
+               END-PERFORM
+      *
                INITIALIZE  IDS
                            SUM-SYUNISSU
                            WRK-SYUNISSU-TBL
@@ -903,6 +912,14 @@
       *    公費番号設定
            MOVE    RECE02-KOHNUM(1)    TO    A05TMP-KOHNUM1
            MOVE    RECE02-KOHNUM(2)    TO    A05TMP-KOHNUM2
+      *
+      *    特記事項（07老併、08老健）
+           PERFORM  VARYING  IDS  FROM  1  BY  1
+                    UNTIL    IDS  >     5
+             IF  RECE10-TOKKI(IDS)  =  "07"  OR  "08"
+               MOVE    RECE10-TOKKI(IDS)   TO  A05TMP-TOKKI
+             END-IF
+           END-PERFORM
       *
            INITIALIZE  IDS
                        SUM-SYUNISSU
