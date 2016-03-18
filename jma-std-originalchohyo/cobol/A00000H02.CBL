@@ -34,6 +34,7 @@
       *  01.00.03    @@@@-門間    12/03/23  Ｈ２４年４月改正対応
       *  01.00.04    @@@@-門間    12/11/29  医療機関住所、医療機関名の印字ずれ修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    16/03/16  Ｈ２８年４月改正対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -489,12 +490,20 @@
       *****************************************************************
        000-PROC-SEC                SECTION.
       *
-      *    平成２４年４月から別ＰＧとする
-           IF      SPA-SRYYMD          >=  "20120401"
+           EVALUATE    TRUE
+               WHEN   (SPA-SRYYMD          >=  "20120401" )  AND
+                      (SPA-SRYYMD          <   "20160401" )
+      *        平成２４年４月から平成２８年３月まで
                CALL    "A00000H02V02"      USING   SPA-AREA
                                                    ORCHC19AREA
                GO      TO      000-PROC-EXT
-           END-IF
+      *
+               WHEN   (SPA-SRYYMD          >=  "20160401" )
+      *        平成２８年４月から
+               CALL    "A00000H02V03"      USING   SPA-AREA
+                                                   ORCHC19AREA
+               GO      TO      000-PROC-EXT
+           END-EVALUATE
       *
            INITIALIZE                  FLG-AREA
            INITIALIZE                  IDX-AREA
