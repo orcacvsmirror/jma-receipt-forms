@@ -45,6 +45,7 @@
       *                           14/04/18  公費単独複数登録時の不具合修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    16/03/11  一時ファイルに特記事項を追加（07老併、08老健）
+      *  02.00.03    @@@@-門間    16/05/16  一時ファイルに適用開始年月日を追加
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -678,6 +679,9 @@
                  END-IF
                END-PERFORM
       *
+      *        適用開始年月日
+               MOVE    RECE10-TEKSTYMD     TO    A05TMP-TEKSTYMD
+      *
       *        特記事項（07老併、08老健）
                PERFORM  VARYING  IDS  FROM  1  BY  1
                         UNTIL    IDS  >     5
@@ -912,6 +916,9 @@
       *    公費番号設定
            MOVE    RECE02-KOHNUM(1)    TO    A05TMP-KOHNUM1
            MOVE    RECE02-KOHNUM(2)    TO    A05TMP-KOHNUM2
+      *
+      *    適用開始年月日
+           MOVE    RECE02-TEKSTYMD     TO    A05TMP-TEKSTYMD
       *
       *    特記事項（07老併、08老健）
            PERFORM  VARYING  IDS  FROM  1  BY  1
