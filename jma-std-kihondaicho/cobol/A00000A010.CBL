@@ -42,6 +42,7 @@
       *  01.00.08    @@@@-門間    14/05/02  シス管読込時のCLOSE処理の修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    16/01/12  都道府県購入価格の回数が集計されるように修正
+      *  02.00.03    @@@@-門間    16/05/17  流動食対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -729,6 +730,9 @@
       *
            END-IF
       *
+      *    1:食事療養費のみ(WRK-SYOKUJITEN1)
+      *    2:食事療養費＋特別食加算(WRK-SYOKUJITEN2)
+      *    3:入院時食事療養（流動食）(WRK-SYOKUJITEN3)
            INITIALIZE                SYS-5000-REC
            MOVE    "5000"            TO   SYS-5000-KANRICD
            MOVE    WRK-PARA-PRTLYMD  TO   SYS-5000-STYUKYMD
@@ -736,44 +740,42 @@
            PERFORM 820-SYSKANRI-DBSELECT-SEC
            IF   FLG-SYSKANRI = ZERO
       *
-      *    食事療養費
-             MOVE  SYS-5000-SHOKUJIRYOYOCD TO    TNS-SRYCD
-             PERFORM   910-TENSU-READ-SEC
-             MOVE  TNS-TEN    TO   WRK-SYOKUJITEN1
-                                   WRK-SYOKUJITEN2
-                                   WRK-SYOKUJITEN3
-                                   WRK-SYOKUJITEN4
+      *      食事療養費
+             MOVE    SYS-5000-SHOKUJIRYOYOCD   TO  TNS-SRYCD
+             PERFORM  910-TENSU-READ-SEC
+             MOVE    TNS-TEN                   TO  WRK-SYOKUJITEN1
+                                                   WRK-SYOKUJITEN2
       *
-      *    食事療養費(特別管理加算)の算定判定
+             EVALUATE  SYS-5000-SHOKUJIRYOYOCD
+             WHEN  "197000110"
+      *        入院時食事療養（１）（流動食）
+               MOVE   "197003110"              TO  TNS-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               MOVE    TNS-TEN                 TO  WRK-SYOKUJITEN3
+      *
+             WHEN  "197000710"
+      *        入院時食事療養（２）（流動食）
+               MOVE   "197003210"              TO  TNS-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               MOVE    TNS-TEN                 TO  WRK-SYOKUJITEN3
+             END-EVALUATE
+      *
+      *      食事療養費(特別管理加算)の算定判定
              IF  SYS-5000-SHOKUKBN(1)  =  "2"
-               MOVE  SYS-5000-SHOKUCD(1) TO    TNS-SRYCD
+               MOVE    SYS-5000-SHOKUCD(1)     TO  TNS-SRYCD
                PERFORM   910-TENSU-READ-SEC
-               ADD   TNS-TEN  TO   WRK-SYOKUJITEN1
-                                   WRK-SYOKUJITEN2
-                                   WRK-SYOKUJITEN3
-                                   WRK-SYOKUJITEN4
+               ADD     TNS-TEN                 TO  WRK-SYOKUJITEN1
+                                                   WRK-SYOKUJITEN2
              END-IF
       *
            END-IF
            PERFORM 820-SYSKANRI-DBCLOSE-SEC
       *
-      *    1:食事療養費のみ(WRK-SYOKUJITEN1)
-      *    2:食事療養費＋特別食加算(WRK-SYOKUJITEN2)
-      *    3:食事療養費＋複数献立加算(WRK-SYOKUJITEN3)
-      *    4:食事療養費＋特別食加算＋複数献立加算(WRK-SYOKUJITEN4)
-      *
       *    特別食加算の算出
-           MOVE  "197000470"         TO   TNS-SRYCD
-           PERFORM   910-TENSU-READ-SEC
+           MOVE    "197000470"                 TO  TNS-SRYCD
+           PERFORM  910-TENSU-READ-SEC
+           ADD     TNS-TEN                     TO  WRK-SYOKUJITEN2
       *
-           ADD    TNS-TEN            TO   WRK-SYOKUJITEN2
-                                          WRK-SYOKUJITEN4
-      *
-      *    複数献立加算の算出
-           MOVE   "197000670"        TO   TNS-SRYCD
-           PERFORM   910-TENSU-READ-SEC
-           ADD    TNS-TEN            TO   WRK-SYOKUJITEN3
-                                          WRK-SYOKUJITEN4
            INITIALIZE                SYS-5113-REC
            MOVE    "5113"            TO   SYS-5113-KANRICD
            MOVE    SPA-HOSPNUM       TO   SYS-5113-HOSPNUM
@@ -1627,10 +1629,24 @@
                    END-EVALUATE
                  WHEN  2
                    MOVE "02：食事療養＋特食"          TO  A010T-NAME
+                   EVALUATE NSRY-SRYCD(IDX1)
+                     WHEN 099999918
+                       MOVE "02：食事療養＋特食(朝)"  TO  A010T-NAME
+                     WHEN 099999919
+                       MOVE "02：食事療養＋特食(昼)"  TO  A010T-NAME
+                     WHEN 099999920
+                       MOVE "02：食事療養＋特食(夕)"  TO  A010T-NAME
+                   END-EVALUATE
                  WHEN  3
-                   MOVE "03：食事療養＋選択食"        TO  A010T-NAME
-                 WHEN  4
-                   MOVE "04：食事療養＋特食＋選択食"  TO  A010T-NAME
+                   MOVE "03：流動食"                  TO  A010T-NAME
+                   EVALUATE NSRY-SRYCD(IDX1)
+                     WHEN 099999918
+                       MOVE "03：流動食(朝)"          TO  A010T-NAME
+                     WHEN 099999919
+                       MOVE "03：流動食(昼)"          TO  A010T-NAME
+                     WHEN 099999920
+                       MOVE "03：流動食(夕)"          TO  A010T-NAME
+                   END-EVALUATE
                END-EVALUATE
       *
       *    点数の設定

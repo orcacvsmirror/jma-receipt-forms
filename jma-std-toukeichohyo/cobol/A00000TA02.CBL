@@ -44,6 +44,7 @@
       *   01.00.12    門間    2015/04/16  在院時の病棟に集計されるよう修正
       *   01.00.13    門間    2015/07/24  CSV出力時、発行区分の印字不具合修正
       *   01.00.14    門間    2015/09/11  ＣＳＶ出力が正常に出力されない不具合を修正
+      *   01.00.15    門間    2016/05/17  流動食対応
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -680,46 +681,50 @@
       *    食事療養費
       *    (WRK-SYOKUJITEN1 : 食事療養費のみ)
       *    (WRK-SYOKUJITEN2 : 食事療養費＋特別食加算)
-      *    (WRK-SYOKUJITEN3 : 食事療養費＋複数献立加算)
-      *    (WRK-SYOKUJITEN4 : 食事療養費＋特別食加算＋複数献立加算)
+      *    (WRK-SYOKUJITEN3 : 入院時食事療養（流動食）)
            INITIALIZE                   SYS-5000-REC
            MOVE    "5000"               TO  SYS-5000-KANRICD
            MOVE    WRK-PARA-PRTEDYMD    TO  SYS-5000-STYUKYMD
            MOVE    WRK-PARA-PRTSTYMD    TO  SYS-5000-EDYUKYMD
            PERFORM  930-SYSKANRI-DBSELECT-SEC
            IF  FLG-SYSKANRI  =  ZERO
-             MOVE    SYS-5000-SHOKUJIRYOYOCD TO  WRK-SRYCD
+      *
+      *      食事療養費
+             MOVE    SYS-5000-SHOKUJIRYOYOCD   TO  WRK-SRYCD
              PERFORM  910-TENSU-READ-SEC
-             MOVE    TNS-TEN            TO  WRK-SYOKUJITEN1
-                                            WRK-SYOKUJITEN2
-                                            WRK-SYOKUJITEN3
-                                            WRK-SYOKUJITEN4
+             MOVE    TNS-TEN                   TO  WRK-SYOKUJITEN1
+                                                   WRK-SYOKUJITEN2
+      *
+             EVALUATE  SYS-5000-SHOKUJIRYOYOCD
+             WHEN  "197000110"
+      *        入院時食事療養（１）（流動食）
+               MOVE   "197003110"              TO  WRK-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               MOVE    TNS-TEN                 TO  WRK-SYOKUJITEN3
+      *
+             WHEN  "197000710"
+      *        入院時食事療養（２）（流動食）
+               MOVE   "197003210"              TO  WRK-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               MOVE    TNS-TEN                 TO  WRK-SYOKUJITEN3
+             END-EVALUATE
       *
       *    食事療養費(特別管理加算)の算定判定
              IF   SYS-5000-SHOKUKBN(1)  =  "2"
-               MOVE    SYS-5000-SHOKUCD(1)   TO  WRK-SRYCD
+               MOVE    SYS-5000-SHOKUCD(1)     TO  WRK-SRYCD
                PERFORM  910-TENSU-READ-SEC
-               ADD  TNS-TEN             TO  WRK-SYOKUJITEN1
-                                            WRK-SYOKUJITEN2
-                                            WRK-SYOKUJITEN3
-                                            WRK-SYOKUJITEN4
+               ADD     TNS-TEN                 TO  WRK-SYOKUJITEN1
+                                                   WRK-SYOKUJITEN2
              END-IF
-      *    食事療養費(食堂加算)の算定判定
+      *
            END-IF
            PERFORM  930-SYSKANRI-DBCLOSE-SEC
       *
       *    特別食加算の算出
-           MOVE    "197000470"          TO  WRK-SRYCD
+           MOVE    "197000470"                 TO  WRK-SRYCD
            PERFORM  910-TENSU-READ-SEC
+           ADD     TNS-TEN                     TO  WRK-SYOKUJITEN2
       *
-           ADD  TNS-TEN                 TO  WRK-SYOKUJITEN2
-                                            WRK-SYOKUJITEN4
-      *
-      *    複数献立加算の算出
-           MOVE    "197000670"          TO  WRK-SRYCD
-           PERFORM  910-TENSU-READ-SEC
-           ADD  TNS-TEN                 TO  WRK-SYOKUJITEN3
-                                            WRK-SYOKUJITEN4
            .
        200-PARA-HENSYU-EXT.
            EXIT.
