@@ -31,6 +31,8 @@
       *                                   入退院数のカウント処理修正
       *   02.00.03    門間    2014/12/16  在院延べ日数(過去異動分)の修正
       *   02.00.04    門間    2016/02/01  一時ディレクトリ対応(エラーファイル)
+      *   02.00.05    門間    2016/05/30  年齢算出処理を修正
+      *                                   項目（初診、新患、再診）処理を変更
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -41,12 +43,27 @@
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
       *
+      *    対象患者ファイル
+           SELECT  TA04PT-FILE     ASSIGN  TA04PT
+                                   ORGANIZATION    INDEXED
+                                   ACCESS  MODE    DYNAMIC
+                                   RECORD  KEY     TA04P-KEY
+                                   FILE    STATUS  IS  STS-PARA.
+      *
        DATA                        DIVISION.
        FILE                        SECTION.
       *
       *    エラーファイル
        FD  RECEERR-FILE.
        01  RECEERR-REC             PIC X(200).
+      *
+      *    対象患者ファイル
+       FD  TA04PT-FILE.
+       01  TA04P. 
+           03    TA04P-KEY.
+             05  TA04P-SRYKA       PIC X(02).
+             05  TA04P-SRYYMD      PIC X(08).
+             05  TA04P-PTID        PIC 9(10).
       *
        WORKING-STORAGE             SECTION.
       *
@@ -55,6 +72,10 @@
       *
       *    エラーファイル 名称領域
            COPY    "CPRECEERR.INC".
+      *
+      *    診療日別受信患者ファイル
+           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01PARA//
+                                       BY         //TA04PT//.
       *
            COPY    "A00000TA041.INC".
            COPY    "A00000TA042.INC".
@@ -81,6 +102,9 @@
            03  FLG-NYUINACCT           PIC 9(01).
            03  FLG-GAITOU              PIC 9(01).
            03  FLG-NZAIIN              PIC 9(01).
+           03  FLG-SYUNOU              PIC 9(01).
+           03  FLG-SRYKARRK            PIC 9(01).
+           03  FLG-INVALID             PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -161,6 +185,7 @@
              05  WRK-SYSYY             PIC 9(04).
              05  WRK-SYSMM             PIC 9(02).
              05  WRK-SYSDD             PIC 9(02).
+           03  WRK-SYOSINYMD           PIC X(08).
       *
       *    集計領域
        01  WRK-SYUKEI-AREA.
@@ -281,6 +306,17 @@
        01  PRTDATA-REC.
            COPY    "CPPRTDATA.INC".
       *
+      *    初再診取得サブ
+           COPY    "CPORCSS003.INC".
+      *
+      *    収納マスタ
+       01  SYUNOU-REC.
+           COPY    "CPSYUNOU.INC".
+      *
+      *    診療科履歴マスタ
+       01  SRYKARRK-REC.
+           COPY    "CPSRYKARRK.INC".
+      *
       *****************************************************************
       *    サブプロ用　領域
       *****************************************************************
@@ -398,10 +434,24 @@
                                        JOBKANRI-REC
                                        SPA-AREA
       *
-           INITIALIZE                     SGETTEMP-AREA
-           MOVE    RECEERR                TO  SGETTEMP-BASENAMES (1)
-           CALL    "ORCSGETTEMP"          USING  SGETTEMP-AREA
-           MOVE    SGETTEMP-FULLNAMES(1)  TO  RECEERR
+           INITIALIZE                       SGETTEMP-AREA
+      *
+           MOVE    "TA04TP"                 TO  TA04PT-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID      TO  TA04PT-TERMID
+           MOVE    WRK-PARA-HOSPNUM         TO  TA04PT-HOSPNUM
+      *
+           MOVE    TA04PT-BASENAME          TO  SGETTEMP-BASENAMES (1)
+           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
+           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
+      *
+           MOVE    SGETTEMP-FULLNAMES (1)   TO  TA04PT-FULLNAME
+           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
+      *
+      *    初診／再診判定サブ初期処理
+           INITIALIZE                      SS003-AREA
+           MOVE    ZERO            TO      SS003-SYORIKBN
+           CALL    "ORCSS003"      USING   SS003-AREA
+                                           SPA-AREA
       *
       *    パラメタ編集処理
            PERFORM  200-PARA-HENSYU-SEC
@@ -635,6 +685,26 @@
                PERFORM  910-JYURRK-FETCH-SEC
              END-PERFORM
              PERFORM  910-JYURRK-CLOSE-SEC
+      *
+      *      対象患者ファイル初期化
+             OPEN  OUTPUT TA04PT-FILE
+             CLOSE        TA04PT-FILE
+      *
+             OPEN  I-O TA04PT-FILE
+      *
+      *      収納情報
+             PERFORM  910-DBSELECT-SEC
+             PERFORM  UNTIL      FLG-SYUNOU  = 1
+      *
+      *        初診、再診件数を取得する。
+               PERFORM 420-SYOSAISHIN-CNT-SUB-SEC
+      *
+               PERFORM 910-DBFETCH-SEC
+             END-PERFORM
+             PERFORM 910-DBCLOSE-SEC
+      *
+             CLOSE     TA04PT-FILE
+      *
            END-IF
       *
            IF  FLG-KENSU  =  1
@@ -863,26 +933,6 @@
       *    診療科、医師セット
                    PERFORM  510-GAIRAI-KBNSET-SEC
       *
-      *    初診患者数
-                   IF  ( SRY-SRYCD(IDX2)  =  "111700210"
-                       OR  SRY-SRYCD(IDX2)  =  "111003610"
-                       OR  SRY-SRYCD(IDX2)  =  "111700110"
-                       OR  SRY-SRYCD(IDX2)  =  "111000110"
-                       OR  SRY-SRYCD(IDX2)  =  "111011810"
-                       OR  SRY-SRYCD(IDX2)  =  "101110010"
-                       OR  SRY-SRYCD(IDX2)  =  "113003510"
-                       OR  SRY-SRYCD(IDX2)  =  "113003710"
-                       OR  SRY-SRYCD(IDX2)  =  "099110001" )
-      *
-                     ADD  1          TO  WRK-SYOSIN(IDX-KBN)
-      *    [内]新患者数
-                     PERFORM  900-JYURRK-READ-SEC
-                     IF  FLG-JYURRK  =  1
-                       ADD  1        TO  WRK-SINKAN(IDX-KBN)
-                     END-IF
-                     MOVE    1       TO  FLG-KENSU
-                   END-IF
-      *
       *    [内]診察時間外
                    IF  ( SRY-SRYCD(IDX2)  =  "111000570"
                        OR  SRY-SRYCD(IDX2)  =  "111000670"
@@ -899,31 +949,6 @@
                        OR  SRY-SRYCD(IDX2)  =  "113009670"
                        OR  SRY-SRYCD(IDX2)  =  "113007270" )
                      ADD  1          TO  WRK-SYOJKNGAI(IDX-KBN)
-                     MOVE    1       TO  FLG-KENSU
-                   END-IF
-      *
-      *    再診患者数
-                   IF  ( SRY-SRYCD(IDX2)  =  "101120040"
-                       OR  SRY-SRYCD(IDX2)  =  "112007410"
-                       OR  SRY-SRYCD(IDX2)  =  "112007950"
-                       OR  SRY-SRYCD(IDX2)  =  "112008350"
-                       OR  SRY-SRYCD(IDX2)  =  "112008850"
-                       OR  SRY-SRYCD(IDX2)  =  "112009210"
-                       OR  SRY-SRYCD(IDX2)  =  "112009750"
-                       OR  SRY-SRYCD(IDX2)  =  "112010150"
-                       OR  SRY-SRYCD(IDX2)  =  "112010650"
-                       OR  SRY-SRYCD(IDX2)  =  "112702310"
-                       OR  SRY-SRYCD(IDX2)  =  "112702750"
-                       OR  SRY-SRYCD(IDX2)  =  "112703050"
-                       OR  SRY-SRYCD(IDX2)  =  "112803450"
-                       OR  SRY-SRYCD(IDX2)  =  "112703710"
-                       OR  SRY-SRYCD(IDX2)  =  "112704150"
-                       OR  SRY-SRYCD(IDX2)  =  "112704450"
-                       OR  SRY-SRYCD(IDX2)  =  "112704850"
-                       OR  SRY-SRYCD(IDX2)  =  "113003610"
-                       OR  SRY-SRYCD(IDX2)  =  "113003810"
-                       OR  SRY-SRYCD(IDX2)  =  "099120001" )
-                     ADD  1          TO  WRK-SAISIN(IDX-KBN)
                      MOVE    1       TO  FLG-KENSU
                    END-IF
       *
@@ -984,11 +1009,10 @@
       *    年齢別
                  MOVE    JYURRK-PTID           TO  WRK-PTID2
                  PERFORM  900-PTINF-READ-SEC
-                 MOVE    LNK-PRTKANRI-SKYYMD   TO  WRK-SYSYMD
+                 MOVE    JYURRK-SRYYMD         TO  WRK-SYSYMD
                  MOVE    PTINF-BIRTHDAY        TO  WRK-SYMD
-                 MOVE    LNK-PRTKANRI-SKYYMD   TO  WRK-SYSYMD
                  COMPUTE  WRK-AGE  =  WRK-SYSYY  -  WRK-SYY
-                 IF  LNK-PRTKANRI-SKYYMD(5:4)  <  WRK-SYMD(5:4)
+                 IF  JYURRK-SRYYMD(5:4)  <  WRK-SYMD(5:4)
                    COMPUTE  WRK-AGE  =  WRK-AGE  -  1
                  END-IF
       *    文字型から数値型へ移項
@@ -1056,6 +1080,102 @@
            .
        400-NINZU-CNT-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    受診履歴情報集計サブ処理
+      *****************************************************************
+       420-SYOSAISHIN-CNT-SUB-SEC      SECTION.
+      *
+      *    初診／再診判定サブ
+           INITIALIZE                          SS003-AREA
+           MOVE    "1"                 TO      SS003-SYORIKBN
+           MOVE    SYU-HOSPNUM         TO      SS003-HOSPNUM
+           MOVE    SYU-NYUGAIKBN       TO      SS003-NYUGAIKBN
+           MOVE    SYU-PTID            TO      SS003-PTID
+           MOVE    SYU-DENPNUM         TO      SS003-DENPNUM
+           CALL    "ORCSS003"          USING   SS003-AREA
+                                               SPA-AREA
+      *
+      *    診療科、医師セット
+           PERFORM  520-GAIRAI-KBNSET-SEC
+      *
+           EVALUATE  SS003-SYOSAISIN-KBN
+      *    初診患者数
+           WHEN    "1"
+             ADD     1                   TO  WRK-SYOSIN(IDX-KBN)
+      *
+             INITIALIZE            FLG-INVALID
+             MOVE    SYU-SRYYMD   TO  TA04P-SRYYMD
+             MOVE    SYU-PTID     TO  TA04P-PTID
+      *
+             IF  ( WRK-PARA-PRTKBN  =  SPACE  OR  "1" )
+               MOVE    SYU-SRYKA    TO  TA04P-SRYKA
+             ELSE
+               INITIALIZE  TA04P-SRYKA
+             END-IF
+      *
+             READ TA04PT-FILE
+               KEY      IS      TA04P-KEY
+               INVALID  KEY
+                 MOVE    1            TO  FLG-INVALID
+             END-READ
+      *
+             IF   FLG-INVALID      =     1 
+      *        未処理のデータは患者数を集計処理を行う。
+               INITIALIZE       FLG-INVALID
+               WRITE  TA04P
+                 INVALID  KEY
+                 MOVE    1              TO  FLG-INVALID
+               END-WRITE
+      *
+      *        [内]新患者数
+               PERFORM  920-JYURRK-READ-SEC
+      *
+                 IF  (    ( WRK-PARA-PRTKBN  =  "2"  OR  "3" )
+                       AND  FLG-JYURRK       =  ZERO
+                       AND  JYURRK-SRYYMD    =  SYU-SRYYMD )
+                 OR  (    ( WRK-PARA-PRTKBN  =  SPACE  OR  "1" )
+                       AND  FLG-JYURRK       =  ZERO
+                       AND  JYURRK-SRYYMD    =  SYU-SRYYMD
+                       AND  JYURRK-SRYKA     =  TA04P-SRYKA )
+      *
+                 INITIALIZE  FLG-SRYKARRK
+                 MOVE    SYU-SRYYMD         TO  WRK-SYOSINYMD
+      *
+                 PERFORM  920-SRYKARRK-SELECT-SEC
+                 PERFORM  UNTIL  FLG-SRYKARRK  =  1
+      *
+                   IF  (      KARRK-SYOSINYMD1      <  WRK-SYOSINYMD
+                         AND  KARRK-SYOSINYMD1  NOT =  SPACE          )
+                     MOVE    KARRK-SYOSINYMD1    TO   WRK-SYOSINYMD
+                   END-IF
+      *
+                   PERFORM  920-SRYKARRK-FETCH-SEC
+                 END-PERFORM
+                 PERFORM  920-SRYKARRK-CLOSE-SEC
+      *
+                 IF   WRK-SYOSINYMD  =  SYU-SRYYMD
+                   ADD     1                 TO  WRK-SINKAN(IDX-KBN)
+                 END-IF
+      *
+               END-IF
+      *
+             END-IF
+      *
+             MOVE    1                   TO  FLG-KENSU
+      *    再診患者数
+           WHEN    "2"
+             ADD     1                   TO  WRK-SAISIN(IDX-KBN)
+             MOVE    1                   TO  FLG-KENSU
+      *    その他件数カウント
+           WHEN    OTHER
+             CONTINUE
+           END-EVALUATE
+      *
+           .           
+       420-SYOSAISHIN-CNT-SUB-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    診療科、医師セット（入院）
       *****************************************************************
@@ -1086,11 +1206,14 @@
       *    年齢別
                  MOVE    PTNYUINRRK-PTID       TO  WRK-PTID2
                  PERFORM  900-PTINF-READ-SEC
-                 MOVE    LNK-PRTKANRI-SKYYMD   TO  WRK-SYSYMD
+                 IF  PTNYUINRRK-TENSTUYMD  NOT =  "99999999"
+                   MOVE    PTNYUINRRK-TENSTUYMD  TO  WRK-SYSYMD
+                 ELSE
+                   MOVE    WRK-PARA-PRTEDYMD     TO  WRK-SYSYMD
+                 END-IF
                  MOVE    PTINF-BIRTHDAY        TO  WRK-SYMD
-                 MOVE    LNK-PRTKANRI-SKYYMD   TO  WRK-SYSYMD
                  COMPUTE  WRK-AGE  =  WRK-SYSYY  -  WRK-SYY
-                 IF  LNK-PRTKANRI-SKYYMD(5:4)  <  WRK-SYMD(5:4)
+                 IF  PTNYUINRRK-TENSTUYMD(5:4)  <  WRK-SYMD(5:4)
                    COMPUTE  WRK-AGE  =  WRK-AGE  -  1
                  END-IF
       *    文字型から数値型へ移項
@@ -1148,11 +1271,10 @@
       *    年齢別
                    MOVE    JYURRK-PTID          TO  WRK-PTID2
                    PERFORM  900-PTINF-READ-SEC
-                   MOVE    LNK-PRTKANRI-SKYYMD  TO  WRK-SYSYMD
+                   MOVE    JYURRK-SRYYMD        TO  WRK-SYSYMD
                    MOVE    PTINF-BIRTHDAY       TO  WRK-SYMD
-                   MOVE    LNK-PRTKANRI-SKYYMD  TO  WRK-SYSYMD
                    COMPUTE  WRK-AGE  =  WRK-SYSYY  -  WRK-SYY
-                   IF  LNK-PRTKANRI-SKYYMD(5:4)  <  WRK-SYMD(5:4)
+                   IF  JYURRK-SRYYMD(5:4)  <  WRK-SYMD(5:4)
                      COMPUTE  WRK-AGE  =  WRK-AGE  -  1
                    END-IF
       *    文字型から数値型へ移項
@@ -1177,6 +1299,70 @@
            .
        510-GAIRAI-KBNSET-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    診療科、医師セット（外来）  収納
+      *****************************************************************
+       520-GAIRAI-KBNSET-SEC            SECTION.
+      *
+           IF  SYU-SRYYMD(1:6)  =  WRK-PARA-PRTYM
+      *
+      *      名称インデックスセット
+             MOVE    ZERO         TO  FLG-LOOPEND
+             PERFORM  VARYING  IDX-KBN  FROM  1  BY  1
+                      UNTIL  IDX-KBN  >  WRK-MAX
+                      OR  FLG-LOOPEND  =  1
+               EVALUATE  WRK-PARA-PRTKBN
+                 WHEN  "1"
+                 WHEN  SPACE
+      *            診療科別
+                   IF  SYU-SRYKA  =  WRK-NAMEKBN(IDX-KBN)(1:2)
+                       AND  SYU-SRYYMD  >=  WRK-YUKOSTYMD(IDX-KBN)
+                       AND  SYU-SRYYMD  <=  WRK-YUKOEDYMD(IDX-KBN)
+                     MOVE    1      TO  FLG-LOOPEND
+                   END-IF
+                 WHEN  "2"
+      *            医師別
+                   IF  SYU-DRCD  =  WRK-NAMEKBN(IDX-KBN)(2:4)
+                       AND  SYU-SRYYMD  >=  WRK-YUKOSTYMD(IDX-KBN)
+                       AND  SYU-SRYYMD  <=  WRK-YUKOEDYMD(IDX-KBN)
+                     MOVE    1      TO  FLG-LOOPEND
+                   END-IF
+                 WHEN  "3"
+      *            年齢別
+                   MOVE    SYU-PTID             TO  WRK-PTID2
+                   PERFORM  900-PTINF-READ-SEC
+                   MOVE    SYU-SRYYMD           TO  WRK-SYSYMD
+                   MOVE    PTINF-BIRTHDAY       TO  WRK-SYMD
+                   COMPUTE  WRK-AGE  =  WRK-SYSYY  -  WRK-SYY
+                   IF  SYU-SRYYMD(5:4)  <  WRK-SYMD(5:4)
+                     COMPUTE  WRK-AGE  =  WRK-AGE  -  1
+                   END-IF
+      *            文字型から数値型へ移項
+                   MOVE    WRK-YUKOSTYMD(IDX-KBN)(1:3)  TO  WRK-Z3
+                   MOVE    WRK-Z3       TO  WRK-AGE-ST
+                   MOVE    WRK-YUKOEDYMD(IDX-KBN)(1:3)  TO  WRK-Z3
+                   MOVE    WRK-Z3       TO  WRK-AGE-ED
+                   IF  WRK-AGE  >=  WRK-AGE-ST
+                       AND  WRK-AGE  <=  WRK-AGE-ED
+                     MOVE    1          TO  FLG-LOOPEND
+                   END-IF
+               END-EVALUATE
+      *
+             END-PERFORM
+      *
+             ADD  -1              TO  IDX-KBN
+      *    診療科、医師該当なし判定
+             IF  IDX-KBN  =  WRK-MAX
+               MOVE    1     TO  FLG-GAITOU
+             END-IF
+      *
+           END-IF
+      *
+           .
+       520-GAIRAI-KBNSET-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    印刷編集処理(入院)
       *****************************************************************
@@ -2834,6 +3020,193 @@
            .
        900-SRYACCT-READ-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    収納情報検索
+      *****************************************************************
+       910-DBSELECT-SEC             SECTION.
+      *
+           INITIALIZE                   SYUNOU-REC
+      *
+           MOVE    WRK-PARA-HOSPNUM     TO  SYU-HOSPNUM
+           MOVE    WRK-PARA-NYUGAIKBN   TO  SYU-NYUGAIKBN
+           MOVE    WRK-PARA-PRTSTYMD    TO  SYU-SRYYMD(1:6)
+           MOVE    WRK-PARA-PRTEDYMD    TO  SYU-UPSRYYMD
+      *
+           MOVE    SYUNOU-REC           TO  MCPDATA-REC
+           MOVE    "DBSELECT"           TO  MCP-FUNC
+           MOVE    "tbl_syunou"         TO  MCP-TABLE
+           MOVE    "st_key1"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                        SPA-AREA
+      *
+           IF      MCP-RC              =   ZERO
+               PERFORM 910-DBFETCH-SEC
+           ELSE
+               MOVE    1                  TO  FLG-SYUNOU
+           END-IF        
+           .
+       910-DBSELECT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *     収納情報検索
+      *****************************************************************
+       910-DBFETCH-SEC                SECTION.
+      *
+           MOVE    "DBFETCH"            TO  MCP-FUNC
+           MOVE    "tbl_syunou"         TO  MCP-TABLE
+           MOVE    "st_key1"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                        SPA-AREA
+           IF      MCP-RC              =   ZERO
+               MOVE    ZERO               TO  FLG-SYUNOU
+               MOVE    MCPDATA-REC        TO  SYUNOU-REC
+           ELSE
+               MOVE    1                  TO  FLG-SYUNOU
+           END-IF  
+           .
+       910-DBFETCH-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    ＤＢ　クローズ処理
+      *****************************************************************
+       910-DBCLOSE-SEC                 SECTION.
+      *
+           MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
+           MOVE    "tbl_syunou"         TO  MCP-TABLE
+           MOVE    "st_key1"            TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"          USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           .
+       910-DBCLOSE-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    受信履歴情報検索
+      *****************************************************************
+       920-JYURRK-READ-SEC            SECTION.
+      *
+           INITIALIZE                  JYURRK-REC
+           MOVE    SYU-HOSPNUM         TO  JYURRK-HOSPNUM
+           MOVE    SYU-PTID            TO  JYURRK-PTID
+           MOVE    SYU-NYUGAIKBN       TO  JYURRK-NYUGAIKBN
+           MOVE    "00000000"          TO  JYURRK-SRYYMD
+           MOVE    SYU-SRYYMD          TO  JYURRK-UPSRYYMD
+           MOVE    JYURRK-REC          TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_jyurrk"        TO  MCP-TABLE
+           MOVE    "key14"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           IF  MCP-RC  =  ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_jyurrk"      TO  MCP-TABLE
+             MOVE    "key14"           TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC     TO  JYURRK-REC
+               MOVE    ZERO            TO  FLG-JYURRK
+             ELSE
+               MOVE    1               TO  FLG-JYURRK
+             END-IF
+           ELSE
+             MOVE    1                 TO  FLG-JYURRK
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_jyurrk"        TO  MCP-TABLE
+           MOVE    "key14"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           .
+       920-JYURRK-READ-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療科履歴情報検索処理
+      *****************************************************************
+       920-SRYKARRK-SELECT-SEC            SECTION.
+      *
+           INITIALIZE               SRYKARRK-REC
+      *
+           MOVE    SYU-HOSPNUM      TO   KARRK-HOSPNUM
+           MOVE    SYU-PTID         TO   KARRK-PTID
+      *
+           MOVE    SRYKARRK-REC     TO   MCPDATA-REC
+           MOVE    "DBSELECT"       TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"   TO   MCP-TABLE
+           MOVE    "key2"           TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+           IF   MCP-RC   =   ZERO
+             PERFORM  920-SRYKARRK-FETCH-SEC
+           ELSE
+             MOVE    1               TO   FLG-SRYKARRK
+           END-IF
+      *
+           .
+       920-SRYKARRK-SELECT-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療科履歴情報検索処理
+      *****************************************************************
+       920-SRYKARRK-FETCH-SEC            SECTION.
+      *
+           MOVE    "DBFETCH"         TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"    TO   MCP-TABLE
+           MOVE    "key2"            TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"       USING
+                                     MCPAREA
+                                     MCPDATA-REC
+                                     SPA-AREA
+           IF   MCP-RC   =   ZERO
+             MOVE    MCPDATA-REC     TO   SRYKARRK-REC 
+             MOVE    ZERO            TO   FLG-SRYKARRK
+           ELSE
+             MOVE    1               TO   FLG-SRYKARRK
+           END-IF
+      *
+           .
+       920-SRYKARRKA-FETCH-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    診療科履歴情報検索処理
+      *****************************************************************
+       920-SRYKARRK-CLOSE-SEC            SECTION.
+      *
+           MOVE    SRYKARRK-REC     TO   MCPDATA-REC
+           MOVE    "DBCLOSECURSOR"  TO   MCP-FUNC
+           MOVE    "tbl_srykarrk"   TO   MCP-TABLE
+           MOVE    "key2"           TO   MCP-PATHNAME
+           CALL    "ORCDBMAIN"      USING
+                                    MCPAREA
+                                    MCPDATA-REC
+                                    SPA-AREA
+      *
+           .
+       920-SRYKARRK-CLOSE-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    ＤＢオープン処理
       *****************************************************************
