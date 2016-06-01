@@ -1213,7 +1213,7 @@
                  END-IF
                  MOVE    PTINF-BIRTHDAY        TO  WRK-SYMD
                  COMPUTE  WRK-AGE  =  WRK-SYSYY  -  WRK-SYY
-                 IF  PTNYUINRRK-TENSTUYMD(5:4)  <  WRK-SYMD(5:4)
+                 IF  WRK-SYSYMD(5:4)  <  WRK-SYMD(5:4)
                    COMPUTE  WRK-AGE  =  WRK-AGE  -  1
                  END-IF
       *    文字型から数値型へ移項
@@ -1274,7 +1274,7 @@
                    MOVE    JYURRK-SRYYMD        TO  WRK-SYSYMD
                    MOVE    PTINF-BIRTHDAY       TO  WRK-SYMD
                    COMPUTE  WRK-AGE  =  WRK-SYSYY  -  WRK-SYY
-                   IF  JYURRK-SRYYMD(5:4)  <  WRK-SYMD(5:4)
+                   IF  WRK-SYSYMD(5:4)  <  WRK-SYMD(5:4)
                      COMPUTE  WRK-AGE  =  WRK-AGE  -  1
                    END-IF
       *    文字型から数値型へ移項
@@ -1335,7 +1335,7 @@
                    MOVE    SYU-SRYYMD           TO  WRK-SYSYMD
                    MOVE    PTINF-BIRTHDAY       TO  WRK-SYMD
                    COMPUTE  WRK-AGE  =  WRK-SYSYY  -  WRK-SYY
-                   IF  SYU-SRYYMD(5:4)  <  WRK-SYMD(5:4)
+                   IF  WRK-SYSYMD(5:4)  <  WRK-SYMD(5:4)
                      COMPUTE  WRK-AGE  =  WRK-AGE  -  1
                    END-IF
       *            文字型から数値型へ移項
