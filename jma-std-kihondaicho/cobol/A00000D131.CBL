@@ -37,6 +37,7 @@
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    15/04/02  保険点数が「０」の場合、平均点の計算から除く
       *  02.00.03    @@@@-門間    15/04/16  助成金額の一時領域を修正
+      *  02.00.04    @@@@-門間    16/06/15  プログラムオプション（郵便番号）取得処理を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -298,7 +299,7 @@
                05  SUM-POST-REC-G.
                  07  SUM-TIKUNAME      PIC X(20).
                  07  FILLER            PIC X(01).
-                 07  SUM-POST-NUM-TBL  OCCURS 20.
+                 07  SUM-POST-NUM-TBL  OCCURS 50.
                    09  SUM-POST-NUM    PIC X(07).
                    09  FILLER          PIC X(01).
                05  SUM-BF-MISYU        PIC S9(11).
@@ -1167,11 +1168,11 @@
                    MOVE   WRK-DATA(9:20)     TO    SUM-TIKUNAME(IDX13)
                  END-IF
                  PERFORM  VARYING  IDX12  FROM  30  BY  8
-                          UNTIL  IDX12  >  189
-                          OR  IDX15  >  20
+                          UNTIL  IDX12  >  429
+                          OR  IDX15  >  50
                           OR  FLG-DATEKBN2  =  1
                    IF   WRK-DATA(IDX12:1)  =  SPACE
-                     MOVE    21           TO   IDX15
+                     MOVE    51           TO   IDX15
                      MOVE    1        TO   FLG-DATEKBN2
                    ELSE
                      MOVE   WRK-DATA(IDX12:7)
@@ -2493,7 +2494,7 @@
              PERFORM  UNTIL  I3  >   I4
                ADD     1   TO  I3
                PERFORM  VARYING   IDY  FROM  1  BY  1
-                        UNTIL  IDY    >  20
+                        UNTIL  IDY    >  50
                         OR    SPACE  =  SUM-POST-NUM(I3 IDY)
                         OR    I3     >  I4
                  IF    WRK-POST     =  SUM-POST-NUM(I3 IDY)

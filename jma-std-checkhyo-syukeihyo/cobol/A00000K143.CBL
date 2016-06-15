@@ -38,6 +38,7 @@
       *   01.00.08    @@@@-門間   14/04/14  「その他」回数欄の不具合を修正
       *   02.00.01    @@@@-門間   14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *   02.00.02    @@@@-門間   15/08/25  剤点数の正負（点数区分）判定を変更
+      *   02.00.03    @@@@-門間   16/06/15  プログラムオプション（郵便番号）取得処理を修正
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -320,7 +321,7 @@
                05  WRK-TIKU-REC-G.
                  07  WRK-TIKUNAME     PIC X(20).
                  07  FILLER           PIC X(01).
-                 07  WRK-POST-NUM-TBL OCCURS 20.
+                 07  WRK-POST-NUM-TBL OCCURS 50.
                    09  WRK-POST-NUM   PIC  X(07).
                    09  FILLER         PIC  X(01).
       *
@@ -1240,11 +1241,11 @@
                IF  (WRK-DATA(1:5)  =  "CHIKU" )
                  MOVE   WRK-DATA(9:20)      TO   WRK-TIKUNAME(IDX13)
                  PERFORM  VARYING  IDX12  FROM  30  BY  8
-                          UNTIL  IDX12  >  189
-                          OR  IDX9  >  20
+                          UNTIL  IDX12  >  429
+                          OR  IDX9  >  50
                           OR  FLG-DATEKBN2  =  1
                    IF   WRK-DATA(IDX12:1)  =  SPACE
-                     MOVE    21       TO   IDX9
+                     MOVE    51       TO   IDX9
                      MOVE    1        TO   FLG-DATEKBN2
                    ELSE
                      MOVE   WRK-DATA(IDX12:7)
@@ -1449,7 +1450,7 @@
              PERFORM  UNTIL  IDX3  >   IDX4
                ADD     1   TO  IDX3
                PERFORM  VARYING   IDY  FROM  1  BY  1
-                        UNTIL  IDY    >  20
+                        UNTIL  IDY    >  50
                         OR    SPACE  =  WRK-POST-NUM(IDX3 IDY)
                         OR    IDX3     >  IDX4
                  IF    WRK-POST     =  WRK-POST-NUM(IDX3 IDY)
