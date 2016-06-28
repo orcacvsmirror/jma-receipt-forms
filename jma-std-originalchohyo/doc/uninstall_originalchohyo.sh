@@ -605,6 +605,39 @@ for f in ${SITEDIR}/doc/*${pgid}* ; do
 done
 
 
+pgid=A00000RA01
+
+#/usr/local/site-jma-receipt/
+for f in ${SITESRCDIR}/cobol/${pgid}* ; do
+  rm -rf $f
+done
+
+for f in ${SITESRCDIR}/cobol/copy/${pgid}* ; do
+  rm -rf $f
+done
+
+for f in ${SITESRCDIR}/form/${pgid}* ; do
+  rm -rf $f
+done
+
+for f in ${SITESRCDIR}/doc/*${pgid}* ; do
+  rm -rf $f
+done
+
+#/usr/lib/jma-receipt/site-lib/
+for f in ${SITELIBDIR}/${pgid}* ; do
+  rm -rf $f
+done
+
+for f in ${SITEFORMDIR}/${pgid}* ; do
+  rm -rf $f
+done
+
+for f in ${SITEDIR}/doc/*${pgid}* ; do
+  rm -rf $f
+done
+
+
 pgid=originalchohyo
 
 for f in ${SITESRCDIR}/doc/*${pgid}* ; do
