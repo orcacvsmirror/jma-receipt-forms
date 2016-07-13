@@ -21,12 +21,13 @@
       *  管理者            : 
       *  Maj/Min/Rev  修正者  日付       内容
       *   01.00.01    門間    12/11/30   新規作成
+      *   01.00.02    門間    16/07/13   該当患者が集計されない不具合を修正
       *******************************************************************
         01  TA07TMP.
             03  TA07TMP-KEY.
               05  TA07TMP-HKNKBN-NUM  PIC X(1).
               05  TA07TMP-NYUGAI      PIC 9(1).
-              05  TA07TMP-PTNUM       PIC 9(20).
+              05  TA07TMP-PTNUM       PIC X(20).
               05  TA07TMP-HKNCOMBI    PIC 9(4).
             03  TA07TMP-HKNNUM      PIC 9(3).
             03  TA07TMP-PTNUM10     PIC X(10).
