@@ -35,6 +35,7 @@
       *  01.00.04    @@@@-門間    12/07/18  初診、再診、その他の判定条件を再変更
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    門間         16/02/01  一時ディレクトリ対応(エラーファイル)
+      *  02.00.03    門間         16/07/20  CSVファイル作成機能修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -128,7 +129,7 @@
            03  NG                      PIC 9(04).
            03  IDX10                   PIC 9(02).
            03  IDX11                   PIC 9(02).
-           03  IDX-LINE                PIC 9(02).
+           03  IDX-LINE                PIC 9(05).
            03  IDX-HKN                 PIC 9(02).
            03  IDX-ST                  PIC 9(03).
            03  IDX-ED                  PIC 9(03).
@@ -1227,6 +1228,9 @@
              END-IF
            END-PERFORM
       *
+      *    CSV出力処理
+           PERFORM  230-TOUKEICSV-SEC
+      *
            .
       *
        400-CSV-HEAD-EXT.
@@ -1238,7 +1242,9 @@
       *
            PERFORM  VARYING  IDX-LINE  FROM  1  BY  1
                     UNTIL  IDX-LINE  >  SUM-SRYYMDIMAX
-                    OR  IDX-LINE  >  32
+      *
+             MOVE    1                 TO  IDXP
+      *
       *    日付
              IF   IDX-LINE  =  SUM-SRYYMDIMAX
                MOVE    "計"           TO  WRK-ITEM
@@ -1278,10 +1284,10 @@
       *
              END-PERFORM
       *
-           END-PERFORM
+      *      CSV出力処理
+             PERFORM  230-TOUKEICSV-SEC
       *
-      *    CSV出力処理
-           PERFORM  230-TOUKEICSV-SEC
+           END-PERFORM
       *
            .
        400-CSV-DATA-EXT.
