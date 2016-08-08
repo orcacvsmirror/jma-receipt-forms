@@ -39,6 +39,8 @@
       *  01.00.08    @@@@-門間    14/02/07  プログラムオプション対応（訂正印字）
       *  01.00.09    @@@@-門間    14/03/24  消費税対応
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    16/08/08  「消費税(再掲)」欄へ前回分の消費税が記載される不具合を修正
+      *                                     「外来未収額」「入院未収額」欄へ不明な未収金が記載される不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -232,6 +234,8 @@
            COPY    "CPSK1005.INC".
       *    請求書自費名称情報
            COPY    "CPSK1013.INC".
+      *    収納情報
+           COPY    "CPSK1039.INC".
       *    医療機関基本情報
            COPY    "CPSK5000.INC".
       *    病棟情報
@@ -327,6 +331,9 @@
       *
       *    マシン日付取得サブ
            COPY    "CPORCSMCNDATE.INC".
+      *
+      *    未収額編集
+           COPY    "CPORCSMISYU.INC".
       *
       *    一時ファイル名取得
            COPY    "CPORCSGETTEMP.INC".
@@ -463,6 +470,41 @@
       *
            MOVE    SYS-1034-PRTNM(3)
                                        TO  WRK-PRTNM
+      *
+      *    収納機能情報
+           MOVE    SPACE               TO  SYS-1039-REC
+           MOVE    "1039"              TO  SYS-1039-KANRICD
+           MOVE    "*"                 TO  SYS-1039-KBNCD
+           MOVE    ORCHCN03-SYSYMD     TO  SYS-1039-STYUKYMD
+                                           SYS-1039-EDYUKYMD
+      *
+      *    システム管理検索
+           MOVE    SYS-1039-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_syskanri"      TO  MCP-TABLE
+           MOVE    "key10"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+           IF      MCP-RC              =   ZERO
+               MOVE    "tbl_syskanri"  TO  MCP-TABLE
+               MOVE    "key10"         TO  MCP-PATHNAME
+               PERFORM 900-KANRIMST-READ-SEC
+               IF      MCP-RC              =   ZERO
+                   MOVE    MCPDATA-REC     TO  SYS-1039-REC
+               END-IF
+           ELSE
+               INITIALIZE                  SYS-1039-REC
+               MOVE    1               TO  FLG-SYSKANRI
+           END-IF
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_syskanri"      TO  MCP-TABLE
+           MOVE    "key10"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
       *
       *    労災医療機関情報編集
            MOVE    SPACE               TO  SYS-4001-REC
@@ -1067,7 +1109,8 @@
            PERFORM 800-HENKAN-SEC
            MOVE    WRK-ZHENSYU24       TO  HCN03-KONSEIKYU
       *    今回請求額消費税（再掲）
-           MOVE    SYU-SKYMONEY-TAX-SAI TO WRK-KINGAKU-9
+           MOVE    ORCHCN03-SEIKYU-TAX-SAI (IDX-M)
+                                       TO  WRK-KINGAKU-9
            MOVE    WRK-KINGAKU-9       TO  WRK-ZHENSYU12
            PERFORM 800-HENKAN-SEC
            MOVE    WRK-ZHENSYU24       TO  HCN03-KONZEI
@@ -1550,95 +1593,26 @@
            MOVE    ZERO            TO  WRK-NYU-MISYU
                                        WRK-GAI-MISYU
       *
-           MOVE    ZERO            TO  FLG-SYUNOU2
+           INITIALIZE              SMISYU-AREA
+           CALL    "ORCSMISYU"     USING
+                                   SYUNOU-REC
+                                   SMISYU-AREA
+                                   SPA-AREA
       *
-      *    収納マスタ検索
-           PERFORM 31021-SYUNOU-SEL-SEC
+           MOVE    SMISYU-NYUIN    TO  WRK-NYU-MISYU
+           MOVE    SMISYU-GAIRAI   TO  WRK-GAI-MISYU
       *
-           PERFORM UNTIL ( FLG-SYUNOU2 NOT =   ZERO )
-      *
-               EVALUATE    TRUE
-               WHEN    ( MISYU-NYUGAIKBN   =   SYU-NYUGAIKBN )
-                   AND ( MISYU-DENPNUM     =   SYU-DENPNUM   )
-                   CONTINUE
-      *
-               WHEN    OTHER
-      *
-                   IF    ( MISYU-NYUGAIKBN     =   "1" )
-                       COMPUTE WRK-NYU-MISYU
-                           =   WRK-NYU-MISYU
-                           + ( MISYU-SKYMONEY  -   MISYU-NYUKIN-TOTAL )
-                   END-IF
-      *
-                   IF    ( MISYU-NYUGAIKBN     =   "2" )
-                       COMPUTE WRK-GAI-MISYU
-                           =   WRK-GAI-MISYU
-                           + ( MISYU-SKYMONEY  -   MISYU-NYUKIN-TOTAL )
-                   END-IF
-      *
-               END-EVALUATE
-      *
-      *        収納マスタ読込
-               PERFORM 31021-SYUNOU-READ-SEC
-      *
-           END-PERFORM
-      *
-           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
-            MOVE    "tbl_syunou"      TO  MCP-TABLE
-            MOVE    "key6"            TO  MCP-PATHNAME
-            CALL    "ORCDBMAIN"       USING
-                                      MCPAREA
-                                      MCPDATA-REC
-                                      SPA-AREA
+           IF    ( SYS-1039-MISYUKIKANKBN  =   "1" )
+               CONTINUE
+           ELSE
+               COMPUTE WRK-NYU-MISYU
+                   =   WRK-NYU-MISYU   -   ORCHCN03S02-MYMISYU
+           END-IF
       *
            .
        3102-MISYU-EDIT-EXT.
            EXIT.
-      *****************************************************************
-      *    収納マスタ検索処理
-      *****************************************************************
-       31021-SYUNOU-SEL-SEC             SECTION.
       *
-           INITIALIZE              MISYU-REC
-           MOVE    SYU-HOSPNUM      TO  MISYU-HOSPNUM
-           MOVE    SYU-PTID        TO  MISYU-PTID
-           MOVE    "%"             TO  MISYU-SRYYMD
-           MOVE    MISYU-REC       TO  MCPDATA-REC
-           MOVE    "tbl_syunou"    TO  MCP-TABLE
-           MOVE    "key6"          TO  MCP-PATHNAME
-           MOVE    "DBSELECT"      TO  MCP-FUNC
-           CALL    "ORCDBMAIN"         USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-           IF    ( MCP-RC          NOT =   ZERO )
-               MOVE    1           TO  FLG-SYUNOU2
-           END-IF
-      *
-           .
-       31021-SYUNOU-SEL-EXT.
-           EXIT.
-      *****************************************************************
-      *    収納マスタ読込処理
-      *****************************************************************
-       31021-SYUNOU-READ-SEC           SECTION.
-      *
-           MOVE    "tbl_syunou"    TO  MCP-TABLE
-           MOVE    "key6"          TO  MCP-PATHNAME
-           MOVE    "DBFETCH"       TO  MCP-FUNC
-               CALL    "ORCDBMAIN"      USING
-                                       MCPAREA
-                                       MCPDATA-REC
-                                       SPA-AREA
-           IF    ( MCP-RC          NOT =   ZERO )
-               MOVE    1           TO  FLG-SYUNOU2
-           ELSE
-               MOVE    MCPDATA-REC TO  MISYU-REC
-           END-IF
-      *
-           .
-       31021-SYUNOU-READ-EXT.
-           EXIT.
       *****************************************************************
       *    帳票印刷処理
       *****************************************************************
