@@ -34,6 +34,8 @@
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    門間         16/02/01  一時ディレクトリ対応(エラーファイル)
       *  02.00.03    門間         16/07/20  CSVファイル作成機能修正
+      *  02.00.04    門間         16/08/18  継続入院の患者ごとに「在院中」欄のカウント数が
+      *                                     １件多くなる不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -829,8 +831,6 @@
                      ADD  1      TO  SUM-NYUIN(IDX1 IDX5)
                      ADD  1      TO  SUM-NYUIN(IDX3 IDX6)
                      ADD  1      TO  SUM-NYUIN(IDX3 IDX5)
-                     ADD  1      TO  SUM-TOUZAN2(IDX1 IDX6)
-                     ADD  1      TO  SUM-TOUZAN2(IDX3 IDX6)
                    END-IF
                  END-IF
       *    前回、主保険の退避
@@ -866,6 +866,8 @@
                      ADD  1     TO  SUM-TAIIN(IDX1 IDX5)
                      ADD  1     TO  SUM-TAIIN(IDX3 IDX6)
                      ADD  1     TO  SUM-TAIIN(IDX3 IDX5)
+                     ADD  1     TO  SUM-TOUZAN2(IDX1 IDX6)
+                     ADD  1     TO  SUM-TOUZAN2(IDX3 IDX6)
                    END-IF
                  END-IF
       *    前回、主保険の退避
