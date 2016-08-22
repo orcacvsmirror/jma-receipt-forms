@@ -45,6 +45,7 @@
       *   01.00.13    門間    2015/07/24  CSV出力時、発行区分の印字不具合修正
       *   01.00.14    門間    2015/09/11  ＣＳＶ出力が正常に出力されない不具合を修正
       *   01.00.15    門間    2016/05/17  流動食対応
+      *   01.00.16    門間    2016/08/22  次発行区分へ合計が合算される不具合を修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -420,7 +421,7 @@
            COPY    "CPORCMCP.INC".
       *
            COPY    "COMMON-SPA".
-      *+
+      *
       *    一時ファイル名編集
            COPY    "CPORCSGETTEMP.INC".
       *
@@ -1408,7 +1409,8 @@
                MOVE    1       TO  IDX1
              END-IF
       *
-             IF  TA02TMP-SRYKBN  NOT =  WRK-ZENSRYKBN
+             IF  (     TA02TMP-SRYKBN  NOT =  WRK-ZENSRYKBN
+                   OR  TA02TMP-PRTKBN  NOT =  WRK-ZENPRTKBN )
       *    小計計算
                ADD  1          TO  IDX1
       *
@@ -1419,17 +1421,11 @@
                END-IF
              END-IF
       *
-             IF  TA02TMP-SORTKBN  NOT =  WRK-ZENSORTKBN
-      *
+             IF  (     TA02TMP-SORTKBN  NOT =  WRK-ZENSORTKBN
+                   OR  TA02TMP-PRTKBN   NOT =  WRK-ZENPRTKBN  )
       *    合計頁数編集
                ADD  1          TO  CNT-GPAGE
                MOVE    1       TO  IDX1
-             ELSE
-               IF  TA02TMP-PRTKBN  NOT =  WRK-ZENPRTKBN
-      *    合計頁数編集
-                 ADD  1        TO  CNT-GPAGE
-                 MOVE    1     TO  IDX1
-               END-IF
              END-IF
       *
            END-PERFORM
@@ -1656,7 +1652,8 @@
                END-IF
              END-IF
       *
-             IF  TA02TMP-SRYKBN  NOT =  WRK-ZENSRYKBN
+             IF  (     TA02TMP-SRYKBN  NOT =  WRK-ZENSRYKBN
+                   OR  TA02TMP-PRTKBN  NOT =  WRK-ZENPRTKBN )
       *    小計計算
                PERFORM  500-SYOKEI-HEN-SEC
                IF   IDX1  >  34
@@ -1669,7 +1666,8 @@
                END-IF
              END-IF
       *
-             IF  TA02TMP-SORTKBN  NOT =  WRK-ZENSORTKBN
+             IF  (     TA02TMP-SORTKBN  NOT =  WRK-ZENSORTKBN
+                   OR  TA02TMP-PRTKBN   NOT =  WRK-ZENPRTKBN  )
       *    合計集計
                PERFORM  500-GOUKEI-HEN-SEC
       *    印刷処理
@@ -1685,24 +1683,6 @@
                ELSE
       *    CSVヘッダー処理
                  PERFORM  500-CSV-HEAD-SEC
-               END-IF
-             ELSE
-      *
-               IF  TA02TMP-PRTKBN  NOT =  WRK-ZENPRTKBN
-      *    印刷処理
-                 IF  WRK-ZENSORTKBN  =  12  OR  13  OR  14
-                   PERFORM  510-PRINT-OUT-SEC
-                 ELSE
-                   PERFORM  500-PRINT-OUT-SEC
-                 END-IF
-      *
-                 IF  TA02TMP-SORTKBN  =  12  OR  13  OR  14
-      *    CSVヘッダー処理
-                   PERFORM  510-CSV-HEAD-SEC
-                 ELSE
-      *    CSVヘッダー処理
-                   PERFORM  500-CSV-HEAD-SEC
-                 END-IF
                END-IF
              END-IF
       *
