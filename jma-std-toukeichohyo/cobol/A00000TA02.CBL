@@ -1916,7 +1916,7 @@
       *
       *    ³°Íè·ï¿ô
            IF    WRK-SUM-GGAIRAI-KEN(9:2)    = "00"
-             MOVE    WRK-SUM-SGAIRAI-KEN   TO  WRK-V10
+             MOVE    WRK-SUM-GGAIRAI-KEN   TO  WRK-V10
              MOVE    WRK-V10               TO  TA02-GGAIRAI-KEN
            ELSE
              IF    WRK-SUM-GGAIRAI-KEN(10:1)    = "0"
