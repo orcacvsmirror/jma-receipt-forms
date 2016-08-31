@@ -46,6 +46,7 @@
       *   01.00.14    門間    2015/09/11  ＣＳＶ出力が正常に出力されない不具合を修正
       *   01.00.15    門間    2016/05/17  流動食対応
       *   01.00.16    門間    2016/08/22  次発行区分へ合計が合算される不具合を修正
+      *   01.00.17    門間    2016/08/30  食事療養及び生活療養の点数（薬価）の算出方法を修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -216,6 +217,11 @@
                05  WRK-SYOKUJITEN2         PIC 9(08)V9(02).
                05  WRK-SYOKUJITEN3         PIC 9(08)V9(02).
                05  WRK-SYOKUJITEN4         PIC 9(08)V9(02).
+           03  WRK-SEIKATUTEN.
+               05  WRK-SEIKATUTEN1         PIC 9(08)V9(02).
+               05  WRK-SEIKATUTEN2         PIC 9(08)V9(02).
+               05  WRK-SEIKATUTEN3         PIC 9(08)V9(02).
+               05  WRK-SEIKATUTEN4         PIC 9(08)V9(02).
            03  WRK-OBJYMD                  PIC 9(08).
            03  WRK-PTID                    PIC 9(10).
            03  WRK-KIZAMI                  PIC S9(09).
@@ -413,6 +419,9 @@
       *    統計ＣＳＶ制御サブ
            COPY    "CPORCSTOUKEICSV.INC".
       *
+      *    入院時生活療養費負担額取得サブ２
+           COPY    "CPORCSNYULIFE2.INC".
+      *
       *    ＤＢ検索
            COPY    "MCPAREA".
       *
@@ -468,6 +477,7 @@
            INITIALIZE                  CSV-DATA
            INITIALIZE                  WRK-OUTPUT-DATA
            INITIALIZE                  RECEERR
+           INITIALIZE                  ORCSNYULIFE2-AREA
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -679,38 +689,47 @@
                PERFORM  910-SYSKANRI-CLOSE-SEC
            END-EVALUATE
       *
-      *    食事療養費
-      *    (WRK-SYOKUJITEN1 : 食事療養費のみ)
-      *    (WRK-SYOKUJITEN2 : 食事療養費＋特別食加算)
-      *    (WRK-SYOKUJITEN3 : 入院時食事療養（流動食）)
+      *    入院基本情報
            INITIALIZE                   SYS-5000-REC
+           MOVE    SPA-HOSPNUM          TO  SYS-5000-HOSPNUM
            MOVE    "5000"               TO  SYS-5000-KANRICD
            MOVE    WRK-PARA-PRTEDYMD    TO  SYS-5000-STYUKYMD
            MOVE    WRK-PARA-PRTSTYMD    TO  SYS-5000-EDYUKYMD
            PERFORM  930-SYSKANRI-DBSELECT-SEC
+      *
            IF  FLG-SYSKANRI  =  ZERO
       *
       *      食事療養費
-             MOVE    SYS-5000-SHOKUJIRYOYOCD   TO  WRK-SRYCD
-             PERFORM  910-TENSU-READ-SEC
-             MOVE    TNS-TEN                   TO  WRK-SYOKUJITEN1
-                                                   WRK-SYOKUJITEN2
-      *
+      *      (WRK-SYOKUJITEN1 : 食事療養費のみ)
+      *      (WRK-SYOKUJITEN2 : 食事療養費＋特別食加算)
+      *      (WRK-SYOKUJITEN3 : 入院時食事療養（流動食）)
              EVALUATE  SYS-5000-SHOKUJIRYOYOCD
              WHEN  "197000110"
+      *        入院時食事療養（１）
+               MOVE    "197000110"             TO  WRK-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               MOVE    TNS-TEN                 TO  WRK-SYOKUJITEN1
+                                                   WRK-SYOKUJITEN2
+      *        特別食加算
+               MOVE    "197000470"             TO  WRK-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               ADD     TNS-TEN                 TO  WRK-SYOKUJITEN2
       *        入院時食事療養（１）（流動食）
-               MOVE   "197003110"              TO  WRK-SRYCD
+               MOVE    "197003110"             TO  WRK-SRYCD
                PERFORM  910-TENSU-READ-SEC
                MOVE    TNS-TEN                 TO  WRK-SYOKUJITEN3
-      *
              WHEN  "197000710"
+      *        入院時食事療養（２）
+               MOVE    "197000710"             TO  WRK-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               MOVE    TNS-TEN                 TO  WRK-SYOKUJITEN1
       *        入院時食事療養（２）（流動食）
-               MOVE   "197003210"              TO  WRK-SRYCD
+               MOVE    "197003210"             TO  WRK-SRYCD
                PERFORM  910-TENSU-READ-SEC
                MOVE    TNS-TEN                 TO  WRK-SYOKUJITEN3
              END-EVALUATE
       *
-      *    食事療養費(特別管理加算)の算定判定
+      *      特別管理加算
              IF   SYS-5000-SHOKUKBN(1)  =  "2"
                MOVE    SYS-5000-SHOKUCD(1)     TO  WRK-SRYCD
                PERFORM  910-TENSU-READ-SEC
@@ -718,13 +737,35 @@
                                                    WRK-SYOKUJITEN2
              END-IF
       *
-           END-IF
-           PERFORM  930-SYSKANRI-DBCLOSE-SEC
+      *      生活療養費
+      *      (WRK-SEIKATUTEN1 : 生活療養費のみ)
+      *      (WRK-SEIKATUTEN2 : 生活療養費＋特別食加算)
+      *      (WRK-SEIKATUTEN3 : 入院時生活療養（流動食）)
+             EVALUATE  SYS-5000-SHOKUJIRYOYOCD
+             WHEN  "197000110"
+      *        入院時生活療養（１）
+               MOVE   "197001310"              TO  WRK-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               MOVE    TNS-TEN                 TO  WRK-SEIKATUTEN1
+                                                   WRK-SEIKATUTEN2
+      *        特別食加算（生活療養）
+               MOVE    "197001570"             TO  WRK-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               ADD     TNS-TEN                 TO  WRK-SEIKATUTEN2
+      *        入院時生活療養（１）（流動食）
+               MOVE    "197003510"             TO  WRK-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               MOVE    TNS-TEN                 TO  WRK-SEIKATUTEN3
       *
-      *    特別食加算の算出
-           MOVE    "197000470"                 TO  WRK-SRYCD
-           PERFORM  910-TENSU-READ-SEC
-           ADD     TNS-TEN                     TO  WRK-SYOKUJITEN2
+             WHEN  "197000710"
+      *        入院時生活療養（２）
+               MOVE    "197001710"             TO  WRK-SRYCD
+               PERFORM  910-TENSU-READ-SEC
+               MOVE    TNS-TEN                 TO  WRK-SEIKATUTEN1
+      *
+             END-EVALUATE
+      *
+           END-IF
       *
            .
        200-PARA-HENSYU-EXT.
@@ -1268,16 +1309,64 @@
                    WHEN  "4"
       *    食事療養費
                      IF  TNS-DATAKBN  =  "1"
-                       EVALUATE  NACCT-DAY(IDX-DAY)
+      *
+      *                入院時生活療養費負担額取得サブ２
+                       INITIALIZE                  ORCSNYULIFE2-AREA
+                       MOVE    NACCT-HOSPNUM   TO  LNK-NYULIFE2-HOSPNUM
+                       MOVE    NACCT-PTID      TO  LNK-NYULIFE2-PTID
+                       MOVE    NACCT-SRYYM     TO  LNK-NYULIFE2-SANTEIYM
+                       CALL    "ORCSNYULIFE2"      USING
+                                                   ORCSNYULIFE2-AREA
+                                                   SPA-AREA
+      *
+                       IF  LNK-NYULIFE2-KBN (IDX-DAY)  NOT =  "1"
+      *                食事療養
+                         EVALUATE  NACCT-DAY(IDX-DAY)
                          WHEN  1
+      *                    診療名称
+                           EVALUATE  NSRY-SRYCD(IDX1)
+                           WHEN  "099999918"
+                             MOVE  "食事療養のみ（朝）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999919"
+                             MOVE  "食事療養のみ（昼）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999920"
+                             MOVE  "食事療養のみ（夕）"
+                                                  TO  TA02TMP-SRYNAME
+                           END-EVALUATE
+      *                    金額
                            MOVE    WRK-SYOKUJITEN1  TO  TA02TMP-YAKKA
                                                         TA02TMP-TANKA
                                                         WRK-TENSU
                          WHEN  2
+      *                    診療名称
+                           EVALUATE  NSRY-SRYCD(IDX1)
+                           WHEN  "099999918"
+                             MOVE  "食事療養＋特食（朝）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999919"
+                             MOVE  "食事療養＋特食（昼）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999920"
+                             MOVE  "食事療養＋特食（夕）"
+                                                  TO  TA02TMP-SRYNAME
+                           END-EVALUATE
+      *                    金額
                            MOVE    WRK-SYOKUJITEN2  TO  TA02TMP-YAKKA
                                                         TA02TMP-TANKA
                                                         WRK-TENSU
                          WHEN  3
+      *                    診療名称
+                           EVALUATE  NSRY-SRYCD(IDX1)
+                           WHEN  "099999918"
+                             MOVE  "流動食（朝）"  TO  TA02TMP-SRYNAME
+                           WHEN  "099999919"
+                             MOVE  "流動食（昼）"  TO  TA02TMP-SRYNAME
+                           WHEN  "099999920"
+                             MOVE  "流動食（夕）"  TO  TA02TMP-SRYNAME
+                           END-EVALUATE
+      *                    金額
                            MOVE    WRK-SYOKUJITEN3  TO  TA02TMP-YAKKA
                                                         TA02TMP-TANKA
                                                         WRK-TENSU
@@ -1285,7 +1374,68 @@
                            MOVE    WRK-SYOKUJITEN4  TO  TA02TMP-YAKKA
                                                         TA02TMP-TANKA
                                                         WRK-TENSU
-                       END-EVALUATE
+                         END-EVALUATE
+                       ELSE
+      *                生活療養
+                         EVALUATE  NACCT-DAY(IDX-DAY)
+                         WHEN  1
+      *                    診療名称
+                           EVALUATE  NSRY-SRYCD(IDX1)
+                           WHEN  "099999918"
+                             MOVE  "食事療養のみ（朝）（生活療養）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999919"
+                             MOVE  "食事療養のみ（昼）（生活療養）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999920"
+                             MOVE  "食事療養のみ（夕）（生活療養）"
+                                                  TO  TA02TMP-SRYNAME
+                           END-EVALUATE
+      *                    金額
+                           MOVE    WRK-SEIKATUTEN1  TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+                         WHEN  2
+      *                    診療名称
+                           EVALUATE  NSRY-SRYCD(IDX1)
+                           WHEN  "099999918"
+                             MOVE  "食事療養＋特食（朝）（生活療養）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999919"
+                             MOVE  "食事療養＋特食（昼）（生活療養）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999920"
+                             MOVE  "食事療養＋特食（夕）（生活療養）"
+                                                  TO  TA02TMP-SRYNAME
+                           END-EVALUATE
+      *                    金額
+                           MOVE    WRK-SEIKATUTEN2  TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+                         WHEN  3
+      *                    診療名称
+                           EVALUATE  NSRY-SRYCD(IDX1)
+                           WHEN  "099999918"
+                             MOVE  "流動食（朝）（生活療養）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999919"
+                             MOVE  "流動食（昼）（生活療養）"
+                                                  TO  TA02TMP-SRYNAME
+                           WHEN  "099999920"
+                             MOVE  "流動食（夕）（生活療養）"
+                                                  TO  TA02TMP-SRYNAME
+                           END-EVALUATE
+      *                    金額
+                           MOVE    WRK-SEIKATUTEN3  TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+                         WHEN  4
+                           MOVE    WRK-SEIKATUTEN4  TO  TA02TMP-YAKKA
+                                                        TA02TMP-TANKA
+                                                        WRK-TENSU
+                         END-EVALUATE
+                       END-IF
+      *
                      ELSE
                        EVALUATE  TNS-TENSIKIBETU
                          WHEN  0
@@ -1916,7 +2066,7 @@
       *
       *    外来件数
            IF    WRK-SUM-GGAIRAI-KEN(9:2)    = "00"
-             MOVE    WRK-SUM-GGAIRAI-KEN   TO  WRK-V10
+             MOVE    WRK-SUM-SGAIRAI-KEN   TO  WRK-V10
              MOVE    WRK-V10               TO  TA02-GGAIRAI-KEN
            ELSE
              IF    WRK-SUM-GGAIRAI-KEN(10:1)    = "0"
@@ -3002,7 +3152,6 @@
       *****************************************************************
        930-SYSKANRI-DBSELECT-SEC                 SECTION.
       *
-           MOVE    SPA-HOSPNUM          TO  SYS-5000-HOSPNUM
            MOVE    SYS-5000-REC         TO  MCPDATA-REC
            MOVE    "DBSELECT"           TO  MCP-FUNC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
@@ -3011,41 +3160,24 @@
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
+      *
            IF  MCP-RC  =  ZERO
-             PERFORM 930-SYSKANRI-DBFETCH-SEC
+             MOVE    "DBFETCH"            TO  MCP-FUNC
+             MOVE    "tbl_syskanri"       TO  MCP-TABLE
+             MOVE    "key2"               TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"          USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+             IF  MCP-RC  =  ZERO
+               MOVE    ZERO               TO  FLG-SYSKANRI
+               MOVE    MCPDATA-REC        TO  SYS-5000-REC
+             ELSE
+               MOVE    1                  TO  FLG-SYSKANRI
+             END-IF
            ELSE
              MOVE    1                  TO  FLG-SYSKANRI
            END-IF
-           .
-       930-SYSKANRI-DBSELECT-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *     管理マスタ検索
-      *****************************************************************
-       930-SYSKANRI-DBFETCH-SEC                SECTION.
-      *
-           MOVE    "DBFETCH"            TO  MCP-FUNC
-           MOVE    "tbl_syskanri"       TO  MCP-TABLE
-           MOVE    "key2"               TO  MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF  MCP-RC  =  ZERO
-             MOVE    ZERO               TO  FLG-SYSKANRI
-             MOVE    MCPDATA-REC        TO  SYS-5000-REC
-           ELSE
-             MOVE    1                  TO  FLG-SYSKANRI
-           END-IF
-           .
-       930-SYSKANRI-DBFETCH-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    ＤＢ　クローズ処理
-      *****************************************************************
-       930-SYSKANRI-DBCLOSE-SEC         SECTION.
       *
            MOVE    "DBCLOSECURSOR"      TO  MCP-FUNC
            MOVE    "tbl_syskanri"       TO  MCP-TABLE
@@ -3054,8 +3186,9 @@
                                         MCPAREA
                                         MCPDATA-REC
                                         SPA-AREA
+      *
            .
-       930-SYSKANRI-DBCLOSE-EXT.
+       930-SYSKANRI-DBSELECT-EXT.
            EXIT.
       *
       *****************************************************************
