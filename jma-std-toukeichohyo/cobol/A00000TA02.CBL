@@ -47,6 +47,7 @@
       *   01.00.15    門間    2016/05/17  流動食対応
       *   01.00.16    門間    2016/08/22  次発行区分へ合計が合算される不具合を修正
       *   01.00.17    門間    2016/08/30  食事療養及び生活療養の点数（薬価）の算出方法、表示名称を修正
+      *   01.00.18    門間    2016/09/16  入院分を対象とした場合の処理速度を改善
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -835,6 +836,16 @@
       *
       *    入院会計情報読込み
                  PERFORM  900-NYUINACCT-READ-SEC
+      *
+      *    入院時生活療養費負担額取得サブ２
+                 INITIALIZE                  ORCSNYULIFE2-AREA
+                 MOVE    NACCT-HOSPNUM   TO  LNK-NYULIFE2-HOSPNUM
+                 MOVE    NACCT-PTID      TO  LNK-NYULIFE2-PTID
+                 MOVE    NACCT-SRYYM     TO  LNK-NYULIFE2-SANTEIYM
+                 CALL    "ORCSNYULIFE2"      USING
+                                             ORCSNYULIFE2-AREA
+                                             SPA-AREA
+      *
       *    帳票編集
                  PERFORM  400-NYUINACT-HEN-SEC
       *
@@ -1309,15 +1320,6 @@
                    WHEN  "4"
       *    食事療養費
                      IF  TNS-DATAKBN  =  "1"
-      *
-      *                入院時生活療養費負担額取得サブ２
-                       INITIALIZE                  ORCSNYULIFE2-AREA
-                       MOVE    NACCT-HOSPNUM   TO  LNK-NYULIFE2-HOSPNUM
-                       MOVE    NACCT-PTID      TO  LNK-NYULIFE2-PTID
-                       MOVE    NACCT-SRYYM     TO  LNK-NYULIFE2-SANTEIYM
-                       CALL    "ORCSNYULIFE2"      USING
-                                                   ORCSNYULIFE2-AREA
-                                                   SPA-AREA
       *
                        IF  LNK-NYULIFE2-KBN (IDX-DAY)  NOT =  "1"
       *                食事療養

@@ -44,6 +44,7 @@
       *  02.00.02    @@@@-門間    16/01/12  都道府県購入価格の回数が集計されるように修正
       *  02.00.03    @@@@-門間    16/05/17  流動食対応
       *  02.00.04    @@@@-門間    16/08/30  食事療養及び生活療養の点数（薬価）の算出方法、表示名称を修正
+      *  02.00.05    @@@@-門間    16/09/16  入院分を対象とした場合の処理速度を改善
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1051,6 +1052,16 @@
                     MOVE    NSRY-ZAINUM       TO   NACCT-ZAINUM
                     PERFORM   910-NYUINACCT-READ-SEC
                     MOVE      1             TO    FLG-NYUKAIKEI
+      *
+      *             入院時生活療養費負担額取得サブ２
+                    INITIALIZE                  ORCSNYULIFE2-AREA
+                    MOVE    NACCT-HOSPNUM   TO  LNK-NYULIFE2-HOSPNUM
+                    MOVE    NACCT-PTID      TO  LNK-NYULIFE2-PTID
+                    MOVE    NACCT-SRYYM     TO  LNK-NYULIFE2-SANTEIYM
+                    CALL    "ORCSNYULIFE2"      USING
+                                                ORCSNYULIFE2-AREA
+                                                SPA-AREA
+      *
                  END-IF
       *
                  EVALUATE   WRK-PARA-SYUKEIKBN
@@ -1639,15 +1650,6 @@
       *
                MOVE NSRY-SRYCD(IDX1) TO    A010T-SRYCD
                MOVE NSRY-SRYCD(IDX1) TO    A010T3-SRYCD
-      *
-      *        入院時生活療養費負担額取得サブ２
-               INITIALIZE                  ORCSNYULIFE2-AREA
-               MOVE    NACCT-HOSPNUM   TO  LNK-NYULIFE2-HOSPNUM
-               MOVE    NACCT-PTID      TO  LNK-NYULIFE2-PTID
-               MOVE    NACCT-SRYYM     TO  LNK-NYULIFE2-SANTEIYM
-               CALL    "ORCSNYULIFE2"      USING
-                                           ORCSNYULIFE2-AREA
-                                           SPA-AREA
       *
                IF  NACCT-ZAISKBKBN  NOT =  "4"
       *
