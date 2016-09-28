@@ -46,6 +46,8 @@
       *  16/03/02    萩野      先頭４桁が[0086]のコメントコードを取得する
       *  16/04/28    萩野      複数科受診時の帳票の分け方を本体ＰＧと
       *                        同様になるよう修正
+      *  16/09/26    萩野      院内分、院外分の印字をプログラムオプションで
+      *                        選択できるようにする
       *****************************************************************
       *
       *
@@ -372,6 +374,14 @@
                WHEN    "5"
       *            内容変更発行
                    PERFORM 300-ORCSCH62-SYORI-SEC
+      *--- 2016/09/26 START ------------------------------------------
+               WHEN    "6"
+      *            更新時発行（院内院外）
+                   PERFORM 100-SRYACT-SYORI-SEC
+               WHEN    "7"
+      *            中途終了時発行（院内院外）
+                   PERFORM 200-WKSRYACT-SYORI-SEC
+      *--- 2016/09/26 END   ------------------------------------------
            END-EVALUATE
       *
       *    印刷処理へ
@@ -473,6 +483,9 @@
       *--- 2015/11/18 START ------------------------------------------
            EVALUATE  ORCSCH62-KBN
              WHEN  "3"
+      *--- 2016/09/26 START ------------------------------------------
+             WHEN  "7"
+      *--- 2016/09/26 END   ------------------------------------------
                PERFORM VARYING  IDX-T1  FROM  1  BY  1
                        UNTIL   (IDX-T1  >  10 )
                  IF  H016-DRCD  =  TBL-DRCD (IDX-T1)
@@ -527,7 +540,11 @@
       *--- 2015/11/18 START ------------------------------------------
       *--- 2016/04/28 START ------------------------------------------
            IF     (ORCSCH62-KBN        =   "1"
-                                       OR  "2" )
+      *--- 2016/09/26 START ------------------------------------------
+      *                                 OR  "2" )
+                                       OR  "2"
+                                       OR  "6" )
+      *--- 2016/09/26 END   ------------------------------------------
               AND (ORCSCH62-DENPNUM    NOT =   ZERO )
                MOVE    ORCSCH62-DENPNUM    TO  ORCHC62-DENPNUM
                PERFORM VARYING     IDX-T2  FROM    1   BY  1
@@ -938,8 +955,13 @@
       *
       *--- 2015/11/18 START ------------------------------------------
       *    院内の在宅判定
-           IF     (ORCSCH62-KBN        =   "1"  )  AND
-                  (WRK-SRYKBN          =   "14" )
+      *--- 2016/09/26 START ------------------------------------------
+      *     IF     (ORCSCH62-KBN        =   "1"  )  AND
+      *            (WRK-SRYKBN          =   "14" )
+           IF     (ORCSCH62-KBN        =   "1"  )
+             OR   (ORCSCH62-KBN        =   "6"  )
+             IF     (WRK-SRYKBN          =   "14" )
+      *--- 2016/09/26 END   ------------------------------------------
       *        薬剤の有無
                PERFORM VARYING     IDXB    FROM    1   BY  1
                        UNTIL      (IDXB    >   IDX-SRY   )
@@ -958,6 +980,9 @@
                        END-IF
                    END-PERFORM
                END-PERFORM
+      *--- 2016/09/26 START ------------------------------------------
+             END-IF
+      *--- 2016/09/26 END   ------------------------------------------
            END-IF
       *
       *    対象外の剤判定
@@ -1008,6 +1033,20 @@
                                                    "295")
                        MOVE    1               TO  FLG-TAIGAI
                    END-IF
+      *--- 2016/09/26 START ------------------------------------------
+               WHEN    "6"
+      *            院内と院外で印字される両方の印字分を対象とする
+                   IF      (WRK-SRYKBN         =   "14"  )
+                       IF     (WRK-SRYSYUKBN      =   "148"
+                                                  OR  "149" )
+                           CONTINUE
+                       ELSE
+                           IF     (FLG-ZAITAKU-ARI     =   ZERO  )
+                               MOVE    1               TO  FLG-TAIGAI
+                           END-IF
+                       END-IF
+                   END-IF
+      *--- 2016/09/26 END   ------------------------------------------
            END-EVALUATE
       *--- 2016/02/08 START ------------------------------------------
       *     IF   ( ( WRK-SRYKBN    NOT  =  "21"
@@ -1021,7 +1060,6 @@
       *                                    "149" ) ) 
       *       MOVE    1               TO  FLG-TAIGAI
       *     END-IF
-      *
       *--- 2016/02/08 END   ------------------------------------------
       *--- 2015/11/18 END   ------------------------------------------
       *
@@ -1047,10 +1085,16 @@
                            MOVE    1               TO  FLG-TAIGAI
                        END-IF
                    ELSE
+      *--- 2016/09/26 START ------------------------------------------
+                     IF     (ORCSCH62-KBN        =   "2"  )
+      *--- 2016/09/26 END   ------------------------------------------
                        IF     (ACCT-ZAITEN     NOT =   ZERO )
       *                    院外処方印刷で点数あり
                            MOVE    1               TO  FLG-TAIGAI
                        END-IF
+      *--- 2016/09/26 START ------------------------------------------
+                     END-IF
+      *--- 2016/09/26 END   ------------------------------------------
                    END-IF
       ****         院内包括は対象
       *            IF      WRK-SRYSYUKBN       =   "213"
@@ -1648,86 +1692,95 @@
            MOVE    ZERO                TO  FLG-OK2
       *
       *--- 2015/11/18 START ------------------------------------------
+      *--- 2016/09/26 START ------------------------------------------
       *    投薬で、点数がゼロのもを対象（院外）
-      *     IF      ORCSCH62-KBN        =   "4" 
-      *         IF     (WRK-SRYKBN          =   "21"  OR
-      *                                         "22"  OR
-      *                                         "23"    )  AND
-      *                (WRK-ZAITENKEI       =   ZERO   )
-      *             MOVE    1               TO  FLG-OK2
-      *         END-IF
+           IF      ORCSCH62-KBN        =   "4" 
+               IF     (WRK-SRYKBN          =   "21"  OR
+                                               "22"  OR
+                                               "23"    )  AND
+                      (WRK-ZAITENKEI       =   ZERO   )
+                   MOVE    1               TO  FLG-OK2
+               END-IF
       *        院外の診療種別
-      *         IF      WRK-SRYSYUKBN       =   "212"
-      *                                     OR  "222"
-      *                                     OR  "232"
-      *                                     OR  "292"
-      *                                     OR  "298"
-      *                                     OR  "295"
-      *             MOVE    1               TO  FLG-OK2
-      *         END-IF
+               IF      WRK-SRYSYUKBN       =   "212"
+                                           OR  "222"
+                                           OR  "232"
+                                           OR  "292"
+                                           OR  "298"
+                                           OR  "295"
+                   MOVE    1               TO  FLG-OK2
+               END-IF
       *        院内の診療種別
-      *         IF      WRK-SRYSYUKBN       =   "211"
-      *                                     OR  "221"
-      *                                     OR  "231"
-      *                                     OR  "291"
-      *                                     OR  "294"
-      *                                     OR  "297"
-      *                                     OR  "213"
-      *                                     OR  "223"
-      *                                     OR  "233"
-      *             MOVE    ZERO            TO  FLG-OK2
-      *         END-IF
-      *     END-IF
-      *    投薬で、点数がゼロのもを対象（院内）
-      *     IF      ORCSCH62-KBN        =   "3"
-      *         IF     (WRK-SRYKBN          =   "21"  OR
-      *                                         "22"  OR
-      *                                         "23"    )  AND
-      *                (WRK-ZAITENKEI       >   ZERO    )
-      *             MOVE    1               TO  FLG-OK2
-      *         END-IF
-      *        院内の診療種別
-      *         IF      WRK-SRYSYUKBN       =   "211"
-      *                                     OR  "221"
-      *                                     OR  "231"
-      *                                     OR  "291"
-      *                                     OR  "294"
-      *                                     OR  "297"
-      *                                     OR  "213"
-      *                                     OR  "223"
-      *                                     OR  "233"
-      *             MOVE    1               TO  FLG-OK2
-      *         END-IF
-      *     END-IF
-      *    内服薬、外用薬、頓服薬
-           IF  ( WRK-SRYKBN     =  "21"
-                                OR "22"
-                                OR "23" )
-             MOVE    1               TO  FLG-OK2
+               IF      WRK-SRYSYUKBN       =   "211"
+                                           OR  "221"
+                                           OR  "231"
+                                           OR  "291"
+                                           OR  "294"
+                                           OR  "297"
+                                           OR  "213"
+                                           OR  "223"
+                                           OR  "233"
+                   MOVE    ZERO            TO  FLG-OK2
+               END-IF
            END-IF
+      *    投薬で、点数がゼロのもを対象（院内）
+           IF      ORCSCH62-KBN        =   "3"
+               IF     (WRK-SRYKBN          =   "21"  OR
+                                               "22"  OR
+                                               "23"    )  AND
+                      (WRK-ZAITENKEI       >   ZERO    )
+                   MOVE    1               TO  FLG-OK2
+               END-IF
+      *        院内の診療種別
+               IF      WRK-SRYSYUKBN       =   "211"
+                                           OR  "221"
+                                           OR  "231"
+                                           OR  "291"
+                                           OR  "294"
+                                           OR  "297"
+                                           OR  "213"
+                                           OR  "223"
+                                           OR  "233"
+                   MOVE    1               TO  FLG-OK2
+               END-IF
+           END-IF
+      *--- 2016/09/26 END   ------------------------------------------
+      *    内服薬、外用薬、頓服薬
+      *--- 2016/09/26 START ------------------------------------------
+           IF      ORCSCH62-KBN        =   "7"
+      *--- 2016/09/26 END   ------------------------------------------
+               IF     (WRK-SRYKBN          =   "21"
+                                            OR "22"
+                                            OR "23" )
+                   MOVE    1               TO  FLG-OK2
+               END-IF
+      *--- 2016/09/26 START ------------------------------------------
+           END-IF
+      *--- 2016/09/26 END   ------------------------------------------
       *--- 2015/11/18 END   ------------------------------------------
       *
-      *
       *--- 2015/11/18 START ------------------------------------------
+      *--- 2016/09/26 START ------------------------------------------
       *    在宅で薬剤・器材がある時、
-      *     IF      WRK-SRYKBN          =   "14"
-      *         IF     (WRK-SRYSYUKBN       =   "148"  OR
-      *                                         "149" )  AND
-      *                (ORCSCH62-KBN        =   "4"   )
-      *             MOVE    1               TO  FLG-OK2
-      *         END-IF
-      *         IF     (WRK-SRYSYUKBN   NOT =   "148"  AND
-      *                                         "149" )  AND
-      *                (ORCSCH62-KBN         =   "3"  )
+           IF      WRK-SRYKBN          =   "14"
+               IF     (WRK-SRYSYUKBN       =   "148"  OR
+                                               "149" )  AND
+                      (ORCSCH62-KBN        =   "4"   )
+                   MOVE    1               TO  FLG-OK2
+               END-IF
+               IF     (WRK-SRYSYUKBN   NOT =   "148"  AND
+                                               "149" )  AND
+                      (ORCSCH62-KBN         =   "3"  )
       *            在宅で薬剤・器材がある時、
-      *             IF     (WRK-YKZTEN      >   ZERO )  OR
-      *                    (WRK-KIZAITEN    >   ZERO )
-      *              OR    (WRK-SRYSYUKBN   =   "141"
-      *                                     OR  "142"  )
-      *                 MOVE    1               TO  FLG-OK2
-      *             END-IF
-      *         END-IF
-      *     END-IF
+                   IF     (WRK-YKZTEN      >   ZERO )  OR
+                          (WRK-KIZAITEN    >   ZERO )
+                    OR    (WRK-SRYSYUKBN   =   "141"
+                                           OR  "142"  )
+                       MOVE    1               TO  FLG-OK2
+                   END-IF
+               END-IF
+           END-IF
+      *--- 2016/09/26 END   ------------------------------------------
       *--- 2016/02/08 START ------------------------------------------
       **    在宅薬剤（院外処方）
       *     IF  WRK-SRYKBN  =   "14"
@@ -1736,8 +1789,10 @@
       *         MOVE    1               TO  FLG-OK2
       *       END-IF
       *     END-IF
-      *    在宅薬剤
-           IF  WRK-SRYKBN  =   "14"
+           IF      WRK-SRYKBN          =   "14"
+      *--- 2016/09/26 START ------------------------------------------
+             IF      ORCSCH62-KBN        =   "7"
+      *--- 2016/09/26 END   ------------------------------------------
                IF     (WRK-SRYSYUKBN       =   "148"
                                           OR   "149" )
                    MOVE    1               TO  FLG-OK2
@@ -1751,6 +1806,9 @@
                        MOVE    1               TO  FLG-OK2
                    END-IF
                END-IF
+      *--- 2016/09/26 START ------------------------------------------
+             END-IF
+      *--- 2016/09/26 END   ------------------------------------------
            END-IF
       *--- 2016/02/08 END   ------------------------------------------
       *--- 2015/11/18 END   ------------------------------------------

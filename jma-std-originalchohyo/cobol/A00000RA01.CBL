@@ -70,6 +70,8 @@
       *                        同様になるよう修正
       *  16/05/09    萩野      効能効果・注意事項について、検査と画像診断の
       *                        場合は検査名、診断名も印字されるよう修正。
+      *  16/09/26    萩野      院内分、院外分の印字をプログラムオプションで
+      *                        選択できるようにする
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -431,6 +433,9 @@
       *--- 2016/03/02 START ------------------------------------------
            03  PARA-YOUCOM             PIC X(09).
       *--- 2016/03/02 END   ------------------------------------------
+      *--- 2016/09/26 START ------------------------------------------
+           03  PARA-SHOHOU             PIC X(01).
+      *--- 2016/09/26 END   ------------------------------------------
       *
            03  WRK-PARA-NAME           PIC X(25).
            03  WRK-PARA                PIC X(50).
@@ -737,6 +742,16 @@
            END-IF
       *--- 2016/03/02 END   ------------------------------------------
       *
+      *--- 2016/09/26 START ------------------------------------------
+      *    院内院外
+           MOVE    "SHOHOU"              TO  WRK-PARA-NAME
+           PERFORM 1001-OPTION-CALL-SEC
+           MOVE    WRK-PARA(1:1)         TO  PARA-SHOHOU
+           IF  WRK-PARA(1:1)           =   SPACE
+               MOVE    "1"               TO  PARA-SHOHOU
+           END-IF
+      *--- 2016/09/26 END   ------------------------------------------
+      *
            .
        100-OPTION-SELECT-EXT.
            EXIT.
@@ -817,8 +832,15 @@
              INITIALIZE  ORCSCH62AREA
              INITIALIZE  ORCHC62AREA
       *
-      *      中途終了時発行（3:院外 4:院外）
-             MOVE    "3"                     TO  ORCSCH62-KBN
+      *      中途終了時発行
+      *--- 2016/09/26 START ------------------------------------------
+      *       MOVE    "3"                     TO  ORCSCH62-KBN
+             IF    PARA-SHOHOU          =   "1"
+                 MOVE    "3"                 TO  ORCSCH62-KBN
+             ELSE
+                 MOVE    "7"                 TO  ORCSCH62-KBN
+             END-IF
+      *--- 2016/09/26 END   ------------------------------------------
              MOVE    H016-DRCD1(IDX-ST)      TO  SPA-DRCD
              MOVE    H016-DRCD2(IDX-ST)      TO  H016-DRCD
       *
@@ -860,8 +882,15 @@
              INITIALIZE  ORCSCH62AREA
              INITIALIZE  ORCHC62AREA
       *
-      *      請求確認時発行（1:院外 2:院外）
-             MOVE    "1"                     TO  ORCSCH62-KBN
+      *      請求確認時発行
+      *--- 2016/09/26 START ------------------------------------------
+      *       MOVE    "1"                     TO  ORCSCH62-KBN
+             IF    PARA-SHOHOU          =   "1"
+                 MOVE    "1"                 TO  ORCSCH62-KBN
+             ELSE
+                 MOVE    "6"                 TO  ORCSCH62-KBN
+             END-IF
+      *--- 2016/09/26 END   ------------------------------------------
       *--- 2016/04/28 START ------------------------------------------
       *      伝票番号
       *       MOVE    H016-DENPNUM(IDX-ST)    TO  ORCSCH62-DENPNUM
