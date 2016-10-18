@@ -36,6 +36,7 @@
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    15/04/02  保険点数が「０」の場合、平均点の計算から除く
       *  02.00.03    @@@@-門間    15/04/16  助成金額の一時領域を修正
+      *  02.00.04    @@@@-門間    16/10/18  入金額処理の不足分を追加
       ******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2220,7 +2221,7 @@
                           TO  SUM-YOSO(I3 22)
                    ADD    WRK-MONEY
                           TO  SUM-YOSO(SUM-AGEMAX 22)
-      *    入学額から当日預り金を引き去る
+      *    入金額から当日預り金を引き去る
                    EVALUATE WRK-NYUTENTTLKBN
                       WHEN  1
                             COMPUTE SUM-YOSO(I3 21) =
@@ -2267,6 +2268,51 @@
                             SUM-YOSO(SUM-AGEMAX 21) -
                                  SYU-JIHI-5                -
                                  SYU-JIHI-5-TAX
+                      WHEN  6
+                            COMPUTE SUM-YOSO(I3 21) =
+                                 SUM-YOSO(I3 21) -
+                                 SYU-JIHI-6      -
+                                 SYU-JIHI-6-TAX
+                            COMPUTE SUM-YOSO(SUM-AGEMAX 21) =
+                            SUM-YOSO(SUM-AGEMAX 21) -
+                                 SYU-JIHI-6                -
+                                 SYU-JIHI-6-TAX
+                      WHEN  7
+                            COMPUTE SUM-YOSO(I3 21) =
+                                 SUM-YOSO(I3 21) -
+                                 SYU-JIHI-7      -
+                                 SYU-JIHI-7-TAX
+                            COMPUTE SUM-YOSO(SUM-AGEMAX 21) =
+                            SUM-YOSO(SUM-AGEMAX 21) -
+                                 SYU-JIHI-7                -
+                                 SYU-JIHI-7-TAX
+                      WHEN  8
+                            COMPUTE SUM-YOSO(I3 21) =
+                                 SUM-YOSO(I3 21) -
+                                 SYU-JIHI-8      -
+                                 SYU-JIHI-8-TAX
+                            COMPUTE SUM-YOSO(SUM-AGEMAX 21) =
+                            SUM-YOSO(SUM-AGEMAX 21) -
+                                 SYU-JIHI-8                -
+                                 SYU-JIHI-8-TAX
+                      WHEN  9
+                            COMPUTE SUM-YOSO(I3 21) =
+                                 SUM-YOSO(I3 21) -
+                                 SYU-JIHI-9      -
+                                 SYU-JIHI-9-TAX
+                            COMPUTE SUM-YOSO(SUM-AGEMAX 21) =
+                            SUM-YOSO(SUM-AGEMAX 21) -
+                                 SYU-JIHI-9                -
+                                 SYU-JIHI-9-TAX
+                      WHEN  10
+                            COMPUTE SUM-YOSO(I3 21) =
+                                 SUM-YOSO(I3 21) -
+                                 SYU-JIHI-10     -
+                                 SYU-JIHI-10-TAX
+                            COMPUTE SUM-YOSO(SUM-AGEMAX 21) =
+                            SUM-YOSO(SUM-AGEMAX 21) -
+                                 SYU-JIHI-10                -
+                                 SYU-JIHI-10-TAX
                    END-EVALUATE
       *
            IF  SYU-TOTAL-HKNTEN  NOT =  ZERO
