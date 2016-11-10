@@ -95,6 +95,8 @@
  - [form/A00000RA01.red , form/]
  - [form/A00000RA02.red , form/]
  - [form/A00000RA03.red , form/]
+ - [lddef/a00000ra02.bd , lddef/]
+ - [lddef/a00000ra03.bd , lddef/]
  - [doc/version_A00000L300 , doc/]
  - [doc/version_A00000KOHS , doc/]
  - [doc/version_A21011A05 , doc/]
