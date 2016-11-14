@@ -109,22 +109,22 @@
       *
       *    Åº»úÎÎ°è
        01  IDX-AREA.
-           03  IDX                         PIC 9(02).
-           03  IDX1                        PIC 9(02).
-           03  IDX2                        PIC 9(02).
-           03  IDX3                        PIC 9(02).
-           03  IDX4                        PIC 9(02).
-           03  IDY                         PIC 9(02).
+           03  IDX                         PIC 9(04).
+           03  IDX1                        PIC 9(04).
+           03  IDX2                        PIC 9(04).
+           03  IDX3                        PIC 9(04).
+           03  IDX4                        PIC 9(04).
+           03  IDY                         PIC 9(04).
            03  IDY1                        PIC 9(04).
            03  IDY2                        PIC 9(04).
-           03  IDZ                         PIC 9(02).
+           03  IDZ                         PIC 9(04).
            03  IDZ1                        PIC 9(04).
            03  IDZ2                        PIC 9(04).
-           03  IDW                         PIC 9(02).
+           03  IDW                         PIC 9(04).
            03  IDXP                        PIC 9(05).
            03  IDXS                        PIC 9(04).
-           03  IDX-ST                      PIC 9(03).
-           03  IDX-ED                      PIC 9(03).
+           03  IDX-ST                      PIC 9(04).
+           03  IDX-ED                      PIC 9(04).
            03  IDX-POINT                   PIC 9(05).
            
       *
