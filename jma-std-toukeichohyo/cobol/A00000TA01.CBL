@@ -32,15 +32,8 @@
       *   01.00.03    吉川    2014/04/01   CSVの小計行のズレ修正
       *   01.00.04    吉川    2014/04/16   当月と月遅れに診療がある場合
       *                                    月遅れ分が印字されないのを修正
-      *   01.00.05    吉川    2014/05/22   保険が月に変更になった場合
-      *                                    それぞれの一部負担金を印字する
-      *                                    実日数を3桁まで印字する
-      *                                    実人数、延べ人数を9999まで
-      *                                    カウントできるように修正
-      *                                    まとめ公費を使用した場合
-      *                                    負担者番号と受給者番号が
-      *                                    正しく印字されないのを修正
-      *   02.00.01    門間    2014/10/31   ver4.8.0対応（一時ディレクトリ変更）
+      *   01.00.05    吉川    2016/11/14   分点時、保険単独分の負担金を
+      *                                    一部負担欄に加算するように修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -48,7 +41,7 @@
        FILE-CONTROL.
       *
       *    一時ファイル
-           SELECT  TA01-FILE       ASSIGN          TA01P
+           SELECT  TA01-FILE    ASSIGN          TA01PARA
                                    ORGANIZATION    IS  INDEXED
                                    ACCESS  MODE    IS  DYNAMIC
                                    RECORD  KEY     IS  TA01TMP-KEY
@@ -75,11 +68,12 @@
            COPY    "CPCOMMONSHELL.INC".
       *
       *    一時ファイル 名称領域
-           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01PARA//
-                                       BY         //TA01P//.
+           COPY    "CPCOMMONDAT2.INC"  REPLACING  //RECE01//
+                                       BY         //TA01//.
       *
       *    エラーファイル 名称領域
-           COPY    "CPRECEERR.INC".
+           COPY    "CPERRFL.INC"       REPLACING  //ERRFLPARA//
+                                       BY         //RECEERR//.
       *
       *    帳票コピー句
            COPY    "A00000TA01.INC".
@@ -104,6 +98,7 @@
            03  FLG-HENREI                  PIC 9(01).
            03  FLG-PRINT                   PIC 9(01).
            03  FLG-KENSU                   PIC 9(01).
+           03  FLG-BUNTEN                  PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -207,6 +202,8 @@
                05  WRK-HKNSBT1             PIC X(01).
                05  WRK-HKNSBT2             PIC X(01).
                05  WRK-HONKZK              PIC X(01).
+           03  WRK-TANSEIKYUGK             PIC 9(09).
+           03  WRK-TANDOKUTEN              PIC 9(09).
       *
            03  WRK-RECEERR                 PIC X(200).
            03  WRK-PATH                    PIC X(50).
@@ -362,7 +359,7 @@
       *    
       *    ソート用エリア
        01  SRT-AREA.
-           03  SORT-PTNUM                  PIC X(10)   OCCURS  9999.
+           03  SORT-PTNUM                  PIC X(10)   OCCURS  1000.
       *
            COPY    "CPSHELLTBL.INC".
       *
@@ -449,9 +446,6 @@
       *
            COPY    "COMMON-SPA".
       *
-      *    一時ファイル名編集
-           COPY    "CPORCSGETTEMP.INC".
-      *
       ****************************************************************
        LINKAGE                 SECTION.
        01  COMMAND-PARAM.
@@ -491,7 +485,6 @@
            INITIALIZE                    KEY-AREA
            INITIALIZE                    IDX-AREA
            INITIALIZE                    SRT-AREA
-           INITIALIZE                    RECEERR
       *
            PERFORM  100-DBOPEN-SEC
       *
@@ -536,17 +529,9 @@
                                          JOBKANRI-REC
                                          SPA-AREA
       *
-      *    サブプログラムより一時ファイル名編集
-           MOVE    "ATA01TP"                TO  TA01P-FILE-ID
-           MOVE    LNK-PRTKANRI-TERMID      TO  TA01P-TERMID
-           MOVE    WRK-PARA-HOSPNUM         TO  TA01P-HOSPNUM
-      *
-           MOVE    TA01P-BASENAME           TO  SGETTEMP-BASENAMES (1)
-           MOVE    RECEERR                  TO  SGETTEMP-BASENAMES (2)
-           CALL    "ORCSGETTEMP"            USING  SGETTEMP-AREA
-      *
-           MOVE    SGETTEMP-FULLNAMES (1)   TO  TA01P-FULLNAME
-           MOVE    SGETTEMP-FULLNAMES (2)   TO  RECEERR
+           MOVE    "STX017"              TO  TA01PARA-FILE-ID
+           MOVE    LNK-PRTKANRI-TERMID   TO  TA01PARA-TERMID
+           MOVE    WRK-PARA-HOSPNUM      TO  TA01PARA-HOSPNUM
       *
            MOVE    WRK-PARA-PRTYMST      TO  WRK-SRYYMD (1:6)
            MOVE    "01"                  TO  WRK-SRYYMD (7:2)
@@ -966,14 +951,11 @@
       *****************************************************************
        230-KOH-SYUKEI-SEC       SECTION.
       *
+           INITIALIZE                          FLG-BUNTEN
       *
            PERFORM  VARYING  IDY  FROM  1  BY  1
                     UNTIL    IDY  >     4
                     OR  RECE10-KOHNUM(IDY)  =  SPACE
-      *
-      *      負担者番号、受給者番号を取得
-             MOVE    RECE10-KOHNUM(IDY)    TO  WRK-KOHNUM
-             PERFORM 900-PTKOHINF-SET-SEC
       *
       *      特定疾患は０５１でまとめる
              IF  RECE10-KOHNUM(IDY)  =  "091"
@@ -1002,7 +984,9 @@
       *
       *      公費番号
              MOVE    RECE10-KOHNUM(IDY)    TO  TA01TMP-KOHNUM(IDY)
+                                               WRK-KOHNUM
       *
+             PERFORM 900-PTKOHINF-SET-SEC
       *      公費負担者番号
              MOVE    WRK-FTNJANUM          TO  TA01TMP-FTNJANUM(IDY)
       *      
@@ -1028,11 +1012,31 @@
                                        TO  TA01TMP-K-SKJ-FTN(IDY)
              END-IF
       *
+      *      一部負担金保存
+             MOVE    RECE10-FTNMONEY(IDY + 1) 
+                                           TO  WRK-SEIKYUGK
+      *
+      *      分点判定
+             IF  RECE10-TOTALTEN(1)  NOT =  RECE10-TOTALTEN(IDY + 1)
+                 MOVE    1                 TO  FLG-BUNTEN
+             END-IF
+      *
            END-PERFORM
       *
       *    一部負担金再計算
-      *     MOVE    TA01TMP-K-ITBFTN(IDY - 1)  TO  TA01TMP-ITBFTN
-           MOVE    TA01TMP-K-ITBFTN(IDY - 1)  TO  WRK-SEIKYUGK
+           IF  (FLG-BUNTEN  =  1)
+           AND (TA01TMP-HKNSBT1  NOT =  "2")
+      *        保険単独分
+               COMPUTE  WRK-TANDOKUTEN   =  RECE10-TOTALTEN(1)
+                                         -  RECE10-TOTALTEN(2)
+                                         -  RECE10-TOTALTEN(3)
+                                         -  RECE10-TOTALTEN(4)
+               COMPUTE  WRK-TANSEIKYUGK  =  WRK-TANDOKUTEN  
+                                         * (10 - RECE10-KYURATE)
+      *        保険単独分を加算
+               COMPUTE  WRK-SEIKYUGK     =  WRK-SEIKYUGK
+                                         +  WRK-TANSEIKYUGK
+           END-IF
       *    
       *    振込金額
            IF  TA01TMP-HKNSBT1  =  "2"
@@ -1052,6 +1056,8 @@
       *    公費集計処理（公費請求）
       *****************************************************************
        240-KOH-SYUKEI-SEC       SECTION.
+      *
+           INITIALIZE                          FLG-BUNTEN
       *
            PERFORM  VARYING  IDY  FROM  1  BY  1
                     UNTIL    IDY  >     4
@@ -1113,18 +1119,36 @@
                                        TO  TA01TMP-K-SKJ-FTN(IDY)
              END-IF
       *
+      *      一部負担金保存
+             MOVE     RECE02-FTNMONEY(IDY + 1) 
+                                           TO  WRK-SEIKYUGK
+      *
+      *      分点判定
+             IF  RECE10-TOTALTEN(1)  NOT =  RECE02-TOTALTEN(IDY + 1)
+                 MOVE    1                 TO  FLG-BUNTEN
+             END-IF
+      *
            END-PERFORM
       *
-           IF  IDY  >  1
       *    一部負担金再計算
-      *       MOVE    TA01TMP-K-ITBFTN(IDY - 1)  TO  TA01TMP-ITBFTN
-             MOVE    TA01TMP-K-ITBFTN(IDY - 1)  TO  WRK-SEIKYUGK
+           IF  (FLG-BUNTEN  =  1)
+           AND (TA01TMP-HKNSBT1  NOT =  "2")
+      *        保険単独分
+               COMPUTE  WRK-TANDOKUTEN   =  RECE10-TOTALTEN(1)
+                                         -  RECE02-TOTALTEN(2)
+                                         -  RECE02-TOTALTEN(3)
+                                         -  RECE02-TOTALTEN(4)
+               COMPUTE  WRK-TANSEIKYUGK  =  WRK-TANDOKUTEN  
+                                         * (10 - RECE10-KYURATE)
+      *        保険単独分を加算
+               COMPUTE  WRK-SEIKYUGK     =  WRK-SEIKYUGK
+                                         +  WRK-TANSEIKYUGK
       *
       *    振込金額再計算
              IF  TA01TMP-HKNSBT1  =  "2"
                CONTINUE
              ELSE
-               COMPUTE  WRK-FURIKOMI  =  RECE02-TOTALTEN(1)  *  10
+               COMPUTE  WRK-FURIKOMI  =  RECE10-TOTALTEN(1)  *  10
                                       -  WRK-SEIKYUGK
              END-IF
            END-IF
@@ -1223,13 +1247,13 @@
       *
       *    内部ソート
            PERFORM  VARYING  IDY1  FROM  1  BY  1
-           UNTIL    IDY1  >  9999
+           UNTIL    IDY1  >  1000
            OR       SORT-PTNUM(IDY1)  =  SPACE
       *
              COMPUTE  WRK-S  =  IDY1  +  1
       *
              PERFORM  VARYING  IDY2  FROM  WRK-S  BY  1
-             UNTIL    IDY2  >  9999
+             UNTIL    IDY2  >  1000
              OR       SORT-PTNUM(IDY2)  =  SPACE
       *
                IF  SORT-PTNUM(IDY1)  >  SORT-PTNUM(IDY2)
@@ -1244,7 +1268,7 @@
       *    実人数、延べ人数カウント
            INITIALIZE                            WRK-TAIHI
            PERFORM  VARYING  IDY1  FROM  1  BY  1
-           UNTIL    IDY1  >  9999
+           UNTIL    IDY1  >  1000
            OR       SORT-PTNUM(IDY1)  =  SPACE
       *      延べ人数
              ADD    1                        TO  WRK-NNINZU
@@ -1506,8 +1530,8 @@
              MOVE    TA01TMP-NAME        TO  TA01-NAME(IDX1)
       *
       *      実日数
-             MOVE    TA01TMP-NISSU       TO  WRK-Z3-9
-             MOVE    WRK-Z3-9            TO  TA01-NISSU(IDX1)
+             MOVE    TA01TMP-NISSU       TO  WRK-Z2
+             MOVE    WRK-Z2              TO  TA01-NISSU(IDX1)
       *
       *      点数
              MOVE    TA01TMP-TENSU       TO  WRK-Z9-9
@@ -1703,8 +1727,8 @@
            MOVE    "　　　　　　　　小計"  TO  TA01-NAME(IDX1)
       *
       *    実日数
-           MOVE    SUM-SNISSU            TO  WRK-Z3-9
-           MOVE    WRK-Z3-9              TO  TA01-NISSU(IDX1)
+           MOVE    SUM-SNISSU            TO  WRK-Z2
+           MOVE    WRK-Z2                TO  TA01-NISSU(IDX1)
       *
       *    点数
            MOVE    SUM-STENSU            TO  WRK-Z9-9
@@ -1771,8 +1795,8 @@
        330-GOKEI-PRINT-SEC          SECTION.
       *
       *    実日数
-           MOVE    SUM-GNISSU            TO  WRK-Z4-9
-           MOVE    WRK-Z4-9              TO  TA01-GNISSU
+           MOVE    SUM-GNISSU            TO  WRK-Z3-9
+           MOVE    WRK-Z3-9              TO  TA01-GNISSU
       *
       *    点数
            MOVE    SUM-GTENSU            TO  WRK-Z10-9
@@ -2956,22 +2980,11 @@
       *
              PERFORM  UNTIL  FLG-SYUNOU  =  1
                IF  SYU-DENPJTIKBN  NOT =  "3"
-                 IF    SYU-HKNCOMBINUM  =  RECE10-HKNCOMBI(1) OR
-                                           RECE10-HKNCOMBI(2) OR
-                                           RECE10-HKNCOMBI(3) OR
-                                           RECE10-HKNCOMBI(4) OR
-                                           RECE10-HKNCOMBI(5) OR
-                                           RECE10-HKNCOMBI(6) OR
-                                           RECE10-HKNCOMBI(7) OR
-                                           RECE10-HKNCOMBI(8) OR
-                                           RECE10-HKNCOMBI(9) OR
-                                           RECE10-HKNCOMBI(10) 
-      *            室料差額集計
-                   ADD    SYU-RMSAGAKU     TO  WRK-RMSAGAKU
+      *          室料差額集計
+                 ADD    SYU-RMSAGAKU     TO  WRK-RMSAGAKU
       *
-      *            主保険負担金集計
-                   ADD    SYU-SYUCOMPFTN-ENTANI   TO  WRK-SEIKYUGK
-                 END-IF
+      *          主保険負担金集計
+                 ADD    SYU-SYUCOMPFTN-ENTANI   TO  WRK-SEIKYUGK
                END-IF
       *   
                PERFORM  910-SYUNOU-READ-SEC
