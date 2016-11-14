@@ -1165,6 +1165,7 @@
       *        ÊÝ¸±Ã±ÆÈÊ¬¤ò²Ã»»
                COMPUTE  WRK-SEIKYUGK     =  WRK-SEIKYUGK
                                          +  WRK-TANSEIKYUGK
+           END-IF
       *
       *    ¿¶¹þ¶â³ÛºÆ·×»»
            IF  TA01TMP-HKNSBT1  =  "2"
