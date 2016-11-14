@@ -41,6 +41,8 @@
       *                                    負担者番号と受給者番号が
       *                                    正しく印字されないのを修正
       *   02.00.01    門間    2014/10/31   ver4.8.0対応（一時ディレクトリ変更）
+      *   02.00.02    吉川    2016/11/14   分点時、保険単独分の負担金を
+      *                                    一部負担欄に加算するように修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -104,6 +106,7 @@
            03  FLG-HENREI                  PIC 9(01).
            03  FLG-PRINT                   PIC 9(01).
            03  FLG-KENSU                   PIC 9(01).
+           03  FLG-BUNTEN                  PIC 9(01).
       *
       *    カウント領域
        01  CNT-AREA.
@@ -207,6 +210,8 @@
                05  WRK-HKNSBT1             PIC X(01).
                05  WRK-HKNSBT2             PIC X(01).
                05  WRK-HONKZK              PIC X(01).
+           03  WRK-TANSEIKYUGK             PIC 9(09).
+           03  WRK-TANDOKUTEN              PIC 9(09).
       *
            03  WRK-RECEERR                 PIC X(200).
            03  WRK-PATH                    PIC X(50).
@@ -966,6 +971,7 @@
       *****************************************************************
        230-KOH-SYUKEI-SEC       SECTION.
       *
+           INITIALIZE                          FLG-BUNTEN
       *
            PERFORM  VARYING  IDY  FROM  1  BY  1
                     UNTIL    IDY  >     4
@@ -1028,11 +1034,31 @@
                                        TO  TA01TMP-K-SKJ-FTN(IDY)
              END-IF
       *
+      *      一部負担金保存
+             MOVE    RECE10-FTNMONEY(IDY + 1) 
+                                           TO  WRK-SEIKYUGK
+      *
+      *      分点判定
+             IF  RECE10-TOTALTEN(1)  NOT =  RECE10-TOTALTEN(IDY + 1)
+                 MOVE    1                 TO  FLG-BUNTEN
+             END-IF
+      *
            END-PERFORM
       *
       *    一部負担金再計算
-      *     MOVE    TA01TMP-K-ITBFTN(IDY - 1)  TO  TA01TMP-ITBFTN
-           MOVE    TA01TMP-K-ITBFTN(IDY - 1)  TO  WRK-SEIKYUGK
+           IF  (FLG-BUNTEN  =  1)
+           AND (TA01TMP-HKNSBT1  NOT =  "2")
+      *        保険単独分
+               COMPUTE  WRK-TANDOKUTEN   =  RECE10-TOTALTEN(1)
+                                         -  RECE10-TOTALTEN(2)
+                                         -  RECE10-TOTALTEN(3)
+                                         -  RECE10-TOTALTEN(4)
+               COMPUTE  WRK-TANSEIKYUGK  =  WRK-TANDOKUTEN  
+                                         * (10 - RECE10-KYURATE)
+      *        保険単独分を加算
+               COMPUTE  WRK-SEIKYUGK     =  WRK-SEIKYUGK
+                                         +  WRK-TANSEIKYUGK
+           END-IF
       *    
       *    振込金額
            IF  TA01TMP-HKNSBT1  =  "2"
@@ -1052,6 +1078,8 @@
       *    公費集計処理（公費請求）
       *****************************************************************
        240-KOH-SYUKEI-SEC       SECTION.
+      *
+           INITIALIZE                          FLG-BUNTEN
       *
            PERFORM  VARYING  IDY  FROM  1  BY  1
                     UNTIL    IDY  >     4
@@ -1113,20 +1141,37 @@
                                        TO  TA01TMP-K-SKJ-FTN(IDY)
              END-IF
       *
+      *      一部負担金保存
+             MOVE     RECE02-FTNMONEY(IDY + 1) 
+                                           TO  WRK-SEIKYUGK
+      *
+      *      分点判定
+             IF  RECE10-TOTALTEN(1)  NOT =  RECE02-TOTALTEN(IDY + 1)
+                 MOVE    1                 TO  FLG-BUNTEN
+             END-IF
+      *
            END-PERFORM
       *
-           IF  IDY  >  1
       *    一部負担金再計算
-      *       MOVE    TA01TMP-K-ITBFTN(IDY - 1)  TO  TA01TMP-ITBFTN
-             MOVE    TA01TMP-K-ITBFTN(IDY - 1)  TO  WRK-SEIKYUGK
+           IF  (FLG-BUNTEN  =  1)
+           AND (TA01TMP-HKNSBT1  NOT =  "2")
+      *        保険単独分
+               COMPUTE  WRK-TANDOKUTEN   =  RECE10-TOTALTEN(1)
+                                         -  RECE02-TOTALTEN(2)
+                                         -  RECE02-TOTALTEN(3)
+                                         -  RECE02-TOTALTEN(4)
+               COMPUTE  WRK-TANSEIKYUGK  =  WRK-TANDOKUTEN  
+                                         * (10 - RECE10-KYURATE)
+      *        保険単独分を加算
+               COMPUTE  WRK-SEIKYUGK     =  WRK-SEIKYUGK
+                                         +  WRK-TANSEIKYUGK
       *
       *    振込金額再計算
-             IF  TA01TMP-HKNSBT1  =  "2"
-               CONTINUE
-             ELSE
-               COMPUTE  WRK-FURIKOMI  =  RECE02-TOTALTEN(1)  *  10
-                                      -  WRK-SEIKYUGK
-             END-IF
+           IF  TA01TMP-HKNSBT1  =  "2"
+             CONTINUE
+           ELSE
+             COMPUTE  WRK-FURIKOMI  =  RECE10-TOTALTEN(1)  *  10
+                                    -  WRK-SEIKYUGK
            END-IF
            ADD  WRK-SEIKYUGK             TO  TA01TMP-ITBFTN
            ADD  WRK-FURIKOMI             TO  TA01TMP-FURIKOMI
