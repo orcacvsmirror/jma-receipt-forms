@@ -1,6 +1,9 @@
 #!/bin/sh
+. @jma-receipt-env@
 
-. /etc/jma-receipt/jma-receipt.env
+PREFNAME=a00000ra02
+PROGRAMID=A00000RA02
+LOG_FILE="/var/log/jma-receipt/${12}a00000ra02"
 
 PARAMFILE=/tmp/a00000ra02.txt
 #-------------------------------------------#
@@ -36,6 +39,6 @@ PARAMFILE=/tmp/a00000ra02.txt
 	echo    "ÅÁÉ¼ÈÖ¹æ¡§"${13} >> $PARAMFILE
 
 #
-       $DBSTUB -dir $LDDEFDIR/directory -bd a00000ra02 A00000RA02 -parameter $1,$2,$3,$4,$5,$6,$7,$8,$9,${10},${11},${12},${13} > /home/orca/a00000ra02.log
+	$DBSTUB -dir $LDDIRECTORY -bd $PREFNAME $PROGRAMID -parameter $1,$2,$3,$4,$5,$6,$7,$8,$9,${10},${11},${12},${13} > ${LOG_FILE}.log 2>&1
 #
 	exit
