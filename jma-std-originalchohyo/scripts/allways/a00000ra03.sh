@@ -36,7 +36,7 @@ PARAMFILE=/tmp/a00000ra03.txt
 	echo    "ÅÁÉ¼ÈÖ¹æ¡§"${13} >> $PARAMFILE
 
 #
-       $DBSTUB -dir $LDDEFDIR/directory -bd a00000ra03 A00000RA03 -parameter $1,$2,$3,$4,$5,$6,$7,$8,$9,${10},${11},${12},${13} > /home/orca/a00000ra03.log
+       $DBSTUB -dir $LDDEFDIR/directory -bd a00000ra00 A00000RA03 -parameter $1,$2,$3,$4,$5,$6,$7,$8,$9,${10},${11},${12},${13} > /home/orca/a00000ra03.log
 
 #
 	exit

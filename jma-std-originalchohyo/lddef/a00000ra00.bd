@@ -4,6 +4,7 @@ arraysize	20;
 textsize	400;
 
 bind	"A00000RA02"	"OpenCOBOL";
+bind	"A00000RA03"	"OpenCOBOL";
 
 
 #include "orcadb.inc"
