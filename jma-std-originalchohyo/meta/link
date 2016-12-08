@@ -116,3 +116,5 @@
  - [doc/version_A00000RA01 , doc/]
  - [doc/version_A00000RA02 , doc/]
  - [doc/version_A00000RA03 , doc/]
+ - [scripts/allways/a00000ra02.sh , scripts/allways/]
+ - [scripts/allways/a00000ra03.sh , scripts/allways/]
