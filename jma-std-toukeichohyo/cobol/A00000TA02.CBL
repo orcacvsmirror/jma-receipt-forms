@@ -48,6 +48,7 @@
       *   01.00.16    門間    2016/08/22  次発行区分へ合計が合算される不具合を修正
       *   01.00.17    門間    2016/08/30  食事療養及び生活療養の点数（薬価）の算出方法、表示名称を修正
       *   01.00.18    門間    2016/09/16  入院分を対象とした場合の処理速度を改善
+      *   01.00.19    萩野    2017/02/28  比率計算用区分別集計領域を[100]から[300]へ修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -237,7 +238,7 @@
       *
       *    比率計算用区分別集計領域
        01  WRK-HIRITU-AREA.
-           03  WRK-HIRITU-PRTKBN-TBL       OCCURS 100.
+           03  WRK-HIRITU-PRTKBN-TBL       OCCURS 300.
              05  WRK-HIRITU-SORTKBN-TBL    OCCURS 14.
                07  WRK-HIRITU-GOUKEI       PIC 9(10).
                07  WRK-HIRITU-SRYKBN-TBL   OCCURS 99.
