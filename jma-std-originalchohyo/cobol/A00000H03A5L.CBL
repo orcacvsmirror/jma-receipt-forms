@@ -37,6 +37,7 @@
       *  01.00.07    @@@@-門間    14/08/13  主保険＋マル長の請求対応の不具合対応
       *  01.00.08    @@@@-門間    14/10/07  右下枠内の消費税(再掲)を修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    17/03/15  負担割合４桁へ修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -138,8 +139,8 @@
            03  WRK-HKNCOMBI            PIC X(04).
       *
            03  WRK-WARI            PIC 9(02)V9.
-           03  WRK-Z6              PIC ZZZ.
-           03  WRK-Z62             PIC 9.9.
+           03  WRK-Z6              PIC ZZZZ.
+           03  WRK-Z62             PIC 99.9.
       *
            03  WRK-ZZZ             PIC ZZZ.
            03  WRK-NO              PIC Z(7).
@@ -412,6 +413,7 @@
        400-PRINT-SEC                SECTION.
       *
             MOVE   HC03-TYPE-A         TO  HC03-TYPE-B
+            MOVE   HC03-FUTAN2         TO  HC03-B-FUTAN2
       *
       *　　印刷用データ出力
               WRITE  HC03
@@ -438,6 +440,8 @@
        401-PRINT-SEC                SECTION.
       *
            MOVE    HC03-TYPE-A         TO  HC03-TYPE-B
+           MOVE    HC03-FUTAN2         TO  HC03-B-FUTAN2
+      *
            MOVE    ORCHC03-PRTAREA     TO  ORCSPRTAREA
       *
            MOVE    WRK-FORMID          TO  SPRT-PRTID
@@ -1022,10 +1026,10 @@
                COMPUTE WRK-WARI        =   SYU-PTFTNRATE   /   10
                IF      SYU-PTFTNRATE(3:1)  =   ZERO
                    MOVE    WRK-WARI            TO  WRK-Z6
-                   MOVE    WRK-Z6              TO  HC03-FUTAN
+                   MOVE    WRK-Z6              TO  HC03-FUTAN2
                ELSE
                    MOVE    WRK-WARI            TO  WRK-Z62
-                   MOVE    WRK-Z62             TO  HC03-FUTAN
+                   MOVE    WRK-Z62             TO  HC03-FUTAN2
                END-IF
            END-IF
       *    生年月日
