@@ -328,6 +328,16 @@
         </appinfo>
       </element>
     </element>
+    <element name="FUTAN2" occurs="1">
+      <appinfo>
+        <embed object="text" length="4"/>
+      </appinfo>
+    </element>
+    <element name="B-FUTAN2" occurs="1">
+      <appinfo>
+        <embed object="text" length="4"/>
+      </appinfo>
+    </element>
   </dia:dictionarydata>
   <dia:diagramdata>
     <dia:attribute name="background">
@@ -17710,6 +17720,90 @@
       </dia:attribute>
       <dia:attribute name="embed_column_size">
         <dia:int val="27"/>
+      </dia:attribute>
+      <dia:attribute name="embed_char_type">
+        <dia:enum val="0"/>
+      </dia:attribute>
+    </dia:object>
+    <dia:object type="Embed - Text" version="1" id="O511">
+      <dia:attribute name="obj_pos">
+        <dia:point val="16.1875,3.24688"/>
+      </dia:attribute>
+      <dia:attribute name="obj_bb">
+        <dia:rectangle val="15.3875,2.89438;16.1875,3.29688"/>
+      </dia:attribute>
+      <dia:attribute name="text">
+        <dia:composite type="text">
+          <dia:attribute name="string">
+            <dia:string>#9999#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="font">
+            <dia:font family="Takao明朝" style="0" name="Courier"/>
+          </dia:attribute>
+          <dia:attribute name="height">
+            <dia:real val="0.49988609456453048"/>
+          </dia:attribute>
+          <dia:attribute name="pos">
+            <dia:point val="16.1875,3.24688"/>
+          </dia:attribute>
+          <dia:attribute name="color">
+            <dia:color val="#000000"/>
+          </dia:attribute>
+          <dia:attribute name="alignment">
+            <dia:enum val="2"/>
+          </dia:attribute>
+        </dia:composite>
+      </dia:attribute>
+      <dia:attribute name="valign">
+        <dia:enum val="3"/>
+      </dia:attribute>
+      <dia:attribute name="embed_id">
+        <dia:string>#FUTAN2#</dia:string>
+      </dia:attribute>
+      <dia:attribute name="embed_column_size">
+        <dia:int val="0"/>
+      </dia:attribute>
+      <dia:attribute name="embed_char_type">
+        <dia:enum val="0"/>
+      </dia:attribute>
+    </dia:object>
+    <dia:object type="Embed - Text" version="1" id="O512">
+      <dia:attribute name="obj_pos">
+        <dia:point val="16.175,17.3469"/>
+      </dia:attribute>
+      <dia:attribute name="obj_bb">
+        <dia:rectangle val="15.375,16.9944;16.175,17.3969"/>
+      </dia:attribute>
+      <dia:attribute name="text">
+        <dia:composite type="text">
+          <dia:attribute name="string">
+            <dia:string>#9999#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="font">
+            <dia:font family="Takao明朝" style="0" name="Courier"/>
+          </dia:attribute>
+          <dia:attribute name="height">
+            <dia:real val="0.49988609456453048"/>
+          </dia:attribute>
+          <dia:attribute name="pos">
+            <dia:point val="16.175,17.3469"/>
+          </dia:attribute>
+          <dia:attribute name="color">
+            <dia:color val="#000000"/>
+          </dia:attribute>
+          <dia:attribute name="alignment">
+            <dia:enum val="2"/>
+          </dia:attribute>
+        </dia:composite>
+      </dia:attribute>
+      <dia:attribute name="valign">
+        <dia:enum val="3"/>
+      </dia:attribute>
+      <dia:attribute name="embed_id">
+        <dia:string>#B-FUTAN2#</dia:string>
+      </dia:attribute>
+      <dia:attribute name="embed_column_size">
+        <dia:int val="0"/>
       </dia:attribute>
       <dia:attribute name="embed_char_type">
         <dia:enum val="0"/>
