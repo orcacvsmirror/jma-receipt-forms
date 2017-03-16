@@ -97,6 +97,7 @@
       *                                     備考続きを処方欄へ記載
       * 01.00.03     @@@@-門間    16/11/18  残薬確認プログラムオプション対応
       * 02.00.01     @@@@-門間    17/03/15  商品名編集対応
+      *                                     負担割合４桁へ修正
       *****************************************************************
       *
       *
@@ -380,14 +381,14 @@
       *    交付年月日
            03  WRK-KOFYMD              PIC X(22).
       *    負担割合
-           03  WRK-HEN-FTNRATE         PIC X(03).
+           03  WRK-HEN-FTNRATE         PIC X(04).
            03  WRK-HEN-FTNWARI         PIC X(02).
            03  WRK-FTNRATE             PIC 9(02)V9.
            03  WRK-FTNRATE-R           REDEFINES   WRK-FTNRATE.
                05  WRK-FTNRATE-S1      PIC 9(02).
                05  WRK-FTNRATE-S2      PIC 9(01).
-           03  WRK-FTN-ZZ9             PIC ZZ9.
-           03  WRK-FTN-Z92             PIC 9.9.
+           03  WRK-FTN-ZZ9             PIC ZZZ9.
+           03  WRK-FTN-Z92             PIC Z9.9.
       *    診療科名
            03  WRK-HEN-SRYKANAME       PIC X(40).
       *    ページ編集
@@ -1186,6 +1187,7 @@
        400-PRINT-SEC                SECTION.
       *
             MOVE    HCM19-TYPE-A       TO  HCM19-TYPE-B
+            MOVE    HCM19-FTNRATE2     TO  HCM19-B-FTNRATE2
       *
       *     印刷用データ出力
             MOVE    HCM19              TO  PRT-REC
@@ -2442,7 +2444,7 @@
       *    診療科
            MOVE    WRK-HEN-SRYKANAME   TO  HCM19-SRYKAMEI
       *    負担割合
-           MOVE    WRK-HEN-FTNRATE     TO  HCM19-FTNRATE
+           MOVE    WRK-HEN-FTNRATE     TO  HCM19-FTNRATE2
            MOVE    WRK-HEN-FTNWARI     TO  HCM19-FTNWARI
       *
       *    ページ編集
