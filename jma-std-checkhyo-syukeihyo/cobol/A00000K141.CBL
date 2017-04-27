@@ -40,6 +40,8 @@
       *   01.00.09    @@@@-門間   14/04/14  「その他」回数欄の不具合を修正
       *   02.00.01    @@@@-門間   14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *   02.00.02    @@@@-門間   15/08/25  剤点数の正負（点数区分）判定を変更
+      *   02.00.03    @@@@-門間   17/04/27  75歳以上が行項目の初診（後期高齢者）及び
+      *                                     再診（後期高齢者）へ集計されるように変更
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -2391,6 +2393,7 @@
                    IF  COMB-KOH1HKNNUM      =     "027"
                        OR   COMB-HKNNUM  =  "039"
                        OR   COMB-HKNNUM  =  "040"
+                       OR   WRK-NENREI   >= 75
                      MOVE      4    TO    IDX1
                    ELSE
                      IF  WRK-NENREI   >= 70
@@ -2421,6 +2424,7 @@
                    IF  COMB-KOH1HKNNUM      =  "027"
                        OR   COMB-HKNNUM  =  "039"
                        OR   COMB-HKNNUM  =  "040"
+                       OR   WRK-NENREI   >= 75
                      MOVE      8    TO    IDX1
                    ELSE
                      IF  WRK-NENREI   >= 70
@@ -2529,6 +2533,7 @@
                  IF  COMB-KOH1HKNNUM    =  "027"
                      OR   COMB-HKNNUM  =  "039"
                      OR   COMB-HKNNUM  =  "040"
+                     OR   WRK-NENREI   >= 75
                    MOVE      4          TO    IDX1
                  ELSE
                    IF  WRK-NENREI   >=    70
@@ -2559,6 +2564,7 @@
                  IF  COMB-KOH1HKNNUM    = "027"
                      OR   COMB-HKNNUM  =  "039"
                      OR   COMB-HKNNUM  =  "040"
+                     OR   WRK-NENREI   >= 75
                    MOVE    8      TO    IDX1
                  ELSE
                    IF  WRK-NENREI   >= 70
@@ -2665,6 +2671,7 @@
                    IF  COMB-KOH1HKNNUM  =  "027"
                        OR   COMB-HKNNUM   =  "039"
                        OR   COMB-HKNNUM   =  "040"
+                       OR   WRK-NENREI   >= 75
                      MOVE      4    TO    IDX1
                    ELSE
                      IF  WRK-NENREI   >= 70
@@ -2695,6 +2702,7 @@
                    IF  COMB-KOH1HKNNUM      =  "027"
                        OR   COMB-HKNNUM  =  "039"
                        OR   COMB-HKNNUM  =  "040"
+                       OR   WRK-NENREI   >= 75
                      MOVE      8    TO    IDX1
                    ELSE
                      IF  WRK-NENREI   >= 70
@@ -2801,6 +2809,7 @@
                  IF  COMB-KOH1HKNNUM    =  "027"
                      OR   COMB-HKNNUM  =  "039"
                      OR   COMB-HKNNUM  =  "040"
+                     OR   WRK-NENREI   >= 75
                    MOVE      4          TO    IDX1
                  ELSE
                    IF  WRK-NENREI   >=    70
@@ -2831,6 +2840,7 @@
                  IF  COMB-KOH1HKNNUM    = "027"
                      OR   COMB-HKNNUM  =  "039"
                      OR   COMB-HKNNUM  =  "040"
+                     OR   WRK-NENREI   >= 75
                    MOVE    8      TO    IDX1
                  ELSE
                    IF  WRK-NENREI   >= 70

@@ -38,6 +38,8 @@
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    15/02/05  剤点数の正負（点数区分）判定を追加
       *  02.00.03    @@@@-門間    15/06/12  初診及び再診の振分け処理を修正
+      *  02.00.04    @@@@-門間    17/04/27  75歳以上が行項目の初診（後期高齢者）及び
+      *                                     再診（後期高齢者）へ集計されるように変更
       *****************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1496,6 +1498,7 @@
                            IF  COMB-KOH1HKNNUM    =  "027"
                              OR   COMB-HKNNUM  =  "039"
                              OR   COMB-HKNNUM  =  "040"
+                             OR   WRK-NENREI   >= 75
                                MOVE      5      TO    IDX1
                            ELSE
                                IF  WRK-NENREI   >= 70
@@ -1518,6 +1521,7 @@
                            IF  COMB-KOH1HKNNUM    =  "027"
                              OR   COMB-HKNNUM  =  "039"
                              OR   COMB-HKNNUM  =  "040"
+                             OR   WRK-NENREI   >= 75
                                MOVE      9      TO    IDX1
                            ELSE
                                IF  WRK-NENREI   >= 70
@@ -1623,6 +1627,7 @@
                        IF  COMB-KOH1HKNNUM    =  "027"
                          OR   COMB-HKNNUM  =  "039"
                          OR   COMB-HKNNUM  =  "040"
+                         OR   WRK-NENREI   >= 75
                            MOVE      5      TO    IDX1
                        ELSE
                            IF  WRK-NENREI   >= 70
@@ -1645,6 +1650,7 @@
                        IF  COMB-KOH1HKNNUM    =  "027"
                          OR   COMB-HKNNUM  =  "039"
                          OR   COMB-HKNNUM  =  "040"
+                         OR   WRK-NENREI   >= 75
                            MOVE      9      TO    IDX1
                        ELSE
                            IF  WRK-NENREI   >= 70
