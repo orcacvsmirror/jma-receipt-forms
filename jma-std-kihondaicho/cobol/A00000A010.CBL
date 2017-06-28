@@ -45,6 +45,7 @@
       *  02.00.03    @@@@-門間    16/05/17  流動食対応
       *  02.00.04    @@@@-門間    16/08/30  食事療養及び生活療養の点数（薬価）の算出方法、表示名称を修正
       *  02.00.05    @@@@-門間    16/09/16  入院分を対象とした場合の処理速度を改善
+      *  02.00.06    @@@@-門間    17/06/26  点数マスタの読込処理を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -945,46 +946,44 @@
                  AND ((  FLG-NYUGAIALL  =  1 )
                  OR  (  FLG-NYUGAIALL   NOT =  1
                  AND   WRK-PARA-NYUGAIKBN  =  SRY-NYUGAIKBN ))
-      *    点数マスタ読込み
-               MOVE   SRY-SRYCD(IDX1)   TO   TNS-SRYCD
-               MOVE   SPA-HOSPNUM       TO   TNS-HOSPNUM
-               PERFORM   910-TENSU-READ-SEC
       *
-               IF   FLG-TENSU  =   ZERO
-                 IF   FLG-KAIKEI  =  ZERO
-      *    診療会計情報読込み
-                   MOVE   SRY-HOSPNUM      TO   ACCT-HOSPNUM
-                   MOVE   SRY-NYUGAIKBN    TO   ACCT-NYUGAIKBN
-                   MOVE   SRY-PTID         TO   ACCT-PTID
-                   MOVE   SRY-SRYKA        TO   ACCT-SRYKA
-                   MOVE   SRY-SRYYM        TO   ACCT-SRYYM
-                   MOVE   SRY-SRYKBN       TO   ACCT-SRYKBN
-                   MOVE   SRY-ZAINUM       TO   ACCT-ZAINUM
-                   PERFORM   910-SRYACCT-READ-SEC
+               IF   FLG-KAIKEI  =  ZERO
+      *        診療会計情報読込み
+                 MOVE   SRY-HOSPNUM      TO   ACCT-HOSPNUM
+                 MOVE   SRY-NYUGAIKBN    TO   ACCT-NYUGAIKBN
+                 MOVE   SRY-PTID         TO   ACCT-PTID
+                 MOVE   SRY-SRYKA        TO   ACCT-SRYKA
+                 MOVE   SRY-SRYYM        TO   ACCT-SRYYM
+                 MOVE   SRY-SRYKBN       TO   ACCT-SRYKBN
+                 MOVE   SRY-ZAINUM       TO   ACCT-ZAINUM
+                 PERFORM   910-SRYACCT-READ-SEC
       *
-                   MOVE      1           TO    FLG-KAIKEI
-                 END-IF
+                 MOVE      1           TO    FLG-KAIKEI
+               END-IF
       *
-                 IF   ( ACCT-ZAIKBN  NOT =  1 )
-                     AND  ( ACCT-ZAIKBN  NOT =  2 )
-                   EVALUATE   WRK-PARA-SYUKEIKBN
-                     WHEN  "2"
-                       MOVE    WRK-PARA-PRTSYMD(7:2)     TO    WRK-DAY1
-                       MOVE    WRK-PARA-PRTLYMD(7:2)     TO    WRK-DAY2
-                       PERFORM  VARYING  IDX8  FROM  WRK-DAY1  BY 1
-                                UNTIL  IDX8  >  WRK-DAY2
-                         IF   ACCT-DAY(1 IDX8)  >  0
-                           PERFORM  2003-A010PUT-SEC
-                         END-IF
-                       END-PERFORM
-                     WHEN  "1"
+               IF   ( ACCT-ZAIKBN  NOT =  1 )
+                   AND  ( ACCT-ZAIKBN  NOT =  2 )
+      *
+                 EVALUATE   WRK-PARA-SYUKEIKBN
+                   WHEN  "1"
+      *
+                     IF   ACCT-DAY(1 WRK-DAY)  >  0
+                       PERFORM  2003-A010PUT-SEC
+                     END-IF
+      *
+                   WHEN  OTHER
+      *
+                     MOVE    WRK-PARA-PRTSYMD(7:2)  TO  WRK-DAY1
+                     MOVE    WRK-PARA-PRTLYMD(7:2)  TO  WRK-DAY2
+      *
+                     PERFORM  VARYING  WRK-DAY  FROM  WRK-DAY1  BY 1
+                              UNTIL    WRK-DAY  >  WRK-DAY2
                        IF   ACCT-DAY(1 WRK-DAY)  >  0
                          PERFORM  2003-A010PUT-SEC
                        END-IF
-                     WHEN  OTHER
-                       PERFORM  2003-A010PUT-SEC
-                   END-EVALUATE
-                 END-IF
+                     END-PERFORM
+      *
+                 END-EVALUATE
                END-IF
              END-IF
            END-PERFORM
@@ -1209,6 +1208,9 @@
            INITIALIZE   A010T3
            INITIALIZE   FLG-INVALID2
       *
+      *    点数マスタ読込み
+           PERFORM  920-TENSU-READ-SEC
+      *
       *    出力区分の設定
            PERFORM  2003-SET-OUTTYPE-SEC
       *
@@ -1231,7 +1233,9 @@
            MOVE    SRY-SRYCD(IDX1)     TO   A010T3-SRYCD
       *    点数の設定
            MOVE    TNS-TEN             TO   A010T-TEN
+           MOVE    TNS-TEN             TO   A010T-TEN2
            MOVE    TNS-TEN             TO   A010T3-TEN
+      *
            IF    A010T-OUTTYPE   =  "95"
              OR   A010T-OUTTYPE   =  "96"
              IF   TNS-TEN  =  ZERO
@@ -1240,6 +1244,7 @@
                MOVE    SRY-JIHIMONEY(IDX1)   TO   A010T3-TEN
              END-IF
            END-IF
+      *
            IF   TNS-KZMCOMPSIKIBETU   =  1
              MOVE    TNS-TEN         TO   A010T-TEN2
              IF  SRY-SRYSURYO(IDX1)  >=  TNS-KZMJGN
@@ -1254,6 +1259,7 @@
                COMPUTE  A010T-TEN2  =  A010T-TEN2  +  TNS-KZMTEN
              END-PERFORM
            END-IF
+      *
            READ A010T-FILE
              KEY      IS      A010T-KEY
              INVALID  KEY     MOVE  1  TO FLG-INVALID
@@ -1271,135 +1277,48 @@
            MOVE    TNS-NAME           TO   A010T-NAME
            MOVE    TNS-NAME           TO   A010T3-NAME
       *
-           EVALUATE   WRK-PARA-SYUKEIKBN
-             WHEN  "2"
-               IF   A010T-OUTTYPE  =  "95"
-                   OR  A010T-OUTTYPE  =  "96"
+           IF   A010T-OUTTYPE         =    "95"
+               OR  A010T-OUTTYPE         =    "96"
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-                 COMPUTE  WRK-ZAIKAISU  =  SRY-SRYSURYO(IDX1)
-                                        *  ACCT-DAY(1 IDX8)
-                 ADD    WRK-ZAIKAISU      TO   A010T-KAISU
-                 MOVE   1                 TO   A010T-TANI
-                 ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
-                 MOVE   1                 TO   A010T3-TANI
-               ELSE
-                 EVALUATE  TNS-TENSIKIBETU
-                   WHEN  1
-                   WHEN  2
-      *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-                     COMPUTE  WRK-ZAIKAISU  =  SRY-SRYSURYO(IDX1)
-                                            *  ACCT-DAY(1 IDX8)
-                     ADD    WRK-ZAIKAISU     TO   A010T-KAISU
-                     MOVE    1               TO   A010T-TANI
-                     ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
-                     MOVE    1               TO   A010T3-TANI
-                   WHEN  3
-                   WHEN  8
-      *    点数項目の場合は回数をデータ化する。
-                     ADD    ACCT-DAY(1 IDX8)    TO   A010T-KAISU
-                     MOVE    ZERO               TO   A010T-TANI
-                     ADD    ACCT-DAY(1 IDX8)    TO   A010T3-KAISU
-                     MOVE    ZERO               TO   A010T3-TANI
-                   WHEN  0
-                   WHEN  4
-                   WHEN  5
-                   WHEN  6
-                   WHEN  7
-      *    点数、金額以外の場合
-                     MOVE    ZERO               TO   A010T-TEN
-                     ADD    ACCT-DAY(1 IDX8)    TO   A010T-KAISU
-                     MOVE    9                  TO   A010T-TANI
-                     MOVE    ZERO               TO   A010T3-TEN
-                     ADD    ACCT-DAY(1 IDX8)    TO   A010T3-KAISU
-                     MOVE    9                  TO   A010T3-TANI
-                 END-EVALUATE
-               END-IF
-             WHEN  "1"
-      *    日報
-               IF   A010T-OUTTYPE         =    "95"
-                   OR  A010T-OUTTYPE         =    "96"
-      *      金額項目の場合は数量×回数の値を総数量としてデータ化する。
-                 COMPUTE  WRK-ZAIKAISU =
-                 SRY-SRYSURYO(IDX1)  *  ACCT-DAY(1 WRK-DAY)
-                 ADD    WRK-ZAIKAISU      TO   A010T-KAISU
-                 MOVE   1                 TO   A010T-TANI
-                 ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
-                 MOVE   1                 TO   A010T3-TANI
-               ELSE
-                 EVALUATE  TNS-TENSIKIBETU
-                   WHEN  1
-                   WHEN  2
-      *      金額項目の場合は数量×回数の値を総数量としてデータ化する。
-                     COMPUTE  WRK-ZAIKAISU =
-                             SRY-SRYSURYO(IDX1)  *  ACCT-DAY(1 WRK-DAY)
-                     ADD    WRK-ZAIKAISU     TO   A010T-KAISU
-                     MOVE   1                TO   A010T-TANI
-                     ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
-                     MOVE   1                TO   A010T3-TANI
-                   WHEN  3
-                   WHEN  8
-      *        点数項目の場合は回数をデータ化する。
-                     ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T-KAISU
-                     MOVE   ZERO             TO   A010T-TANI
-                     ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T3-KAISU
-                     MOVE   ZERO             TO   A010T3-TANI
-                   WHEN  0
-                   WHEN  4
-                   WHEN  5
-                   WHEN  6
-                   WHEN  7
-      *        点数、金額以外の場合
-                     MOVE   ZERO             TO   A010T-TEN
-                     ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T-KAISU
-                     MOVE   9                TO   A010T-TANI
-                     MOVE   ZERO             TO   A010T3-TEN
-                     ADD    ACCT-DAY(1 WRK-DAY)    TO   A010T3-KAISU
-                     MOVE   9                TO   A010T3-TANI
-                 END-EVALUATE
-               END-IF
-             WHEN  OTHER
-               IF   A010T-OUTTYPE         =    "95"
-                   OR  A010T-OUTTYPE         =    "96"
+             COMPUTE  WRK-ZAIKAISU =
+             SRY-SRYSURYO(IDX1)  *  ACCT-DAY(1 WRK-DAY)
+             ADD    WRK-ZAIKAISU      TO   A010T-KAISU
+             MOVE   1                 TO   A010T-TANI
+             ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
+             MOVE   1                 TO   A010T3-TANI
+           ELSE
+             EVALUATE  TNS-TENSIKIBETU
+               WHEN  1
+               WHEN  2
       *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
                  COMPUTE  WRK-ZAIKAISU =
-                 SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
-                 ADD    WRK-ZAIKAISU      TO   A010T-KAISU
-                 MOVE   1                 TO   A010T-TANI
-                 ADD    WRK-ZAIKAISU      TO   A010T3-KAISU
-                 MOVE   1                 TO   A010T3-TANI
-               ELSE
-                 EVALUATE  TNS-TENSIKIBETU
-                   WHEN  1
-                   WHEN  2
-      *    金額項目の場合は数量×回数の値を総数量としてデータ化する。
-                     COMPUTE  WRK-ZAIKAISU =
-                             SRY-SRYSURYO(IDX1)  *  ACCT-ZAIKAISU
-                     ADD    WRK-ZAIKAISU     TO   A010T-KAISU
-                     MOVE   1                TO   A010T-TANI
-                     ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
-                     MOVE   1                TO   A010T3-TANI
-                   WHEN  3
-                   WHEN  8
+                         SRY-SRYSURYO(IDX1)  *  ACCT-DAY(1 WRK-DAY)
+                 ADD    WRK-ZAIKAISU     TO   A010T-KAISU
+                 MOVE   1                TO   A010T-TANI
+                 ADD    WRK-ZAIKAISU     TO   A010T3-KAISU
+                 MOVE   1                TO   A010T3-TANI
+               WHEN  3
+               WHEN  8
       *    点数項目の場合は回数をデータ化する。
-                     ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
-                     MOVE   ZERO             TO   A010T-TANI
-                     ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
-                     MOVE   ZERO             TO   A010T3-TANI
-                   WHEN  0
-                   WHEN  4
-                   WHEN  5
-                   WHEN  6
-                   WHEN  7
+                 ADD    ACCT-DAY(1 WRK-DAY)  TO   A010T-KAISU
+                 MOVE   ZERO                 TO   A010T-TANI
+                 ADD    ACCT-DAY(1 WRK-DAY)  TO   A010T3-KAISU
+                 MOVE   ZERO                 TO   A010T3-TANI
+               WHEN  0
+               WHEN  4
+               WHEN  5
+               WHEN  6
+               WHEN  7
       *    点数、金額以外の場合
-                     MOVE   ZERO             TO   A010T-TEN
-                     ADD    ACCT-ZAIKAISU    TO   A010T-KAISU
-                     MOVE   9                TO   A010T-TANI
-                     MOVE   ZERO             TO   A010T3-TEN
-                     ADD    ACCT-ZAIKAISU    TO   A010T3-KAISU
-                     MOVE   9                TO   A010T3-TANI
-                 END-EVALUATE
-               END-IF
-           END-EVALUATE
+                 MOVE   ZERO                 TO   A010T-TEN
+                 MOVE   ZERO                 TO   A010T-TEN2
+                 ADD    ACCT-DAY(1 WRK-DAY)  TO   A010T-KAISU
+                 MOVE   9                    TO   A010T-TANI
+                 MOVE   ZERO                 TO   A010T3-TEN
+                 ADD    ACCT-DAY(1 WRK-DAY)  TO   A010T3-KAISU
+                 MOVE   9                    TO   A010T3-TANI
+             END-EVALUATE
+           END-IF
       *
            IF   FLG-INVALID      =    ZERO
              INITIALIZE       FLG-INVALID
@@ -6163,6 +6082,58 @@
            .
        910-TENSU-READ-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    点数マスター読込
+      *****************************************************************
+       920-TENSU-READ-SEC         SECTION.
+      *
+           MOVE    SPA-HOSPNUM            TO  TNS-HOSPNUM
+           MOVE    SRY-SRYCD(IDX1)        TO  TNS-SRYCD
+           MOVE    WRK-PARA-PRTSYMD(1:6)  TO  TNS-YUKOSTYMD(1:6)
+                                              TNS-YUKOEDYMD(1:6)
+           MOVE    WRK-DAY                TO  TNS-YUKOSTYMD(7:2)
+                                              TNS-YUKOEDYMD(7:2)
+      *
+           MOVE    TNS-TENSU-REC          TO  MCPDATA-REC
+           MOVE    "DBSELECT"             TO  MCP-FUNC
+           MOVE    "tbl_tensu"            TO  MCP-TABLE
+           MOVE    "key"                  TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"            USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+           IF      MCP-RC              =   ZERO
+             MOVE    "DBFETCH"              TO  MCP-FUNC
+             MOVE    "tbl_tensu"            TO  MCP-TABLE
+             MOVE    "key"                  TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"            USING
+                                            MCPAREA
+                                            MCPDATA-REC
+                                            SPA-AREA
+             IF      MCP-RC              =   ZERO
+               MOVE    MCPDATA-REC            TO  TNS-TENSU-REC
+               MOVE    ZERO                   TO  FLG-TENSU
+             ELSE
+               INITIALIZE                     TNS-TENSU-REC
+               MOVE    1                      TO  FLG-TENSU
+             END-IF
+           ELSE
+             INITIALIZE                     TNS-TENSU-REC
+             MOVE    1                      TO  FLG-TENSU
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"        TO  MCP-FUNC
+           MOVE    "tbl_tensu"            TO  MCP-TABLE
+           MOVE    "key"                  TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"            USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+           .
+       920-TENSU-READ-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    入力コードマスター SELECT
       *****************************************************************
