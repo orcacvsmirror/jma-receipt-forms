@@ -49,6 +49,7 @@
       *   01.00.17    門間    2016/08/30  食事療養及び生活療養の点数（薬価）の算出方法、表示名称を修正
       *   01.00.18    門間    2016/09/16  入院分を対象とした場合の処理速度を改善
       *   01.00.19    萩野    2017/02/28  比率計算用区分別集計領域を[100]から[300]へ修正
+      *   01.00.20    門間    2017/06/30  外来金額、入院金額欄の桁数を変更
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1739,14 +1740,14 @@
                                               WRK-SUM-GTOTAL-SIYO
       *
       *    外来金額
-             MOVE    TA02TMP-GAIRAI-KIN   TO  WRK-Z10
-             MOVE    WRK-Z10              TO  TA02-GAIRAI-KIN(IDX1)
+             MOVE    TA02TMP-GAIRAI-KIN   TO  WRK-Z11
+             MOVE    WRK-Z11              TO  TA02-GAIRAI-KIN(IDX1)
              ADD  TA02TMP-GAIRAI-KIN      TO  WRK-SUM-SGAIRAI-KIN
                                               WRK-SUM-GGAIRAI-KIN
       *
       *    入院金額
-             MOVE    TA02TMP-NYUIN-KIN    TO  WRK-Z10
-             MOVE    WRK-Z10              TO  TA02-NYUIN-KIN(IDX1)
+             MOVE    TA02TMP-NYUIN-KIN    TO  WRK-Z11
+             MOVE    WRK-Z11              TO  TA02-NYUIN-KIN(IDX1)
              ADD  TA02TMP-NYUIN-KIN       TO  WRK-SUM-SNYUIN-KIN
                                               WRK-SUM-GNYUIN-KIN
       *
@@ -2408,13 +2409,13 @@
            END-IF
       *
       *    外来金額
-           MOVE    TA02TMP-GAIRAI-KIN       TO  WRK-CSV-Z10
-           MOVE    WRK-CSV-Z10              TO  CSV-DATA
+           MOVE    TA02TMP-GAIRAI-KIN       TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11              TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    入院金額
-           MOVE    TA02TMP-NYUIN-KIN        TO  WRK-CSV-Z10
-           MOVE    WRK-CSV-Z10              TO  CSV-DATA
+           MOVE    TA02TMP-NYUIN-KIN        TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11              TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    合計金額
