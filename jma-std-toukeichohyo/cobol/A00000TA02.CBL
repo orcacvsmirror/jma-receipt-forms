@@ -257,7 +257,7 @@
            03  WRK-SUM-STOTAL-SIYO         PIC 9(08)V9(02).
            03  WRK-SUM-SGAIRAI-KIN         PIC 9(09).
            03  WRK-SUM-SNYUIN-KIN          PIC 9(09).
-           03  WRK-SUM-STOTAL-KIN          PIC 9(10).
+           03  WRK-SUM-STOTAL-KIN          PIC 9(09).
            03  WRK-SUM-SZENHI              PIC 9(03)V9(02).
            03  WRK-SUM-SGRPHI              PIC 9(03)V9(02).
       *
@@ -271,9 +271,9 @@
            03  WRK-SUM-GGAIRAI-SIYO        PIC 9(08)V9(02).
            03  WRK-SUM-GNYUIN-SIYO         PIC 9(08)V9(02).
            03  WRK-SUM-GTOTAL-SIYO         PIC 9(09)V9(02).
-           03  WRK-SUM-GGAIRAI-KIN         PIC 9(10).
-           03  WRK-SUM-GNYUIN-KIN          PIC 9(10).
-           03  WRK-SUM-GTOTAL-KIN          PIC 9(11).
+           03  WRK-SUM-GGAIRAI-KIN         PIC 9(09).
+           03  WRK-SUM-GNYUIN-KIN          PIC 9(09).
+           03  WRK-SUM-GTOTAL-KIN          PIC 9(10).
            03  WRK-SUM-GZENHI              PIC 9(03)V9(02).
            03  WRK-SUM-GGRPHI              PIC 9(03)V9(02).
       *
@@ -2026,12 +2026,12 @@
            END-IF
       *
       *    ³°Íè¶â³Û
-           MOVE    WRK-SUM-SGAIRAI-KIN   TO  WRK-Z10
-           MOVE    WRK-Z10               TO  TA02-GAIRAI-KIN(IDX1)
+           MOVE    WRK-SUM-SGAIRAI-KIN   TO  WRK-Z11
+           MOVE    WRK-Z11               TO  TA02-GAIRAI-KIN(IDX1)
       *
       *    Æþ±¡¶â³Û
-           MOVE    WRK-SUM-SNYUIN-KIN    TO  WRK-Z10
-           MOVE    WRK-Z10               TO  TA02-NYUIN-KIN(IDX1)
+           MOVE    WRK-SUM-SNYUIN-KIN    TO  WRK-Z11
+           MOVE    WRK-Z11               TO  TA02-NYUIN-KIN(IDX1)
       *
       *    ¹ç·×¶â³Û
            MOVE    WRK-SUM-STOTAL-KIN    TO  WRK-Z11
@@ -2512,13 +2512,13 @@
            END-IF
       *
       *    ³°Íè¶â³Û
-           MOVE    WRK-SUM-SGAIRAI-KIN     TO  WRK-CSV-Z10
-           MOVE    WRK-CSV-Z10             TO  CSV-DATA
+           MOVE    WRK-SUM-SGAIRAI-KIN     TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    Æþ±¡¶â³Û
-           MOVE    WRK-SUM-SNYUIN-KIN      TO  WRK-CSV-Z10
-           MOVE    WRK-CSV-Z10             TO  CSV-DATA
+           MOVE    WRK-SUM-SNYUIN-KIN      TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    ¹ç·×¶â³Û
@@ -2602,18 +2602,18 @@
            END-IF
       *
       *    ³°Íè¶â³Û
-           MOVE    WRK-SUM-GGAIRAI-KIN     TO  WRK-CSV-Z10
-           MOVE    WRK-CSV-Z10             TO  CSV-DATA
+           MOVE    WRK-SUM-GGAIRAI-KIN     TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    Æþ±¡¶â³Û
-           MOVE    WRK-SUM-GNYUIN-KIN      TO  WRK-CSV-Z10
-           MOVE    WRK-CSV-Z10             TO  CSV-DATA
+           MOVE    WRK-SUM-GNYUIN-KIN      TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    ¹ç·×¶â³Û
-           MOVE    WRK-SUM-GTOTAL-KIN      TO  WRK-CSV-Z11
-           MOVE    WRK-CSV-Z11             TO  CSV-DATA
+           MOVE    WRK-SUM-GTOTAL-KIN      TO  WRK-CSV-Z12
+           MOVE    WRK-CSV-Z12             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    Á´ÂÎÈæÎ¨
