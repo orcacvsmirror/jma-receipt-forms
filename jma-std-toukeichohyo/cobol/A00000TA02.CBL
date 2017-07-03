@@ -50,6 +50,8 @@
       *   01.00.18    門間    2016/09/16  入院分を対象とした場合の処理速度を改善
       *   01.00.19    萩野    2017/02/28  比率計算用区分別集計領域を[100]から[300]へ修正
       *   01.00.20    門間    2017/06/30  外来金額、入院金額欄の桁数を変更
+      *                                   印字順序の改行時（ＣＳＶ出力）、
+      *                                   グループ比率が印字されない不具合を修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -2478,7 +2480,7 @@
       *    薬価・単価（空白）
            PERFORM  500-CSV-DATAHEN-SEC
       *
-           IF  TA02TMP-SORTKBN  =  12  OR  13  OR  14
+           IF  WRK-ZENSORTKBN  =  12  OR  13  OR  14
       *
       *    外来使用量
              MOVE    WRK-SUM-SGAIRAI-SIYO  TO  WRK-CSV-V10
@@ -2534,14 +2536,14 @@
              MOVE    WRK-SUM-SZENHI        TO  WRK-CSV-V4
              MOVE    WRK-CSV-V4            TO  CSV-DATA
            END-IF
-           IF  TA02TMP-SORTKBN  =  12  OR  13  OR  14
+           IF  WRK-ZENSORTKBN  =  12  OR  13  OR  14
              PERFORM  510-CSV-DATAHEN-SEC
            ELSE
              PERFORM  500-CSV-DATAHEN-SEC
            END-IF
       *
       *    グループ比率
-           IF  TA02TMP-SORTKBN  NOT =  12  AND  13  AND  14
+           IF  WRK-ZENSORTKBN  NOT =  12  AND  13  AND  14
              MOVE    "100.0"             TO  CSV-DATA
              PERFORM  510-CSV-DATAHEN-SEC
            END-IF
@@ -2569,7 +2571,7 @@
       *    薬価・単価（空白）
            PERFORM  500-CSV-DATAHEN-SEC
       *
-           IF  TA02TMP-SORTKBN  =  12  OR  13  OR  14
+           IF  WRK-ZENSORTKBN  =  12  OR  13  OR  14
       *    外来使用量
              MOVE    WRK-SUM-GGAIRAI-SIYO  TO  WRK-CSV-V10
              MOVE    WRK-CSV-V10           TO  CSV-DATA
@@ -2618,14 +2620,14 @@
       *
       *    全体比率
            MOVE    "100.0"                 TO  CSV-DATA
-           IF  TA02TMP-SORTKBN  =  12  OR  13  OR  14
+           IF  WRK-ZENSORTKBN  =  12  OR  13  OR  14
              PERFORM  510-CSV-DATAHEN-SEC
            ELSE
              PERFORM  500-CSV-DATAHEN-SEC
            END-IF
       *
       *    グループ比率
-           IF  TA02TMP-SORTKBN  NOT =  12  AND  13  AND  14
+           IF  WRK-ZENSORTKBN  NOT =  12  AND  13  AND  14
              MOVE    "100.0"               TO  CSV-DATA
              PERFORM  510-CSV-DATAHEN-SEC
            END-IF
