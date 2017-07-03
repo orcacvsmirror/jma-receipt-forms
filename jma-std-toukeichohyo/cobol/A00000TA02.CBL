@@ -2612,8 +2612,8 @@
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    ¹ç·×¶â³Û
-           MOVE    WRK-SUM-GTOTAL-KIN      TO  WRK-CSV-Z12
-           MOVE    WRK-CSV-Z12             TO  CSV-DATA
+           MOVE    WRK-SUM-GTOTAL-KIN      TO  WRK-CSV-Z11
+           MOVE    WRK-CSV-Z11             TO  CSV-DATA
            PERFORM  500-CSV-DATAHEN-SEC
       *
       *    Á´ÂÎÈæÎ¨
