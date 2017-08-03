@@ -48,6 +48,7 @@
       *  01.00.11    @@@@-門間    12/08/10  保険者番号が不明な場合、患者名が正しく印字されない不具合を修正
       *  01.00.12    @@@@-門間    13/01/23  テーブルのprimary key変更対応
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    17/08/03  旧ＣＳＶ出力機能を削除
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -61,11 +62,6 @@
                                  ACCESS  MODE    IS  DYNAMIC
                                  RECORD  KEY     IS  MF100-KEY
                                  FILE    STATUS  IS  STS-MF100.
-      *    ファイル出力用
-           SELECT  A00000KOHS-FILE   ASSIGN   A00000KOHSCSV
-                                     ORGANIZATION    IS  LINE
-                                                         SEQUENTIAL
-                                     FILE    STATUS  IS  STS-CSV.
       *
       *    エラーファイル
            SELECT  RECEERR-FILE  ASSIGN  RECEERR
@@ -78,10 +74,6 @@
        FD  MF100-FILE.
        01  MF100-REC.
            COPY  "A00000KOHSTMP.INC".
-      *
-      *    ＣＳＶファイル出力用
-       FD  A00000KOHS-FILE.
-       01  A00000KOHS-REC            PIC X(400).
       *
       *    エラーファイル
        FD  RECEERR-FILE.
@@ -100,13 +92,6 @@
       *    帳票コピー句
            COPY    "A00000KOHSV02.INC".
       *
-      *    ＣＳＶファイル出力用
-       01  A00000KOHSCSV.
-           03  FILLER               PIC X(11)   VALUE   "/home/orca/".
-           03  CSV-DENPPRTNAME      PIC X(10)   VALUE   "A00000KOHS".
-           03  FILLER               PIC X(01)   VALUE   "-".
-           03  CSV-DENPPRTYMDHM     PIC 9(12).
-           03  FILLER               PIC X(04)   VALUE   ".csv".
       *    シェル用領域
            COPY    "CPSHELLTBL.INC".
       *    スパ領域
@@ -114,11 +99,7 @@
            03  STS-MF100            PIC X(02).
            03  STS-RECE02           PIC X(02).
            03  STS-RECEERR          PIC X(02).
-           03  STS-CITY             PIC X(02).
-           03  STS-KOHI             PIC X(02).
-           03  STS-KOHS             PIC X(01).
       *
-           03  STS-CSV              PIC X(02).
       *    システム領域
        01  SYS-AREA.
            03  SYS-YMD.
@@ -175,7 +156,6 @@
            03  WRK-PARA-HOSPNUM     PIC 9(02).
            03  WRK-PARA-PAGE        PIC 9(10).
            03  WRK-PARA-SRYYM       PIC X(06).
-           03  WRK-PARA-STUKBN      PIC X(01).
            03  WRK-PARA-PRTSYMD     PIC X(08).
            03  WRK-PARA-PRTLYMD     PIC X(08).
       *
@@ -415,7 +395,6 @@
                                                WRK-PARA-HOSPNUM
                                                RECEERR
                                                WRK-PARA-SRYYM
-                                               WRK-PARA-STUKBN
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
            PERFORM  110-INI-FILE-SEC
@@ -874,26 +853,6 @@
       *
            END-PERFORM
            CLOSE    MF100-FILE
-           IF   WRK-PARA-STUKBN  =  "1"
-      *
-             INITIALIZE  WRK-KENSU
-                         WRK-KOHNUM
-      *
-      *    CSV頭書き出力
-             PERFORM  210-CSV-HED-SEC
-             OPEN     INPUT       MF100-FILE
-             MOVE     ZERO        TO   FLG-PRINT
-      *    一時ファイル読込
-             PERFORM   900-TMP-READ-SEC
-
-             PERFORM   UNTIL  FLG-PRINT   =  1
-      *    CSV書き出し
-               PERFORM   210-CSV-WRITE-SEC
-             END-PERFORM
-      *    ファイルクローズ
-             CLOSE  A00000KOHS-FILE
-             CLOSE  MF100-FILE
-           END-IF
       *
            .
        2003-PRINT-EXT.
@@ -2167,337 +2126,6 @@
        800-SYSKANRI-READ-EXT.
            EXIT.
       *
-      *****************************************************************
-      *    CSV頭書き出力　　処理
-      *****************************************************************
-       210-CSV-HED-SEC                SECTION.
-      *
-      *    ＣＳＶファイル名称
-           IF  CNT-PAGE  >  0
-             MOVE    "20"                TO   CSV-DENPPRTYMDHM(1:2)
-             MOVE    SYS-YMD             TO   CSV-DENPPRTYMDHM(3:6)
-             MOVE    SYS-TIME(1:4)       TO   CSV-DENPPRTYMDHM(9:4)
-           END-IF
-           OPEN  OUTPUT  A00000KOHS-FILE
-      *
-           INITIALIZE  A00000KOHS-REC
-           STRING   "償還払公費患者一覧"   DELIMITED  BY  SPACE
-                                         INTO    A00000KOHS-REC
-           END-STRING
-           WRITE  A00000KOHS-REC
-      *
-           INITIALIZE  A00000KOHS-REC
-           MOVE  WRK-PARA-SRYYM(1:4)     TO   A00000KOHS-REC(1:4)
-           MOVE  "年"                    TO   A00000KOHS-REC(5:2)
-           MOVE  WRK-PARA-SRYYM(5:2)     TO   A00000KOHS-REC(7:2)
-           MOVE  "月"                    TO   A00000KOHS-REC(9:2)
-           WRITE  A00000KOHS-REC
-      *
-           INITIALIZE  A00000KOHS-REC
-           STRING   "公費名"              DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "ＩＤ"                DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "氏名"                DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "フリガナ"            DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "負担者番号"          DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "受給者番号"          DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "診療年月"            DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "性別"                DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "入外区分"            DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "保険者番号"          DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "記号・番号"          DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "実日数"              DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "点数（点）"          DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "本人負担額（円）"    DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "回数（食事日数）"    DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "請求額（食事日数）"  DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "標準負担額（食事日数）"    DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "診療科名"            DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "給付割合"            DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "他方公費"            DELIMITED  BY  SPACE
-                    ","                   DELIMITED  BY  SIZE
-                    "件数合計"            DELIMITED  BY  SPACE
-                                          INTO   A00000KOHS-REC
-           END-STRING
-           WRITE  A00000KOHS-REC
-           .
-       210-CSV-HED-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    ＣＶＳ書き出し処理
-      *****************************************************************
-       210-CSV-WRITE-SEC                SECTION.
-      *
-      *    ＣＳＶ書き出し
-      *
-           INITIALIZE  A00000KOHS-REC
-                       WRK-REC-LENGTH
-      *    公費名
-           MOVE    MF100-KOHNAME      TO   WRK-DATA
-           MOVE    20                 TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    患者番号
-           MOVE    MF100-PTNUM        TO   WRK-DATA
-           MOVE    20                 TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    患者氏名
-           MOVE    MF100-NAME         TO   WRK-DATA
-           MOVE    100                TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    患者フリガナ
-           MOVE    MF100-FURIGANA     TO   WRK-DATA
-           MOVE    100                TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    負担者番号
-           MOVE    MF100-FTNJANUM     TO   WRK-DATA
-           MOVE    20                 TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    受給者番号
-           MOVE    MF100-JKYSNUM      TO   WRK-DATA
-           MOVE    20                 TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    診療年月(請求年月と異なる時のみ)
-           IF   MF100-SRYYM   NOT =   WRK-PARA-SRYYM
-             MOVE    MF100-SRYYM      TO   WRK-SYMD(1:6)
-             MOVE    "01"             TO   WRK-SYMD(7:2)
-             PERFORM 31012-SEIWA-HEN-SEC
-             MOVE    WRK-HENYMDG1(1:6)   TO   WRK-DATA
-             MOVE   6                  TO   WRK-NAGASA
-             PERFORM 5004-MOJI-HENSYU-SEC
-           END-IF
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    性別
-           IF      MF100-SEX  =  1
-             MOVE    "男"             TO   WRK-DATA
-           ELSE
-             MOVE    "女"             TO   WRK-DATA
-           END-IF
-           MOVE    2                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    入外区分
-           IF    MF100-NYUGAIKBN   =   1
-             MOVE    "入"             TO   WRK-DATA
-           ELSE
-             MOVE    "外"             TO   WRK-DATA
-           END-IF
-           MOVE    2                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    保険者番号
-           MOVE    MF100-HKNJANUM     TO   WRK-DATA
-           MOVE    8                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    記号・番号
-           MOVE    MF100-KIGO         TO   WRK-DATA
-           MOVE    80                 TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    "・"               TO   WRK-DATA
-           MOVE    2                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    MF100-NUM          TO   WRK-DATA
-           MOVE    80                 TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    実日数
-           MOVE    MF100-JNISSU       TO   WRK-DATA
-           MOVE    2                  TO   WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    合計点数
-           MOVE    MF100-TOTALTEN     TO   WRK-DATA
-           MOVE    8                  TO   WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    負担金額
-           MOVE    MF100-FTNMONEY     TO   WRK-DATA
-           MOVE    9                  TO   WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    回数（食事療養費）
-           MOVE    MF100-SKJKAISU     TO   WRK-DATA
-           MOVE    2                  TO   WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    請求額（食事療養費）
-           MOVE    MF100-SKJSKY       TO   WRK-DATA
-           MOVE    9                  TO   WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    標準負担額（食事療養費）
-           MOVE    MF100-SKJFTN       TO   WRK-DATA
-           MOVE    9                  TO   WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO   WRK-DATA
-           MOVE    1                  TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    診療科名
-           IF   MF100-SRYKA  NOT =  "00"
-             INITIALIZE                  SYS-1005-REC
-             MOVE    SPA-HOSPNUM         TO   SYS-1005-HOSPNUM
-             MOVE    "1005"              TO   SYS-1005-KANRICD
-             MOVE    MF100-SRYKA         TO   SYS-1005-KBNCD
-             MOVE    WRK-PARA-PRTSYMD    TO   SYS-1005-EDYUKYMD
-             MOVE    WRK-PARA-PRTLYMD    TO   SYS-1005-STYUKYMD
-             MOVE    SYS-1005-REC        TO   MCPDATA-REC
-             PERFORM 800-SYSKANRI-READ-SEC
-             IF   FLG-SYSKANRI  =  ZERO
-               MOVE  MCPDATA-REC         TO   SYS-1005-REC
-               MOVE  SYS-1005-SRYKANAME  TO   WRK-SRYKANAME
-             END-IF
-           END-IF
-           MOVE    WRK-SRYKANAME         TO   WRK-DATA
-           MOVE    10                    TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                   TO   WRK-DATA
-           MOVE    1                     TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    給付割合
-           MOVE    MF100-KYURATE         TO   WRK-DATA
-           MOVE    3                     TO   WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                   TO   WRK-DATA
-           MOVE    1                     TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    他方公費
-           MOVE    MF100-TAHO(1)         TO   WRK-DATA
-           MOVE    3                     TO   WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *
-           MOVE    MF100-KOHNUM          TO   WRK-KOHNUM
-           ADD     1                     TO   WRK-KENSU
-      *
-      *    一時ファイル読込
-           PERFORM   900-TMP-READ-SEC
-      *
-      *    公費件数
-           IF    WRK-KOHNUM  NOT =  MF100-KOHNUM
-             OR  FLG-PRINT   =  1
-             MOVE    ","                   TO   WRK-DATA
-             MOVE    1                     TO   WRK-NAGASA
-             PERFORM 5004-MOJI-HENSYU-SEC
-             MOVE    WRK-KENSU             TO   WRK-Z3
-             MOVE    WRK-Z3                TO   WRK-DATA
-             MOVE    3                     TO   WRK-NAGASA
-             PERFORM 5004-MOJI-HENSYU-SEC
-             INITIALIZE  WRK-KENSU
-           END-IF
-      *
-           WRITE   A00000KOHS-REC
-      *
-           .
-       210-CSV-WRITE-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    出力レコード処理（文字）
-      *****************************************************************
-       5004-MOJI-HENSYU-SEC          SECTION.
-      *
-           IF   WRK-DATA   =   SPACE
-             CONTINUE
-           ELSE
-             PERFORM VARYING IDW  FROM  WRK-NAGASA  BY  -1
-                     UNTIL   IDW   <   1
-               IF   WRK-DATA(IDW:1)   NOT =   SPACE
-                 STRING  A00000KOHS-REC(1:WRK-REC-LENGTH)
-                                            DELIMITED  BY  SIZE
-                         WRK-DATA(1:IDW)    DELIMITED  BY  SIZE
-                         INTO     A00000KOHS-REC
-                 END-STRING
-                 ADD     IDW             TO   WRK-REC-LENGTH
-                 MOVE     1              TO   IDW
-               END-IF
-             END-PERFORM
-           END-IF
-           .
-       5004-MOJI-HENSYU-EXT.
-           EXIT.
-      *****************************************************************
-      *    出力レコード処理（数字）
-      *****************************************************************
-       5005-MOJI-HENSYU-SEC          SECTION.
-      *
-           INITIALIZE    IDX6
-           IF    WRK-DATA   =   SPACE
-               CONTINUE
-           ELSE
-             PERFORM VARYING IDW    FROM    1   BY  1
-                   UNTIL   IDW    >     WRK-NAGASA
-               IF      WRK-DATA (IDW:1)   NOT =   0
-                 STRING  A00000KOHS-REC(1:WRK-REC-LENGTH)
-                                              DELIMITED  BY  SIZE
-                         WRK-DATA(IDW:)       DELIMITED  BY  SIZE
-                         INTO     A00000KOHS-REC
-                 END-STRING
-                 COMPUTE  IDW  =   WRK-NAGASA   -   IDX6
-                 ADD      IDW             TO   WRK-REC-LENGTH
-                 MOVE     9999            TO   IDW
-               END-IF
-               ADD    1                   TO   IDX6
-             END-PERFORM
-           END-IF
-           .
-       5004-MOJI-HENSYU-EXT.
-           EXIT.
       *****************************************************************
       *    ＤＢ　オープン処理
       *****************************************************************
