@@ -46,6 +46,7 @@
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    16/03/11  一時ファイルに特記事項を追加（07老併、08老健）
       *  02.00.03    @@@@-門間    16/05/16  一時ファイルに適用開始年月日を追加
+      *  02.00.04    @@@@-門間    17/08/03  旧ＣＳＶ出力機能を削除
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -59,12 +60,6 @@
                                    RECORD  KEY     IS  A05TMP-KEY
                                    FILE    STATUS  IS  STS-A05TMP.
       *
-      *    ファイル出力用
-           SELECT  A21011A05-FILE   ASSIGN   A21011A05CSV
-                                     ORGANIZATION    IS  LINE
-                                                       SEQUENTIAL
-                                   FILE    STATUS  IS  STS-CSV.
-      *
       *    エラーファイル
            SELECT  RECEERR-FILE    ASSIGN  RECEERR
                                    FILE    STATUS  IS  STS-RECEERR.
@@ -76,9 +71,6 @@
        FD  A05TMP-FILE.
        01  A05TMP-REC.
            COPY    "A21011A05TMP.INC".
-      *    ＣＳＶファイル出力用
-       FD  A21011A05-FILE.
-       01  A21011A05-REC                        PIC X(400).
       *
       *    エラーファイル
        FD  RECEERR-FILE.
@@ -100,13 +92,8 @@
       *
       *    スパ領域
        01  STS-AREA.
-           03  STS-PARA            PIC X(02).
            03  STS-A05TMP          PIC X(02).
-           03  STS-RECE            PIC X(02).
-           03  STS-RECE10          PIC X(02).
            03  STS-RECEERR         PIC X(02).
-           03  STS-RECEUPD         PIC X(02).
-           03  STS-CSV             PIC X(02).
       *
       *    フラグ領域
        01  FLG-AREA.
@@ -131,7 +118,6 @@
            03  CNT-LINE            PIC 9(02).
            03  CNT-PAGE            PIC 9(06).
            03  CNT-RECE10          PIC 9(04).
-           03  CNT-TEST            PIC 9(04).
       *
       *    システム領域
        01  SYS-AREA.
@@ -175,7 +161,6 @@
            03  WRK-PARA-SYUTURYOKU   PIC X(01).
       *    対象診療年月
            03  WRK-PARA-SKYYM        PIC X(06).
-           03  WRK-PARA-STUKBN       PIC X(01).
       *
       *    一時領域
        01  WRK-AREA.
@@ -443,7 +428,6 @@
                                                RECEERR
                                                WRK-PARA-SYUTURYOKU
                                                WRK-PARA-SKYYM
-                                               WRK-PARA-STUKBN
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM   TO  SPA-HOSPNUM
       *
@@ -1125,38 +1109,6 @@
       *
            CLOSE              A05TMP-FILE
       *
-           IF   WRK-PARA-STUKBN  =  1
-             OPEN       INPUT       A05TMP-FILE
-             INITIALIZE             A05TMP-REC
-             MOVE       ZERO        TO        FLG-PRINT
-      *    一時ファイル読込
-             PERFORM  900-TMP-READ-SEC
-             MOVE   A05TMP-SYUTURYOKU  TO  WRK-STUKBN
-             MOVE   ZERO  TO  WRK-STARTKBN
-
-             PERFORM  UNTIL    FLG-PRINT   =  1
-               IF   WRK-STARTKBN  =  "0"
-      *    CSV頭書き出力
-                 PERFORM  210-CSV-HED-SEC
-                 MOVE   "1"   TO   WRK-STARTKBN
-               END-IF
-               IF A05TMP-SYUTURYOKU  NOT =  WRK-STUKBN
-                 PERFORM   220-G-CSV-WRITE-SEC
-                 CLOSE  A21011A05-FILE
-      *    CSV頭書き出力
-                 PERFORM  210-CSV-HED-SEC
-               END-IF
-      *    CSV書き出し
-               PERFORM  210-CSV-WRITE-SEC
-      *    一時ファイル読込
-               MOVE   A05TMP-SYUTURYOKU  TO  WRK-STUKBN
-               PERFORM  900-TMP-READ-SEC
-
-             END-PERFORM
-      *    ファイルクローズ
-             CLOSE  A21011A05-FILE
-             CLOSE  A05TMP-FILE
-           END-IF
            .
        2002-PRINT-EXT.
            EXIT.
@@ -2491,427 +2443,6 @@
        500-ERR-HENSYU-EXT.
            EXIT.
       *
-      *****************************************************************
-      *    CSV頭書き出力　　処理
-      *****************************************************************
-       210-CSV-HED-SEC                SECTION.
-      *
-      *    ＣＳＶファイル名称
-           IF  CNT-PAGE  >  0
-             MOVE    "20"                      TO  CSV-DENPPRTYMDHM(1:2)
-             MOVE    SYS-YMD                   TO  CSV-DENPPRTYMDHM(3:6)
-             MOVE    SYS-TIME(1:4)             TO  CSV-DENPPRTYMDHM(9:4)
-             EVALUATE  A05TMP-SYUTURYOKU
-               WHEN "1"
-                 MOVE    "H"          TO    CSV-PRTKBN
-               WHEN "2"
-                 MOVE    "T"          TO    CSV-PRTKBN
-               WHEN "3"
-                 MOVE    "S"          TO    CSV-PRTKBN
-             END-EVALUATE
-           END-IF
-           OPEN  OUTPUT  A21011A05-FILE
-      *
-           EVALUATE  A05TMP-SYUTURYOKU
-             WHEN "1"
-               MOVE    "出力区分：保留"          TO    WRK-SABNAME
-             WHEN "2"
-               MOVE    "出力区分：月遅れ"        TO    WRK-SABNAME
-             WHEN "3"
-               MOVE    "出力区分：再請求"        TO    WRK-SABNAME
-           END-EVALUATE
-           OPEN  OUTPUT  A21011A05-FILE
-      *
-           INITIALIZE  A21011A05-REC
-           STRING   "保留・再請求・月遅れリスト"    DELIMITED  BY  SPACE
-                                           INTO    A21011A05-REC
-           END-STRING
-           WRITE  A21011A05-REC
-      *
-           INITIALIZE  A21011A05-REC
-           STRING   WRK-SABNAME   DELIMITED  BY  SPACE
-                                           INTO    A21011A05-REC
-           END-STRING
-           WRITE  A21011A05-REC
-      *
-           INITIALIZE  A21011A05-REC
-           MOVE  WRK-PARA-SKYYM(1:4)   TO   A21011A05-REC(1:4)
-           MOVE  "年"                  TO   A21011A05-REC(5:2)
-           MOVE  WRK-PARA-SKYYM(5:2)   TO   A21011A05-REC(7:2)
-           MOVE  "月"                  TO   A21011A05-REC(9:2)
-           WRITE  A21011A05-REC
-      *
-           INITIALIZE  A21011A05-REC
-           STRING   "患者番号"                     DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "氏名"                         DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "保険者番号"                   DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "入外"                         DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "本家"                         DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "主保険"                       DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "老人保険"                     DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "給付割合"                     DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "公費１"                       DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "公費２"                       DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "療養の給付(日数)"             DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "療養の給付(点数)"             DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "療養の給付(薬剤一部負担金)"   DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "療養の給付(一部負担金)"       DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "食事療養(日数)"               DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "食事療養(金額)"               DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "食事療養(標準負担額)"         DELIMITED  BY  SPACE
-                    ","                            DELIMITED  BY  SIZE
-                    "診療年月"                     DELIMITED  BY  SPACE
-                                        INTO    A21011A05-REC
-           END-STRING
-           WRITE  A21011A05-REC
-           .
-       210-CSV-HED-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    ＣＶＳ書き出し処理
-      *****************************************************************
-       210-CSV-WRITE-SEC                SECTION.
-      *
-      *    ＣＳＶ書き出し
-      *
-           INITIALIZE  A21011A05-REC
-                       WRK-REC-LENGTH
-      *    患者番号
-           MOVE    A05TMP-PTNUM       TO  WRK-DATA
-           MOVE    20                 TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    氏名
-           MOVE    A05TMP-PTNAME      TO  WRK-DATA
-           MOVE    30                 TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    保険者番号
-           MOVE    A05TMP-HKNJANUM    TO  WRK-DATA
-           MOVE    8                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    入外区分
-           IF    A05TMP-NYUGAIKBN  =  1
-             MOVE    "入院"             TO  WRK-DATA
-           ELSE
-             MOVE    "外来"             TO  WRK-DATA
-           END-IF
-           MOVE    4                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    本人・家族区分
-           EVALUATE A05TMP-HONKZKKBN
-             WHEN "1"
-               MOVE    "本"             TO  WRK-DATA
-             WHEN "2"
-               MOVE    "家"             TO  WRK-DATA
-             WHEN OTHER
-               MOVE    "　"             TO  WRK-DATA
-           END-EVALUATE
-           MOVE    2                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    主保険番号
-           MOVE    A05TMP-HKNNUM      TO  WRK-DATA
-           MOVE    3                 TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    老人保険番号
-           MOVE    A05TMP-RJNHKNNUM      TO  WRK-DATA
-           MOVE    3                 TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    給付割合
-           MOVE    A05TMP-KYURATE     TO  WRK-DATA
-           MOVE    3                  TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    "割"     TO  WRK-DATA
-           MOVE    2                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    公費番号１
-           MOVE    A05TMP-KOHNUM1     TO  WRK-DATA
-           MOVE    3                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    公費番号２
-           MOVE    A05TMP-KOHNUM2     TO  WRK-DATA
-           MOVE    3                 TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（日数）
-           MOVE    A05TMP-NISSU         TO  WRK-DATA
-           MOVE    2                 TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（点数）
-           MOVE    A05TMP-TENSU         TO  WRK-DATA
-           MOVE    8                 TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（薬剤一部負担金）
-           MOVE    A05TMP-YKZFTN       TO  WRK-DATA
-           MOVE    5                  TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（一部負担金）
-           MOVE    A05TMP-ITBFTN     TO  WRK-DATA
-           MOVE    9                  TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事回数
-           MOVE    A05TMP-SNISSU     TO  WRK-DATA
-           MOVE    2                  TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事療養費
-           MOVE    A05TMP-SKINGK       TO  WRK-DATA
-           MOVE    9                  TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事負担額
-           MOVE    A05TMP-SFTNGK        TO  WRK-DATA
-           MOVE    9                 TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    診療年月
-           MOVE    A05TMP-SRYYM       TO      WRK-SYMD(1:6)
-           MOVE    "01"               TO      WRK-SYMD(7:2)
-           PERFORM 31012-SEIWA-HEN-SEC
-           MOVE    WRK-HENYMDG(1:16)  TO      WRK-DATA
-           MOVE    16                 TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *
-           WRITE   A21011A05-REC
-      *
-      *    小計加算
-           ADD     A05TMP-NISSU       TO      SUM-NISSU
-           ADD     A05TMP-TENSU       TO      SUM-TENSU
-           ADD     A05TMP-YKZFTN      TO      SUM-YKZFTN
-           ADD     A05TMP-ITBFTN      TO      SUM-ITBFTN
-           ADD     A05TMP-SNISSU      TO      SUM-SNISSU
-           ADD     A05TMP-SKINGK      TO      SUM-SKINGK
-           ADD     A05TMP-SFTNGK      TO      SUM-SFTNGK
-      *
-           .
-       210-CSV-WRITE-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    ＣＶＳ合計書き出し処理
-      *****************************************************************
-       220-G-CSV-WRITE-SEC                SECTION.
-      *
-      *    ＣＳＶ書き出し
-           INITIALIZE  A21011A05-REC
-                       WRK-REC-LENGTH
-      *    患者番号
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-
-      *    氏名
-           MOVE    "合　　　計"      TO  WRK-DATA
-           MOVE    10                 TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    保険者番号
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    入外区分
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    本人・家族区分
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-
-      *    主保険番号
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-
-      *    老人保険番号
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    給付割合
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    公費番号１
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    公費番号２
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（日数）
-           MOVE    SUM-NISSU         TO  WRK-DATA
-           MOVE    4                 TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（点数）
-           MOVE    SUM-TENSU         TO  WRK-DATA
-           MOVE    7                 TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（薬剤一部負担金）
-           MOVE    SUM-YKZFTN       TO  WRK-DATA
-           MOVE    7                  TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    療養の給付（一部負担金）
-           MOVE    SUM-ITBFTN     TO  WRK-DATA
-           MOVE    7                  TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事回数
-           MOVE    SUM-SNISSU          TO  WRK-DATA
-           MOVE    4                  TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事療養費
-           MOVE    SUM-SKINGK       TO  WRK-DATA
-           MOVE    7                  TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *    食事負担額
-           MOVE    SUM-SFTNGK        TO  WRK-DATA
-           MOVE    7                 TO  WRK-NAGASA
-           PERFORM 5005-MOJI-HENSYU-SEC
-           MOVE    ","                TO  WRK-DATA
-           MOVE    1                  TO  WRK-NAGASA
-           PERFORM 5004-MOJI-HENSYU-SEC
-      *
-           WRITE   A21011A05-REC
-
-           INITIALIZE    SUM-AREA
-      *
-           .
-       220-CSV-G-WRITE-EXT.
-           EXIT.
-      *
-      *****************************************************************
-      *    出力レコード処理（文字）
-      *****************************************************************
-       5004-MOJI-HENSYU-SEC          SECTION.
-      *
-           IF      WRK-DATA        =   SPACE
-               CONTINUE
-           ELSE
-             PERFORM VARYING IDW    FROM    WRK-NAGASA  BY  -1
-                   UNTIL   IDW    <       1
-               IF      WRK-DATA (IDW:1)   NOT =   SPACE
-                 STRING  A21011A05-REC(1:WRK-REC-LENGTH)
-                                            DELIMITED  BY  SIZE
-                         WRK-DATA(1:IDW)    DELIMITED  BY  SIZE
-                         INTO     A21011A05-REC
-                 END-STRING
-                 ADD     IDW                 TO  WRK-REC-LENGTH
-                 MOVE    1                   TO  IDW
-               END-IF
-             END-PERFORM
-           END-IF
-           .
-       5004-MOJI-HENSYU-EXT.
-           EXIT.
-      *****************************************************************
-      *    出力レコード処理（数字）
-      *****************************************************************
-       5005-MOJI-HENSYU-SEC          SECTION.
-      *
-           INITIALIZE    IDX6
-           IF      WRK-DATA        =   SPACE
-               CONTINUE
-           ELSE
-             PERFORM VARYING IDW    FROM    1   BY  1
-                   UNTIL   IDW    >     WRK-NAGASA
-               IF      WRK-DATA (IDW:1)   NOT =   0
-                 STRING  A21011A05-REC(1:WRK-REC-LENGTH)
-                                                   DELIMITED  BY  SIZE
-                         WRK-DATA(IDW:)  DELIMITED  BY  SIZE
-                         INTO     A21011A05-REC
-                 END-STRING
-                 COMPUTE  IDW  =   WRK-NAGASA -   IDX6
-                 ADD      IDW                 TO  WRK-REC-LENGTH
-                 MOVE     9999                TO  IDW
-               END-IF
-               ADD  1  TO  IDX6
-             END-PERFORM
-           END-IF
-           .
-       5004-MOJI-HENSYU-EXT.
-           EXIT.
       *****************************************************************
       *    終了　　処理
       *****************************************************************
