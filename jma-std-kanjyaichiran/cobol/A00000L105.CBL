@@ -31,6 +31,7 @@
       *                                     open-cobol1.0対応
       *  01.00.02    @@@@-門間    11/11/04  CSVファイル作成機能追加
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *  02.00.02    @@@@-門間    17/08/29  入院日（転科日）、退院日（転科日）の修正
       *****************************************************************
       *
        ENVIRONMENT                 DIVISION.
@@ -2013,7 +2014,7 @@
            MOVE    PNR-M-REC    TO  MCPDATA-REC
            MOVE    "DBSELECT"          TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"    TO  MCP-TABLE
-           MOVE    "key4"              TO  MCP-PATHNAME
+           MOVE    "key5"              TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"         USING
                                        MCPAREA
                                        MCPDATA-REC
@@ -2036,7 +2037,7 @@
       *
            MOVE    "DBFETCH"          TO  MCP-FUNC
            MOVE    "tbl_ptnyuinrrk"   TO  MCP-TABLE
-           MOVE    "key4"              TO  MCP-PATHNAME
+           MOVE    "key5"             TO  MCP-PATHNAME
            CALL    "ORCDBMAIN"        USING
                                       MCPAREA
                                       MCPDATA-REC
@@ -2059,7 +2060,7 @@
       *
            MOVE  "DBCLOSECURSOR"    TO  MCP-FUNC
            MOVE  "tbl_ptnyuinrrk"   TO  MCP-TABLE
-           MOVE    "key4"              TO  MCP-PATHNAME
+           MOVE  "key5"             TO  MCP-PATHNAME
            CALL  "ORCDBMAIN"        USING
                                     MCPAREA
                                     MCPDATA-REC
