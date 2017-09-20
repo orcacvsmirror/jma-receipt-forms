@@ -47,6 +47,7 @@
       *  02.00.05    @@@@-門間    16/09/16  入院分を対象とした場合の処理速度を改善
       *  02.00.06    @@@@-門間    17/06/26  点数マスタの読込処理を修正
       *  02.00.07    @@@@-門間    17/07/13  一時ファイル書き込み時の不具合を修正
+      *  02.00.08    @@@@-門間    17/09/19  診療行為が複数行に分かれる不具合を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -256,7 +257,7 @@
            03  WRK-FROMYMD           PIC X(22).
            03  WRK-TOYMD             PIC X(22).
       *    郵便番号変換
-        03  WRK-POSTMAEG.
+           03  WRK-POSTMAEG.
                05  WRK-POSTMAE1      PIC X(03).
                05  WRK-POSTMAE2      PIC X(04).
            03  WRK-POSTATOG.
@@ -278,7 +279,7 @@
            03  WRK-Z9TEN2            PIC ZZZZZZZ9.99.
            03  WRK-Z9KAI             PIC ZZZZZZZ9.
            03  WRK-Z9KAI-1           PIC 9(09).
-        03  WRK-Z9KAI-1Z          PIC ZZZZZZZZ9.
+           03  WRK-Z9KAI-1Z          PIC ZZZZZZZZ9.
            03  WRK-Z9KAI-2           PIC 9(09).
            03  WRK-Z9KAI-2Z          PIC ZZZZ9.999.
            03  WRK-Z9KAI-2ZZ         PIC ZZZZZZ9.9.
@@ -1382,6 +1383,11 @@
            MOVE    NSRY-SRYCD(IDX1)     TO   A010T-SRYCD
            MOVE    NSRY-SRYCD(IDX1)     TO   A010T3-SRYCD
       *
+      *    点数の設定
+           MOVE    TNS-TEN              TO   A010T-TEN
+           MOVE    TNS-TEN              TO   A010T-TEN2
+           MOVE    TNS-TEN              TO   A010T3-TEN
+      *
            READ A010T-FILE
                 KEY      IS    A010T-KEY
                 INVALID  KEY   MOVE  1  TO   FLG-INVALID
@@ -1398,9 +1404,6 @@
       *    診療行為名称の設定
            MOVE    TNS-NAME             TO   A010T-NAME
            MOVE    TNS-NAME             TO   A010T3-NAME
-      *    点数の設定
-           MOVE    TNS-TEN              TO   A010T-TEN
-           MOVE    TNS-TEN              TO   A010T3-TEN
       *
       *    外泊の入院料計算
            IF   NSRY-SRYCD(IDX1)  =  "099999911"
