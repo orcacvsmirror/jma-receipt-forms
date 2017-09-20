@@ -52,6 +52,7 @@
       *   01.00.20    Ìç´Ö    2017/06/30  ³°Íè¶â³Û¡¢Æþ±¡¶â³ÛÍó¤Î·å¿ô¤òÊÑ¹¹
       *                                   °õ»ú½ç½ø¤Î²þ¹Ô»þ¡Ê£Ã£Ó£Ö½ÐÎÏ¡Ë¡¢
       *                                   ¥°¥ë¡¼¥×ÈæÎ¨¤¬°õ»ú¤µ¤ì¤Ê¤¤ÉÔ¶ñ¹ç¤ò½¤Àµ
+      *   01.00.21    Ìç´Ö    2017/09/19  ¶èÊ¬ÊÌ½¸·×ÎÎ°è¤Î¾å¸Â¤òÊÑ¹¹
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -123,8 +124,8 @@
       *
       *    Åº»úÎÎ°è
        01  IDX-AREA.
-           03  IDX1                        PIC 9(03).
-           03  IDX2                        PIC 9(03).
+           03  IDX1                        PIC 9(05).
+           03  IDX2                        PIC 9(05).
            03  IDX3                        PIC 9(02).
            03  IDX4                        PIC 9(02).
            03  IDX5                        PIC 9(05).
@@ -200,8 +201,8 @@
            03  WRK-HIRITU                  PIC 9(03)V9(02).
            03  WRK-ZENSORTKBN              PIC 9(02).
            03  WRK-ZENSRYKBN               PIC 9(02).
-           03  WRK-ZENPRTKBN               PIC 9(03).
-           03  WRK-MAX                     PIC 9(03).
+           03  WRK-ZENPRTKBN               PIC 9(05).
+           03  WRK-MAX                     PIC 9(05).
            03  WRK-TENTNK                  PIC 9(03)V9(02).
            03  WRK-STARTYMD.
                05  WRK-STARTY              PIC 9(04).
@@ -233,7 +234,7 @@
       *
       *    ¿ÇÎÅ²Ê¡¢°å»Õ¡¢ÉÂÅïÊÌ½¸·×ÎÎ°è
        01  WRK-SYUKEI-AREA.
-           03  WRK-MEISAITBL               OCCURS 300.
+           03  WRK-MEISAITBL               OCCURS 10000.
              05  WRK-NAME                  PIC X(20).
              05  WRK-NAMEKBN               PIC 9(05).
              05  WRK-STYUKYMD              PIC 9(08).
@@ -241,7 +242,7 @@
       *
       *    ÈæÎ¨·×»»ÍÑ¶èÊ¬ÊÌ½¸·×ÎÎ°è
        01  WRK-HIRITU-AREA.
-           03  WRK-HIRITU-PRTKBN-TBL       OCCURS 300.
+           03  WRK-HIRITU-PRTKBN-TBL       OCCURS 10000.
              05  WRK-HIRITU-SORTKBN-TBL    OCCURS 14.
                07  WRK-HIRITU-GOUKEI       PIC 9(10).
                07  WRK-HIRITU-SRYKBN-TBL   OCCURS 99.
