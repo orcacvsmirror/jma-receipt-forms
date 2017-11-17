@@ -48,6 +48,7 @@
       *  02.00.06    @@@@-門間    17/06/26  点数マスタの読込処理を修正
       *  02.00.07    @@@@-門間    17/07/13  一時ファイル書き込み時の不具合を修正
       *  02.00.08    @@@@-門間    17/09/19  診療行為が複数行に分かれる不具合を修正
+      *  02.00.09    @@@@-門間    17/11/17  外泊時、回数減算処理を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -1456,12 +1457,6 @@
                    MOVE   9                 TO   A010T3-TANI
                END-EVALUATE
              END-IF
-           END-IF
-      *    外泊日の入院基本料の回数を減算
-           IF   NACCT-ZAISKBKBN  =  1
-               AND   WRK-GAIHAKKBN(IDX8)  =  1
-             COMPUTE  A010T-KAISU  =  A010T-KAISU  -  NACCT-DAY(IDX8)
-             COMPUTE  A010T3-KAISU  =  A010T3-KAISU  -  NACCT-DAY(IDX8)
            END-IF
       *
            IF   FLG-INVALID      =    ZERO
@@ -6307,13 +6302,15 @@
                WHEN  1
                WHEN  2
                WHEN  3
+      *          食事療養費または入院料加算
                  IF   NACCT-ZAISKBKBN  =  "4"  OR  "6"
                    MOVE    0            TO   NACCT-DAY(IDX8)
                  END-IF
-                 MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
-               WHEN  4
-               WHEN  5
-                 MOVE    1              TO   WRK-GAIHAKKBN(IDX8)
+      *          入院基本料かつ加算手技料
+                 IF  ( NACCT-ZAISKBKBN  =  "1"  AND
+                       TNS-DATAKBN      =  "2"      )
+                   MOVE    0            TO   NACCT-DAY(IDX8)
+                 END-IF
              END-EVALUATE
            END-IF
       *
