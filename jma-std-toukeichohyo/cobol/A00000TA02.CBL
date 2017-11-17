@@ -53,6 +53,7 @@
       *                                   印字順序の改行時（ＣＳＶ出力）、
       *                                   グループ比率が印字されない不具合を修正
       *   01.00.21    門間    2017/09/19  区分別集計領域の上限を変更
+      *   01.00.22    門間    2017/11/17  外泊時、回数減算処理を修正
       *******************************************************************
        ENVIRONMENT             DIVISION.
        CONFIGURATION               SECTION.
@@ -1232,13 +1233,14 @@
                MOVE    WRK-YM        TO  WRK-OBJYMD(1:6)
                MOVE    IDX-DAY       TO  WRK-OBJYMD(7:2)
       *
+      *    点数マスタ読込み
+               MOVE    NSRY-SRYCD(IDX1)     TO  WRK-SRYCD
+               PERFORM  900-TENSU-READ-SEC
+      *
       *    外泊日に食事などのフラグを消す
                PERFORM  920-NYUINACCT-READ-SEC
       *
                IF  NACCT-DAY(IDX-DAY)  >  ZERO
-      *    点数マスタ読込み
-                 MOVE    NSRY-SRYCD(IDX1)     TO  WRK-SRYCD
-                 PERFORM  900-TENSU-READ-SEC
       *
       *    キー設定
       *    順序設定(入院料固定)
@@ -3452,7 +3454,13 @@
                WHEN  1
                WHEN  2
                WHEN  3
+      *          食事療養費または入院料加算
                  IF   NACCT-ZAISKBKBN  =  "4"  OR  "6"
+                   MOVE    0            TO  NACCT-DAY(IDX-DAY)
+                 END-IF
+      *          入院基本料かつ加算手技料
+                 IF  ( NACCT-ZAISKBKBN  =  "1"  AND
+                       TNS-DATAKBN      =  "2"      )
                    MOVE    0            TO  NACCT-DAY(IDX-DAY)
                  END-IF
              END-EVALUATE
