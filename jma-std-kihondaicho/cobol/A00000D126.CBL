@@ -1329,7 +1329,6 @@
                  IF  WRK-NYURRK-STUYMD >= D100LNK-YMD1 AND
                      WRK-NYURRK-STUYMD <= D100LNK-YMD2
                    MOVE WRK-NYURRK-STUYMD      TO WRK-TMP2-YMD
-                   COMPUTE WRK-TMP2-DD = WRK-TMP2-DD - 1
                  END-IF
                  COMPUTE SUM-YOSO(I3 4) = SUM-YOSO(I3 4)
                                         + WRK-TMP2-DD + 1
@@ -2671,7 +2670,6 @@
                  IF  I3  =  SUM-SRYKAMAX
       *
                    IF     I4 = 1
-                     OR   I4 = 4
                      OR   I4 = 5
                      OR   I4 = 6
                      OR ( I4 = 40 AND WRK-TJIHI-FLG(1)  = ZERO )
