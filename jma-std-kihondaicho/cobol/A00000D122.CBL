@@ -2681,7 +2681,6 @@
                  IF  I3  =  SUM-DAYMAX
       *
                    IF     I4 =  1
-                     OR   I4 =  4
                      OR   I4 =  5
                      OR   I4 =  6
                      OR ( I4 = 40 AND WRK-TJIHI-FLG(1)  = ZERO )
