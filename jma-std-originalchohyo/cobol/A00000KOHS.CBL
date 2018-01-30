@@ -49,6 +49,7 @@
       *  01.00.12    @@@@-門間    13/01/23  テーブルのprimary key変更対応
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    17/08/03  旧ＣＳＶ出力機能を削除
+      *  02.00.03    @@@@-門間    18/01/30  保険番号情報取得時の不具合修正
       *****************************************************************
       *
        ENVIRONMENT    DIVISION.
@@ -170,6 +171,8 @@
            03  WRK-HENYMDG          PIC X(22).
            03  WRK-HENYMDG1         PIC X(09).
            03  WRK-KOHNUM           PIC X(03).
+           03  WRK-TEKSTYMD         PIC X(08).
+           03  WRK-TEKEDYMD         PIC X(08).
            03  WRK-TAHO             PIC X(20).
       *
            03  WRK-CITYNAME1        PIC X(60).
@@ -584,6 +587,8 @@
       *
       *    公費名取得
            MOVE    MF100-KOHNUM              TO   WRK-KOHNUM
+           MOVE    PTKOH-TEKSTYMD            TO   WRK-TEKSTYMD
+           MOVE    PTKOH-TEKEDYMD            TO   WRK-TEKEDYMD
            PERFORM  950-HKNNUM-SET-SEC
            MOVE    HKN-TANSEIDONAME          TO   MF100-KOHNAME
       *
@@ -608,6 +613,10 @@
                     OR   RECE10-KOHNUM(IDX2)  =  SPACE
              IF     RECE10-KOHNUM(IDX2)(1:1)  =  "0"
                MOVE     RECE10-KOHNUM(IDX2)  TO   WRK-KOHNUM
+               MOVE     RECE10-SRYYM         TO   WRK-TEKSTYMD(1:6)
+                                                  WRK-TEKEDYMD(1:6)
+               MOVE     "01"                 TO   WRK-TEKSTYMD(7:2)
+               MOVE     "31"                 TO   WRK-TEKEDYMD(7:2)
                PERFORM  950-HKNNUM-SET-SEC
                MOVE     HKN-HBTNUM           TO   MF100-TAHO(IDX1)
                ADD      1                    TO   IDX1
@@ -1935,71 +1944,79 @@
       *****************************************************************
        950-HKNNUM-SET-SEC  SECTION.
       *
-           INITIALIZE  HKNNUM-REC
-           MOVE    SYS-1001-HOSPNUM     TO   HKN-HOSPNUM
-           MOVE    WRK-KOHNUM           TO   HKN-HKNNUM
-           MOVE    HKNNUM-REC           TO   MCPDATA-REC
-           MOVE    "DBSELECT"           TO   MCP-FUNC
-           MOVE    "tbl_hknnum"         TO   MCP-TABLE
-           MOVE    "key2"               TO   MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
-           IF  MCP-RC  =  ZERO
-             MOVE    "tbl_hknnum"       TO   MCP-TABLE
-             MOVE    "key2"             TO   MCP-PATHNAME
-             PERFORM  955-HKNNUM-READ-SEC
-           ELSE
-             MOVE      1      TO       FLG-HKNNUM
-           END-IF
-           PERFORM    UNTIL  FLG-HKNNUM   =   1
-             IF     HKN-TEKSTYMD(1:6)  <  WRK-PARA-SRYYM
-               AND  HKN-TEKEDYMD(1:6)  >  WRK-PARA-SRYYM
-               MOVE     1               TO   FLG-HKNNUM
-             END-IF
-      *
-             IF   FLG-HKNNUM   =   ZERO
-               MOVE  "tbl_hknnum"       TO   MCP-TABLE
-               MOVE  "key2"             TO   MCP-PATHNAME
-               PERFORM  955-HKNNUM-READ-SEC
-             END-IF
-           END-PERFORM
-      *
-           INITIALIZE  MCPAREA
-           MOVE    "DBCLOSECURSOR"      TO   MCP-FUNC
-           MOVE    "tbl_hknnum"         TO   MCP-TABLE
-           MOVE    "key2"               TO   MCP-PATHNAME
-           CALL    "ORCDBMAIN"          USING
-                                        MCPAREA
-                                        MCPDATA-REC
-                                        SPA-AREA
+           PERFORM  955-HKNNUM-SELECT-SEC
+           PERFORM  955-HKNNUM-FETCH-SEC  UNTIL  FLG-HKNNUM = 1
+           PERFORM  955-HKNNUM-CLOSE-SEC
       *
            .
        950-HKNNUM-SET-EXT.
+           EXIT.
+      *****************************************************************
+      *    保険番号情報読込
+      *****************************************************************
+       955-HKNNUM-SELECT-SEC  SECTION.
+      *
+           INITIALIZE                     FLG-HKNNUM
+           INITIALIZE                     HKNNUM-REC
+           MOVE    SPA-HOSPNUM        TO  HKN-HOSPNUM
+           MOVE    WRK-KOHNUM         TO  HKN-HKNNUM
+           MOVE    WRK-TEKSTYMD       TO  HKN-TEKSTYMD
+           MOVE    WRK-TEKEDYMD       TO  HKN-TEKEDYMD
+           MOVE    HKNNUM-REC         TO  MCPDATA-REC
+           MOVE    "DBSELECT"         TO  MCP-FUNC
+           MOVE    "tbl_hknnum"       TO  MCP-TABLE
+           MOVE    "key5"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+           IF   MCP-RC  =  ZERO
+             PERFORM  955-HKNNUM-FETCH-SEC
+           ELSE
+             MOVE      1                TO  FLG-HKNNUM
+           END-IF
+      *
+           .
+       955-HKNNUM-SELECT-EXT.
+           EXIT.
+      *****************************************************************
+      *    保険番号情報読込
+      *****************************************************************
+       955-HKNNUM-FETCH-SEC  SECTION.
+      *
+           MOVE    "DBFETCH"          TO  MCP-FUNC
+           MOVE    "tbl_hknnum"       TO  MCP-TABLE
+           MOVE    "key5"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
+           IF   MCP-RC  =  ZERO
+             MOVE    MCPDATA-REC        TO  HKNNUM-REC
+             MOVE    ZERO               TO  FLG-HKNNUM
+           ELSE
+             MOVE    1                  TO  FLG-HKNNUM
+           END-IF
+      *
+           .
+       955-HKNNUM-FETCH-EXT.
            EXIT.
       *
       *****************************************************************
       *    保険番号情報読込
       *****************************************************************
-       955-HKNNUM-READ-SEC  SECTION.
+       955-HKNNUM-CLOSE-SEC  SECTION.
       *
-           MOVE    "DBFETCH"        TO   MCP-FUNC
-           CALL    "ORCDBMAIN"      USING
-                                    MCPAREA
-                                    MCPDATA-REC
-                                    SPA-AREA
-           IF   MCP-RC  =  ZERO
-             MOVE    MCPDATA-REC    TO   HKNNUM-REC
-             MOVE    ZERO           TO   FLG-HKNNUM
-      *
-           ELSE
-             INITIALIZE  HKNNUM-REC
-             MOVE    1              TO   FLG-HKNNUM
-           END-IF
+           MOVE    "DBCLOSECURSOR"    TO  MCP-FUNC
+           MOVE    "tbl_hknnum"       TO  MCP-TABLE
+           MOVE    "key5"             TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"        USING
+                                      MCPAREA
+                                      MCPDATA-REC
+                                      SPA-AREA
       *
            .
-       955-HKNNUM-READ-EXT.
+       955-HKNNUM-CLOSE-EXT.
            EXIT.
       *
       *****************************************************************
