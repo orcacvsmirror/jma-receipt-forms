@@ -30,6 +30,7 @@
       *   01.00.01    @@@@-田中   10/12/14  open-cobol1.0対応
       *   01.00.01    @@@@-田中   10/12/14  コメント履歴削除
       *   02.00.01    @@@@-門間   14/10/31  ver4.8.0対応（一時ディレクトリ変更）
+      *   02.00.02    @@@@-門間   18/02/01  金額表示機能の追加
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -118,6 +119,7 @@
            03  WRK-PARA-NYUGAIKBN    PIC X(01).
            03  WRK-PARA-HKNTG        PIC X(01).
            03  WRK-PARA-HOUKATU      PIC X(01).
+           03  WRK-PARA-TKKBN        PIC X(01).
       *
       *    一時領域
        01  WRK-AREA.
@@ -266,6 +268,7 @@
                                                WRK-PARA-NYUGAIKBN
                                                WRK-PARA-HKNTG
                                                WRK-PARA-HOUKATU
+                                               WRK-PARA-TKKBN
       *
            END-UNSTRING
            MOVE    WRK-PARA-HOSPNUM    TO   SPA-HOSPNUM
@@ -299,6 +302,7 @@
            MOVE    WRK-PARA-NYUGAIKBN     TO   K100LNK-NYUGAIKBN
            MOVE    WRK-PARA-HKNTG         TO   K100LNK-HKNTG
            MOVE    WRK-PARA-HOUKATU       TO   K100LNK-HOUKATU
+           MOVE    WRK-PARA-TKKBN         TO   K100LNK-TKKBN
       *
       *    帳票別サブプログラムCALL
            EVALUATE  WRK-PARA-PRTYPE
