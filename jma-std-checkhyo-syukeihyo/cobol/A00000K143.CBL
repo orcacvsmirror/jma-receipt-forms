@@ -41,6 +41,7 @@
       *   02.00.03    @@@@-Ìç´Ö   16/06/15  ¥×¥í¥°¥é¥à¥ª¥×¥·¥ç¥ó¡ÊÍ¹ÊØÈÖ¹æ¡Ë¼èÆÀ½èÍý¤ò½¤Àµ
       *   02.00.04    @@@@-Ìç´Ö   17/04/27  75ºÐ°Ê¾å¤¬¹Ô¹àÌÜ¤Î½é¿Ç¡Ê¸å´ü¹âÎð¼Ô¡ËµÚ¤Ó
       *                                     ºÆ¿Ç¡Ê¸å´ü¹âÎð¼Ô¡Ë¤Ø½¸·×¤µ¤ì¤ë¤è¤¦¤ËÊÑ¹¹
+      *   02.00.05    @@@@-Ìç´Ö   18/02/01  ¶â³ÛÉ½¼¨µ¡Ç½¤ÎÄÉ²Ã
       *******************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -97,8 +98,7 @@
                                    REPLACING  //RECE01PARA//
                                    BY         //AK143T//.
       *
-      *
-           COPY    "A00000K100.INC".
+           COPY    "A00000K100V02.INC".
       *
       *    ¥¹¥ÑÎÎ°è
        01  STS-AREA.
@@ -148,6 +148,7 @@
            03  FLG-DATEKBN2        PIC 9(01).
            03  FLG-NKENSU          PIC 9(01).
            03  FLG-SRYACCTP        PIC 9(01).
+           03  FLG-JBI             PIC 9(01).
       *
       *    ¥«¥¦¥ó¥ÈÎÎ°è
        01  CNT-AREA.
@@ -258,12 +259,14 @@
            03  WRK-NISSU             PIC 9(03).
            03  WRK-TENSU           PIC S9(09).
            03  WRK-PTID2           PIC 9(10).
-           03  WRK-TENSU2            PIC 9(09).
+           03  WRK-TENSU2            PIC S9(09).
            03  WRK-SYUEKI            PIC 9(09).
            03  WRK-SYUEKI2           PIC 9(09).
            03  WRK-SYUEKI3           PIC 9(09).
            03  WRK-HKNNUM            PIC X(03).
-           03  WRK-TENTNK            PIC 9(03).
+           03  WRK-TENTNK            PIC 9(02)V9(01).
+           03  WRK-TENTNK-JG         PIC 9(02)V9(01).
+           03  WRK-TENTNK-JY         PIC 9(02)V9(01).
            03  WRK-NENREI            PIC 9(03).
            03  WRK-KNSBUNRUI         PIC 9(02).
            03  WRK-TMP-NYUGAIKBN     PIC X(01).
@@ -315,6 +318,16 @@
            03  WRK-LINE              PIC X(44000).
            03  WRK-DATA              PIC X(430).
            03  WRK-TENYMD            PIC X(08).
+           03  WRK-T2NAME            PIC X(04).
+           03  WRK-R-TTNK            PIC 9(02)V9(01).
+           03  WRK-J-TTNK            PIC 9(02)V9(01).
+           03  WRK-JG-TTNK           PIC 9(02)V9(01).
+           03  WRK-JY-TTNK           PIC 9(02)V9(01).
+           03  WRK-K-TTNK            PIC 9(02)V9(01).
+           03  WRK-ZAITEN            PIC 9(08).
+           03  WRK-ZAITEN1           PIC 9(08).
+           03  WRK-ZAITEN2           PIC 9(08).
+           03  WRK-HKNCOMBI          PIC X(04).
       *
       *    ÃÏ¶èÊÌÂàÈò¥¨¥ê¥¢
        01  WRK-TIKU-AREA.
@@ -475,6 +488,8 @@
       *    ½ÐÎÏÀè¥×¥ê¥ó¥¿Ì¾³ä¤êÅö¤Æ¾ðÊó
            COPY  "CPSK1031.INC".
       *
+      *    Ï«ºÒ°åÎÅµ¡´Ø¾ðÊó
+           COPY    "CPSK4001.INC".
       *
       *    ¿ÇÎÅ²ñ·×¥Þ¥¹¥¿
        01  SRYACCT-REC.
@@ -534,6 +549,9 @@
        01  HKNNUM-REC.
            COPY    "CPHKNNUM.INC".
       *
+      *    Ï«ºÒÊÝ¸±ÈÖ¹æ¥Þ¥¹¥¿
+       01  PTRSIINF-REC.
+           COPY    "CPPTRSIINF.INC".
       *
       *    ¥¸¥ç¥Ö´ÉÍý¥Þ¥¹¥¿
        01  JOBKANRI-REC.
@@ -1155,6 +1173,76 @@
            PERFORM 31012-SEIWA-HEN-SEC
            MOVE  WRK-HENYMDG  TO  WRK-SEIYMD
       *
+      *    Ï«ºÒ°åÎÅµ¡´Ø¾ðÊó
+           MOVE    SPACE                 TO  SYS-4001-REC
+           INITIALIZE                    SYS-4001-REC
+           MOVE    "4001"                TO  SYS-4001-KANRICD
+           MOVE    "*"                   TO  SYS-4001-KBNCD
+           MOVE    SPA-HOSPNUM           TO  SYS-4001-HOSPNUM
+           MOVE    WRK-PARA-PRTSYMD      TO  SYS-4001-STYUKYMD
+           MOVE    WRK-PARA-PRTLYMD      TO  SYS-4001-EDYUKYMD
+           MOVE    SYS-4001-REC          TO  MCPDATA-REC
+           PERFORM 810-SYSKANRI-READ-SEC
+      *
+      *    ÅÀ¿ôÃ±²Á
+           IF  FLG-SYSKANRI2  =  ZERO
+             MOVE    MCPDATA-REC           TO  SYS-4001-REC
+      *      Ï«ºÒ
+      *      ÅÀ¿ôÃ±²Á  1:11.5±ß  2:12±ß
+             EVALUATE  SYS-4001-TENKBN
+               WHEN  "1"
+                 MOVE    11.5                TO  WRK-R-TTNK
+               WHEN  "2"
+                 MOVE    12                  TO  WRK-R-TTNK
+               WHEN  OTHER
+                 MOVE    10                  TO  WRK-R-TTNK
+             END-EVALUATE
+      *      ¼«ÇåÀÕ
+      *      ¼«ÇåÀÕ¶èÊ¬  1:Ï«ºÒ½àµò  2:·òÊÝ½àµò
+             EVALUATE  SYS-4001-JIBAIKBN
+      *        1:Ï«ºÒ½àµò
+               WHEN  "1"
+                 MOVE    WRK-R-TTNK          TO  WRK-J-TTNK
+      *        2:·òÊÝ½àµò
+               WHEN  "2"
+                 IF  K100LNK-NYUGAIKBN  =  "1"
+      *            Æþ±¡:µ»½ÑÅÀÃ±²Á
+                   MOVE    SYS-4001-SYUTENTANKA2   TO  WRK-JG-TTNK
+      *            Æþ±¡:ÌôºÞÅùÅÀÃ±²Á
+                   MOVE    SYS-4001-YKZTENTANKA2   TO  WRK-JY-TTNK
+                 ELSE
+      *            ³°Íè:µ»½ÑÅÀÃ±²Á
+                   MOVE    SYS-4001-SYUTENTANKA    TO  WRK-JG-TTNK
+      *            ³°Íè:ÌôºÞÅùÅÀÃ±²Á
+                   MOVE    SYS-4001-YKZTENTANKA    TO  WRK-JY-TTNK
+                 END-IF
+      *          ¼«ÇåÀÕ  ·òÊÝ½àµò
+                 MOVE    1                       TO  FLG-JBI
+             END-EVALUATE
+      *      ¸øÌ³ºÒ³²
+      *      ¸øÌ³ºÒ³²¶èÊ¬  1:Ï«ºÒ½àµò  2:·òÊÝ½àµò
+             EVALUATE  SYS-4001-KOMUKBN
+      *        1:Ï«ºÒ½àµò
+               WHEN  "1"
+      *          ¸øÌ³ºÒ³²Ï«ºÒ½àµòÅÀ¿ôÃ±²Á¶èÊ¬
+                 EVALUATE  SYS-4001-KOMURSITANKAKBN
+                   WHEN  "1"
+                     MOVE    WRK-R-TTNK              TO  WRK-K-TTNK
+                   WHEN  "2"
+                     MOVE    SYS-4001-KOMURSITANKA   TO  WRK-K-TTNK
+                 END-EVALUATE
+      *        2:·òÊÝ½àµò
+               WHEN  "2"
+                 MOVE    SYS-4001-KOMUTENTANKA     TO  WRK-K-TTNK
+             END-EVALUATE
+           ELSE
+             MOVE    10                  TO  WRK-R-TTNK
+                                             WRK-J-TTNK
+                                             WRK-JG-TTNK
+                                             WRK-JY-TTNK
+                                             WRK-K-TTNK
+           END-IF
+      *
            .
        100-INIT-EXT.
            EXIT.
@@ -1580,7 +1668,15 @@
            PERFORM  800-SKTTMP-READ-SEC
       *
       *    Æþ±¡ÎÁ²Ã»»
-           ADD    SYU-NYN-HKNTEN         TO    K143TMP-TENSU(42)
+           IF  K100LNK-TKKBN  =  2
+      *      ¶â³Û
+             MOVE    SYU-NYN-HKNTEN        TO    WRK-ZAITEN1
+             PERFORM  20014-NMHEN-SEC
+             ADD    WRK-TENSU              TO    K143TMP-TENSU(42)
+           ELSE
+      *      ÅÀ¿ô
+             ADD    SYU-NYN-HKNTEN         TO    K143TMP-TENSU(42)
+           END-IF
       *
       *    ¼¼ÎÁº¹³Û²Ã»»
            IF       SYU-RMSAGAKU           NOT = ZERO
@@ -1592,8 +1688,17 @@
            ADD      SYU-RYOYOHI-LIFE       TO    K143TMP-TENSU(41)
       *
       *    ÎÅÍÜÃ´Åö¼êÅö
-           ADD    SYU-RYO-HKNTEN         TO    K143TMP-TENSU(39)
-                                               K143TMP-TENSU(40)
+           IF  K100LNK-TKKBN  =  2
+      *      ¶â³Û
+             MOVE    SYU-RYO-HKNTEN        TO    WRK-ZAITEN1
+             PERFORM  20014-NMHEN-SEC
+             ADD    WRK-TENSU              TO    K143TMP-TENSU(39)
+                                                 K143TMP-TENSU(40)
+           ELSE
+      *      ÅÀ¿ô
+             ADD    SYU-RYO-HKNTEN         TO    K143TMP-TENSU(39)
+                                                 K143TMP-TENSU(40)
+           END-IF
       *
            IF  FLG-M01TMP   =  1
              WRITE    K143TMP-REC
@@ -1603,6 +1708,57 @@
       *
            .
        20013-NYUIN-SET-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    Æþ±¡¶â³ÛÊÔ½¸½èÍý
+      *****************************************************************
+       20014-NMHEN-SEC      SECTION.
+      *
+           MOVE    SYU-HKNCOMBINUM       TO    WRK-HKNCOMBI
+           MOVE    SYU-SYUHKNNUM         TO    WRK-HKNNUM
+      *
+           EVALUATE  WRK-HKNNUM
+      *    Ï«ºÒ
+           WHEN  "971"
+             INITIALIZE                          HKNCOMBI-REC
+             MOVE    SPA-HOSPNUM             TO  COMB-HOSPNUM
+             MOVE    WRK-PTID                TO  COMB-PTID
+             MOVE    WRK-HKNCOMBI            TO  COMB-HKNCOMBINUM
+             PERFORM  900-HKNCOMBI-READ-SEC
+             PERFORM  900-PTRSIINF-READ-SEC
+             IF  PTRSI-HKNKBN  NOT =  "5"
+      *        Ï«ºÒ
+               MOVE    WRK-R-TTNK            TO  WRK-TENTNK
+             ELSE
+      *        ¸øÌ³
+               MOVE    WRK-K-TTNK            TO  WRK-TENTNK
+             END-IF
+      *      ¶â³Û·×»»
+             COMPUTE    WRK-TENSU  =  WRK-ZAITEN1  *  WRK-TENTNK
+      *    ¼«ÇåÀÕ
+           WHEN  "973"
+             IF  FLG-JBI  NOT =  "1"
+      *        Ï«ºÒ½àµò
+               MOVE    WRK-J-TTNK            TO  WRK-TENTNK
+      *        ¶â³Û·×»»
+               COMPUTE    WRK-TENSU  =  WRK-ZAITEN1  *  WRK-TENTNK
+             ELSE
+      *        ·òÊÝ½àµò
+               MOVE    WRK-JG-TTNK           TO  WRK-TENTNK-JG
+               MOVE    WRK-JY-TTNK           TO  WRK-TENTNK-JY
+      *        ¶â³Û·×»»
+               COMPUTE    WRK-TENSU  =  WRK-ZAITEN1  *  WRK-TENTNK-JG
+             END-IF
+      *    ¾åµ­°Ê³°
+           WHEN  OTHER
+             MOVE    10                    TO  WRK-TENTNK
+      *      ¶â³Û·×»»
+             COMPUTE    WRK-TENSU  =  WRK-ZAITEN1  *  WRK-TENTNK
+           END-EVALUATE
+      *
+           .
+       20014-NMHEN-EXT.
            EXIT.
       *
       *****************************************************************
@@ -1823,7 +1979,16 @@
                OR  ( ACCT-ZAINUM  =  WRK-ZAINUM
                AND   ACCT-PTID  NOT =  WRK-PTID2 )
       *
-             COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             IF  K100LNK-TKKBN  =  2
+      *        ¶â³Û
+               COMPUTE  WRK-ZAITEN1  =  ACCT-SYUTEN1  +  ACCT-SYUTEN2
+               COMPUTE  WRK-ZAITEN2  =  ACCT-YKZTEN   +  ACCT-KIZAITEN
+               PERFORM  200122-MHEN-SEC
+               COMPUTE  WRK-TENSU  =  WRK-ZAITEN  *  ACCT-ZAIKAISU
+             ELSE
+      *        ÅÀ¿ô
+               COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             END-IF
       *
              IF  ACCTP-PLUSKBN  =  "1"
                COMPUTE  WRK-TENSU   =   WRK-TENSU  *  -1
@@ -1877,7 +2042,16 @@
                OR  ( ACCT-ZAINUM  =  WRK-ZAINUM
                AND  ACCT-PTID  NOT =  WRK-PTID2 )
       *
-             COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             IF  K100LNK-TKKBN  =  2
+      *        ¶â³Û
+               COMPUTE  WRK-ZAITEN1  =  ACCT-SYUTEN1  +  ACCT-SYUTEN2
+               COMPUTE  WRK-ZAITEN2  =  ACCT-YKZTEN   +  ACCT-KIZAITEN
+               PERFORM  200122-MHEN-SEC
+               COMPUTE  WRK-TENSU  =  WRK-ZAITEN  *  ACCT-ZAIKAISU
+             ELSE
+      *        ÅÀ¿ô
+               COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             END-IF
       *
              IF  ACCTP-PLUSKBN  =  "1"
                COMPUTE  WRK-TENSU   =   WRK-TENSU  *  -1
@@ -1995,10 +2169,18 @@
              EVALUATE  TNS-TENSIKIBETU
                WHEN  1
       *    ¶â³Û¹àÌÜ¤Î¾ì¹ç¤ÏÅÀ¿ô¤ËÊÑ´¹¤·¤Æ¥Ç¡¼¥¿²½¤¹¤ë¡£
-                 COMPUTE   WRK-CNV-TEN-V   =
-                      (TNS-TEN  * SRY-SRYSURYO(IDZ)) / 10
-                 COMPUTE   WRK-CNV-TEN     ROUNDED  =
-                      WRK-CNV-TEN-V  *  1
+                 IF  K100LNK-TKKBN  =  2
+      *            ÅÀ¿ô
+                   COMPUTE   WRK-CNV-TEN    =  TNS-TEN
+                                            *  SRY-SRYSURYO(IDZ)
+                 ELSE
+      *            ¶â³Û
+                   COMPUTE   WRK-CNV-TEN-V  = (TNS-TEN
+                                            *  SRY-SRYSURYO(IDZ))
+                                            /  10
+                   COMPUTE   WRK-CNV-TEN  ROUNDED  =  WRK-CNV-TEN-V
+                                                   *  1
+                 END-IF
                WHEN  3
                WHEN  8
       *    ÅÀ¿ô¹àÌÜ¤Î¾ì¹ç¤Ï²ó¿ô¤ò¥Ç¡¼¥¿²½¤¹¤ë¡£
@@ -2046,7 +2228,24 @@
       *    ÅÀ¿ô²Ã»»
              PERFORM  900-TENSU-READ-SEC
       *
-             COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             IF  K100LNK-TKKBN  =  2
+      *        ¶â³Û
+      *        Ï«ºÒµÚ¤Ó¼«ÇåÀÕ¤Î¾ì¹ç¡¢Ï«ºÒ¶â³Û¤¬¤¢¤ì¤Ð¤½¤Á¤é¤ò½¸·×
+               IF  ( (      COMB-HKNNUM           =  "971" OR "973" )
+                       AND  FLG-SRYACCTP          =  ZERO
+                       AND  ACCTP-RSIKINGAKU  NOT =  ZERO             )
+                 COMPUTE  WRK-TENSU  ROUNDED  =  ACCTP-RSIKINGAKU
+                                              *  ACCT-ZAIKAISU
+               ELSE
+                 COMPUTE  WRK-ZAITEN1  =  ACCT-SYUTEN1  +  ACCT-SYUTEN2
+                 COMPUTE  WRK-ZAITEN2  =  ACCT-YKZTEN   +  ACCT-KIZAITEN
+                 PERFORM  200122-MHEN-SEC
+                 COMPUTE  WRK-TENSU  =  WRK-ZAITEN  *  ACCT-ZAIKAISU
+               END-IF
+             ELSE
+      *        ÅÀ¿ô
+               COMPUTE  WRK-TENSU  =  ACCT-ZAITEN  *  ACCT-ZAIKAISU
+             END-IF
       *
              IF  ACCTP-PLUSKBN  =  "1"
                COMPUTE  WRK-TENSU   =   WRK-TENSU  *  -1
@@ -2060,6 +2259,56 @@
       *
            .
        200122-ETC-EXT.
+           EXIT.
+      *
+      *****************************************************************
+      *    ¶â³ÛÊÔ½¸½èÍý
+      *****************************************************************
+       200122-MHEN-SEC      SECTION.
+      *
+           MOVE    ACCT-PTID             TO  WRK-PTID
+      *
+           EVALUATE  COMB-HKNNUM
+      *    Ï«ºÒ
+           WHEN  "971"
+             PERFORM  900-PTRSIINF-READ-SEC
+      *      ¸øÌ³ºÒ³²
+             IF  PTRSI-HKNKBN  NOT =  "5"
+      *        Ï«ºÒ½àµò
+               MOVE    WRK-R-TTNK            TO  WRK-TENTNK
+             ELSE
+      *        ·òÊÝ½àµò
+               MOVE    WRK-K-TTNK            TO  WRK-TENTNK
+             END-IF
+      *      ¶â³Û·×»»
+             COMPUTE  WRK-ZAITEN  =  ( WRK-ZAITEN1  +  WRK-ZAITEN2 )
+                                  *  WRK-TENTNK
+      *    ¼«ÇåÀÕ
+           WHEN  "973"
+             IF  FLG-JBI  NOT =  "1"
+      *        Ï«ºÒ½àµò
+               MOVE    WRK-J-TTNK            TO  WRK-TENTNK
+      *        ¶â³Û·×»»
+               COMPUTE  WRK-ZAITEN  =  ( WRK-ZAITEN1  +  WRK-ZAITEN2 )
+                                   *  WRK-TENTNK
+             ELSE
+      *        ·òÊÝ½àµò
+               MOVE    WRK-JG-TTNK           TO  WRK-TENTNK-JG
+               MOVE    WRK-JY-TTNK           TO  WRK-TENTNK-JY
+      *        ¶â³Û·×»»
+               COMPUTE  WRK-ZAITEN  =  ( WRK-ZAITEN1  *  WRK-TENTNK-JG )
+                                    +  ( WRK-ZAITEN2  *  WRK-TENTNK-JY )
+             END-IF
+      *    ¾åµ­°Ê³°
+           WHEN  OTHER
+             MOVE    10                    TO  WRK-TENTNK
+      *      ¶â³Û·×»»
+             COMPUTE  WRK-ZAITEN  =  ( WRK-ZAITEN1  +  WRK-ZAITEN2 )
+                                  *  WRK-TENTNK
+           END-EVALUATE
+      *
+           .
+       200122-MHEN-EXT.
            EXIT.
       *
       *****************************************************************
@@ -2757,6 +3006,18 @@
              MOVE   "(¸å´ü¹âÎð¼Ô)"       TO  K100-NENREIKBN2(2)
            END-IF
       *
+      *    É½¼¨¶èÊ¬
+           IF  K100LNK-TKKBN  =  2
+             MOVE    "¶â³Û"           TO  WRK-T2NAME
+           ELSE
+             MOVE    "ÅÀ¿ô"           TO  WRK-T2NAME
+           END-IF
+      *
+           PERFORM  VARYING  IDX3  FROM 1  BY  1
+                    UNTIL    IDX3  >    6
+             MOVE    WRK-T2NAME       TO  K100-T2NAME(IDX3)
+           END-PERFORM
+      *
            .
        310-HEAD-HEN-EXT.
            EXIT.
@@ -2963,7 +3224,7 @@
                                            TO  SPRT-SHORI-RENNUM
            MOVE    K100LNK-PRTKANRI-PRIORITY
                                            TO  SPRT-PRIORITY
-           MOVE   "A00000K100V02.red"             TO  SPRT-PRTID
+           MOVE   "A00000K100V03.red"      TO  SPRT-PRTID
            MOVE    "(ÃÏ¶èÊÌ)¿ÇÎÅ¹Ô°Ù¶èÊ¬ÊÌ½¸·×É½"
                                            TO  SPRT-TITLE
            MOVE    K100                    TO  SPRT-PRTDATA
@@ -3028,13 +3289,20 @@
       *
            END-PERFORM
       *
+      *    É½¼¨¶èÊ¬
+           IF  K100LNK-TKKBN  =  2
+             MOVE    "¶â³Û"           TO  WRK-T2NAME
+           ELSE
+             MOVE    "ÅÀ¿ô"           TO  WRK-T2NAME
+           END-IF
+      *
       *    ²ó¿ô¡¿ÅÀ¿ô
            INITIALIZE  WRK-ITEM
            PERFORM  800-CSVDATA-EDIT-SEC
            PERFORM  VARYING  IDX8  FROM  1  BY  1
                     UNTIL    IDX8  >  IDX-S
       *
-             MOVE    "ÅÀ¿ô"                   TO  WRK-ITEM
+             MOVE    WRK-T2NAME               TO  WRK-ITEM
              PERFORM  800-CSVDATA-EDIT-SEC
       *
              MOVE    "²ó¿ô"                   TO  WRK-ITEM
@@ -4351,6 +4619,52 @@
            .
        900-SYS-CLOSE-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    ÊÝ¸±ÁÈ¹ç¤»¥Þ¥¹¥¿¡¼ÆÉ¹þ½èÍý
+      *****************************************************************
+       900-HKNCOMBI-READ-SEC         SECTION.
+      *
+           MOVE    HKNCOMBI-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+           IF      MCP-RC              =   ZERO
+             MOVE    "DBFETCH"           TO  MCP-FUNC
+             MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+             MOVE    "key"               TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"         USING
+                                          MCPAREA
+                                          MCPDATA-REC
+                                          SPA-AREA
+             IF    MCP-RC              =   ZERO
+               MOVE    MCPDATA-REC         TO  HKNCOMBI-REC
+               MOVE    ZERO                TO  FLG-HKNCOMBI
+             ELSE
+               MOVE    1                   TO  FLG-HKNCOMBI
+               INITIALIZE                  HKNCOMBI-REC
+             END-IF
+           ELSE
+             MOVE    1                   TO  FLG-HKNCOMBI
+             INITIALIZE                  HKNCOMBI-REC
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_hkncombi"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                        MCPAREA
+                                        MCPDATA-REC
+                                        SPA-AREA
+      *
+           .
+       900-HKNCOMBI-READ-EXT.
+           EXIT.
+      *
       *****************************************************************
       *    ¿ÇÎÅ²ñ·×¾ðÊóSELECT
       *****************************************************************
@@ -4426,6 +4740,51 @@
            .
        910-SRYACCT-CLOSE-EXT.
            EXIT.
+      *
+      *****************************************************************
+      *    ÊÝ¸±ÁÈ¹ç¤»¥Þ¥¹¥¿¡¼ÆÉ¹þ½èÍý
+      *****************************************************************
+       900-PTRSIINF-READ-SEC         SECTION.
+      *
+      *    ´µ¼ÔÊÝ¸±¾ðÊóÆÉ¤ß¹þ¤ß
+           INITIALIZE                  PTRSIINF-REC
+           MOVE    SPA-HOSPNUM         TO  PTRSI-HOSPNUM
+           MOVE    WRK-PTID            TO  PTRSI-PTID
+           MOVE    COMB-HKNID          TO  PTRSI-HKNID
+           MOVE    PTRSIINF-REC        TO  MCPDATA-REC
+           MOVE    "DBSELECT"          TO  MCP-FUNC
+           MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                        SPA-AREA
+           IF   MCP-RC  =  ZERO
+             MOVE    "DBFETCH"         TO  MCP-FUNC
+             MOVE    "tbl_ptrsiinf"    TO  MCP-TABLE
+             MOVE    "key"             TO  MCP-PATHNAME
+             CALL    "ORCDBMAIN"       USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+             IF   MCP-RC  =  ZERO
+               MOVE    MCPDATA-REC     TO  PTRSIINF-REC
+             ELSE
+               INITIALIZE              PTRSIINF-REC
+             END-IF
+           END-IF
+      *
+           MOVE    "DBCLOSECURSOR"     TO  MCP-FUNC
+           MOVE    "tbl_ptrsiinf"      TO  MCP-TABLE
+           MOVE    "key"               TO  MCP-PATHNAME
+           CALL    "ORCDBMAIN"         USING
+                                       MCPAREA
+                                       MCPDATA-REC
+                                       SPA-AREA
+      *
+           .
+       900-PTRSIINF-READ-EXT.
+      *
       *****************************************************************
       *    ½ªÎ»¡¡¡¡½èÍý
       *****************************************************************
