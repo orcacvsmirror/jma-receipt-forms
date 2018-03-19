@@ -32,6 +32,7 @@
       *  01.00.02    @@@@-門間    14/10/07  右下枠内の消費税(再掲)を修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    17/03/15  負担割合４桁へ修正
+      *  02.00.03    @@@@-門間    18/03/19  自費消費税の2重計上を修正
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -896,7 +897,6 @@
                ADD   SYU-JIHI-TAXARI  (IDX)   TO   WRK-GOKTEN
            END-PERFORM
       *
-           ADD   SYU-JIHI-TAX          TO  WRK-GOKTEN
            MOVE    WRK-GOKTEN          TO  WRK-Z7B
            MOVE    WRK-Z7B-G           TO  HC03-HOKENGAI
       *
