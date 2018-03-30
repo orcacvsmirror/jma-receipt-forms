@@ -35,6 +35,7 @@
       *  01.00.04    @@@@-門間    12/11/29  医療機関住所、医療機関名の印字ずれ修正
       *  02.00.01    @@@@-門間    14/10/31  ver4.8.0対応（一時ディレクトリ変更）
       *  02.00.02    @@@@-門間    16/03/16  Ｈ２８年４月改正対応
+      *  02.00.03    @@@@-門間    18/03/30  Ｈ３０年４月改正対応
       *****************************************************************
       *
        ENVIRONMENT             DIVISION.
@@ -494,15 +495,21 @@
                WHEN   (SPA-SRYYMD          >=  "20120401" )  AND
                       (SPA-SRYYMD          <   "20160401" )
       *        平成２４年４月から平成２８年３月まで
-               CALL    "A00000H02V02"      USING   SPA-AREA
-                                                   ORCHC19AREA
-               GO      TO      000-PROC-EXT
+                   CALL    "A00000H02V02"      USING   SPA-AREA
+                                                       ORCHC19AREA
+                   GO      TO      000-PROC-EXT
       *
-               WHEN   (SPA-SRYYMD          >=  "20160401" )
+               WHEN   (SPA-SRYYMD          >=  "20160401" )   AND
+                      (SPA-SRYYMD          <   "20180401" )
       *        平成２８年４月から
-               CALL    "A00000H02V03"      USING   SPA-AREA
-                                                   ORCHC19AREA
-               GO      TO      000-PROC-EXT
+                   CALL    "A00000H02V03"      USING   SPA-AREA
+                                                       ORCHC19AREA
+                   GO      TO      000-PROC-EXT
+      *
+               WHEN   (SPA-SRYYMD          >=  "20180401" )
+      *        平成３０年４月から
+                   CALL    "A00000H02V04"      USING   SPA-AREA
+                                                       ORCHC19AREA
            END-EVALUATE
       *
            INITIALIZE                  FLG-AREA
