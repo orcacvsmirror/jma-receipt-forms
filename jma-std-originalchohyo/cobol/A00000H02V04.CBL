@@ -98,6 +98,7 @@
       *  プログラム修正履歴
       * Maj/Min/Rev  修正者       日付      内容
       *  01.00.01    @@@@-門間    18/03/30  Ｈ３０年４月改正対応
+      *  01.00.02    @@@@-門間    18/04/04  処方箋明細なし対応
       *****************************************************************
       *
       *
@@ -3118,6 +3119,8 @@
            MOVE    JYURRK-DRCD         TO  WRK-DRCD
       *    共通クリア
            PERFORM 200211-KYOTU-INIT-SEC
+      *H30.4
+           MOVE    ZERO                TO  FLG-SYOHOU
       *H27.4
            MOVE    ZERO                TO  FLG-ALLKISAI
            INITIALIZE                  WRK-SRYACT-ALL-AREA
@@ -3129,7 +3132,7 @@
       *****************************************************************
        200211-KYOTU-INIT-SEC          SECTION.
       *
-           MOVE    ZERO                TO  FLG-SYOHOU
+      *****MOVE    ZERO                TO  FLG-SYOHOU
            INITIALIZE                  WRK-SYOHOU-AREA
            MOVE    1                   TO  WRK-PAGE-MAX
            MOVE    ZERO                TO  IDX
@@ -3946,6 +3949,14 @@
                    PERFORM 200212-PRINT-CHK-SEC
                END-IF
            END-PERFORM
+      *
+      *    対象なし
+           IF     (WRK-BUNKATU-CNT     =   ZERO )
+      *        共通クリア
+               PERFORM 200211-KYOTU-INIT-SEC
+      *        印刷処理
+               PERFORM 200212-PRINT-CHK-SEC
+           END-IF
       *
       *    分割の時、分割指示印刷
            IF      WRK-BUNKATU-MAX     >   1
